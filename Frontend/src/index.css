@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  --font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --primary-color: #03396C;
+  --primary-light: #1e5a9e;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+  --text-1: #0f172a;
+  --text-2: #475569;
+}
+
+@theme {
+  --color-primary: #03396C;
+  --color-secondary: #1e5a9e;
+  --color-accent: #fbbf24;
+}
+
+/* Base resets & improvements */
+body {
+  font-family: var(--font-family);
+  background-color: var(--surface-2);
+  color: var(--text-1);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom scrollbars */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth transitions */
+.page-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Skeleton loader effect (optional) */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Card aesthetics */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Navigation active line (optional hint) */
+.nav-line {
+  position: relative;
+}
+
+.nav-line.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: #059669;
+  border-radius: 50%;
+}
