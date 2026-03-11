@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowBack, Person, History, AccountBalanceWallet, Settings, HelpOutline, Logout, ChevronRight, Edit, Notifications, Shield } from '@mui/icons-material';
+import { ArrowBack, Person, History, AccountBalanceWallet, Settings, HelpOutline, Logout, ChevronRight, Edit, Notifications, Shield, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
 const Profile = () => {
@@ -30,20 +30,20 @@ const Profile = () => {
           <h2 className="mt-6 text-2xl font-black text-slate-900 tracking-tight">Muhammad Haroos</h2>
           <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Premium Member</p>
           
-          <div className="grid grid-cols-5 gap-0 mt-8 w-full border-t border-slate-100 pt-8 items-center">
-            <div className="text-center">
+          <div className="flex items-center mt-8 w-full border-t border-slate-100 pt-8">
+            <div className="flex-1 text-center">
               <p className="text-xl font-black text-slate-900">12</p>
               <p className="text-[10px] items-center space-x-1 font-extrabold text-slate-400 uppercase tracking-widest mt-1">Bookings</p>
             </div>
             <div className="w-[1px] h-10 bg-slate-100" />
-            <div className="text-center">
+            <div className="flex-1 text-center">
               <p className="text-xl font-black text-slate-900">₹4.8k</p>
               <p className="text-[10px] items-center space-x-1 font-extrabold text-slate-400 uppercase tracking-widest mt-1">Spent</p>
             </div>
             <div className="w-[1px] h-10 bg-slate-100" />
-            <div className="text-center">
+            <div className="flex-1 text-center">
               <p className="text-xl font-black text-slate-900">4.9</p>
-              <p className="text-[10px] items-center space-x-1 font-extrabold text-slate-400 uppercase tracking-widest mt-1 flex justify-center">Rating <Star sx={{ fontSize: 10, ml: 0.5 }} className="text-[#03396C]" /></p>
+              <p className="text-[10px] items-center space-x-1 font-extrabold text-slate-400 uppercase tracking-widest mt-1 flex justify-center">Rating <Star sx={{ fontSize: 11, ml: 1 }} className="text-[#03396C]" /></p>
             </div>
           </div>
         </div>
@@ -56,7 +56,7 @@ const Profile = () => {
             whileTap={{ scale: 0.98 }}
             className="w-full bg-white p-5 rounded-3xl border border-slate-100 flex items-center shadow-sm group hover:border-[#03396C]/20 active:bg-slate-50 transition-all"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#03396C] group-hover:bg-[#03396C] group-hover:text-white transition-colors duration-300">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#03396C] group-hover:bg-[#03396C] group-hover:text-white transition-colors duration-300 mr-4">
                {item.icon}
             </div>
             <span className="flex-1 text-left font-bold text-slate-700 tracking-tight">{item.label}</span>
