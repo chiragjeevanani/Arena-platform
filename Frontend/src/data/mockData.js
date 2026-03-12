@@ -1,3 +1,7 @@
+import Arena1 from '../assets/Arenas/Arena1.jpg';
+import Arena2 from '../assets/Arenas/Arena2.jpg';
+import Arena3 from '../assets/Arenas/Arena3.jpg';
+
 export const ARENAS = [
   {
     id: 1,
@@ -8,7 +12,7 @@ export const ARENAS = [
     reviews: 120,
     pricePerHour: 400,
     courtsCount: 6,
-    image: "https://images.unsplash.com/photo-1626224484214-405100cd0e2c?q=80&w=800&auto=format&fit=crop",
+    image: Arena1,
     amenities: ["Parking", "Shower", "Locker", "Cafe"],
     description: "Premium wooden flooring courts with professional lighting and gallery seating."
   },
@@ -21,7 +25,7 @@ export const ARENAS = [
     reviews: 85,
     pricePerHour: 350,
     courtsCount: 4,
-    image: "https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?q=80&w=800&auto=format&fit=crop",
+    image: Arena2,
     amenities: ["Parking", "Locker", "Water"],
     description: "Friendly environment with synthetic mats and coaching facilities."
   },
@@ -34,9 +38,35 @@ export const ARENAS = [
     reviews: 210,
     pricePerHour: 300,
     courtsCount: 8,
-    image: "https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?q=80&w=800&auto=format&fit=crop",
+    image: Arena3,
     amenities: ["Parking", "Shower", "Locker", "Sports Shop"],
     description: "One of the oldest and most reliable courts in the city."
+  },
+  {
+    id: 4,
+    name: "Elite Sports Complex",
+    location: "Sector 137, Noida",
+    distance: "3.5 km",
+    rating: 4.7,
+    reviews: 156,
+    pricePerHour: 450,
+    courtsCount: 5,
+    image: Arena1,
+    amenities: ["Parking", "AC", "Locker", "Cafe"],
+    description: "State-of-the-art sports complex with fully air-conditioned courts."
+  },
+  {
+    id: 5,
+    name: "Smash Factor Arena",
+    location: "Vaishali, Ghaziabad",
+    distance: "5.1 km",
+    rating: 4.4,
+    reviews: 92,
+    pricePerHour: 300,
+    courtsCount: 3,
+    image: Arena2,
+    amenities: ["Parking", "Water", "Equipment Rental"],
+    description: "Perfect for casual games and weekend tournaments."
   }
 ];
 
@@ -45,8 +75,19 @@ export const COURTS = [
   { id: 2, arenaId: 1, name: "Court 2", type: "Wooden" },
   { id: 3, arenaId: 1, name: "Court 3", type: "Synthetic" },
   { id: 4, arenaId: 1, name: "Court 4", type: "Synthetic" },
-  { id: 5, arenaId: 1, name: "Court 5", type: "Wooden" },
-  { id: 6, arenaId: 1, name: "Court 6", type: "Wooden" }
+  { id: 5, arenaId: 2, name: "Court A", type: "Synthetic" },
+  { id: 6, arenaId: 2, name: "Court B", type: "Synthetic" },
+  { id: 7, arenaId: 2, name: "Court C", type: "Synthetic" },
+  { id: 8, arenaId: 3, name: "C1", type: "Wooden" },
+  { id: 9, arenaId: 3, name: "C2", type: "Wooden" },
+  { id: 10, arenaId: 3, name: "C3", type: "Wooden" },
+  { id: 11, arenaId: 3, name: "C4", type: "Wooden" },
+  { id: 12, arenaId: 4, name: "Court 1", type: "Synthetic" },
+  { id: 13, arenaId: 4, name: "Court 2", type: "Synthetic" },
+  { id: 14, arenaId: 4, name: "Court 3", type: "Synthetic" },
+  { id: 15, arenaId: 5, name: "Court 1", type: "Wooden" },
+  { id: 16, arenaId: 5, name: "Court 2", type: "Synthetic" },
+  { id: 17, arenaId: 5, name: "Court 3", type: "Synthetic" },
 ];
 
 export const SLOTS = [

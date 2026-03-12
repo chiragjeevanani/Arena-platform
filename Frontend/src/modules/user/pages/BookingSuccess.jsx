@@ -1,13 +1,14 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Check, Share2, Download, Receipt } from 'lucide-react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { Check, Share2, Download, Receipt, Home } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import ShuttleButton from '../components/ShuttleButton';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
+import { useTheme } from '../context/ThemeContext';
 
 // Shuttlecock particle for confetti
-const ShuttleParticle = ({ delay, x, y }) => (
+const ShuttleParticle = ({ delay, x, y, isDark }) => (
   <motion.div
     initial={{ opacity: 0, y: 0, x: 0, scale: 0, rotate: 0 }}
     animate={{
@@ -18,15 +19,16 @@ const ShuttleParticle = ({ delay, x, y }) => (
       rotate: [0, 360],
     }}
     transition={{ duration: 2, delay, ease: 'easeOut' }}
-    className="absolute top-1/2 left-1/2 text-[#22FF88]/30"
+    className={`absolute top-1/2 left-1/2 ${isDark ? 'text-[#22FF88]/30' : 'text-blue-500/20'}`}
   >
-    <ShuttlecockIcon size={16} />
+    < ShuttlecockIcon size={16} />
   </motion.div>
 );
 
 const BookingSuccess = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const courtRef = useRef(null);
   const [showConfetti, setShowConfetti] = useState(true);
 
@@ -52,33 +54,47 @@ const BookingSuccess = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#08142B] via-[#0A1F44] to-[#08142B] flex flex-col pt-16 relative overflow-hidden">
+    <div className={`min-h-screen flex flex-col pt-16 relative overflow-hidden transition-colors duration-500 ${
+      isDark ? 'bg-[#08142B]' : 'bg-slate-50'
+    }`}>
+      {/* Background Decorative Glows */}
+      {!isDark && (
+        <>
+          <div className="absolute top-24 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#22FF88]/10 rounded-full blur-[100px] pointer-events-none" />
+        </>
+      )}
+
       {/* Shuttlecock confetti particles */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none z-50">
           {particles.map(p => (
-            <ShuttleParticle key={p.id} delay={p.delay} x={p.x} y={p.y} />
+            <ShuttleParticle key={p.id} delay={p.delay} x={p.x} y={p.y} isDark={isDark} />
           ))}
         </div>
       )}
 
       <div className="flex-1 px-6 space-y-8 relative z-10">
-        {/* Success Icon */}
+        {/* Success Icon Section */}
         <div className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0, rotate: -45 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-            className="w-20 h-20 glass-neon neon-glow-strong rounded-3xl mx-auto flex items-center justify-center"
-          >
-            <Check size={40} className="text-[#22FF88]" />
-          </motion.div>
-
-          {/* Landing shuttle on court */}
-          <div className="relative flex justify-center">
-            <div ref={courtRef} className="text-[#22FF88]/50">
-              <ShuttlecockIcon size={32} />
-            </div>
+          <div className="relative inline-block">
+            <motion.div
+              initial={{ scale: 0, rotate: -45 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 12 }}
+              className={`w-20 h-20 rounded-[28px] mx-auto flex items-center justify-center relative z-10 ${
+                isDark ? 'glass-neon neon-glow-strong' : 'bg-white border-4 border-emerald-50 shadow-xl shadow-emerald-500/10'
+              }`}
+            >
+              <Check size={40} strokeWidth={3} className={isDark ? 'text-[#22FF88]' : 'text-emerald-500'} />
+            </motion.div>
+            
+            {/* Pulsing ring */}
+            <motion.div 
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className={`absolute inset-0 rounded-[28px] -m-1.5 border-2 ${isDark ? 'border-[#22FF88]/20' : 'border-emerald-500/20'}`}
+            />
           </div>
 
           <div>
@@ -86,94 +102,118 @@ const BookingSuccess = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-3xl font-black text-white tracking-tight font-display"
+              className={`text-2xl font-black tracking-tight font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}
             >
-              Booking Done!
+              Booking Success!
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-white/30 text-sm mt-1"
+              className={`text-[10px] mt-1 font-bold uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-slate-400'}`}
             >
-              Your court is reserved
+              Your court is now reserved
             </motion.p>
           </div>
         </div>
 
-        {/* Success Card — Ticket Style */}
+        {/* Success Ticket Card */}
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3, type: 'spring', stiffness: 100 }}
-          className="glass-card rounded-3xl p-6 relative overflow-hidden"
+          className={`rounded-[32px] p-6 border shadow-2xl relative overflow-hidden transition-all ${
+            isDark ? 'glass-card border-white/5 bg-white/5' : 'bg-white border-blue-50 shadow-[0_20px_60px_rgba(10,31,68,0.06)]'
+          }`}
         >
-          {/* Court line pattern in background */}
-          <div className="absolute inset-0 court-lines opacity-10" />
+          {/* Subtle court lines */}
+          <div className={`absolute inset-0 court-lines ${isDark ? 'opacity-10' : 'opacity-5'}`} />
 
           <div className="space-y-6 relative z-10">
-            {/* Transaction ID */}
-            <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">
-              <span>Transaction Success</span>
-              <span>ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+            {/* Ticket Header */}
+            <div className={`flex justify-between items-center text-[9px] font-black uppercase tracking-[0.25em] ${isDark ? 'text-white/20' : 'text-blue-500/40'}`}>
+              <div className="flex items-center gap-2">
+                <Receipt size={12} className={isDark ? 'text-[#22FF88]/40' : 'text-blue-500/40'} />
+                <span>E-Ticket</span>
+              </div>
+              <span className="font-mono">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
             </div>
 
-            {/* Arena & Court */}
-            <div className="space-y-1">
-              <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Arena & Court</p>
-              <h3 className="text-lg font-bold text-white font-display leading-tight">
+            {/* Arena Info */}
+            <div className="space-y-1.5">
+              <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/10' : 'text-slate-300'}`}>Booking Venue</p>
+              <h3 className={`text-xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
                 {state?.arena?.name}
-                <br />
-                <span className="text-[#22FF88]">{state?.court?.name}</span>
+                <span className={`block text-lg mt-0.5 ${isDark ? 'text-[#22FF88]' : 'text-blue-600'}`}>
+                  {state?.court?.name}
+                </span>
               </h3>
             </div>
 
+            {/* Detail Grid */}
             <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Date</p>
-                <p className="text-sm font-bold text-white mt-0.5">{state?.date}</p>
+              <div className="space-y-1">
+                <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/10' : 'text-slate-300'}`}>Date</p>
+                <p className={`text-sm font-black ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{state?.date}</p>
               </div>
-              <div>
-                <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Time Slot</p>
-                <p className="text-sm font-bold text-white mt-0.5">{state?.slot?.time}</p>
+              <div className="space-y-1">
+                <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/10' : 'text-slate-300'}`}>Time Slot</p>
+                <p className={`text-sm font-black ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{state?.slot?.time}</p>
               </div>
             </div>
 
-            {/* Dashed divider — Ticket tear */}
-            <div className="border-t-2 border-dashed border-white/10 pt-5 flex items-center justify-between">
+            {/* Bottom Notch Separator */}
+            <div className="relative h-px flex items-center">
+              <div className={`absolute left-0 -translate-x-10 w-7 h-7 rounded-full border ${isDark ? 'bg-[#08142B] border-white/5 shadow-inner' : 'bg-slate-50 border-blue-50 shadow-inner'}`} />
+              <div className={`w-full border-t-2 border-dashed ${isDark ? 'border-white/5' : 'border-slate-100'}`} />
+              <div className={`absolute right-0 translate-x-10 w-7 h-7 rounded-full border ${isDark ? 'bg-[#08142B] border-white/5 shadow-inner' : 'bg-slate-50 border-blue-50 shadow-inner'}`} />
+            </div>
+
+            {/* Total Paid */}
+            <div className="flex items-center justify-between pt-1">
               <div>
-                <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Payment</p>
-                <p className="text-lg font-black text-white font-display">₹{state?.amount?.toFixed(2)}</p>
+                <p className={`text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 ${isDark ? 'text-white/10' : 'text-emerald-500/40'}`}>Paid Amount</p>
+                <p className={`text-2xl font-black font-display leading-none ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{state?.amount?.toFixed(2)}</p>
               </div>
-              <div className="glass-neon p-3 rounded-2xl">
-                <Receipt size={20} className="text-[#22FF88]" />
+              <div className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-widest border ${
+                isDark ? 'bg-[#22FF88]/10 border-[#22FF88]/20 text-[#22FF88]' : 'bg-emerald-50 border-emerald-100 text-emerald-600'
+              }`}>
+                Confirmed
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Actions */}
+        {/* Quick Actions */}
         <div className="flex gap-3">
-          <button className="flex-1 glass-light border border-white/10 py-4 rounded-2xl font-bold text-sm text-white/50 flex items-center justify-center gap-2 active:scale-95 transition-all hover:border-white/20">
-            <Share2 size={16} />
-            <span>Share</span>
+          <button className={`flex-1 group h-14 rounded-[20px] font-black text-xs border flex items-center justify-center gap-2 transition-all active:scale-95 ${
+            isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-sm text-[#0A1F44] hover:border-slate-300'
+          }`}>
+            <Share2 size={16} className="transition-transform group-hover:rotate-12" />
+            <span>Forward</span>
           </button>
-          <button className="flex-1 glass-light border border-white/10 py-4 rounded-2xl font-bold text-sm text-white/50 flex items-center justify-center gap-2 active:scale-95 transition-all hover:border-white/20">
-            <Download size={16} />
-            <span>Ticket</span>
+          <button className={`flex-1 group h-14 rounded-[20px] font-black text-xs border flex items-center justify-center gap-2 transition-all active:scale-95 ${
+            isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-sm text-[#0A1F44] hover:border-slate-300'
+          }`}>
+            <Download size={16} className="transition-transform group-hover:translate-y-0.5" />
+            <span>Save Ticket</span>
           </button>
         </div>
       </div>
 
-      {/* Dashboard Button */}
-      <div className="p-6 mt-8 mb-4">
+      {/* Dashboard Sticky Footer */}
+      <div className={`fixed bottom-0 left-0 right-0 p-5 z-[60] md:max-w-[450px] md:mx-auto border-t backdrop-blur-xl transition-all ${
+        isDark ? 'bg-[#08142B]/90 border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]' : 'bg-white/80 border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
+      }`}>
         <ShuttleButton
-          variant="secondary"
-          size="lg"
+          variant="primary"
+          size="md"
           fullWidth
-          onClick={() => navigate('/')}
+          icon={<Home size={18} />}
+          onClick={() => navigate('/home')}
+          className="shadow-2xl shadow-blue-500/20 !rounded-2xl active:scale-95 transition-all py-4"
         >
-          Go to Dashboard
+          Back to Dashboard
         </ShuttleButton>
       </div>
     </div>

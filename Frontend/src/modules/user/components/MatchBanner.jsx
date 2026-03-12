@@ -19,7 +19,7 @@ const MatchBanner = ({ promos = [] }) => {
   if (!promos.length) return null;
 
   return (
-    <div className="relative h-52 rounded-3xl overflow-hidden group">
+    <div className="relative h-44 rounded-[28px] overflow-hidden group">
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -37,16 +37,16 @@ const MatchBanner = ({ promos = [] }) => {
           />
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#08142B]/95 via-[#08142B]/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#08142B]/50 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#08142B]/80 via-[#08142B]/40 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#08142B]/40 via-transparent to-transparent pointer-events-none" />
 
           {/* Content */}
-          <div className="absolute inset-0 p-6 flex flex-col justify-center">
+          <div className="absolute inset-0 p-5 flex flex-col justify-center">
             <motion.p
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-[#22FF88] text-[10px] font-bold uppercase tracking-[0.2em] mb-2"
+              className="text-[#22FF88] text-[9px] font-black uppercase tracking-[0.2em] mb-1.5"
             >
               {promos[current].subtitle || '🏸 Featured'}
             </motion.p>
@@ -54,7 +54,7 @@ const MatchBanner = ({ promos = [] }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-white text-2xl font-black max-w-[220px] leading-tight font-display tracking-tight"
+              className="text-white text-xl font-black max-w-[200px] leading-tight font-display tracking-tight"
             >
               {promos[current].title}
             </motion.h2>
@@ -63,8 +63,8 @@ const MatchBanner = ({ promos = [] }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               whileTap={{ scale: 0.95, rotate: -2 }}
-              className="mt-4 bg-[#22FF88] text-[#08142B] px-6 py-2.5 rounded-xl font-bold text-sm w-fit
-                         shadow-[0_0_20px_rgba(34,255,136,0.2)] active:shadow-none transition-all"
+              className="mt-3 bg-[#22FF88] text-[#08142B] px-5 py-2 rounded-xl font-black text-xs w-fit
+                         shadow-[0_0_20px_rgba(34,255,136,0.2)] active:shadow-none transition-all uppercase tracking-wider"
             >
               {promos[current].buttonText || 'Join Match'}
             </motion.button>

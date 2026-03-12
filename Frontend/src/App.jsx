@@ -20,13 +20,22 @@ import BookingSuccess from './modules/user/pages/BookingSuccess';
 import Dashboard from './modules/user/pages/Dashboard';
 import Coaching from './modules/user/pages/Coaching';
 import Profile from './modules/user/pages/Profile';
+import EditProfile from './modules/user/pages/EditProfile';
+import Wallet from './modules/user/pages/Wallet';
+import Notifications from './modules/user/pages/Notifications';
+import Privacy from './modules/user/pages/Privacy';
+import Help from './modules/user/pages/Help';
 
 // Admin Pages
 import AdminDashboard from './modules/admin/pages/Dashboard';
 
+// Components
+import ScrollToTop from './components/ScrollToTop';
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
@@ -41,6 +50,11 @@ function App() {
           <Route path="bookings" element={<Dashboard />} />
           <Route path="coaching" element={<Coaching />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="profile/edit" element={<EditProfile />} />
+          <Route path="profile/wallet" element={<Wallet />} />
+          <Route path="profile/notifications" element={<Notifications />} />
+          <Route path="profile/privacy" element={<Privacy />} />
+          <Route path="profile/help" element={<Help />} />
         </Route>
 
         {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}

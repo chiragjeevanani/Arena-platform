@@ -74,7 +74,7 @@ const UserLayout = () => {
                         ? 'text-[#22FF88]'
                         : isDark
                           ? 'text-white/30 group-hover:text-white/50'
-                          : 'text-[#0A1F44]/30 group-hover:text-[#0A1F44]/50'
+                          : 'text-[#0A1F44]/50 group-hover:text-[#0A1F44]/70'
                     }`}>
                       <Icon size={22} />
                     </div>
@@ -83,7 +83,7 @@ const UserLayout = () => {
                         ? 'text-[#22FF88]'
                         : isDark
                           ? 'text-white/20 group-hover:text-white/40'
-                          : 'text-[#0A1F44]/25 group-hover:text-[#0A1F44]/40'
+                          : 'text-[#0A1F44]/50 group-hover:text-[#0A1F44]/70'
                     }`}>
                       {item.label}
                     </span>

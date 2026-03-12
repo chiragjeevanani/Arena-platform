@@ -18,7 +18,11 @@ const CoachCard = ({ batch, index = 0 }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.15, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-      className="glass-card rounded-3xl overflow-hidden group hover:border-[#22FF88]/15 transition-all duration-500"
+      className={`rounded-3xl overflow-hidden group transition-all duration-500 border ${
+        isDark 
+          ? 'glass-card border-white/5 bg-white/5 hover:border-[#22FF88]/20 shadow-lg' 
+          : 'bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-[#22FF88]/30'
+      }`}
     >
       {/* Hero */}
       <div className="relative h-48 overflow-hidden">
@@ -48,25 +52,25 @@ const CoachCard = ({ batch, index = 0 }) => {
       {/* Content */}
       <div className="p-5 space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="glass-light rounded-2xl p-3">
+          <div className={`${isDark ? 'glass-light' : 'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
             <Clock size={15} className="text-[#1EE7FF] mb-1.5" />
-            <p className="text-[8px] text-white/30 font-bold uppercase tracking-[0.15em]">Timing</p>
-            <p className="text-xs font-bold text-white/80 mt-0.5">{batch.timing.split(' - ')[0]}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Timing</p>
+            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>{batch.timing.split(' - ')[0]}</p>
           </div>
-          <div className="glass-light rounded-2xl p-3">
+          <div className={`${isDark ? 'glass-light' : 'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
             <Users size={15} className="text-[#FFD600] mb-1.5" />
-            <p className="text-[8px] text-white/30 font-bold uppercase tracking-[0.15em]">Level</p>
-            <p className="text-xs font-bold text-white/80 mt-0.5">{batch.level}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Level</p>
+            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>{batch.level}</p>
           </div>
         </div>
 
         {/* Progress Meter - fitness tracker style */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Seats Filled</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Seats Filled</span>
             <span className="text-[10px] text-[#22FF88] font-bold">{filledSeats}/{totalSeats}</span>
           </div>
-          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+          <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
             <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: `${seatPercent}%` }}
@@ -82,14 +86,14 @@ const CoachCard = ({ batch, index = 0 }) => {
           </div>
         </div>
 
-        <p className="text-white/30 text-xs leading-relaxed">
+        <p className={`text-xs leading-relaxed ${isDark ? 'text-white/30' : 'text-[#0A1F44]/50'}`}>
           {batch.days} classes. Footwork, racket handling & strategy.
         </p>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+        <div className={`pt-4 border-t flex items-center justify-between ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
           <div>
-            <p className="text-[8px] text-white/20 font-bold uppercase tracking-[0.15em]">Fee / Month</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>Fee / Month</p>
             <p className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{batch.fees}</p>
           </div>
           <motion.button
