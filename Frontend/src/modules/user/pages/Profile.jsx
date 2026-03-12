@@ -1,79 +1,104 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowBack, Person, History, AccountBalanceWallet, Settings, HelpOutline, Logout, ChevronRight, Edit, Notifications, Shield, Star } from '@mui/icons-material';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ShuttleButton from '../components/ShuttleButton';
+import { useTheme } from '../context/ThemeContext';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
 
   const menuItems = [
-    { icon: <Person />, label: 'Edit Profile' },
-    { icon: <History />, label: 'Booking History' },
-    { icon: <AccountBalanceWallet />, label: 'My Wallet' },
-    { icon: <Notifications />, label: 'Notifications' },
-    { icon: <Shield />, label: 'Privacy & Security' },
-    { icon: <HelpOutline />, label: 'Help & Support' }
+    { icon: User, label: 'Edit Profile', color: 'text-[#22FF88]', bg: 'bg-[#22FF88]/10' },
+    { icon: History, label: 'Booking History', color: 'text-[#1EE7FF]', bg: 'bg-[#1EE7FF]/10' },
+    { icon: Wallet, label: 'My Wallet', color: 'text-[#FFD600]', bg: 'bg-[#FFD600]/10' },
+    { icon: Bell, label: 'Notifications', color: 'text-purple-400', bg: 'bg-purple-400/10' },
+    { icon: Shield, label: 'Privacy & Security', color: 'text-white/40', bg: 'bg-white/5' },
+    { icon: HelpCircle, label: 'Help & Support', color: 'text-white/40', bg: 'bg-white/5' },
   ];
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-24">
+    <div className="min-h-screen pb-28">
       {/* Profile Header */}
-      <div className="bg-white px-6 pt-16 pb-10 rounded-b-[48px] shadow-xl shadow-slate-200/50">
-        <div className="flex flex-col items-center">
+      <div className="px-6 pt-16 pb-10 relative overflow-hidden">
+        {/* Court line background */}
+        <div className="absolute inset-0 court-lines opacity-20" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#22FF88]/5 via-transparent to-transparent" />
+
+        <div className="flex flex-col items-center relative z-10">
+          {/* Avatar */}
           <div className="relative">
-            <div className="w-32 h-32 rounded-[40px] overflow-hidden border-4 border-slate-50 shadow-2xl">
-               <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop" alt="User" />
+            <div className="w-28 h-28 rounded-[32px] overflow-hidden border-2 border-[#22FF88]/20 shadow-[0_0_30px_rgba(34,255,136,0.1)]">
+              <img
+                src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
+                alt="User"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <button className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#03396C] text-white rounded-2xl border-4 border-white shadow-lg flex items-center justify-center active:scale-90 transition-all">
-               <Edit sx={{ fontSize: 18 }} />
+            <button className="absolute -bottom-1 -right-1 w-9 h-9 bg-[#22FF88] text-[#08142B] rounded-xl border-4 border-[#08142B] flex items-center justify-center active:scale-90 transition-all">
+              <Pencil size={14} />
             </button>
           </div>
-          <h2 className="mt-6 text-2xl font-black text-slate-900 tracking-tight">Muhammad Haroos</h2>
-          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Premium Member</p>
-          
-          <div className="flex items-center mt-8 w-full border-t border-slate-100 pt-8">
+
+          <h2 className={`mt-5 text-xl font-black tracking-tight font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Muhammad Haroos</h2>
+          <p className="text-[#22FF88]/50 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Premium Member</p>
+
+          {/* Stats */}
+          <div className="flex items-center mt-8 w-full glass-card rounded-3xl p-5">
             <div className="flex-1 text-center">
-              <p className="text-xl font-black text-slate-900">12</p>
-              <p className="text-[10px] items-center space-x-1 font-extrabold text-slate-400 uppercase tracking-widest mt-1">Bookings</p>
+              <p className={`text-lg font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>12</p>
+              <p className="text-[9px] font-extrabold text-white/20 uppercase tracking-[0.15em] mt-0.5">Bookings</p>
             </div>
-            <div className="w-[1px] h-10 bg-slate-100" />
+            <div className="w-[1px] h-8 bg-white/5" />
             <div className="flex-1 text-center">
-              <p className="text-xl font-black text-slate-900">₹4.8k</p>
-              <p className="text-[10px] items-center space-x-1 font-extrabold text-slate-400 uppercase tracking-widest mt-1">Spent</p>
+              <p className={`text-lg font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹4.8k</p>
+              <p className="text-[9px] font-extrabold text-white/20 uppercase tracking-[0.15em] mt-0.5">Spent</p>
             </div>
-            <div className="w-[1px] h-10 bg-slate-100" />
+            <div className="w-[1px] h-8 bg-white/5" />
             <div className="flex-1 text-center">
-              <p className="text-xl font-black text-slate-900">4.9</p>
-              <p className="text-[10px] items-center space-x-1 font-extrabold text-slate-400 uppercase tracking-widest mt-1 flex justify-center">Rating <Star sx={{ fontSize: 11, ml: 1 }} className="text-[#03396C]" /></p>
+              <p className={`text-lg font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>4.9</p>
+              <p className="text-[9px] font-extrabold text-white/20 uppercase tracking-[0.15em] mt-0.5 flex items-center justify-center gap-1">
+                Rating <Star size={9} className="text-[#FFD600] fill-[#FFD600]" />
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-6 py-10 space-y-4">
-        {menuItems.map((item, index) => (
-          <motion.button 
-            key={index}
-            whileTap={{ scale: 0.98 }}
-            className="w-full bg-white p-5 rounded-3xl border border-slate-100 flex items-center shadow-sm group hover:border-[#03396C]/20 active:bg-slate-50 transition-all"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#03396C] group-hover:bg-[#03396C] group-hover:text-white transition-colors duration-300 mr-4">
-               {item.icon}
-            </div>
-            <span className="flex-1 text-left font-bold text-slate-700 tracking-tight">{item.label}</span>
-            <ChevronRight className="text-slate-300 group-hover:text-[#03396C] transition-colors" />
-          </motion.button>
-        ))}
+      {/* Menu Items */}
+      <div className="px-6 py-2 space-y-3">
+        {menuItems.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <motion.button
+              key={index}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="w-full glass-card p-4 rounded-2xl flex items-center group hover:border-[#22FF88]/10 active:bg-white/5 transition-all"
+            >
+              <div className={`w-9 h-9 rounded-xl ${item.bg} flex items-center justify-center ${item.color} mr-4 group-hover:scale-110 transition-transform`}>
+                <Icon size={16} />
+              </div>
+              <span className={`flex-1 text-left font-bold text-sm tracking-tight ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>{item.label}</span>
+            <ChevronRight size={16} className={isDark ? 'text-white/15 group-hover:text-white/30' : 'text-[#0A1F44]/15 group-hover:text-[#0A1F44]/30'} />
+            </motion.button>
+          );
+        })}
 
-        <motion.button 
+        {/* Logout */}
+        <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/login')}
-          className="w-full bg-red-50 p-5 rounded-3xl border border-red-100 flex items-center mt-6 shadow-sm group active:bg-red-100 transition-all"
+          className="w-full bg-red-500/5 border border-red-500/10 p-4 rounded-2xl flex items-center mt-4 group hover:bg-red-500/10 active:bg-red-500/15 transition-all"
         >
-          <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mr-4 text-red-500 shadow-inner">
-             <Logout />
+          <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center mr-4 text-red-400">
+            <LogOut size={16} />
           </div>
-          <span className="flex-1 text-left font-bold text-red-600 tracking-tight">Logout</span>
-          <ChevronRight className="text-red-300" />
+          <span className="flex-1 text-left font-bold text-red-400/70 text-sm tracking-tight">Logout</span>
+          <ChevronRight size={16} className="text-red-400/20" />
         </motion.button>
       </div>
     </div>

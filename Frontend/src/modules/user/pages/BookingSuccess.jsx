@@ -1,97 +1,180 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Check, Celebration, Share, Download, ReceiptLong } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { Check, Share2, Download, Receipt } from 'lucide-react';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import ShuttleButton from '../components/ShuttleButton';
+import { ShuttlecockIcon } from '../components/BadmintonIcons';
+
+// Shuttlecock particle for confetti
+const ShuttleParticle = ({ delay, x, y }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 0, x: 0, scale: 0, rotate: 0 }}
+    animate={{
+      opacity: [0, 1, 1, 0],
+      y: [0, y],
+      x: [0, x],
+      scale: [0, 1, 0.5],
+      rotate: [0, 360],
+    }}
+    transition={{ duration: 2, delay, ease: 'easeOut' }}
+    className="absolute top-1/2 left-1/2 text-[#22FF88]/30"
+  >
+    <ShuttlecockIcon size={16} />
+  </motion.div>
+);
 
 const BookingSuccess = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const courtRef = useRef(null);
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  // Generate shuttle particles
+  const particles = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    delay: i * 0.1,
+    x: (Math.random() - 0.5) * 300,
+    y: (Math.random() - 0.5) * 400,
+  }));
+
+  useEffect(() => {
+    // Animated shuttle landing on court
+    if (courtRef.current) {
+      gsap.fromTo(courtRef.current,
+        { y: -100, opacity: 0, scale: 1.5, rotation: -45 },
+        { y: 0, opacity: 1, scale: 1, rotation: 0, duration: 1, delay: 0.5, ease: 'bounce.out' }
+      );
+    }
+
+    const timer = setTimeout(() => setShowConfetti(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="bg-[#03396C] min-h-screen flex flex-col pt-20">
-      <div className="flex-1 px-6 space-y-12">
-        <div className="text-center space-y-4">
-           <motion.div 
-             initial={{ scale: 0, rotate: -45 }}
-             animate={{ scale: 1, rotate: 0 }}
-             className="w-24 h-24 bg-white/20 backdrop-blur rounded-[40px] mx-auto flex items-center justify-center border-4 border-white/50"
-           >
-              <Check className="text-white" sx={{ fontSize: 60 }} />
-           </motion.div>
-           <div>
-              <h1 className="text-4xl font-extrabold text-white tracking-tight">Booking Done!</h1>
-              <p className="text-blue-100 text-lg mt-2 font-medium opacity-80">Your court is reserved</p>
-           </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#08142B] via-[#0A1F44] to-[#08142B] flex flex-col pt-16 relative overflow-hidden">
+      {/* Shuttlecock confetti particles */}
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none z-50">
+          {particles.map(p => (
+            <ShuttleParticle key={p.id} delay={p.delay} x={p.x} y={p.y} />
+          ))}
         </div>
+      )}
 
-        {/* Success Card */}
-        <motion.div 
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-[40px] p-8 shadow-2xl relative overflow-hidden"
-        >
-          {/* Decorative Rings */}
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-slate-50 rounded-full" />
-          <div className="absolute top-2 right-2 text-slate-100">
-             <Celebration sx={{ fontSize: 100 }} />
+      <div className="flex-1 px-6 space-y-8 relative z-10">
+        {/* Success Icon */}
+        <div className="text-center space-y-4">
+          <motion.div
+            initial={{ scale: 0, rotate: -45 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 12 }}
+            className="w-20 h-20 glass-neon neon-glow-strong rounded-3xl mx-auto flex items-center justify-center"
+          >
+            <Check size={40} className="text-[#22FF88]" />
+          </motion.div>
+
+          {/* Landing shuttle on court */}
+          <div className="relative flex justify-center">
+            <div ref={courtRef} className="text-[#22FF88]/50">
+              <ShuttlecockIcon size={32} />
+            </div>
           </div>
 
-          <div className="space-y-8 relative">
-             <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
-                <span>Transaction Success</span>
-                <span>ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
-             </div>
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-3xl font-black text-white tracking-tight font-display"
+            >
+              Booking Done!
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-white/30 text-sm mt-1"
+            >
+              Your court is reserved
+            </motion.p>
+          </div>
+        </div>
 
-             <div className="space-y-1">
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Arena & Court</p>
-                <h3 className="text-xl font-bold text-slate-900 leading-tight">
-                  {state?.arena?.name} <br />
-                  <span className="text-[#03396C]"> {state?.court?.name}</span>
-                </h3>
-             </div>
+        {/* Success Card — Ticket Style */}
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 100 }}
+          className="glass-card rounded-3xl p-6 relative overflow-hidden"
+        >
+          {/* Court line pattern in background */}
+          <div className="absolute inset-0 court-lines opacity-10" />
 
-             <div className="grid grid-cols-2 gap-8">
-                <div>
-                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Date</p>
-                   <p className="text-sm font-bold text-slate-900">{state?.date}</p>
-                </div>
-                <div>
-                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Time Slot</p>
-                   <p className="text-sm font-bold text-slate-900">{state?.slot?.time}</p>
-                </div>
-             </div>
+          <div className="space-y-6 relative z-10">
+            {/* Transaction ID */}
+            <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">
+              <span>Transaction Success</span>
+              <span>ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+            </div>
 
-             <div className="pt-6 border-t-4 border-dashed border-slate-50 flex items-center justify-between">
-                <div>
-                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Payment</p>
-                   <p className="text-lg font-extrabold text-slate-900">₹{state?.amount?.toFixed(2)}</p>
-                </div>
-                <div className="bg-blue-50 text-[#03396C] p-3 rounded-2xl">
-                   <ReceiptLong />
-                </div>
-             </div>
+            {/* Arena & Court */}
+            <div className="space-y-1">
+              <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Arena & Court</p>
+              <h3 className="text-lg font-bold text-white font-display leading-tight">
+                {state?.arena?.name}
+                <br />
+                <span className="text-[#22FF88]">{state?.court?.name}</span>
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Date</p>
+                <p className="text-sm font-bold text-white mt-0.5">{state?.date}</p>
+              </div>
+              <div>
+                <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Time Slot</p>
+                <p className="text-sm font-bold text-white mt-0.5">{state?.slot?.time}</p>
+              </div>
+            </div>
+
+            {/* Dashed divider — Ticket tear */}
+            <div className="border-t-2 border-dashed border-white/10 pt-5 flex items-center justify-between">
+              <div>
+                <p className="text-white/25 text-[9px] font-bold uppercase tracking-[0.15em]">Payment</p>
+                <p className="text-lg font-black text-white font-display">₹{state?.amount?.toFixed(2)}</p>
+              </div>
+              <div className="glass-neon p-3 rounded-2xl">
+                <Receipt size={20} className="text-[#22FF88]" />
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        <div className="flex space-x-4">
-           <button className="flex-1 bg-white/20 backdrop-blur-md text-white border border-white/20 py-4 rounded-3xl font-bold flex items-center justify-center space-x-2 active:scale-95 transition-all">
-              <Share sx={{ fontSize: 18 }} />
-              <span>Share</span>
-           </button>
-           <button className="flex-1 bg-white/20 backdrop-blur-md text-white border border-white/20 py-4 rounded-3xl font-bold flex items-center justify-center space-x-2 active:scale-95 transition-all">
-              <Download sx={{ fontSize: 18 }} />
-              <span>Ticket</span>
-           </button>
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button className="flex-1 glass-light border border-white/10 py-4 rounded-2xl font-bold text-sm text-white/50 flex items-center justify-center gap-2 active:scale-95 transition-all hover:border-white/20">
+            <Share2 size={16} />
+            <span>Share</span>
+          </button>
+          <button className="flex-1 glass-light border border-white/10 py-4 rounded-2xl font-bold text-sm text-white/50 flex items-center justify-center gap-2 active:scale-95 transition-all hover:border-white/20">
+            <Download size={16} />
+            <span>Ticket</span>
+          </button>
         </div>
       </div>
 
-      <div className="p-6 mt-12 mb-6">
-         <button 
-           onClick={() => navigate('/')}
-           className="w-full bg-white text-slate-900 py-5 rounded-3xl font-extrabold shadow-2xl active:scale-95 transition-all text-base"
-         >
-           Go to Dashboard
-         </button>
+      {/* Dashboard Button */}
+      <div className="p-6 mt-8 mb-4">
+        <ShuttleButton
+          variant="secondary"
+          size="lg"
+          fullWidth
+          onClick={() => navigate('/')}
+        >
+          Go to Dashboard
+        </ShuttleButton>
       </div>
     </div>
   );

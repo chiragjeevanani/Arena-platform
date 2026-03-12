@@ -1,109 +1,127 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowBack, ArrowForward, CheckCircle, LocationOn, CalendarToday, AccessTime, ConfirmationNumber } from '@mui/icons-material';
+import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ShuttleButton from '../components/ShuttleButton';
 
 const BookingSummary = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { arena, court, date, slot } = state || {};
 
-  if (!arena) return <div className="p-10 text-center">No booking details found</div>;
+  if (!arena) return <div className="p-10 text-center text-white/40">No booking details found</div>;
 
   const total = slot?.price || 0;
-  const tax = total * 0.18; // 18% GST
+  const tax = total * 0.18;
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-32">
-      <div className="bg-white px-6 pt-12 pb-6 sticky top-0 z-50 shadow-sm border-b border-slate-50">
-        <div className="flex items-center space-x-4">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
-            <ArrowBack className="text-slate-900" sx={{ fontSize: 20 }} />
+    <div className="min-h-screen pb-32">
+      {/* Header */}
+      <div className="px-6 pt-14 pb-4 sticky top-0 z-50 bg-[#08142B]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 rounded-2xl glass-light flex items-center justify-center border border-white/10 active:scale-90 transition-transform"
+          >
+            <ArrowLeft size={18} className="text-white/60" />
           </button>
-          <h1 className="text-xl font-bold text-slate-900 text-center flex-1 pr-10">Review Booking</h1>
+          <h1 className="text-lg font-bold text-white font-display text-center flex-1 pr-10">Review Booking</h1>
         </div>
       </div>
 
-      <div className="px-6 py-8 space-y-6">
-        {/* Arena Summary Card */}
-        <motion.div 
+      <div className="px-6 py-6 space-y-5">
+        {/* Arena Summary */}
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-[32px] p-6 shadow-xl shadow-slate-200 border border-slate-100"
+          className="glass-card rounded-3xl p-5"
         >
-          <div className="flex space-x-4">
-             <div className="w-20 h-20 rounded-3xl overflow-hidden shadow-sm">
-                <img src={arena.image} alt={arena.name} className="w-full h-full object-cover" />
-             </div>
-             <div className="flex-1 space-y-1">
-                <h3 className="font-bold text-slate-900 text-lg leading-tight">{arena.name}</h3>
-                <div className="flex items-center text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
-                  <LocationOn sx={{ fontSize: 14, mr: 0.5 }} className="text-[#03396C]" />
-                  {arena.location}
-                </div>
-                <p className="text-xs text-slate-500 line-clamp-1">{arena.description}</p>
-             </div>
+          <div className="flex gap-4">
+            <div className="w-18 h-18 rounded-2xl overflow-hidden border border-white/10 flex-shrink-0">
+              <img src={arena.image} alt={arena.name} className="w-full h-full object-cover" style={{ width: 72, height: 72 }} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <h3 className="font-bold text-white text-base font-display leading-tight">{arena.name}</h3>
+              <div className="flex items-center text-white/30 text-[10px] font-bold uppercase tracking-[0.15em] gap-1">
+                <MapPin size={11} className="text-[#22FF88]/50" />
+                {arena.location}
+              </div>
+              <p className="text-[10px] text-white/20 line-clamp-1">{arena.description}</p>
+            </div>
           </div>
         </motion.div>
 
-        {/* Booking Details List */}
-        <div className="bg-white rounded-[32px] p-6 shadow-xl shadow-slate-200 border border-slate-100 divide-y divide-slate-50">
-           <div className="flex items-center justify-between py-4">
-              <div className="flex items-center space-x-3">
-                 <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                   <CalendarToday sx={{ fontSize: 20 }} />
-                 </div>
-                 <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Date</span>
+        {/* Booking Details */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card rounded-3xl p-5 divide-y divide-white/5"
+        >
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#1EE7FF]/10 flex items-center justify-center text-[#1EE7FF]">
+                <Calendar size={16} />
               </div>
-              <span className="text-sm font-bold text-slate-900">{date}</span>
-           </div>
-           <div className="flex items-center justify-between py-4">
-              <div className="flex items-center space-x-3">
-                 <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
-                   <AccessTime sx={{ fontSize: 20 }} />
-                 </div>
-                 <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Slot</span>
+              <span className="text-xs font-bold text-white/30 uppercase tracking-[0.15em]">Date</span>
+            </div>
+            <span className="text-sm font-bold text-white">{date}</span>
+          </div>
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#FFD600]/10 flex items-center justify-center text-[#FFD600]">
+                <Clock size={16} />
               </div>
-              <span className="text-sm font-bold text-slate-900">{slot?.time}</span>
-           </div>
-           <div className="flex items-center justify-between py-4">
-              <div className="flex items-center space-x-3">
-                 <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                   <CheckCircle sx={{ fontSize: 20 }} />
-                 </div>
-                 <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Court</span>
+              <span className="text-xs font-bold text-white/30 uppercase tracking-[0.15em]">Slot</span>
+            </div>
+            <span className="text-sm font-bold text-white">{slot?.time}</span>
+          </div>
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#22FF88]/10 flex items-center justify-center text-[#22FF88]">
+                <CheckCircle size={16} />
               </div>
-              <span className="text-sm font-bold text-slate-900">{court?.name} ({court?.type})</span>
-           </div>
-        </div>
+              <span className="text-xs font-bold text-white/30 uppercase tracking-[0.15em]">Court</span>
+            </div>
+            <span className="text-sm font-bold text-white">{court?.name} ({court?.type})</span>
+          </div>
+        </motion.div>
 
         {/* Price Breakdown */}
-        <div className="bg-white rounded-[32px] p-8 shadow-xl shadow-slate-200 border border-slate-100 space-y-6">
-           <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest text-center">Payment Info</h4>
-           <div className="space-y-4">
-              <div className="flex justify-between items-center text-sm font-medium text-slate-500">
-                 <span>Subtotal</span>
-                 <span className="font-bold text-slate-900">₹{total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm font-medium text-slate-500">
-                 <span>GST (18%)</span>
-                 <span className="font-bold text-slate-900">₹{tax.toFixed(2)}</span>
-              </div>
-              <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-                 <span className="text-xl font-extrabold text-slate-900 mb-2">Total Amount</span>
-                 <span className="text-2xl font-extrabold text-[#03396C]">₹{(total + tax).toFixed(2)}</span>
-              </div>
-           </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card rounded-3xl p-6 space-y-5"
+        >
+          <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] text-center">Payment Info</h4>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-white/30">Subtotal</span>
+              <span className="font-bold text-white">₹{total.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-white/30">GST (18%)</span>
+              <span className="font-bold text-white">₹{tax.toFixed(2)}</span>
+            </div>
+            <div className="pt-4 border-t border-white/5 flex justify-between items-center">
+              <span className="text-base font-bold text-white">Total Amount</span>
+              <span className="text-2xl font-black text-[#22FF88] font-display">₹{(total + tax).toFixed(2)}</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 z-[60]">
-         <button 
-           onClick={() => navigate('/payment', { state: { amount: total + tax, arena, court, date, slot } })}
-           className="w-full bg-slate-900 text-white py-5 rounded-3xl font-extrabold shadow-2xl shadow-slate-400 active:scale-[0.98] transition-all text-base flex items-center justify-center space-x-3"
-         >
-           <span>Confirm Booking</span>
-           <ArrowForward sx={{ fontSize: 20 }} />
-         </button>
+      {/* CTA */}
+      <div className="fixed bottom-0 left-0 right-0 p-5 z-[60] md:max-w-[450px] md:mx-auto">
+        <ShuttleButton
+          variant="primary"
+          size="lg"
+          fullWidth
+          icon={<ArrowRight size={18} />}
+          onClick={() => navigate('/payment', { state: { amount: total + tax, arena, court, date, slot } })}
+        >
+          Confirm Booking
+        </ShuttleButton>
       </div>
     </div>
   );
