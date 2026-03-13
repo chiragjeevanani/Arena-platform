@@ -3,14 +3,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Search, Bell, Menu, UserCircle, Settings, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
+import { useAuth } from '../../user/context/AuthContext';
+import { MOCK_DB } from '../../../data/mockDatabase';
 
 const AdminTopbar = ({ isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
+    logout();
     navigate('/admin/login');
+  };
+
+  const getArenaDisplay = () => {
+    if (user?.role === 'SUPER_ADMIN') return 'Global Network';
+    return MOCK_DB.arenas.find(a => a.id === user?.assignedArena)?.name || 'Olympic Arena';
   };
 
   return (
@@ -41,8 +50,8 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed }) => {
         <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-colors ${
           isDark ? 'border-white/5 bg-white/5 text-white hover:bg-white/10' : 'border-[#0A1F44]/10 bg-white text-[#0A1F44] hover:bg-[#0A1F44]/5 shadow-sm'
         }`}>
-          <div className="w-2 h-2 rounded-full bg-[#22FF88] animate-pulse" />
-          <span className="text-xs font-black uppercase tracking-widest italic font-display">Olympic Arena</span>
+          <div className="w-2 h-2 rounded-full bg-[#22FF88] shadow-[0_0_10px_#22FF88] animate-pulse" />
+          <span className="text-xs font-black uppercase tracking-widest italic font-display">{getArenaDisplay()}</span>
           <ChevronDown size={14} className="opacity-40" />
         </div>
 
@@ -79,11 +88,15 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed }) => {
             }`}
           >
             <div className="text-right hidden sm:block">
-              <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Super Admin</p>
-              <p className="text-[8px] font-black text-[#1EE7FF] uppercase tracking-[0.2em] mt-0.5">Arena Manager</p>
+              <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{user?.role?.replace('_', ' ')}</p>
+              <p className="text-[8px] font-black text-[#1EE7FF] uppercase tracking-[0.2em] mt-0.5">{user?.name}</p>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1EE7FF]/20 to-[#22FF88]/20 border border-[#22FF88]/30 flex items-center justify-center text-[#22FF88] shadow-lg shadow-[#22FF88]/10 transition-transform group-active:scale-95">
-              <UserCircle size={20} />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden border border-[#22FF88]/30 shadow-lg shadow-[#22FF88]/10 transition-transform group-active:scale-95">
+              {user?.avatar ? (
+                <img src={user.avatar} alt="Profile" className="w-full h-full object-crop" />
+              ) : (
+                <UserCircle size={20} className="text-[#22FF88]" />
+              )}
             </div>
           </button>
 
@@ -99,8 +112,8 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed }) => {
                 }`}
               >
                 <div className={`px-5 py-3 border-b mb-2 ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-                  <p className="text-xs font-black uppercase tracking-widest">Admin Control</p>
-                  <p className={`text-[10px] font-bold opacity-40 truncate`}>admin@badminton.io</p>
+                  <p className="text-xs font-black uppercase tracking-widest">{user?.name}</p>
+                  <p className={`text-[10px] font-bold opacity-40 truncate`}>{user?.email}</p>
                 </div>
                 
                 <div className="px-2 space-y-1">

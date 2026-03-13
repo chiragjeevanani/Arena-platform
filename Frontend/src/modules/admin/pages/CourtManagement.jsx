@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Target, Plus, Search, Filter, Settings2, Trash2, Edit2, CheckCircle2, XCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Target, Plus, Search, Filter, Settings2, Trash2, Edit2, CheckCircle2, 
+  XCircle, X, ArrowRight, DollarSign, Users, MoreVertical, Eye, FileText, Activity
+} from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 import { COURTS, ARENAS } from '../../../data/mockData';
 
 const CourtManagement = () => {
   const { isDark } = useTheme();
   const [selectedArena, setSelectedArena] = useState(ARENAS[0].id);
+  const [showAddCourtModal, setShowAddCourtModal] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
 
   // Filter courts by arena
   const filteredCourts = COURTS.filter(court => court.arenaId === selectedArena);
@@ -20,7 +25,10 @@ const CourtManagement = () => {
           </h2>
           <p className="text-sm text-white/40 mt-1 font-medium">Manage court configurations, status, and amenities.</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-[#1EE7FF] transition-all text-sm font-bold shadow-[0_0_15px_rgba(34,255,136,0.3)]">
+        <button
+          onClick={() => setShowAddCourtModal(true)}
+          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#22FF88]/20"
+        >
           <Plus size={16} /> Add Court
         </button>
       </div>
@@ -87,13 +95,61 @@ const CourtManagement = () => {
                 {court.status === 'Active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
                 {court.status}
               </div>
-              <div className="flex gap-2">
-                <button className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-white/10 text-white/40' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/40'}`}>
-                  <Edit2 size={14} />
+              <div className="flex gap-2 relative">
+                <button 
+                  onClick={() => setActiveMenu(activeMenu === court.id ? null : court.id)}
+                  className={`p-2 rounded-xl transition-all border ${
+                    activeMenu === court.id
+                      ? 'bg-[#22FF88] border-[#22FF88] text-[#0A1F44]'
+                      : isDark 
+                        ? 'bg-white/5 border-white/5 text-white/40 hover:text-white hover:border-white/10' 
+                        : 'bg-black/5 border-black/10 text-[#0A1F44]/40 hover:text-black hover:border-black/20'
+                  }`}
+                >
+                  <MoreVertical size={16} />
                 </button>
-                <button className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-[#FF4B4B]/10 text-[#FF4B4B]/60' : 'hover:bg-[#FF4B4B]/5 text-[#FF4B4B]/60'}`}>
-                  <Trash2 size={14} />
-                </button>
+
+                <AnimatePresence>
+                  {activeMenu === court.id && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setActiveMenu(null)} 
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        className={`absolute right-0 top-full mt-2 w-56 p-2 rounded-2xl border z-20 shadow-2xl backdrop-blur-xl ${
+                          isDark ? 'bg-[#0A1F44]/90 border-white/10 shadow-black' : 'bg-white/90 border-[#0A1F44]/10 shadow-blue-900/10'
+                        }`}
+                      >
+                        <div className="space-y-1 text-left">
+                          {[
+                            { label: 'Edit Details', icon: Edit2, color: '#1EE7FF' },
+                            { label: 'Manage Amenities', icon: Settings2, color: '#22FF88' },
+                            { label: 'Maintenance Log', icon: FileText, color: '#FFD600' },
+                            { label: 'View Analytics', icon: Activity, color: '#A855F7' },
+                            { label: 'Deactivate Court', icon: Trash2, color: '#FF4B4B' },
+                          ].map((opt, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setActiveMenu(null)}
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                isDark ? 'hover:bg-white/5 text-white/60 hover:text-white' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F44]'
+                              }`}
+                            >
+                              <div className={`p-1.5 rounded-lg border transition-colors`} style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}20`, color: opt.color }}>
+                                <opt.icon size={12} />
+                              </div>
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
@@ -139,6 +195,73 @@ const CourtManagement = () => {
           </motion.div>
         ))}
       </div>
+
+      {/* Add Court Modal */}
+      <AnimatePresence>
+        {showAddCourtModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddCourtModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className={`relative w-full max-w-lg rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+            >
+              <div className="p-8 border-b border-inherit flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-black font-display tracking-tight flex items-center gap-3">
+                    <Target className="text-[#22FF88]" /> Register Court
+                  </h3>
+                  <p className="text-xs font-bold opacity-30 uppercase tracking-widest mt-1">Add a new playing surface to the arena</p>
+                </div>
+                <button
+                  onClick={() => setShowAddCourtModal(false)}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-8 space-y-5">
+                <div className="group">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Court Name</label>
+                  <input type="text" placeholder="e.g. Court 7 - Premier" className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="group">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Court Type</label>
+                    <select className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
+                      <option>Synthetic</option>
+                      <option>Wooden</option>
+                      <option>PU Surface</option>
+                      <option>Mat</option>
+                    </select>
+                  </div>
+                  <div className="group">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Capacity (Pax)</label>
+                    <input type="number" defaultValue="4" className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                  </div>
+                </div>
+                <div className="group">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Base Rate (₹/hr)</label>
+                  <input type="number" defaultValue="800" className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                </div>
+                <button
+                  onClick={() => setShowAddCourtModal(false)}
+                  className="w-full py-5 rounded-[1.5rem] bg-[#22FF88] text-[#0A1F44] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:scale-[1.02] transition-all shadow-2xl shadow-[#22FF88]/20 flex items-center justify-center gap-2"
+                >
+                  Deploy Court Unit <ArrowRight size={16} />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

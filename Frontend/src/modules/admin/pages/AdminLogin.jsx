@@ -3,20 +3,36 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Mail, ArrowRight, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
+import { useAuth } from '../../user/context/AuthContext';
 import { ShuttlecockIcon } from '../../user/components/BadmintonIcons';
 
 const AdminLogin = () => {
   const { isDark } = useTheme();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
+  const FIXED_CREDENTIALS = {
+    SUPER_ADMIN: { email: 'superadmin@arena.com', password: 'password123' },
+    ARENA_ADMIN: { email: 'manager@elitehub.com', password: 'password123' },
+    RECEPTIONIST: { email: 'reception@arena.com', password: 'password123' }
+  };
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    role: 'arena_admin' // Default role for demo
+    email: FIXED_CREDENTIALS.ARENA_ADMIN.email,
+    password: FIXED_CREDENTIALS.ARENA_ADMIN.password,
+    role: 'ARENA_ADMIN' 
   });
+
+  const handleRoleChange = (roleId) => {
+    setFormData({
+      role: roleId,
+      email: FIXED_CREDENTIALS[roleId].email,
+      password: FIXED_CREDENTIALS[roleId].password
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,14 +42,21 @@ const AdminLogin = () => {
     // Simulating API call
     setTimeout(() => {
       setIsLoading(false);
+      
+      // Update AuthContext with the selected role
+      login({ 
+        role: formData.role,
+        assignedArena: formData.role === 'ARENA_ADMIN' ? 'arena-1' : 'all' 
+      });
+
       navigate('/admin');
     }, 1500);
   };
 
   const roles = [
-    { id: 'super_admin', label: 'Super Admin', desc: 'Full System Access' },
-    { id: 'arena_admin', label: 'Arena Admin', desc: 'Manage Single Arena' },
-    { id: 'reception', label: 'Reception', desc: 'POS & Bookings' },
+    { id: 'SUPER_ADMIN', label: 'Super Admin', desc: 'Full System Access' },
+    { id: 'ARENA_ADMIN', label: 'Arena Admin', desc: 'Manage Single Arena' },
+    { id: 'RECEPTIONIST', label: 'Reception', desc: 'POS & Bookings' },
   ];
 
   return (
@@ -104,10 +127,10 @@ const AdminLogin = () => {
                 <button
                   key={r.id}
                   type="button"
-                  onClick={() => setFormData({ ...formData, role: r.id })}
-                  className={`flex-1 py-2 px-1 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                  onClick={() => handleRoleChange(r.id)}
+                  className={`flex-1 py-3 px-1 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     formData.role === r.id 
-                      ? 'bg-[#22FF88] text-[#0A1F44] shadow-lg' 
+                      ? 'bg-[#22FF88] text-[#0A1F44] shadow-lg scale-[1.02]' 
                       : `${isDark ? 'text-white/40 hover:text-white' : 'text-[#0A1F44]/40 hover:text-[#0A1F44]'}`
                   }`}
                 >

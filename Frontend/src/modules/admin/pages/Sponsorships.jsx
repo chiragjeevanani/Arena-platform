@@ -1,6 +1,10 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Target, Plus, Search, Filter, Briefcase, Calendar, DollarSign, TrendingUp, MoreVertical, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Target, Plus, Search, Filter, Briefcase, Calendar, DollarSign, 
+  TrendingUp, MoreVertical, ExternalLink, X, ArrowRight, Mail, Building,
+  Eye, RefreshCw, FileText, Settings, Trash2
+} from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
 const SPONSORS = [
@@ -11,6 +15,8 @@ const SPONSORS = [
 
 const Sponsorships = () => {
   const { isDark } = useTheme();
+  const [showNewPartnerModal, setShowNewPartnerModal] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
 
   return (
     <div className="space-y-6">
@@ -21,7 +27,10 @@ const Sponsorships = () => {
           </h2>
           <p className="text-sm text-white/40 mt-1 font-medium">Manage brand partnerships, advertising slots, and recurring contracts.</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-[#1EE7FF] transition-all text-sm font-bold shadow-[0_0_15px_rgba(34,255,136,0.3)]">
+        <button
+          onClick={() => setShowNewPartnerModal(true)}
+          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#22FF88]/20"
+        >
           <Plus size={16} /> New Partner
         </button>
       </div>
@@ -120,22 +129,147 @@ const Sponsorships = () => {
                             {sp.status}
                          </span>
                       </td>
-                      <td className="p-6 pr-10 text-right">
-                         <div className="flex items-center justify-end gap-2">
-                           <button className="p-2 rounded-xl text-white/20 hover:text-[#1EE7FF] hover:bg-[#1EE7FF]/10 transition-all">
-                              <ExternalLink size={18} />
-                           </button>
-                           <button className={`p-2 rounded-xl text-white/20 hover:text-white transition-all ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}>
-                              <MoreVertical size={18} />
-                           </button>
-                         </div>
-                      </td>
+                       <td className="p-6 pr-10 text-right">
+                          <div className="flex items-center justify-end gap-2 relative">
+                            <button className="p-2 rounded-xl text-white/20 hover:text-[#1EE7FF] hover:bg-[#1EE7FF]/10 transition-all">
+                               <ExternalLink size={18} />
+                            </button>
+                            <button 
+                              onClick={() => setActiveMenu(activeMenu === sp.id ? null : sp.id)}
+                              className={`p-2 rounded-xl transition-all border ${
+                                activeMenu === sp.id
+                                  ? 'bg-[#1EE7FF] border-[#1EE7FF] text-[#0A1F44]'
+                                  : isDark 
+                                    ? 'bg-white/5 border-white/5 text-white/20 hover:text-white hover:border-white/10' 
+                                    : 'bg-black/5 border-black/10 text-black/20 hover:text-black hover:border-black/20'
+                              }`}
+                            >
+                               <MoreVertical size={18} />
+                            </button>
+
+                            <AnimatePresence>
+                              {activeMenu === sp.id && (
+                                <>
+                                  <div 
+                                    className="fixed inset-0 z-10" 
+                                    onClick={() => setActiveMenu(null)} 
+                                  />
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                    className={`absolute right-0 top-full mt-2 w-56 p-2 rounded-2xl border z-20 shadow-2xl backdrop-blur-xl ${
+                                      isDark ? 'bg-[#0A1F44]/90 border-white/10 shadow-black' : 'bg-white/90 border-[#0A1F44]/10 shadow-blue-900/10'
+                                    }`}
+                                  >
+                                    <div className="space-y-1 text-left">
+                                      {[
+                                        { label: 'View Contract', icon: Eye, color: '#1EE7FF' },
+                                        { label: 'Renew Partnership', icon: RefreshCw, color: '#22FF88' },
+                                        { label: 'Lead History', icon: FileText, color: '#FFD600' },
+                                        { label: 'Edit Valuation', icon: Settings, color: '#A855F7' },
+                                        { label: 'Terminate Agreement', icon: Trash2, color: '#FF4B4B' },
+                                      ].map((opt, i) => (
+                                        <button
+                                          key={i}
+                                          onClick={() => setActiveMenu(null)}
+                                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                            isDark ? 'hover:bg-white/5 text-white/60 hover:text-white' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F44]'
+                                          }`}
+                                        >
+                                          <div className={`p-1.5 rounded-lg border transition-colors`} style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}20`, color: opt.color }}>
+                                            <opt.icon size={12} />
+                                          </div>
+                                          {opt.label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </motion.div>
+                                </>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                       </td>
                    </tr>
                 ))}
              </tbody>
           </table>
         </div>
       </div>
+
+      {/* New Partner Modal */}
+      <AnimatePresence>
+        {showNewPartnerModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNewPartnerModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className={`relative w-full max-w-lg rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+            >
+              <div className="p-8 border-b border-inherit flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-black font-display tracking-tight flex items-center gap-3">
+                    <Briefcase className="text-[#1EE7FF]" /> Onboard Partner
+                  </h3>
+                  <p className="text-xs font-bold opacity-30 uppercase tracking-widest mt-1">Register a new sponsorship or brand partnership</p>
+                </div>
+                <button onClick={() => setShowNewPartnerModal(false)} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-8 space-y-5">
+                <div className="group">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Company / Brand Name</label>
+                  <div className="relative">
+                    <Building size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#1EE7FF] group-focus-within:opacity-100 transition-all" />
+                    <input type="text" placeholder="e.g. Li-Ning India" className={`w-full py-4 pl-12 pr-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Partnership Type</label>
+                    <select className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`}>
+                      <option>Title Sponsor</option>
+                      <option>Gear Sponsor</option>
+                      <option>Beverage Partner</option>
+                      <option>Media Partner</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Annual Value (₹)</label>
+                    <input type="text" placeholder="e.g. 5,00,000" className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`} />
+                  </div>
+                </div>
+                <div className="group">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Contact Person Email</label>
+                  <div className="relative">
+                    <Mail size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#1EE7FF] group-focus-within:opacity-100 transition-all" />
+                    <input type="email" placeholder="partner@brand.com" className={`w-full py-4 pl-12 pr-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`} />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Contract End Date</label>
+                  <input type="date" className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`} />
+                </div>
+                <button
+                  onClick={() => setShowNewPartnerModal(false)}
+                  className="w-full py-5 rounded-[1.5rem] bg-[#1EE7FF] text-[#0A1F44] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:scale-[1.02] transition-all shadow-2xl shadow-[#1EE7FF]/20 flex items-center justify-center gap-2"
+                >
+                  Execute Partnership <ArrowRight size={16} />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

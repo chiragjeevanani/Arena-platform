@@ -9,25 +9,65 @@ import {
 } from 'lucide-react';
 import { ShuttlecockIcon } from '../../user/components/BadmintonIcons';
 import { useTheme } from '../../user/context/ThemeContext';
+import { useAuth } from '../../user/context/AuthContext';
 
-const MENU_ITEMS = [
-  { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/admin/roles', icon: Shield, label: 'Roles & Permissions' },
-  { path: '/admin/users', icon: Users, label: 'User Management' },
-  { path: '/admin/arenas', icon: MapPin, label: 'Arena Management' },
-  { path: '/admin/courts', icon: Target, label: 'Court Management' },
-  { path: '/admin/slots', icon: CalendarClock, label: 'Slot Schedule' },
-  { path: '/admin/bookings', icon: Receipt, label: 'Bookings' },
-  { path: '/admin/coaching', icon: Star, label: 'Coaching' },
-  { path: '/admin/events', icon: Trophy, label: 'Events & Tournaments' },
-  { path: '/admin/sponsorships', icon: Target, label: 'Sponsorships' },
-  { path: '/admin/inventory', icon: Package, label: 'Inventory' },
-  { path: '/admin/pos', icon: CreditCard, label: 'Retail POS' },
-  { path: '/admin/reports', icon: PieChart, label: 'Financial Reports' },
+const SIDEBAR_STRUCTURE = [
+  {
+    group: "Overview",
+    roles: ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'],
+    items: [
+      { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    ]
+  },
+  {
+    group: "Operations",
+    roles: ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'],
+    items: [
+      { path: '/admin/arenas', icon: MapPin, label: 'Arenas', roles: ['SUPER_ADMIN'] },
+      { path: '/admin/courts', icon: Target, label: 'Courts' },
+      { path: '/admin/slots', icon: CalendarClock, label: 'Slot Schedule' },
+      { path: '/admin/bookings', icon: Receipt, label: 'Bookings' },
+      { path: '/admin/coaching', icon: Star, label: 'Coaching' },
+    ]
+  },
+  {
+    group: "Business",
+    roles: ['SUPER_ADMIN', 'ARENA_ADMIN'],
+    items: [
+      { path: '/admin/events', icon: Trophy, label: 'Events' },
+      { path: '/admin/sponsorships', icon: Target, label: 'Sponsorships' },
+      { path: '/admin/pos', icon: CreditCard, label: 'Retail POS' },
+      { path: '/admin/inventory', icon: Package, label: 'Inventory' },
+    ]
+  },
+  {
+    group: "Finance",
+    roles: ['SUPER_ADMIN'],
+    items: [
+      { path: '/admin/reports', icon: PieChart, label: 'Reports' },
+    ]
+  },
+  {
+    group: "System",
+    roles: ['SUPER_ADMIN'],
+    items: [
+      { path: '/admin/users', icon: Users, label: 'Users' },
+      { path: '/admin/roles', icon: Shield, label: 'Roles' },
+      { path: '/admin/settings', icon: Star, label: 'Settings' },
+    ]
+  }
 ];
 
 const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
   const { isDark } = useTheme();
+  const { user } = useAuth();
+
+  const filteredStructure = SIDEBAR_STRUCTURE.filter(section => 
+    section.roles.includes(user?.role)
+  ).map(section => ({
+    ...section,
+    items: section.items.filter(item => !item.roles || item.roles.includes(user?.role))
+  })).filter(section => section.items.length > 0);
 
   return (
     <motion.aside
@@ -68,59 +108,88 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
       {/* Collapse Button (floating) */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-24 -right-3 w-6 h-6 bg-[#1EE7FF]/10 border border-[#1EE7FF]/30 rounded-full flex items-center justify-center text-[#1EE7FF] hover:bg-[#1EE7FF] hover:text-[#08142B] transition-colors z-50"
+        className="absolute top-24 -right-3 w-6 h-6 bg-[#1EE7FF]/10 border border-[#1EE7FF]/30 rounded-full flex items-center justify-center text-[#1EE7FF] hover:bg-[#1EE7FF] hover:text-[#08142B] transition-colors z-50 shadow-lg"
       >
         {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2 scrollbar-hide shrink-0">
-        {MENU_ITEMS.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === '/admin'} // strict match for dashboard
-            className={({ isActive }) =>
-              `relative flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 group ${
-                isActive 
-                  ? `bg-gradient-to-r ${isDark ? 'from-[#22FF88]/20' : 'from-[#22FF88]/10'} to-transparent text-[#22FF88]` 
-                  : `${isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-[#0A1F44]/60 hover:bg-[#0A1F44]/5 hover:text-[#0A1F44]'}`
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <motion.div
-                    layoutId="active-indicator"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#22FF88] rounded-r-full shadow-[0_0_10px_#22FF88]"
-                  />
-                )}
-                <item.icon
-                  size={20}
-                  className={`shrink-0 transition-all duration-300 ${
-                    isActive ? 'text-[#22FF88]' : 'group-hover:text-[#1EE7FF]'
-                  }`}
-                />
-                <AnimatePresence mode="popLayout">
-                  {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      className="whitespace-nowrap font-semibold text-sm tracking-wide"
-                    >
-                      {item.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </>
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6 scrollbar-hide shrink-0">
+        {filteredStructure.map((section) => (
+          <div key={section.group} className="space-y-1">
+            {!isCollapsed && (
+              <motion.h4 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`px-3 text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${
+                  isDark ? 'text-white/20' : 'text-[#0A1F44]/20'
+                }`}
+              >
+                {section.group}
+              </motion.h4>
             )}
-          </NavLink>
+            
+            <div className="space-y-1">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/admin'}
+                  className={({ isActive }) =>
+                    `relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group ${
+                      isActive 
+                        ? `bg-[#22FF88]/10 text-[#22FF88]` 
+                        : `${isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-[#0A1F44]/60 hover:bg-[#0A1F44]/5 hover:text-[#0A1F44]'}`
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.div
+                          layoutId="active-indicator"
+                          className="absolute left-[-4px] top-2 bottom-2 w-1.5 bg-[#22FF88] rounded-full shadow-[0_0_15px_rgba(34,255,136,0.5)]"
+                        />
+                      )}
+                      <item.icon
+                        size={18}
+                        className={`shrink-0 transition-all duration-300 ${
+                          isActive ? 'text-[#22FF88]' : 'group-hover:text-[#22FF88]'
+                        }`}
+                      />
+                      <AnimatePresence mode="popLayout">
+                        {!isCollapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            className="whitespace-nowrap font-bold text-xs tracking-tight"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 
-      {/* Bottom Profile / Quick Info - optional */}
+      {/* Profile Section */}
+      <div className={`p-4 border-t ${isDark ? 'border-[#22FF88]/10' : 'border-[#0A1F44]/10'}`}>
+        <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'px-2'}`}>
+          <img src={user?.avatar} className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#22FF88] to-[#1EE7FF] shrink-0 object-cover" />
+          {!isCollapsed && (
+            <div className="overflow-hidden">
+              <p className={`text-xs font-black truncate ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{user?.name}</p>
+              <p className="text-[9px] text-[#22FF88] font-black uppercase tracking-wider">{user?.role?.replace('_', ' ')}</p>
+            </div>
+          )}
+        </div>
+      </div>
     </motion.aside>
   );
 };

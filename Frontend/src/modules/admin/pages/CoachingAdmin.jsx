@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
 const COACHES = [
@@ -18,6 +18,7 @@ const BATCHES = [
 const CoachingAdmin = () => {
   const { isDark } = useTheme();
   const [view, setView] = useState('batches'); // batches | coaches
+  const [showNewBatchModal, setShowNewBatchModal] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -32,13 +33,16 @@ const CoachingAdmin = () => {
           <button className={`p-2.5 rounded-xl border transition-all ${isDark ? 'bg-[#0A1F44]/50 border-white/5 text-white/40 hover:text-white' : 'bg-white border-black/10 text-black/40 hover:text-black'}`}>
             <Mail size={18} />
           </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#22FF88]/20">
+          <button 
+            onClick={() => setShowNewBatchModal(true)}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#22FF88]/20"
+          >
             <Plus size={16} /> New Batch
           </button>
         </div>
       </div>
 
-      {/* View Switcher */}
+      {/* View Switcher omitted for clarity but remains same logic */}
       <div className={`flex gap-1 p-1 rounded-2xl w-fit border ${isDark ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'}`}>
         <button
           onClick={() => setView('batches')}
@@ -137,6 +141,106 @@ const CoachingAdmin = () => {
           ))}
         </div>
       )}
+
+      {/* New Batch Modal */}
+      <AnimatePresence>
+        {showNewBatchModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNewBatchModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className={`relative w-full max-w-lg rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+            >
+              <div className="p-8 border-b border-inherit flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-black font-display tracking-tight flex items-center gap-3">
+                    <Zap className="text-[#22FF88]" /> Initialize Batch
+                  </h3>
+                  <p className="text-xs font-bold opacity-30 uppercase tracking-widest mt-1">Configure academy program parameters</p>
+                </div>
+                <button 
+                  onClick={() => setShowNewBatchModal(false)}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6">
+                <div className="space-y-4">
+                  <div className="group">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Program Name</label>
+                    <div className="relative">
+                      <Zap size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#22FF88] group-focus-within:opacity-100 transition-all font-black text-[13px]" />
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Elite Morning Smash"
+                        className={`w-full py-4 pl-12 pr-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="group">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Lead Coach</label>
+                      <select className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
+                        <option>Vikram Singh</option>
+                        <option>Anjali Sharma</option>
+                        <option>Siddharth Roy</option>
+                      </select>
+                    </div>
+                    <div className="group">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Cap (Students)</label>
+                      <input 
+                        type="number" 
+                        defaultValue="15"
+                        className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="group">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Frequency & Schedule</label>
+                    <div className="flex gap-2">
+                       {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
+                         <button key={idx} className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${idx < 5 ? 'bg-[#22FF88]/20 text-[#22FF88] border border-[#22FF88]/30' : 'bg-white/5 text-white/20 border border-white/5'}`}>
+                           {day}
+                         </button>
+                       ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`p-4 rounded-2xl border flex items-center gap-4 ${isDark ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5'}`}>
+                   <div className="w-10 h-10 rounded-xl bg-[#1EE7FF]/10 flex items-center justify-center text-[#1EE7FF]">
+                      <Clock size={18} />
+                   </div>
+                   <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest leading-none">Standard Slot</p>
+                      <p className="text-xs font-bold mt-1 opacity-40 italic">06:00 AM - 08:30 AM</p>
+                   </div>
+                   <button className="text-[10px] font-black uppercase text-[#1EE7FF] hover:underline">Revise</button>
+                </div>
+
+                <button 
+                  onClick={() => setShowNewBatchModal(false)}
+                  className="w-full py-5 rounded-[1.5rem] bg-[#22FF88] text-[#0A1F44] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:scale-[1.02] transition-all shadow-2xl shadow-[#22FF88]/20 flex items-center justify-center gap-2"
+                >
+                  Confirm Registration <Plus size={16} />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

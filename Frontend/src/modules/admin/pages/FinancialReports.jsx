@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { PieChart, Download, Calendar, ArrowUpRight, ArrowDownLeft, DollarSign, Wallet, CreditCard, Filter, ChevronRight, TrendingUp, BarChart3, Receipt } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PieChart, Download, Calendar, ArrowUpRight, ArrowDownLeft, DollarSign, Wallet, CreditCard, Filter, ChevronRight, TrendingUp, BarChart3, Receipt, X, ArrowRight, Mail, FileText } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -16,6 +16,7 @@ const data = [
 
 const FinancialReports = () => {
   const { isDark } = useTheme();
+  const [showExportModal, setShowExportModal] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -27,7 +28,10 @@ const FinancialReports = () => {
           <p className="text-sm text-white/40 mt-1 font-medium italic">Income tracking, automated reconciliation, and ROI analytics.</p>
         </div>
         <div className="flex gap-2">
-           <button className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-black/10 text-black hover:bg-black/5'}`}>
+           <button
+             onClick={() => setShowExportModal(true)}
+             className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#22FF88]/20"
+           >
               <Download size={16} /> Monthly Statement
            </button>
         </div>
@@ -159,6 +163,82 @@ const FinancialReports = () => {
             ))}
          </div>
       </div>
+
+      {/* Export Statement Modal */}
+      <AnimatePresence>
+        {showExportModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowExportModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className={`relative w-full max-w-lg rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+            >
+              <div className="p-8 border-b border-inherit flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-black font-display tracking-tight flex items-center gap-3">
+                    <FileText className="text-[#22FF88]" /> Export Statement
+                  </h3>
+                  <p className="text-xs font-bold opacity-30 uppercase tracking-widest mt-1">Generate and export financial report</p>
+                </div>
+                <button onClick={() => setShowExportModal(false)} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-8 space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">From Date</label>
+                    <input type="date" className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">To Date</label>
+                    <input type="date" className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Arena Scope</label>
+                    <select className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
+                      <option>All Arenas</option>
+                      <option>Olympic Smash</option>
+                      <option>Badminton Hub</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Export Format</label>
+                    <select className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
+                      <option>PDF</option>
+                      <option>Excel (.xlsx)</option>
+                      <option>CSV</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="group">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Email Recipients</label>
+                  <div className="relative">
+                    <Mail size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#22FF88] group-focus-within:opacity-100 transition-all" />
+                    <input type="email" placeholder="finance@arena.com, cfo@arena.com" className={`w-full py-4 pl-12 pr-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowExportModal(false)}
+                  className="w-full py-5 rounded-[1.5rem] bg-[#22FF88] text-[#0A1F44] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:scale-[1.02] transition-all shadow-2xl shadow-[#22FF88]/20 flex items-center justify-center gap-2"
+                >
+                  Generate & Send Report <Download size={16} />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
