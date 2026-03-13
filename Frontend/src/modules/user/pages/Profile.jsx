@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star } from 'lucide-react';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
@@ -20,7 +20,19 @@ const Profile = () => {
   return (
     <div className="min-h-screen pb-28">
       {/* Profile Header */}
-      <div className="px-6 pt-16 pb-10 relative overflow-hidden">
+      <div className="px-6 pt-10 pb-10 relative overflow-hidden">
+        {/* Settings Button - Top Right */}
+        <div className="absolute top-6 right-6 z-20">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center border backdrop-blur-md transition-all ${
+              isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white/80 border-[#0A1F44]/10 text-[#0A1F44]/60 shadow-sm'
+            }`}
+          >
+            <Settings size={20} />
+          </motion.button>
+        </div>
+
         {/* Court line background */}
         <div className="absolute inset-0 court-lines opacity-20" />
         {/* Gradient overlay */}
@@ -29,14 +41,14 @@ const Profile = () => {
         <div className="flex flex-col items-center relative z-10">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-28 h-28 rounded-[32px] overflow-hidden border-2 border-[#22FF88]/20 shadow-[0_0_30px_rgba(34,255,136,0.1)]">
+            <div className={`w-28 h-28 rounded-[32px] overflow-hidden border-2 transition-colors ${isDark ? 'border-[#22FF88]/20 shadow-[0_0_30px_rgba(34,255,136,0.1)]' : 'border-[#22FF88]/40 shadow-xl shadow-blue-900/5'}`}>
               <img
                 src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
                 alt="User"
                 className="w-full h-full object-cover"
               />
             </div>
-            <button className="absolute -bottom-1 -right-1 w-9 h-9 bg-[#22FF88] text-[#08142B] rounded-xl border-4 border-[#08142B] flex items-center justify-center active:scale-90 transition-all">
+            <button className={`absolute -bottom-1 -right-1 w-9 h-9 bg-[#22FF88] text-[#08142B] rounded-xl border-4 flex items-center justify-center active:scale-90 transition-all ${isDark ? 'border-[#08142B]' : 'border-white'}`}>
               <Pencil size={14} />
             </button>
           </div>

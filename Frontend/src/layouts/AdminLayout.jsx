@@ -1,50 +1,32 @@
-import { Outlet, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import AdminSidebar from '../modules/admin/components/AdminSidebar';
+import AdminTopbar from '../modules/admin/components/AdminTopbar';
+import { useTheme } from '../modules/user/context/ThemeContext';
 
 const AdminLayout = () => {
-  return (
-    <div className="flex h-screen bg-slate-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-white flex flex-col">
-        <div className="p-6 border-b border-slate-800">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            Admin Panel
-          </h1>
-        </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <Link to="/admin" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/admin/users" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-            <Users size={20} />
-            <span>Manage Users</span>
-          </Link>
-          <Link to="/admin/settings" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
-        </nav>
-        <div className="p-4 border-t border-slate-800">
-          <button className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors">
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isDark } = useTheme();
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-end px-8">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-slate-600">Admin User</span>
-            <div className="w-8 h-8 rounded-full bg-slate-200" />
-          </div>
-        </header>
-        <div className="p-8">
+  return (
+    <div className={`admin-panel flex h-screen overflow-hidden font-sans transition-colors duration-500 ${isDark ? 'bg-[#08142B] text-white selection:bg-[#22FF88]/30 selection:text-[#22FF88]' : 'bg-[#F0F4F8] text-[#0A1F44] selection:bg-[#0A1F44]/15 selection:text-[#0A1F44]'}`}>
+      {/* Background Gradient & Pattern */}
+      <div className={`fixed inset-0 pointer-events-none -z-20 transition-opacity duration-500 ${isDark ? 'bg-gradient-to-br from-[#08142B] via-[#0A1F44] to-[#08142B] opacity-100' : 'bg-gradient-to-b from-[#F0F4F8] to-[#E8EDF3] opacity-100'}`} />
+      <div className="fixed inset-0 court-lines opacity-10 -z-10 pointer-events-none" />
+
+      {/* Sidebar */}
+      <AdminSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+
+      {/* Main Workspace */}
+      <div className="flex-1 flex flex-col min-w-0 relative h-screen">
+        {/* Topbar */}
+        <AdminTopbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto scrollbar-hide relative px-6 py-6 lg:px-10 lg:py-8">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

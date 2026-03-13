@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // Layouts
 import UserLayout from './layouts/UserLayout';
 import AdminLayout from './layouts/AdminLayout';
+import CoachLayout from './layouts/CoachLayout';
 
 // Auth Pages
 import Login from './modules/user/pages/Login';
@@ -23,6 +24,27 @@ import Profile from './modules/user/pages/Profile';
 
 // Admin Pages
 import AdminDashboard from './modules/admin/pages/Dashboard';
+import RoleManagement from './modules/admin/pages/RoleManagement';
+import UserManagement from './modules/admin/pages/UserManagement';
+import ArenaManagement from './modules/admin/pages/ArenaManagement';
+import CourtManagement from './modules/admin/pages/CourtManagement';
+import SlotSchedule from './modules/admin/pages/SlotSchedule';
+import Bookings from './modules/admin/pages/Bookings';
+import CoachingAdmin from './modules/admin/pages/CoachingAdmin';
+import EventsAdmin from './modules/admin/pages/EventsAdmin';
+import Sponsorships from './modules/admin/pages/Sponsorships';
+import Inventory from './modules/admin/pages/Inventory';
+import RetailPOS from './modules/admin/pages/RetailPOS';
+import FinancialReports from './modules/admin/pages/FinancialReports';
+import AccountSettings from './modules/admin/pages/AccountSettings';
+import AdminLogin from './modules/admin/pages/AdminLogin';
+import Placeholder from './modules/admin/pages/Placeholder';
+
+// Coach Pages
+import CoachDashboard from './modules/coach/pages/CoachDashboard';
+import MyStudents from './modules/coach/pages/MyStudents';
+import AttendanceRecords from './modules/coach/pages/AttendanceRecords';
+import StudentRemarks from './modules/coach/pages/StudentRemarks';
 
 function App() {
   return (
@@ -49,11 +71,33 @@ function App() {
         <Route path="/payment" element={<Payment />} />
         <Route path="/booking-success" element={<BookingSuccess />} />
 
+        {/* Unified Admin Login */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<div className="text-2xl font-bold">User Management View</div>} />
-          <Route path="settings" element={<div className="text-2xl font-bold">Admin Settings View</div>} />
+          <Route path="roles" element={<RoleManagement />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="arenas" element={<ArenaManagement />} />
+          <Route path="courts" element={<CourtManagement />} />
+          <Route path="slots" element={<SlotSchedule />} />
+          <Route path="bookings" element={<Bookings />} />
+          <Route path="coaching" element={<CoachingAdmin />} />
+          <Route path="events" element={<EventsAdmin />} />
+          <Route path="sponsorships" element={<Sponsorships />} />
+          <Route path="inventory" element={<Inventory />} />
+          <Route path="pos" element={<RetailPOS />} />
+          <Route path="reports" element={<FinancialReports />} />
+          <Route path="settings" element={<AccountSettings />} />
+        </Route>
+
+        {/* Coach Routes */}
+        <Route path="/coach" element={<CoachLayout />}>
+          <Route index element={<CoachDashboard />} />
+          <Route path="students" element={<MyStudents />} />
+          <Route path="attendance" element={<AttendanceRecords />} />
+          <Route path="remarks" element={<StudentRemarks />} />
         </Route>
 
         {/* Fallback */}
