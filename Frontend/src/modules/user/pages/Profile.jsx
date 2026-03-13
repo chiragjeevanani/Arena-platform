@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star } from 'lucide-react';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
@@ -27,6 +27,22 @@ const Profile = () => {
         </>
       )}
 
+      {/* Settings Button - Top Right */}
+      <div className="absolute top-6 right-6 z-20">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          className={`w-10 h-10 rounded-xl flex items-center justify-center border backdrop-blur-md transition-all ${
+            isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white/80 border-[#0A1F44]/10 text-[#0A1F44]/60 shadow-sm'
+          }`}
+        >
+          <Settings size={20} />
+        </motion.button>
+      </div>
+
+      {/* Court line background */}
+      <div className="absolute inset-0 court-lines opacity-10 pointer-events-none" />
+
+
       {/* Profile Header - Compact Flat Version */}
       <div className={`relative pt-8 pb-4 overflow-hidden transition-all duration-500 ${
         isDark ? 'bg-[#08142B]' : 'bg-[#0A1F44]'
@@ -41,8 +57,8 @@ const Profile = () => {
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className={`w-20 h-20 rounded-3xl overflow-hidden border-2 p-1 shadow-xl ${
-                isDark ? 'border-white/10 bg-white/5' : 'border-white/10 bg-white/10'
+              className={`w-24 h-24 rounded-[32px] overflow-hidden border-2 p-1 transition-all ${
+                isDark ? 'border-[#22FF88]/20 bg-white/5' : 'border-[#22FF88]/40 bg-white/10 shadow-xl'
               }`}
             >
               <img
@@ -53,11 +69,11 @@ const Profile = () => {
             </motion.div>
             <button 
               onClick={() => navigate('/profile/edit')}
-              className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-xl border-2 flex items-center justify-center active:scale-90 transition-all shadow-lg ${
-                isDark ? 'bg-[#22FF88] text-[#08142B] border-[#08142B]' : 'bg-blue-500 text-white border-[#0A1F44]'
+              className={`absolute -bottom-1 -right-1 w-8 h-8 rounded-xl border-2 flex items-center justify-center active:scale-90 transition-all shadow-lg ${
+                isDark ? 'bg-[#22FF88] text-[#08142B] border-[#08142B]' : 'bg-[#22FF88] text-[#08142B] border-white'
               }`}
             >
-              <Pencil size={12} strokeWidth={3} />
+              <Pencil size={14} strokeWidth={2.5} />
             </button>
           </div>
 
