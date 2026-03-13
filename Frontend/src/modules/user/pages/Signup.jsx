@@ -15,7 +15,7 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-white px-6 py-12 flex flex-col">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         className="space-y-8"
@@ -25,9 +25,10 @@ const Signup = () => {
           <p className="text-slate-500 mt-2">Start your badminton journey today</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <TextField
             fullWidth
+            size="small"
             label="Full Name"
             variant="outlined"
             InputProps={{
@@ -37,11 +38,12 @@ const Signup = () => {
                 </InputAdornment>
               ),
             }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
+            sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
           />
 
           <TextField
             fullWidth
+            size="small"
             label="Phone Number"
             variant="outlined"
             InputProps={{
@@ -51,11 +53,12 @@ const Signup = () => {
                 </InputAdornment>
               ),
             }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
+            sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
           />
 
           <TextField
             fullWidth
+            size="small"
             label="Email Address"
             variant="outlined"
             InputProps={{
@@ -65,11 +68,12 @@ const Signup = () => {
                 </InputAdornment>
               ),
             }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
+            sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
           />
 
           <TextField
             fullWidth
+            size="small"
             label="Password"
             type={showPassword ? 'text' : 'password'}
             variant="outlined"
@@ -81,13 +85,13 @@ const Signup = () => {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  <IconButton onClick={() => setShowPassword(!showPassword)} size="small">
+                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
+            sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
           />
 
           <FormControlLabel
@@ -101,10 +105,10 @@ const Signup = () => {
             variant="contained"
             size="large"
             className="bg-[#03396c] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
-            sx={{ 
-              borderRadius: '16px', 
-              textTransform: 'none', 
-              fontSize: '1rem', 
+            sx={{
+              borderRadius: '16px',
+              textTransform: 'none',
+              fontSize: '1rem',
               fontWeight: 'bold',
               backgroundColor: '#03396c'
             }}

@@ -15,22 +15,23 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-white px-6 flex flex-col justify-center">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="space-y-8"
       >
         <div className="text-center">
           <div className="w-20 h-20 bg-[#03396c] rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-blue-100">
-             <LoginIcon className="text-white" sx={{ fontSize: 40 }} />
+            <LoginIcon className="text-white" sx={{ fontSize: 40 }} />
           </div>
           <h1 className="mt-6 text-3xl font-bold text-slate-900">Welcome Back</h1>
           <p className="text-slate-500 mt-2">Login to book your favorite court</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <TextField
             fullWidth
+            size="small"
             label="Email Address"
             variant="outlined"
             InputProps={{
@@ -40,11 +41,12 @@ const Login = () => {
                 </InputAdornment>
               ),
             }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
+            sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
           />
 
           <TextField
             fullWidth
+            size="small"
             label="Password"
             type={showPassword ? 'text' : 'password'}
             variant="outlined"
@@ -56,13 +58,13 @@ const Login = () => {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  <IconButton onClick={() => setShowPassword(!showPassword)} size="small">
+                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '16px' } }}
+            sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
           />
 
           <div className="text-right">
@@ -75,10 +77,10 @@ const Login = () => {
             variant="contained"
             size="large"
             className="bg-[#03396c] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
-            sx={{ 
-              borderRadius: '16px', 
-              textTransform: 'none', 
-              fontSize: '1rem', 
+            sx={{
+              borderRadius: '16px',
+              textTransform: 'none',
+              fontSize: '1rem',
               fontWeight: 'bold',
               backgroundColor: '#03396c'
             }}
