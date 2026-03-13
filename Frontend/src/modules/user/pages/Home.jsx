@@ -10,6 +10,7 @@ import { faTableTennisPaddleBall, faBasketball, faFutbol } from '@fortawesome/fr
 import ScoreboardSearch from '../components/ScoreboardSearch';
 import MatchBanner from '../components/MatchBanner';
 import ArenaCard from '../components/ArenaCard';
+import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
 import Card1 from '../../../assets/Cards/Card1.jpg';
 import Card2 from '../../../assets/Cards/Card2.jpg';
@@ -61,212 +62,172 @@ const UserHome = () => {
 
   return (
     <div className="min-h-screen pb-28">
-      {/* ═══════ Hero Header with Stadium Lighting ═══════ */}
-      <div ref={heroRef} className={`relative px-6 pt-4 pb-4 overflow-hidden ${isDark ? '' : 'bg-[#0A1F44] rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
-        {/* Stadium light streaks */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            ref={lightRef1}
-            className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-[#22FF88]/20 to-transparent -skew-x-12"
-          />
-          <div
-            ref={lightRef2}
-            className="absolute top-0 w-24 h-full bg-gradient-to-r from-transparent via-[#1EE7FF]/15 to-transparent skew-x-12"
-          />
-        </div>
-
-        {/* Background court pattern */}
-        <div className="absolute inset-0 opacity-30">
-          <svg width="100%" height="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
-            <line x1="200" y1="0" x2="200" y2="200" stroke="#22FF88" strokeWidth="0.5" opacity="0.1" />
-            <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke="#22FF88" strokeWidth="0.3" opacity="0.08" />
-            <line x1="50" y1="100" x2="350" y2="100" stroke="#22FF88" strokeWidth="0.3" opacity="0.05" strokeDasharray="4 4" />
-          </svg>
-        </div>
-
-        <div className="relative z-10 space-y-3">
-          {/* Top Row */}
-          <div className="flex justify-between items-start">
-            <div>
-              <motion.p
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40"
-              >
-                Good Morning
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-2 mt-1"
-              >
-                <ShuttlecockIcon size={26} className="text-[#22FF88]" />
-                <span className="text-xl font-black tracking-tight uppercase italic font-display text-white">
-                  Badminton Arena
-                </span>
-              </motion.div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Theme Toggle */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.15 }}
-                onClick={toggleTheme}
-                className="relative w-11 h-11 bg-white/5 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 active:scale-90 transition-all duration-300"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={isDark ? 'moon' : 'sun'}
-                    initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
-                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                    exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {isDark ? (
-                      <Sun size={18} className="text-[#FFD600]" />
-                    ) : (
-                      <Moon size={18} className="text-[#1EE7FF]" />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </motion.button>
-
-              {/* Notification Bell */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                onClick={() => navigate('/profile/notifications')}
-                className="relative w-11 h-11 bg-white/5 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 active:scale-90 transition-all duration-300"
-              >
-                <Bell size={20} className="text-white/60" />
-                <div className="absolute top-2.5 right-3 w-2 h-2 bg-[#22FF88] rounded-full" />
-              </motion.button>
-            </div>
+      {/* ═══════ Hero Header — Hidden on Desktop ═══════ */}
+      <div className="md:hidden">
+        <div ref={heroRef} className={`relative px-6 pt-4 pb-4 overflow-hidden ${isDark ? '' : 'bg-[#0A1F44] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
+          {/* Stadium light streaks */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div
+              ref={lightRef1}
+              className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-[#22FF88]/20 to-transparent -skew-x-12"
+            />
+            <div
+              ref={lightRef2}
+              className="absolute top-0 w-24 h-full bg-gradient-to-r from-transparent via-[#1EE7FF]/15 to-transparent skew-x-12"
+            />
           </div>
 
-          {/* Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <ScoreboardSearch placeholder="Search arenas, courts..." />
-          </motion.div>
+          {/* Background court pattern */}
+          <div className="absolute inset-0 opacity-30">
+            <svg width="100%" height="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+              <line x1="200" y1="0" x2="200" y2="200" stroke="#22FF88" strokeWidth="0.5" opacity="0.1" />
+              <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke="#22FF88" strokeWidth="0.3" opacity="0.08" />
+              <line x1="50" y1="100" x2="350" y2="100" stroke="#22FF88" strokeWidth="0.3" opacity="0.05" strokeDasharray="4 4" />
+            </svg>
+          </div>
+
+          <div className="relative z-10">
+            {/* Main Top Row: Logo, Search, and Icons */}
+            <div className="flex flex-col gap-4">
+              {/* Title & Logo */}
+              <div className="flex justify-between items-center w-full">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40">
+                    Good Morning
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <ShuttlecockIcon size={24} className="text-[#22FF88]" />
+                    <span className="text-lg font-black tracking-tight uppercase italic font-display text-white">
+                      Badminton Arena
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mobile Icons */}
+                <div className="flex items-center gap-2">
+                  <button onClick={toggleTheme} className="w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                    {isDark ? <Sun size={18} className="text-[#FFD600]" /> : <Moon size={18} className="text-[#1EE7FF]" />}
+                  </button>
+                  <button onClick={() => navigate('/profile/notifications')} className="relative w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                    <Bell size={18} className="text-white/60" />
+                    <div className="absolute top-2.5 right-3 w-2 h-2 bg-[#22FF88] rounded-full" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div className="w-full">
+                <ScoreboardSearch placeholder="Search arenas, courts..." />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="px-6 space-y-6 mt-1">
+      <div className="px-4 md:px-8 space-y-10 mt-1">
         {/* ═══════ Featured Banner ═══════ */}
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-7xl mx-auto w-full"
         >
           <MatchBanner promos={promos} />
         </motion.div>
 
         {/* ═══════ Categories — Sport Cards ═══════ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <h3 className={`text-sm font-bold mb-3 font-display ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>What do you want to book?</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {/* Badminton Card */}
-            <motion.div
-              whileTap={{ scale: 0.96 }}
-              style={{ backgroundImage: `url(${Card1})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-              className={`relative p-3 rounded-2xl h-32 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'}`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-900/80 to-purple-600/30" />
-              {/* Floating shuttlecock */}
-              <div className="absolute top-3 animate-float z-10">
-                <ShuttlecockIcon size={32} className="text-white/80" />
-              </div>
-              {/* Court line pattern */}
-              <div className="absolute inset-0 court-lines opacity-20 z-10" />
+        <div className="max-w-7xl mx-auto w-full">
+          <motion.h3 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className={`text-lg font-bold mb-6 font-display ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}
+          >
+            What do you want to book?
+          </motion.h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { 
+                title: 'Badminton', icon: ShuttlecockIcon, image: Card1, delay: 0,
+                gradient: 'from-purple-900/95 via-purple-600/40',
+                hoverBg: 'group-hover:bg-purple-500' 
+              },
+              { 
+                title: 'Table Tennis', icon: faTableTennisPaddleBall, image: Card2, delay: 0.1, isFA: true,
+                gradient: 'from-emerald-900/95 via-emerald-600/40',
+                hoverBg: 'group-hover:bg-emerald-500'
+              },
+              { 
+                title: 'Basketball', icon: faBasketball, image: Card3, delay: 0.2, isFA: true,
+                gradient: 'from-orange-900/95 via-orange-600/40',
+                hoverBg: 'group-hover:bg-orange-600'
+              },
+              { 
+                title: 'Football', icon: faFutbol, image: Card4, delay: 0.3, isFA: true,
+                gradient: 'from-blue-900/95 via-blue-600/40',
+                hoverBg: 'group-hover:bg-blue-600'
+              }
+            ].map((sport, i) => (
+              <motion.div
+                key={sport.title}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: sport.delay }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                style={{ backgroundImage: `url(${sport.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                className={`relative p-5 rounded-3xl h-56 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'} shadow-xl transition-all duration-300`}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-t ${sport.gradient} to-transparent transition-opacity duration-300 group-hover:opacity-80`} />
+                
+                {/* Floating Icon */}
+                <div className="absolute top-6 animate-float z-10">
+                  {sport.isFA ? (
+                    <FontAwesomeIcon icon={sport.icon} style={{ fontSize: 48 }} className="text-white/90 drop-shadow-2xl" />
+                  ) : (
+                    <sport.icon size={48} className="text-white/90 drop-shadow-2xl" />
+                  )}
+                </div>
+                
+                {/* Court line pattern */}
+                <div className="absolute inset-0 court-lines opacity-10 z-10" />
 
-              <div className="bg-purple-900/40 backdrop-blur-md border border-purple-400/30 w-full py-2 text-center rounded-xl font-bold text-white text-xs group-hover:bg-purple-500/80 group-hover:text-white transition-all duration-300 relative z-10">
-                Badminton
-              </div>
-            </motion.div>
-
-            {/* Table Tennis Card */}
-            <motion.div
-              whileTap={{ scale: 0.96 }}
-              style={{ backgroundImage: `url(${Card2})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-              className={`relative p-3 rounded-2xl h-32 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'}`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/80 to-emerald-600/30" />
-              <div className="absolute top-3 animate-float z-10" style={{ animationDelay: '1s' }}>
-                <FontAwesomeIcon icon={faTableTennisPaddleBall} style={{ fontSize: 32 }} className="text-white/80" />
-              </div>
-              <div className="absolute inset-0 court-lines opacity-20 z-10" />
-
-              <div className="bg-emerald-900/40 backdrop-blur-md border border-emerald-400/30 w-full py-2 text-center rounded-xl font-bold text-white text-xs group-hover:bg-emerald-500/80 group-hover:text-white transition-all duration-300 relative z-10">
-                Table Tennis
-              </div>
-            </motion.div>
-
-            {/* Basketball Card */}
-            <motion.div
-              whileTap={{ scale: 0.96 }}
-              style={{ backgroundImage: `url(${Card3})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-              className={`relative p-3 rounded-2xl h-32 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'}`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-orange-900/80 to-orange-600/30" />
-              <div className="absolute top-3 animate-float z-10" style={{ animationDelay: '2s' }}>
-                <FontAwesomeIcon icon={faBasketball} style={{ fontSize: 32 }} className="text-white/80" />
-              </div>
-              <div className="absolute inset-0 court-lines opacity-20 z-10" />
-
-              <div className="bg-orange-900/40 backdrop-blur-md border border-orange-400/30 w-full py-2 text-center rounded-xl font-bold text-white text-xs group-hover:bg-orange-500/80 group-hover:text-white transition-all duration-300 relative z-10">
-                Basketball
-              </div>
-            </motion.div>
-
-            {/* Football Card */}
-            <motion.div
-              whileTap={{ scale: 0.96 }}
-              style={{ backgroundImage: `url(${Card4})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-              className={`relative p-3 rounded-2xl h-32 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'}`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-blue-600/30" />
-              <div className="absolute top-3 animate-float z-10" style={{ animationDelay: '1.5s' }}>
-                <FontAwesomeIcon icon={faFutbol} style={{ fontSize: 32 }} className="text-white/80" />
-              </div>
-              <div className="absolute inset-0 court-lines opacity-20 z-10" />
-
-              <div className="bg-blue-900/40 backdrop-blur-md border border-blue-400/30 w-full py-2 text-center rounded-xl font-bold text-white text-xs group-hover:bg-blue-500/80 group-hover:text-white transition-all duration-300 relative z-10">
-                Football
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* ═══════ Nearby Arenas ═══════ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <div className="flex justify-between items-center mb-3">
-            <h3 className={`text-sm font-bold font-display ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>Nearby Arenas</h3>
-            <Link to="/arenas" className="text-[#22FF88] font-bold text-[10px] flex items-center gap-0.5 hover:gap-1.5 transition-all uppercase tracking-wider">
-              See all <ChevronRight size={12} />
-            </Link>
-          </div>
-          <div className="flex flex-col space-y-3 pb-4">
-            {ARENAS.slice(0, 3).map((arena, index) => (
-              <ArenaCard key={arena.id} arena={arena} index={index} />
+                <div className={`bg-white/10 backdrop-blur-xl border border-white/20 w-full py-3 text-center rounded-2xl font-black text-white text-sm tracking-wider uppercase ${sport.hoverBg} transition-all duration-300 relative z-20 shadow-lg`}>
+                  {sport.title}
+                </div>
+              </motion.div>
             ))}
           </div>
-        </motion.div>
+        </div>
+
+        {/* ═══════ Nearby Arenas ═══════ */}
+        <div className="max-w-7xl mx-auto w-full pb-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex justify-between items-center mb-6"
+          >
+            <h3 className={`text-lg font-bold font-display ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>Nearby Arenas</h3>
+            <Link to="/arenas" className="text-[#22FF88] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#22FF88]/10 px-4 py-2 rounded-full border border-[#22FF88]/20">
+              See all <ChevronRight size={14} />
+            </Link>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {ARENAS.slice(0, 4).map((arena, index) => (
+              <motion.div
+                key={arena.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <ArenaCard arena={arena} index={index} />
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

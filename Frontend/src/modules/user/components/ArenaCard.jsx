@@ -23,11 +23,8 @@ const ArenaCard = ({ arena, index = 0 }) => {
   };
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
       onClick={handleTap}
       className="w-full cursor-pointer group"
     >
@@ -80,7 +77,7 @@ const ArenaCard = ({ arena, index = 0 }) => {
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 };
 

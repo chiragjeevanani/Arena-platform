@@ -25,6 +25,8 @@ const ShuttleButton = ({
     outline: 'bg-transparent text-[#22FF88] border border-[#22FF88]/30 hover:bg-[#22FF88]/5',
     ghost: 'bg-transparent text-[#F8FAFC] hover:bg-white/5',
     danger: 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20',
+    blue: 'bg-gradient-to-br from-[#0F172A] via-[#2563EB] to-[#7C3AED] text-white shadow-xl shadow-blue-500/20 border border-white/20 hover:shadow-blue-500/40 relative overflow-hidden',
+    premium: 'bg-gradient-to-br from-[#0F172A] to-[#1e1b4b] text-white border border-white/10 hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]',
   };
 
   const sizes = {
@@ -63,12 +65,15 @@ const ShuttleButton = ({
       `}
       {...props}
     >
+      {/* Glossy reflection overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+
       {/* Light sweep on hover */}
       <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
         <div className="absolute inset-0 animate-light-sweep bg-gradient-to-r from-transparent via-white/10 to-transparent w-1/3" />
       </div>
 
-      {icon && <span className="flex-shrink-0">{icon}</span>}
+      {icon && <span className="flex-shrink-0 relative z-10">{icon}</span>}
       <span className="relative z-10">{children}</span>
     </motion.button>
   );

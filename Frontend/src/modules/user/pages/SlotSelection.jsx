@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import { ARENAS, COURTS, SLOTS } from '../../../data/mockData';
 import { motion } from 'framer-motion';
 import CourtSlot from '../components/CourtSlot';
@@ -11,13 +11,18 @@ import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
 
 const SlotSelection = () => {
+  // Read from localStorage as requested
+  const storedArena = JSON.parse(localStorage.getItem("selectedArena"));
+
   const { arenaId, courtId } = useParams();
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const arena = ARENAS.find(a => a.id === parseInt(arenaId));
+
+  // Priority: URL Params > LocalStorage > MockData fallback
+  const arena = storedArena || ARENAS.find(a => a.id === parseInt(arenaId));
   const [selectedDate, setSelectedDate] = useState(7);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectedCourt, setSelectedCourt] = useState(parseInt(courtId));
+  const [selectedCourt, setSelectedCourt] = useState(storedArena?.selectedCourt?.id || parseInt(courtId));
 
   const days = [
     { day: 'Sun', date: 1 }, { day: 'Mon', date: 2 }, { day: 'Tue', date: 3 }, { day: 'Wed', date: 4 },
@@ -52,18 +57,20 @@ const SlotSelection = () => {
 
       <div className="px-6 mt-4 space-y-5">
         {/* Arena Info Card */}
-        <div className={`flex items-center gap-4 rounded-[24px] p-4 border transition-all duration-300 ${
-          isDark 
-            ? 'glass-neon border-[#22FF88]/20 bg-white/5' 
+        <div className={`flex items-center gap-4 rounded-[24px] p-4 border transition-all duration-300 ${isDark
+            ? 'glass-neon border-[#22FF88]/20 bg-white/5'
             : 'bg-white border-blue-50 shadow-[0_6px_20px_rgba(10,31,68,0.04)] hover:shadow-[0_10px_30px_rgba(10,31,68,0.06)]'
-        }`}>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-500 ${
-            isDark ? 'glass-light text-[#22FF88]' : 'bg-blue-50 text-[#0A1F44] shadow-inner'
           }`}>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-500 ${isDark ? 'glass-light text-[#22FF88]' : 'bg-blue-50 text-[#0A1F44] shadow-inner'
+            }`}>
             <ShuttlecockIcon size={20} />
           </div>
           <div>
             <h2 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{arena?.name}</h2>
+            <div className={`flex items-center text-[8px] gap-1 ${isDark ? 'text-white/40' : 'text-slate-600'}`}>
+              <MapPin size={10} />
+              {arena?.location}
+            </div>
             <p className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${isDark ? 'text-[#22FF88]/60' : 'text-[#22FF88]'}`}>
               {currentCourt?.name} <span className="mx-1 opacity-20">|</span> {currentCourt?.type}
             </p>
@@ -80,10 +87,9 @@ const SlotSelection = () => {
         {/* Date Selection */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>March 2026</h3>
-            <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border transition-all ${
-              isDark ? 'glass-light text-white/40 border-white/5' : 'bg-white text-[#0A1F44]/60 border-blue-50 shadow-sm'
-            }`}>Month</div>
+            <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-[#0A1F44]/70'}`}>March 2026</h3>
+            <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border transition-all ${isDark ? 'glass-light text-white/40 border-white/5' : 'bg-white text-[#0A1F44]/80 border-blue-50 shadow-sm'
+              }`}>Month</div>
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -91,29 +97,44 @@ const SlotSelection = () => {
               <button
                 key={i}
                 onClick={() => setSelectedDate(d.date)}
-                className={`flex flex-col items-center justify-center min-w-[48px] py-3 rounded-[20px] transition-all duration-300 border ${
-                  selectedDate === d.date
+                className={`flex flex-col items-center justify-center min-w-[48px] py-3 rounded-[20px] transition-all duration-300 border ${selectedDate === d.date
                     ? `bg-[#22FF88]/15 ${isDark ? 'border-[#22FF88]/30 shadow-[0_0_15px_rgba(34,255,136,0.2)]' : 'border-[#22FF88]/60 shadow-[0_8px_25px_rgba(34,255,136,0.2)]'}`
                     : `${isDark ? 'glass-light border-white/5 hover:border-white/10' : 'bg-white border-blue-50/50 hover:border-blue-200 shadow-[0_4px_15px_rgba(10,31,68,0.04)]'}`
-                }`}
+                  }`}
               >
-                <span className={`text-[9px] uppercase font-black tracking-tighter ${
-                  selectedDate === d.date ? 'text-[#22FF88]' : `${isDark ? 'text-white/25' : 'text-[#0A1F44]/30'}`
-                }`}>{d.day}</span>
-                <span className={`text-base font-black mt-0.5 ${
-                  selectedDate === d.date ? 'text-[#22FF88]' : `${isDark ? 'text-white/40' : 'text-[#0A1F44]'}`
-                }`}>{d.date}</span>
+                <span className={`text-[9px] uppercase font-black tracking-tighter ${selectedDate === d.date ? 'text-[#22FF88]' : `${isDark ? 'text-white/25' : 'text-[#0A1F44]/60'}`
+                  }`}>{d.day}</span>
+                <span className={`text-base font-black mt-0.5 ${selectedDate === d.date ? 'text-[#22FF88]' : `${isDark ? 'text-white/40' : 'text-[#0A1F44]'}`
+                  }`}>{d.date}</span>
               </button>
 
             ))}
           </div>
         </div>
 
-        {/* Time Slots — Tournament Schedule Board */}
-        <div className={`-mx-6 px-6 py-8 rounded-t-[36px] border-t transition-all duration-500 ${
-          isDark ? 'glass-card border-white/5' : 'bg-white border-blue-50 shadow-[0_-12px_40px_rgba(10,31,68,0.05)]'
-        }`}>
-          <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${isDark ? 'text-white/40' : 'text-[#0A1F44]/30'}`}>Select your slot</h3>
+        <div className={`-mx-6 px-6 py-8 rounded-t-[36px] border-t transition-all duration-500 ${isDark ? 'glass-card border-white/5' : 'bg-white border-blue-50 shadow-[0_-12px_40px_rgba(10,31,68,0.05)]'
+          }`}>
+          <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 ${isDark ? 'text-white/40' : 'text-[#0A1F44]/60'}`}>Select your slot</h3>
+
+          {/* Color Guide - Moved below heading */}
+          <div className="mb-6 flex flex-wrap gap-y-2 gap-x-4">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-white/15' : 'bg-slate-200'}`} />
+              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-600'}`}>Booked</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#FFD600]/40" />
+              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-600'}`}>Coaching</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-red-400/40" />
+              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-600'}`}>Maintenance</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#22FF88]" />
+              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-600'}`}>Selected</span>
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             {SLOTS.map(slot => (
@@ -125,37 +146,16 @@ const SlotSelection = () => {
               />
             ))}
           </div>
-
-          {/* Color Guide */}
-          <div className="mt-6 grid grid-cols-2 gap-y-3 gap-x-4">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-white/15' : 'bg-slate-200'}`} />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Booked</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FFD600]/40" />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Coaching</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-red-400/40" />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Maintenance</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#22FF88]" />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Selected</span>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Booking Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] md:max-w-[450px] md:mx-auto">
         <div className={`h-[1px] ${isDark ? 'bg-gradient-to-r from-transparent via-[#22FF88]/15 to-transparent' : 'bg-slate-100'}`} />
-        <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t transition-all duration-300 ${
-          isDark ? 'bg-[#08142B]/95 border-white/5' : 'bg-white border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
-        }`}>
+        <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t transition-all duration-300 ${isDark ? 'bg-[#08142B]/95 border-white/5' : 'bg-white border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
+          }`}>
           <div>
-            <p className={`text-[9px] font-black uppercase tracking-[0.15em] ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>Total Amount</p>
+            <p className={`text-[9px] font-black uppercase tracking-[0.15em] ${isDark ? 'text-white/20' : 'text-[#0A1F44]/60'}`}>Total Amount</p>
             <span className={`text-2xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
               ₹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}
             </span>

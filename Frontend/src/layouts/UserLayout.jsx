@@ -2,10 +2,13 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CourtIcon, StadiumIcon, ShuttleCalendarIcon, RacketIcon, PlayerAvatarIcon } from '../modules/user/components/BadmintonIcons';
 import { useTheme } from '../modules/user/context/ThemeContext';
+import Header from '../modules/user/components/Header';
 
 const UserLayout = () => {
   const location = useLocation();
   const { isDark } = useTheme();
+
+  const isProfilePage = location.pathname.startsWith('/profile');
 
   const navItems = [
     { path: '/', label: 'Home', icon: CourtIcon },
@@ -16,41 +19,38 @@ const UserLayout = () => {
   ];
 
   return (
-    <div className={`flex flex-col min-h-screen md:max-w-[450px] md:mx-auto md:shadow-2xl relative overflow-x-hidden transition-colors duration-500 ${
-      isDark
-        ? 'bg-gradient-to-b from-[#08142B] to-[#0A1F44] md:ring-1 md:ring-white/5'
-        : 'bg-gradient-to-b from-[#F0F4F8] to-[#E8EDF3] md:ring-1 md:ring-[#0A1F44]/5'
-    }`}>
+    <div className={`flex flex-col min-h-screen relative overflow-x-hidden transition-colors duration-500 ${isDark
+        ? 'bg-[#08142B]'
+        : 'bg-[#F8FAFC]'
+      }`}>
+      
+      {/* Global Header - Sticky on Desktop (except profile) */}
+      {!isProfilePage && (
+        <div className="hidden md:block md:sticky md:top-0 md:z-[100]">
+          <Header />
+        </div>
+      )}
+
       {/* Court line pattern background */}
-      <div className="fixed inset-0 court-lines pointer-events-none z-0 md:max-w-[450px] md:mx-auto" />
+      <div className="fixed inset-0 court-lines opacity-10 pointer-events-none z-0" />
 
       {/* Scrollable Content */}
-      <main className="flex-1 overflow-y-auto w-full relative z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+      <main className="flex-1 relative z-10 w-full min-h-screen">
+        <div key={location.pathname}>
+          <Outlet />
+        </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] md:max-w-[450px] md:mx-auto">
+      {/* Mobile Bottom Navigation - Hidden on Desktop (md:hidden) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden">
         {/* Top glow line */}
-        <div className={`h-[1px] bg-gradient-to-r from-transparent to-transparent ${
-          isDark ? 'via-[#22FF88]/20' : 'via-[#0A1F44]/10'
-        }`} />
+        <div className={`h-[1px] bg-gradient-to-r from-transparent to-transparent ${isDark ? 'via-[#22FF88]/20' : 'via-[#0A1F44]/10'
+          }`} />
 
-        <div className={`backdrop-blur-xl px-2 py-3 pb-7 flex justify-around items-center transition-colors duration-500 ${
-          isDark
+        <div className={`backdrop-blur-xl px-2 py-3 pb-7 flex justify-around items-center transition-colors duration-500 ${isDark
             ? 'bg-[#08142B]/90 border-t border-white/5'
             : 'bg-white/80 border-t border-[#0A1F44]/5 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'
-        }`}>
+          }`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -69,22 +69,20 @@ const UserLayout = () => {
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
-                    <div className={`p-2 rounded-xl transition-all duration-300 ${
-                      isActive
+                    <div className={`p-2 rounded-xl transition-all duration-300 ${isActive
                         ? 'text-[#22FF88]'
                         : isDark
                           ? 'text-white/30 group-hover:text-white/50'
                           : 'text-[#0A1F44]/50 group-hover:text-[#0A1F44]/70'
-                    }`}>
+                      }`}>
                       <Icon size={22} />
                     </div>
-                    <span className={`text-[9px] font-bold uppercase tracking-[0.1em] mt-0.5 transition-colors duration-300 ${
-                      isActive
+                    <span className={`text-[9px] font-bold uppercase tracking-[0.1em] mt-0.5 transition-colors duration-300 ${isActive
                         ? 'text-[#22FF88]'
                         : isDark
                           ? 'text-white/20 group-hover:text-white/40'
                           : 'text-[#0A1F44]/50 group-hover:text-[#0A1F44]/70'
-                    }`}>
+                      }`}>
                       {item.label}
                     </span>
                   </>

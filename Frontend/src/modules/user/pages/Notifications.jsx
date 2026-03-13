@@ -51,59 +51,78 @@ const Notifications = () => {
   ];
 
   return (
-    <div className={`min-h-screen pb-32 ${isDark ? '' : 'bg-slate-50/50'}`}>
-      {/* Header */}
-      <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white border-blue-100 text-[#0A1F44] shadow-sm'}`}
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <h1 className={`text-lg font-bold font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Notifications</h1>
-        </div>
-      </div>
-
-      <div className="px-6 mt-8 space-y-4">
-        {notifications.map((notif, idx) => (
-          <motion.div
-            key={notif.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className={`p-5 rounded-[28px] border flex gap-4 transition-all duration-300 ${isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-blue-50 shadow-sm hover:shadow-md hover:border-blue-100'}`}
-          >
-            <div className={`w-12 h-12 rounded-[18px] flex-shrink-0 flex items-center justify-center ${notif.bg} ${notif.color} transition-transform group-hover:scale-110`}>
-              <notif.icon size={22} />
-            </div>
-            <div className="flex-1 text-left">
-              <div className="flex justify-between items-start">
-                <h4 className={`font-black text-[15px] tracking-tight ${isDark ? 'text-white/90' : 'text-[#0A1F44]'}`}>{notif.title}</h4>
-                <div className="flex items-center gap-1 opacity-40">
-                  <Clock size={10} strokeWidth={3} />
-                  <span className={`text-[10px] font-black uppercase ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{notif.time.split(' ')[0]} {notif.time.split(' ')[1].charAt(0)}</span>
-                </div>
-              </div>
-              <p className={`text-sm mt-1 leading-relaxed ${isDark ? 'text-white/50' : 'text-[#0A1F44]/50'}`}>{notif.message}</p>
-              <div className="mt-3 flex items-center gap-2">
-                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${notif.bg} ${notif.color}`}>{notif.type}</span>
-                <div className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-blue-200'}`}>{notif.time}</div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {notifications.length === 0 && (
-        <div className="flex flex-col items-center justify-center pt-20 px-10 text-center">
-          <div className={`w-20 h-20 rounded-[32px] flex items-center justify-center mb-6 ${isDark ? 'bg-white/5 text-white/20' : 'bg-blue-50 text-blue-200'}`}>
-            <Bell size={32} />
-          </div>
-          <h3 className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>No Notifications</h3>
-          <p className={`text-sm mt-3 leading-relaxed opacity-50 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Stay tuned! We'll notify you when something exciting happens.</p>
-        </div>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? '' : 'bg-slate-50/50'}`}>
+      {/* Premium Background Decorative Elements */}
+      {!isDark && (
+        <>
+          <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#22FF88]/10 rounded-full blur-[100px] pointer-events-none" />
+        </>
       )}
+
+      {/* Main Container for Compact Desktop View */}
+      <div className="max-w-2xl mx-auto md:pt-12 md:px-6 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`w-full overflow-hidden md:rounded-none rounded-none md:shadow-[0_20px_50px_-12px_rgba(15,23,42,0.1)] md:border transition-all duration-500 ${
+            isDark ? 'md:bg-[#08142B] md:border-white/10' : 'md:bg-white md:border-slate-100'
+          }`}
+        >
+          {/* Header */}
+          <div className={`px-6 pt-5 pb-5 backdrop-blur-xl border-b transition-all ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className={`w-10 h-10 md:rounded-none rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white border-blue-100 text-[#0A1F44] shadow-sm'}`}
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <h1 className={`text-lg font-bold font-display uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Notifications</h1>
+            </div>
+          </div>
+
+          <div className="px-6 md:px-10 py-8 space-y-4">
+            {notifications.map((notif, idx) => (
+              <motion.div
+                key={notif.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className={`p-5 md:rounded-none rounded-[28px] border flex gap-4 transition-all duration-300 ${isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-blue-50 shadow-sm hover:shadow-md hover:border-blue-100'}`}
+              >
+                <div className={`w-12 h-12 md:rounded-none rounded-[18px] flex-shrink-0 flex items-center justify-center ${notif.bg} ${notif.color} transition-transform group-hover:scale-110`}>
+                  <notif.icon size={22} />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="flex justify-between items-start">
+                    <h4 className={`font-black text-[15px] tracking-tight ${isDark ? 'text-white/90' : 'text-[#0A1F44]'}`}>{notif.title}</h4>
+                    <div className="flex items-center gap-1 opacity-40">
+                      <Clock size={10} strokeWidth={3} />
+                      <span className={`text-[10px] font-black uppercase ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{notif.time.split(' ')[0]} {notif.time.split(' ')[1].charAt(0)}</span>
+                    </div>
+                  </div>
+                  <p className={`text-sm mt-1 leading-relaxed ${isDark ? 'text-white/50' : 'text-[#0A1F44]/50'}`}>{notif.message}</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 md:rounded-none rounded-md ${notif.bg} ${notif.color}`}>{notif.type}</span>
+                    <div className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-blue-200'}`}>{notif.time}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+
+            {notifications.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 px-10 text-center">
+                <div className={`w-20 h-20 md:rounded-none rounded-[32px] flex items-center justify-center mb-6 ${isDark ? 'bg-white/5 text-white/20' : 'bg-blue-50 text-blue-200'}`}>
+                  <Bell size={32} />
+                </div>
+                <h3 className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>No Notifications</h3>
+                <p className={`text-sm mt-3 leading-relaxed opacity-50 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Stay tuned! We'll notify you when something exciting happens.</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };

@@ -26,6 +26,7 @@ import Wallet from './modules/user/pages/Wallet';
 import Notifications from './modules/user/pages/Notifications';
 import Privacy from './modules/user/pages/Privacy';
 import Help from './modules/user/pages/Help';
+import CoachingSummary from './modules/user/pages/CoachingSummary';
 
 // Admin Pages
 import AdminDashboard from './modules/admin/pages/Dashboard';
@@ -82,6 +83,7 @@ function App() {
         {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
         <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
         <Route path="/booking-summary" element={<BookingSummary />} />
+        <Route path="/coaching-summary" element={<CoachingSummary />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/booking-success" element={<BookingSuccess />} />
 

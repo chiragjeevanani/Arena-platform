@@ -4,6 +4,7 @@ import { MapPin, Star, ArrowLeft, Search } from 'lucide-react';
 import { ARENAS } from '../../../data/mockData';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
+import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
 
 const ArenaListing = () => {
@@ -18,48 +19,47 @@ const ArenaListing = () => {
 
   return (
     <div className="min-h-screen pb-28">
-      {/* Header */}
-      <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#0A1F44] border-white/10 rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
-        <div className="flex items-center gap-4 mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white/10 border-white/20 text-white shadow-sm'}`}
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <h1 className={`text-lg font-bold font-display ${isDark ? 'text-white' : 'text-white'}`}>Choose an Arena</h1>
-        </div>
+      {/* Header — Hidden on Desktop */}
+      <div className="md:hidden">
+        <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#0A1F44] border-white/10 rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white/10 border-white/20 text-white shadow-sm'}`}
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <h1 className={`text-lg font-bold font-display ${isDark ? 'text-white' : 'text-white'}`}>Choose an Arena</h1>
+          </div>
 
-        {/* Search */}
-        <div className="relative group">
-          <Search size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/25 group-focus-within:text-[#22FF88]' : 'text-white/40 group-focus-within:text-[#22FF88]'}`} />
-          <input
-            type="text"
-            placeholder="Search arenas nearby..."
-            className={`w-full border rounded-2xl py-3 pl-11 pr-4 text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#22FF88]/20 ${
-              isDark 
-                ? 'bg-white/5 border-white/10 text-white/90 placeholder:text-white/20 focus:border-[#22FF88]' 
-                : 'bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#22FF88] backdrop-blur-md'
-            }`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          {/* Search */}
+          <div className="max-w-md mx-auto w-full relative group">
+            <Search size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/25 group-focus-within:text-[#22FF88]' : 'text-white/40 group-focus-within:text-[#22FF88]'}`} />
+            <input
+              type="text"
+              placeholder="Search arenas nearby..."
+              className={`w-full border rounded-2xl py-3 pl-11 pr-4 text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#22FF88]/20 ${isDark
+                  ? 'bg-white/5 border-white/10 text-white/90 placeholder:text-white/20 focus:border-[#22FF88]'
+                  : 'bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#22FF88] backdrop-blur-md'
+                }`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          {/* Desktop Navigation */}
+          <DesktopNavbar />
         </div>
       </div>
 
       {/* Arena List */}
-      <div className="px-6 mt-6 space-y-5">
+      <div className="max-w-5xl mx-auto px-6 mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
         {filteredArenas.map((arena, index) => (
-          <motion.div
+          <div
             key={arena.id}
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
-            className={`rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 border ${
-              isDark 
-                ? 'glass-card border-white/5 hover:border-[#22FF88]/20' 
-                : 'bg-white border-slate-200 hover:border-[#22FF88]/30 shadow-sm hover:shadow-md'
-            }`}
+            className={`rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 border ${isDark
+              ? 'glass-card border-white/5 hover:border-[#22FF88]/20'
+              : 'bg-white border-slate-200 hover:border-[#22FF88]/30 shadow-sm hover:shadow-md'
+              }`}
             onClick={() => navigate(`/arenas/${arena.id}`)}
           >
             {/* Image */}
@@ -96,7 +96,7 @@ const ArenaListing = () => {
                 </div>
               </div>
 
-              <div className={`flex items-center text-xs mt-2 gap-1 ${isDark ? 'text-white/50' : 'text-[#0A1F44]/50'}`}>
+              <div className={`flex items-center text-xs mt-2 gap-1 ${isDark ? 'text-white/50' : 'text-[#0A1F44]/70'}`}>
                 <MapPin size={13} />
                 <span>{arena.location} • {arena.distance}</span>
               </div>
@@ -123,7 +123,7 @@ const ArenaListing = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

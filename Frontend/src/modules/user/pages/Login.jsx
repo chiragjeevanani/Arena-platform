@@ -3,23 +3,28 @@ import { useNavigate, Link } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import { Email, Lock, Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
+  const { login } = useAuth();
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    login();
     navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-white px-6 flex flex-col justify-center">
-      <motion.div
+    <div className="min-h-screen bg-white md:bg-slate-50 flex items-center justify-center px-6">
+      <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-8"
+        className="w-full md:max-w-[440px] bg-white md:p-10 md:rounded-none rounded-[40px] md:shadow-[0_20px_60px_rgba(3,57,108,0.08)] md:border md:border-slate-100"
       >
+        <div className="space-y-8">
         <div className="text-center">
           <div className="w-20 h-20 bg-[#03396c] rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-blue-100">
             <LoginIcon className="text-white" sx={{ fontSize: 40 }} />
@@ -95,6 +100,7 @@ const Login = () => {
             <Link to="/signup" className="text-[#03396c] font-bold underline">Sign Up</Link>
           </p>
         </div>
+      </div>
       </motion.div>
     </div>
   );

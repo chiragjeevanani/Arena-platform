@@ -14,76 +14,108 @@ const Help = () => {
   ];
 
   return (
-    <div className={`min-h-screen pb-32 ${isDark ? '' : 'bg-slate-50/50'}`}>
-      {/* Header */}
-      <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white border-blue-100 text-[#0A1F44] shadow-sm'}`}
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <h1 className={`text-lg font-bold font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Help & Support</h1>
-        </div>
-      </div>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#08142B]' : 'bg-[#F8FAFC]'}`}>
+      {/* Background Decorative Element */}
+      {!isDark && (
+        <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/30 rounded-full blur-[100px] pointer-events-none" />
+      )}
 
-      <div className="px-6 mt-8 space-y-8">
-        {/* Support Options */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className={`p-6 rounded-[32px] border flex flex-col items-center text-center transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}>
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">
-              <MessageCircle size={24} />
-            </div>
-            <h3 className={`font-black text-xs uppercase tracking-wider ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>Live Chat</h3>
-            <p className="text-[10px] opacity-40 mt-1">Available 24/7</p>
-          </div>
-          <div className={`p-6 rounded-[32px] border flex flex-col items-center text-center transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3">
-              <Mail size={24} />
-            </div>
-            <h3 className={`font-black text-xs uppercase tracking-wider ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>Email Us</h3>
-            <p className="text-[10px] opacity-40 mt-1">Response in 2h</p>
-          </div>
-        </div>
-
-        {/* Contact Info */}
-        <div className={`p-6 rounded-[32px] border ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}>
-          <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] mb-4 ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Direct Contact</h3>
-          <div className="space-y-4">
+      {/* Main Container for Compact Desktop View */}
+      <div className="max-w-2xl mx-auto md:pt-12 md:px-6 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`w-full overflow-hidden md:rounded-3xl rounded-none md:shadow-[0_20px_50px_-12px_rgba(15,23,42,0.1)] md:border transition-all duration-500 ${
+            isDark ? 'md:bg-[#08142B] md:border-white/10' : 'md:bg-white md:border-slate-100'
+          }`}
+        >
+          {/* Header - Always Dark */}
+          <div className={`px-6 pt-6 pb-6 backdrop-blur-2xl border-b border-white/10 transition-all duration-500 bg-[#0F172A] shadow-[0_15px_40px_rgba(15,23,42,0.25)]`}>
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                <Phone size={18} />
-              </div>
-              <div className="flex-1">
-                <p className={`text-[10px] font-black uppercase opacity-30 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Call Center</p>
-                <p className={`font-black text-sm ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>+91 1800-ARENA-99</p>
-              </div>
-              <ChevronRight size={16} className="opacity-20" />
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
-                <ExternalLink size={18} />
-              </div>
-              <div className="flex-1">
-                <p className={`text-[10px] font-black uppercase opacity-30 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Help Center</p>
-                <p className={`font-black text-sm ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>support.arenahub.com</p>
-              </div>
-              <ChevronRight size={16} className="opacity-20" />
+              <button
+                onClick={() => navigate(-1)}
+                className="w-10 h-10 md:rounded-none rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-lg active:scale-95 transition-all"
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <h1 className="text-xl font-bold font-display text-white tracking-tight uppercase">Help & Support</h1>
             </div>
           </div>
-        </div>
 
-        {/* FAQs */}
-        <div className="space-y-4">
-          <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] px-1 ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Popular Questions</h3>
-          {faqs.map((faq, idx) => (
-            <div key={idx} className={`p-5 rounded-[24px] border ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-100 shadow-sm'}`}>
-              <h4 className={`font-black text-sm tracking-tight ${isDark ? 'text-white/90' : 'text-[#0A1F44]'}`}>{faq.q}</h4>
-              <p className={`text-xs mt-2 leading-relaxed opacity-50 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{faq.a}</p>
+          <div className="px-6 md:px-10 py-8 space-y-8 relative z-10">
+            {/* Support Options */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className={`p-6 md:rounded-2xl rounded-[36px] border-[2.5px] flex flex-col items-center text-center transition-all duration-300 group ${
+                isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/40' : 'bg-white border-blue-500/20 shadow-[0_10px_30px_-5px_rgba(59,130,246,0.1)] hover:border-blue-500 hover:scale-105'
+              }`}>
+                <div className={`w-14 h-14 md:rounded-xl rounded-2xl flex items-center justify-center mb-4 transition-transform duration-500 group-hover:scale-110 ${
+                  isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                }`}>
+                  <MessageCircle size={28} />
+                </div>
+                <h3 className={`font-black text-[13px] uppercase tracking-wider ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>Live Chat</h3>
+                <p className={`text-[10px] font-bold mt-1.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Available 24/7</p>
+              </div>
+              <div className={`p-6 md:rounded-2xl rounded-[36px] border-[2.5px] flex flex-col items-center text-center transition-all duration-300 group ${
+                isDark ? 'bg-white/5 border-white/10 hover:border-emerald-500/40' : 'bg-white border-blue-500/20 shadow-[0_10px_30px_-5px_rgba(59,130,246,0.1)] hover:border-blue-500 hover:scale-105'
+              }`}>
+                <div className={`w-14 h-14 md:rounded-xl rounded-2xl flex items-center justify-center mb-4 transition-transform duration-500 group-hover:scale-110 ${
+                  isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'
+                }`}>
+                  <Mail size={28} />
+                </div>
+                <h3 className={`font-black text-[13px] uppercase tracking-wider ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>Email Us</h3>
+                <p className={`text-[10px] font-bold mt-1.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Response in 2h</p>
+              </div>
             </div>
-          ))}
-        </div>
+
+            {/* Contact Info */}
+            <div className={`p-8 md:rounded-2xl rounded-[40px] border-[2.5px] transition-all duration-300 ${
+              isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/40' : 'bg-white border-blue-500/20 shadow-[0_15px_40px_-10px_rgba(59,130,246,0.15)] hover:border-blue-500'
+            }`}>
+              <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] mb-6 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Direct Contact</h3>
+              <div className="space-y-6">
+                <div className="flex items-center gap-5 group cursor-pointer">
+                  <div className={`w-12 h-12 md:rounded-xl rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
+                    isDark ? 'bg-white/5 text-amber-500' : 'bg-amber-50 text-amber-600'
+                  }`}>
+                    <Phone size={22} />
+                  </div>
+                  <div className="flex-1">
+                    <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Call Center</p>
+                    <p className={`font-black text-base ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>+91 1800-ARENA-99</p>
+                  </div>
+                  <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div className="flex items-center gap-5 group cursor-pointer">
+                  <div className={`w-12 h-12 md:rounded-xl rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${
+                    isDark ? 'bg-white/5 text-purple-500' : 'bg-purple-50 text-purple-600'
+                  }`}>
+                    <ExternalLink size={22} />
+                  </div>
+                  <div className="flex-1">
+                    <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Help Center</p>
+                    <p className={`font-black text-base ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>support.arenahub.com</p>
+                  </div>
+                  <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            </div>
+
+            {/* FAQs */}
+            <div className="space-y-5 px-1 pb-8">
+              <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Popular Questions</h3>
+              {faqs.map((faq, idx) => (
+                <div key={idx} className={`p-6 md:rounded-2xl rounded-[32px] border-[2.5px] transition-all duration-300 group ${
+                  isDark ? 'bg-white/5 border-white/10 hover:border-blue-500/40' : 'bg-white border-blue-500/20 shadow-lg hover:border-blue-500 hover:scale-[1.02]'
+                }`}>
+                  <h4 className={`font-black text-[15px] tracking-tight ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>{faq.q}</h4>
+                  <p className={`text-xs mt-3 leading-relaxed font-medium ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

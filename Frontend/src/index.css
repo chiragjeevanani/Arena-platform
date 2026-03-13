@@ -53,12 +53,27 @@ body {
 }
 
 /* ═══════ Scrollbar Styling ═══════ */
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(34, 255, 136, 0.3); border-radius: 10px; }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 255, 136, 0.3);
+  border-radius: 10px;
+}
 
 /* ═══════ Court Line Background Pattern ═══════ */
 .court-pattern {
@@ -148,48 +163,114 @@ body {
 
 /* ═══════ Animations ═══════ */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes pulse-neon {
-  0%, 100% { box-shadow: 0 0 10px rgba(34, 255, 136, 0.2); }
-  50% { box-shadow: 0 0 25px rgba(34, 255, 136, 0.4), 0 0 50px rgba(34, 255, 136, 0.1); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(34, 255, 136, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(34, 255, 136, 0.4), 0 0 50px rgba(34, 255, 136, 0.1);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes light-sweep {
-  0% { transform: translateX(-100%) rotate(25deg); }
-  100% { transform: translateX(200%) rotate(25deg); }
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+
+  100% {
+    transform: translateX(200%) rotate(25deg);
+  }
 }
 
 @keyframes court-line-pulse {
-  0%, 100% { opacity: 0.03; }
-  50% { opacity: 0.08; }
+
+  0%,
+  100% {
+    opacity: 0.03;
+  }
+
+  50% {
+    opacity: 0.08;
+  }
 }
 
 @keyframes scoreboard-flip {
-  0% { transform: rotateX(0deg); }
-  50% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0deg); }
+  0% {
+    transform: rotateX(0deg);
+  }
+
+  50% {
+    transform: rotateX(90deg);
+  }
+
+  100% {
+    transform: rotateX(0deg);
+  }
 }
 
 @keyframes shuttle-fly {
-  0% { transform: translate(-20px, 20px) rotate(-30deg); opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { transform: translate(calc(100vw + 40px), -100px) rotate(15deg); opacity: 0; }
+  0% {
+    transform: translate(-20px, 20px) rotate(-30deg);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(calc(100vw + 40px), -100px) rotate(15deg);
+    opacity: 0;
+  }
 }
 
-.animate-pulse-neon { animation: pulse-neon 2s ease-in-out infinite; }
-.animate-float { animation: float 4s ease-in-out infinite; }
-.animate-light-sweep { animation: light-sweep 4s ease-in-out infinite; }
-.animate-court-pulse { animation: court-line-pulse 3s ease-in-out infinite; }
-.animate-shuttle { animation: shuttle-fly 5s ease-in-out infinite; }
+.animate-pulse-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-light-sweep {
+  animation: light-sweep 4s ease-in-out infinite;
+}
+
+.animate-court-pulse {
+  animation: court-line-pulse 3s ease-in-out infinite;
+}
+
+.animate-shuttle {
+  animation: shuttle-fly 5s ease-in-out infinite;
+}
 
 /* ═══════ Shimmer Loader ═══════ */
 .shimmer {
@@ -352,7 +433,7 @@ html.light .admin-panel .bg-\[\#0A1F44\]\/50,
 html.light .coach-panel .bg-\[\#0A1F44\]\/50 {
   background-color: rgba(255, 255, 255, 0.6);
   border-color: rgba(10, 31, 68, 0.1);
-  box-shadow: 0 4px 20px rgba(10,31,68,0.05);
+  box-shadow: 0 4px 20px rgba(10, 31, 68, 0.05);
 }
 
 html.light .admin-panel .bg-\[\#0A1F44\],
@@ -361,58 +442,94 @@ html.light .coach-panel .bg-\[\#0A1F44\] {
 }
 
 html.light .admin-panel .text-white,
-html.light .coach-panel .text-white { color: #0A1F44; }
+html.light .coach-panel .text-white {
+  color: #0A1F44;
+}
 
 html.light .admin-panel .text-white\/80,
-html.light .coach-panel .text-white\/80 { color: rgba(10, 31, 68, 0.9); }
+html.light .coach-panel .text-white\/80 {
+  color: rgba(10, 31, 68, 0.9);
+}
 
 html.light .admin-panel .text-white\/60,
-html.light .coach-panel .text-white\/60 { color: rgba(10, 31, 68, 0.7); }
+html.light .coach-panel .text-white\/60 {
+  color: rgba(10, 31, 68, 0.7);
+}
 
 html.light .admin-panel .text-white\/50,
-html.light .coach-panel .text-white\/50 { color: rgba(10, 31, 68, 0.6); }
+html.light .coach-panel .text-white\/50 {
+  color: rgba(10, 31, 68, 0.6);
+}
 
 html.light .admin-panel .text-white\/40,
-html.light .coach-panel .text-white\/40 { color: rgba(10, 31, 68, 0.5); }
+html.light .coach-panel .text-white\/40 {
+  color: rgba(10, 31, 68, 0.5);
+}
 
 html.light .admin-panel .text-white\/30,
-html.light .coach-panel .text-white\/30 { color: rgba(10, 31, 68, 0.4); }
+html.light .coach-panel .text-white\/30 {
+  color: rgba(10, 31, 68, 0.4);
+}
 
 html.light .admin-panel .text-white\/20,
-html.light .coach-panel .text-white\/20 { color: rgba(10, 31, 68, 0.3); }
+html.light .coach-panel .text-white\/20 {
+  color: rgba(10, 31, 68, 0.3);
+}
 
 html.light .admin-panel .border-white\/5,
-html.light .coach-panel .border-white\/5 { border-color: rgba(10, 31, 68, 0.1); }
+html.light .coach-panel .border-white\/5 {
+  border-color: rgba(10, 31, 68, 0.1);
+}
 
 html.light .admin-panel .border-white\/10,
-html.light .coach-panel .border-white\/10 { border-color: rgba(10, 31, 68, 0.15); }
+html.light .coach-panel .border-white\/10 {
+  border-color: rgba(10, 31, 68, 0.15);
+}
 
 html.light .admin-panel .bg-white\/5,
-html.light .coach-panel .bg-white\/5 { background-color: rgba(10, 31, 68, 0.05); }
+html.light .coach-panel .bg-white\/5 {
+  background-color: rgba(10, 31, 68, 0.05);
+}
 
 html.light .admin-panel .hover\:bg-white\/5:hover,
-html.light .coach-panel .hover\:bg-white\/5:hover { background-color: rgba(10, 31, 68, 0.08); }
+html.light .coach-panel .hover\:bg-white\/5:hover {
+  background-color: rgba(10, 31, 68, 0.08);
+}
 
 html.light .admin-panel .hover\:bg-white\/10:hover,
-html.light .coach-panel .hover\:bg-white\/10:hover { background-color: rgba(10, 31, 68, 0.12); }
+html.light .coach-panel .hover\:bg-white\/10:hover {
+  background-color: rgba(10, 31, 68, 0.12);
+}
 
 html.light .admin-panel .border-\[\#22FF88\]\/10,
-html.light .coach-panel .border-\[\#22FF88\]\/10 { border-color: rgba(10, 31, 68, 0.15); }
+html.light .coach-panel .border-\[\#22FF88\]\/10 {
+  border-color: rgba(10, 31, 68, 0.15);
+}
 
 html.light .admin-panel .border-\[\#22FF88\]\/30,
-html.light .coach-panel .border-\[\#22FF88\]\/30 { border-color: rgba(10, 31, 68, 0.25); }
+html.light .coach-panel .border-\[\#22FF88\]\/30 {
+  border-color: rgba(10, 31, 68, 0.25);
+}
 
 html.light .admin-panel .text-\[\#22FF88\],
-html.light .coach-panel .text-\[\#22FF88\] { color: #059669; }
+html.light .coach-panel .text-\[\#22FF88\] {
+  color: #059669;
+}
 
 html.light .admin-panel .bg-\[\#22FF88\]\/10,
-html.light .coach-panel .bg-\[\#22FF88\]\/10 { background-color: rgba(5, 150, 105, 0.1); }
+html.light .coach-panel .bg-\[\#22FF88\]\/10 {
+  background-color: rgba(5, 150, 105, 0.1);
+}
 
 html.light .admin-panel .text-\[\#1EE7FF\],
-html.light .coach-panel .text-\[\#1EE7FF\] { color: #0284c7; }
+html.light .coach-panel .text-\[\#1EE7FF\] {
+  color: #0284c7;
+}
 
 html.light .admin-panel .bg-\[\#1EE7FF\]\/10,
-html.light .coach-panel .bg-\[\#1EE7FF\]\/10 { background-color: rgba(2, 132, 199, 0.1); }
+html.light .coach-panel .bg-\[\#1EE7FF\]\/10 {
+  background-color: rgba(2, 132, 199, 0.1);
+}
 
 /* Recharts Tooltip override in Light Mode */
 html.light .recharts-tooltip-wrapper .recharts-default-tooltip {
@@ -421,6 +538,49 @@ html.light .recharts-tooltip-wrapper .recharts-default-tooltip {
   color: #0A1F44 !important;
   box-shadow: 0 4px 16px rgba(10, 31, 68, 0.08);
 }
+
+html.light .recharts-tooltip-item {
+  color: #059669 !important;
+}
+
+tml.light .admin-panel .border-\[\#22FF88\]\/10,
+html.light .coach-panel .border-\[\#22FF88\]\/10 {
+  border-color: rgba(10, 31, 68, 0.15);
+}
+
+html.light .admin-panel .border-\[\#22FF88\]\/30,
+html.light .coach-panel .border-\[\#22FF88\]\/30 {
+  border-color: rgba(10, 31, 68, 0.25);
+}
+
+html.light .admin-panel .text-\[\#22FF88\],
+html.light .coach-panel .text-\[\#22FF88\] {
+  color: #059669;
+}
+
+html.light .admin-panel .bg-\[\#22FF88\]\/10,
+html.light .coach-panel .bg-\[\#22FF88\]\/10 {
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+html.light .admin-panel .text-\[\#1EE7FF\],
+html.light .coach-panel .text-\[\#1EE7FF\] {
+  color: #0284c7;
+}
+
+html.light .admin-panel .bg-\[\#1EE7FF\]\/10,
+html.light .coach-panel .bg-\[\#1EE7FF\]\/10 {
+  background-color: rgba(2, 132, 199, 0.1);
+}
+
+/* Recharts Tooltip override in Light Mode */
+html.light .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(10, 31, 68, 0.1) !important;
+  color: #0A1F44 !important;
+  box-shadow: 0 4px 16px rgba(10, 31, 68, 0.08);
+}
+
 html.light .recharts-tooltip-item {
   color: #059669 !important;
 }

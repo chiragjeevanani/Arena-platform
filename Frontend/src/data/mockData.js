@@ -128,6 +128,8 @@ export const USER_BOOKINGS = [
   {
     id: "BK-10293",
     arenaName: "Olympic Smash Arena",
+    arenaImage: Arena1,
+    location: "Sector 62, Noida",
     courtName: "Court 2",
     date: "2024-03-20",
     slot: "07:00 PM - 08:00 PM",
@@ -137,6 +139,8 @@ export const USER_BOOKINGS = [
   {
     id: "BK-09821",
     arenaName: "Badminton Hub",
+    arenaImage: Arena2,
+    location: "Indirapuram, Ghaziabad",
     courtName: "Court 1",
     date: "2024-03-15",
     slot: "06:00 PM - 07:00 PM",

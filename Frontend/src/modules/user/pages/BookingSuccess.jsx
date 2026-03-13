@@ -41,6 +41,48 @@ const BookingSuccess = () => {
   }));
 
   useEffect(() => {
+    // Save booking/enrollment to localStorage for persistence in Dashboard
+    if (state) {
+      const existingBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+      
+      let newBooking;
+      if (state.batch) {
+        // Coaching enrollment
+        newBooking = {
+          id: `AC-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+          arenaName: "Academy Hub",
+          arenaImage: state.batch.image,
+          location: "Premium Class",
+          coachName: state.batch.coachName,
+          courtName: state.batch.level,
+          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          slot: state.batch.timing,
+          status: 'Upcoming',
+          type: 'Coaching',
+          price: state.amount
+        };
+      } else {
+        // Arena booking
+        newBooking = {
+          id: `BK-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+          arenaName: state.arena?.name,
+          arenaImage: state.arena?.image,
+          location: state.arena?.location,
+          courtName: state.court?.name,
+          date: state.date,
+          slot: state.slot?.time,
+          status: 'Upcoming',
+          type: 'Booking',
+          price: state.amount
+        };
+      }
+      
+      // Prevent duplicate saving on re-renders
+      if (!existingBookings.find(b => b.id === newBooking.id)) {
+        localStorage.setItem('userBookings', JSON.stringify([newBooking, ...existingBookings]));
+      }
+    }
+
     // Animated shuttle landing on court
     if (courtRef.current) {
       gsap.fromTo(courtRef.current,
@@ -51,7 +93,7 @@ const BookingSuccess = () => {
 
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [state]);
 
   return (
     <div className={`min-h-screen flex flex-col pt-16 relative overflow-hidden transition-colors duration-500 ${
@@ -104,7 +146,7 @@ const BookingSuccess = () => {
               transition={{ delay: 0.3 }}
               className={`text-2xl font-black tracking-tight font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}
             >
-              Booking Success!
+              {state?.batch ? 'Enrolled Successfully!' : 'Booking Success!'}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -112,7 +154,7 @@ const BookingSuccess = () => {
               transition={{ delay: 0.5 }}
               className={`text-[10px] mt-1 font-bold uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-slate-400'}`}
             >
-              Your court is now reserved
+              {state?.batch ? 'Your class subscription is active' : 'Your court is now reserved'}
             </motion.p>
           </div>
         </div>
@@ -141,11 +183,13 @@ const BookingSuccess = () => {
 
             {/* Arena Info */}
             <div className="space-y-1.5">
-              <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/10' : 'text-slate-300'}`}>Booking Venue</p>
+              <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/10' : 'text-slate-300'}`}>
+                {state?.batch ? 'Academy Program' : 'Booking Venue'}
+              </p>
               <h3 className={`text-xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                {state?.arena?.name}
+                {state?.batch ? state.batch.coachName : state?.arena?.name}
                 <span className={`block text-lg mt-0.5 ${isDark ? 'text-[#22FF88]' : 'text-blue-600'}`}>
-                  {state?.court?.name}
+                  {state?.batch ? state.batch.level + ' Batch' : state?.court?.name}
                 </span>
               </h3>
             </div>
@@ -158,7 +202,7 @@ const BookingSuccess = () => {
               </div>
               <div className="space-y-1">
                 <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/10' : 'text-slate-300'}`}>Time Slot</p>
-                <p className={`text-sm font-black ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{state?.slot?.time}</p>
+                <p className={`text-sm font-black ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{state?.batch ? state.batch.timing : state?.slot?.time}</p>
               </div>
             </div>
 

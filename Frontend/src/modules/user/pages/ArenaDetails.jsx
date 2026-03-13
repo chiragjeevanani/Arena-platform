@@ -70,7 +70,7 @@ const ArenaDetails = () => {
         {/* About */}
         <div>
           <h3 className={`text-base font-bold mb-3 font-display ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>About Arena</h3>
-          <p className={`text-sm leading-relaxed ${isDark ? 'text-white/40' : 'text-slate-600'}`}>
+          <p className={`text-sm leading-relaxed ${isDark ? 'text-white/40' : 'text-slate-700'}`}>
             {arena.description} Premium experience with all modern facilities including {arena.amenities.join(', ')}.
           </p>
         </div>
@@ -102,18 +102,19 @@ const ArenaDetails = () => {
 
           <div className="grid grid-cols-1 gap-3.5">
             {COURTS.filter(c => c.arenaId === arena.id).map((court, idx) => (
-              <motion.div
+              <div
                 key={court.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/book/${arena.id}/${court.id}`)}
-                className={`p-3.5 rounded-[24px] flex items-center gap-4 cursor-pointer transition-all duration-300 border group ${
-                  isDark 
-                    ? 'bg-white/[0.03] border-white/5 hover:border-blue-500/30 hover:bg-blue-500/[0.05]' 
+                onClick={() => {
+                  localStorage.setItem("selectedArena", JSON.stringify({
+                    ...arena,
+                    selectedCourt: court
+                  }));
+                  navigate(`/book/${arena.id}/${court.id}`);
+                }}
+                className={`p-3.5 rounded-[24px] flex items-center gap-4 cursor-pointer transition-all duration-300 border group ${isDark
+                    ? 'bg-white/[0.03] border-white/5 hover:border-blue-500/30 hover:bg-blue-500/[0.05]'
                     : 'bg-white border-blue-50/50 shadow-[0_4px_20px_rgba(10,31,68,0.02)] hover:shadow-[0_8px_30px_rgba(10,31,68,0.06)] hover:border-blue-200'
-                }`}
+                  }`}
               >
                 {/* Court Thumbnail */}
                 <div className={`w-16 h-16 flex-shrink-0 rounded-[20px] overflow-hidden border transition-transform duration-500 group-hover:scale-105 ${isDark ? 'border-white/10' : 'border-blue-100/50 shadow-inner'}`}>
@@ -127,21 +128,19 @@ const ArenaDetails = () => {
                 {/* Court Info */}
                 <div className="flex-1">
                   <h4 className={`font-bold text-base transition-colors ${isDark ? 'text-white group-hover:text-blue-400' : 'text-[#0A1F44] group-hover:text-blue-600'}`}>{court.name}</h4>
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider mt-2 transition-colors ${
-                    isDark ? 'bg-white/5 text-white/40 group-hover:bg-blue-500/10 group-hover:text-blue-400' : 'bg-blue-50 text-blue-400 border border-blue-100/50 group-hover:bg-blue-100/50 group-hover:text-blue-600 group-hover:border-transparent'
-                  }`}>
+                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider mt-2 transition-colors ${isDark ? 'bg-white/5 text-white/40 group-hover:bg-blue-500/10 group-hover:text-blue-400' : 'bg-blue-50 text-blue-400 border border-blue-100/50 group-hover:bg-blue-100/50 group-hover:text-blue-600 group-hover:border-transparent'
+                    }`}>
                     <div className={`w-1.5 h-1.5 rounded-full ${court.type === 'Wooden' ? 'bg-amber-400' : 'bg-blue-400'}`} />
                     {court.type}
                   </div>
                 </div>
 
                 {/* Select Indicator */}
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  isDark ? 'bg-white/5 text-white/20' : 'bg-blue-50 text-blue-200'
-                } group-hover:bg-blue-500 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]`}>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${isDark ? 'bg-white/5 text-white/20' : 'bg-blue-50 text-blue-200'
+                  } group-hover:bg-blue-500 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]`}>
                   <ChevronRight size={16} strokeWidth={3} />
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -152,7 +151,7 @@ const ArenaDetails = () => {
         <div className={`h-[1px] ${isDark ? 'bg-gradient-to-r from-transparent via-[#22FF88]/15 to-transparent' : 'bg-slate-100'}`} />
         <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t ${isDark ? 'bg-[#08142B]/95 border-white/5' : 'bg-white/95 border-blue-50 shadow-[0_-10px_30px_rgba(10,31,68,0.04)]'}`}>
           <div>
-            <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/25' : 'text-blue-300'}`}>Starting from</p>
+            <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/25' : 'text-blue-600'}`}>Starting from</p>
             <div className="flex items-baseline gap-1">
               <span className={`text-2xl font-bold font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{arena.pricePerHour}</span>
               <span className={`text-xs ${isDark ? 'text-white/25' : 'text-blue-300'}`}>/ hr</span>
@@ -162,7 +161,13 @@ const ArenaDetails = () => {
             variant="blue"
             size="lg"
             className="!bg-blue-600 !text-white hover:!bg-blue-700 hover:shadow-blue-500/20"
-            onClick={() => navigate(`/book/${arena.id}/1`)}
+            onClick={() => {
+              localStorage.setItem("selectedArena", JSON.stringify({
+                ...arena,
+                selectedCourt: COURTS.find(c => c.arenaId === arena.id) // Default to first court
+              }));
+              navigate(`/book/${arena.id}/1`);
+            }}
           >
             Book Now
           </ShuttleButton>

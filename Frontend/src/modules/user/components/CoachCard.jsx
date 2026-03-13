@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Clock, Users, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 /**
@@ -7,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
  */
 const CoachCard = ({ batch, index = 0 }) => {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
   // Mock seats data
   const totalSeats = 12;
   const filledSeats = Math.floor(Math.random() * 8) + 3;
@@ -98,6 +100,7 @@ const CoachCard = ({ batch, index = 0 }) => {
           </div>
           <motion.button
             whileTap={{ scale: 0.95, rotate: -2 }}
+            onClick={() => navigate('/coaching-summary', { state: { batch } })}
             className="bg-[#22FF88] text-[#08142B] px-6 py-3 rounded-2xl font-bold text-sm
                        shadow-[0_0_20px_rgba(34,255,136,0.15)] hover:shadow-[0_0_30px_rgba(34,255,136,0.3)]
                        transition-all duration-300"
