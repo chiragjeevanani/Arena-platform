@@ -21,27 +21,27 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen pb-28">
       {/* Header */}
-      <div className={`px-6 pt-14 pb-4 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#F0F4F8]/80 border-[#0A1F44]/5'}`}>
-        <div className="flex items-center gap-4 mb-5">
+      <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#0A1F44] border-white/10 rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
+        <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => navigate(-1)}
-            className={`w-10 h-10 rounded-2xl glass-light flex items-center justify-center border active:scale-90 transition-transform ${isDark ? 'border-white/10' : 'border-[#0A1F44]/10'}`}
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white/10 border-white/20 text-white shadow-sm'}`}
           >
-            <ArrowLeft size={18} className={isDark ? 'text-white/60' : 'text-[#0A1F44]/60'} />
+            <ArrowLeft size={18} />
           </button>
-          <h1 className={`text-lg font-bold font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>My Bookings</h1>
+          <h1 className="text-lg font-bold font-display text-white">My Bookings</h1>
         </div>
 
         {/* Tab Switcher — Scoreboard style */}
-        <div className="flex gap-1 glass-light p-1 rounded-2xl border border-white/5 overflow-x-auto scrollbar-hide">
+        <div className={`flex gap-1 p-1 rounded-2xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-white/10 border-white/10 backdrop-blur-md'}`}>
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ${
+              className={`flex-1 py-2.5 px-0.5 rounded-xl text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
                 activeTab === tab.id
-                  ? 'bg-[#22FF88]/10 text-[#22FF88] border border-[#22FF88]/20'
-                  : 'text-white/25 hover:text-white/40 border border-transparent'
+                  ? 'bg-[#22FF88] text-[#0A1F44] shadow-[0_4px_15px_rgba(34,255,136,0.3)]'
+                  : 'text-white/40 hover:text-white/60'
               }`}
             >
               {tab.name}

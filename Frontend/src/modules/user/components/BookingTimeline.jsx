@@ -34,7 +34,11 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
         <div className="absolute -top-6 left-6 w-[2px] h-6 bg-gradient-to-b from-transparent to-[#22FF88]/20" />
       )}
 
-      <div className="glass-card rounded-3xl p-5 hover:border-[#22FF88]/15 transition-all duration-300 group">
+      <div className={`rounded-3xl p-5 transition-all duration-300 group border ${
+        isDark 
+          ? 'glass-card border-white/5 bg-white/5 hover:border-[#22FF88]/20' 
+          : 'bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-[#22FF88]/30'
+      }`}>
         <div className="flex items-start gap-4">
           {/* Timeline dot */}
           <div className="flex-shrink-0 mt-1">
@@ -60,14 +64,14 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 py-3 border-t border-b border-white/5">
+            <div className={`flex items-center gap-6 py-3 border-t border-b ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
               <div className="flex items-center gap-2">
-                <Calendar size={13} className="text-white/20" />
-                <span className={`text-xs font-medium ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>{booking.date}</span>
+                <Calendar size={13} className={isDark ? 'text-white/20' : 'text-slate-300'} />
+                <span className={`text-xs font-bold ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>{booking.date}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock size={13} className="text-white/20" />
-                <span className={`text-xs font-medium ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>{booking.slot}</span>
+                <Clock size={13} className={isDark ? 'text-white/20' : 'text-slate-300'} />
+                <span className={`text-xs font-bold ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>{booking.slot}</span>
               </div>
             </div>
 
@@ -81,7 +85,7 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
                 </div>
               )}
               {booking.status === 'Completed' && (
-                <span className="text-xs text-white/30">₹{booking.price}</span>
+                <span className={`text-xs font-black ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>₹{booking.price}</span>
               )}
               <button className="flex items-center gap-1 text-[#22FF88] text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
                 View <ChevronRight size={14} />

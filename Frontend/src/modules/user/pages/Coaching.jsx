@@ -11,17 +11,17 @@ const Coaching = () => {
   return (
     <div className="min-h-screen pb-28">
       {/* Header */}
-      <div className={`px-6 pt-14 pb-4 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#F0F4F8]/80 border-[#0A1F44]/5'}`}>
-        <div className="flex items-center gap-4 mb-1">
+      <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#0A1F44] border-white/10 rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className={`w-10 h-10 rounded-2xl glass-light flex items-center justify-center border active:scale-90 transition-transform ${isDark ? 'border-white/10' : 'border-[#0A1F44]/10'}`}
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white/10 border-white/20 text-white shadow-sm'}`}
           >
-            <ArrowLeft size={18} className={isDark ? 'text-white/60' : 'text-[#0A1F44]/60'} />
+            <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className={`text-lg font-bold font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Coaching Classes</h1>
-            <p className={`text-[10px] font-medium ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>Learn from professional coaches</p>
+            <h1 className="text-lg font-bold font-display text-white">Coaching Classes</h1>
+            <p className="text-[10px] font-medium text-white/40">Learn from professional coaches</p>
           </div>
         </div>
       </div>

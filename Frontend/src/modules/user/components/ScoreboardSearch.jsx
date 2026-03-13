@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
+import { useTheme } from '../context/ThemeContext';
 
 /**
  * ScoreboardSearch — Scoreboard-styled search bar with glass blur
@@ -9,6 +10,7 @@ import gsap from 'gsap';
 const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }) => {
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const { isDark } = useTheme();
   const filterRef = useRef(null);
 
   const handleFilterClick = () => {
@@ -33,20 +35,11 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
             : '0 0 0px transparent'
         }}
         className={`
-          relative flex-1 glass-light rounded-2xl transition-all duration-300
-          ${isFocused ? 'border-[#22FF88]/30' : 'border-white/10'}
-          border
+          relative flex-1 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md rounded-2xl transition-all duration-300
+          ${isFocused ? 'border-[#22FF88]' : (isDark ? 'border-white/30' : 'border-white/40')}
+          border border-solid
         `}
       >
-        {/* Scoreboard LED dots */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${isFocused ? 'bg-[#22FF88]' : 'bg-white/20'}`} />
-          <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${isFocused ? 'bg-[#22FF88]' : 'bg-white/20'}`} />
-        </div>
-        <Search
-          size={18}
-          className={`absolute left-10 top-1/2 -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-[#22FF88]' : 'text-white/30'}`}
-        />
         <input
           type="text"
           value={value}
@@ -54,17 +47,25 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="w-full bg-transparent text-white/90 rounded-2xl py-4 pl-16 pr-4 text-sm font-medium placeholder:text-white/25 focus:outline-none focus:ring-0 border-none"
+          className={`w-full bg-transparent rounded-2xl py-3 pl-5 pr-12 text-sm font-medium focus:outline-none focus:ring-0 border-none ${
+            isDark 
+              ? 'text-white/90 placeholder:text-white/40' 
+              : 'text-white placeholder:text-white/60'
+          }`}
+        />
+        <Search
+          size={16}
+          className={`absolute right-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-[#22FF88]' : (isDark ? 'text-white/60' : 'text-white/80')}`}
         />
       </motion.div>
 
       {/* Filter Button — Tournament Control Knob */}
       <button
         onClick={handleFilterClick}
-        className="w-14 h-14 glass-light rounded-2xl flex items-center justify-center border border-white/10 hover:border-[#22FF88]/30 transition-all duration-300 group"
+        className={`w-12 h-12 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md rounded-xl flex items-center justify-center border border-solid ${isDark ? 'border-white/30' : 'border-white/40'} hover:border-[#22FF88] transition-all duration-300 group`}
       >
         <div ref={filterRef}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-white/50 group-hover:text-[#22FF88] transition-colors">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className={`${isDark ? 'text-white/50' : 'text-white/80'} group-hover:text-[#22FF88] transition-colors`}>
             <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
             <circle cx="10" cy="10" r="2" fill="currentColor" />
             <line x1="10" y1="3" x2="10" y2="5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
