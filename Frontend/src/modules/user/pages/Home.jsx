@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
@@ -10,6 +10,7 @@ import { faTableTennisPaddleBall, faBasketball, faFutbol } from '@fortawesome/fr
 import ScoreboardSearch from '../components/ScoreboardSearch';
 import MatchBanner from '../components/MatchBanner';
 import ArenaCard from '../components/ArenaCard';
+import EventCard from '../components/EventCard';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
 import Card1 from '../../../assets/Cards/Card1.jpg';
@@ -46,6 +47,39 @@ const UserHome = () => {
     }
   ];
 
+  const upcomingEvents = [
+    {
+      id: 1,
+      title: "Monsoon Smash Tournament",
+      date: "25 Oct",
+      time: "09:00 AM",
+      location: "AMM Sports Arena, Noida",
+      image: Card1,
+      price: "499",
+      category: "Badminton"
+    },
+    {
+      id: 2,
+      title: "Table Tennis Championship",
+      date: "28 Oct",
+      time: "11:00 AM",
+      location: "Sector 62, Noida",
+      image: Card2,
+      price: "299",
+      category: "Table Tennis"
+    },
+    {
+      id: 3,
+      title: "Junior Badminton Cup",
+      date: "02 Nov",
+      time: "08:00 AM",
+      location: "AMM Sports Arena",
+      image: Card3,
+      price: "199",
+      category: "Badminton"
+    }
+  ];
+
   // Stadium light streak animation
   useEffect(() => {
     if (lightRef1.current && lightRef2.current) {
@@ -61,38 +95,33 @@ const UserHome = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen pb-28 relative transition-colors duration-500 ${
-      isDark ? 'md:bg-[#FFFDD0]' : 'md:bg-[#FFFDD0]'
-    }`}>
-      {/* â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” THEME-CENTRIC GREEN BACKGROUND (DESKTOP) â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
+    <div className={`min-h-screen pb-28 relative transition-colors duration-500 md:bg-[#FFFDD0]`}>
+      {/* Ã¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€Â THEME-CENTRIC GREEN BACKGROUND (DESKTOP) Ã¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€Â */}
       <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
         {/* Subtle Green Gradient Overlay */}
-        <div className={`absolute inset-0 transition-opacity duration-1000 ${
-          isDark 
-            ? 'bg-gradient-to-b from-[#eb483f]/[0.03] via-transparent to-transparent' 
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${isDark
+            ? 'bg-gradient-to-b from-[#eb483f]/[0.03] via-transparent to-transparent'
             : 'bg-gradient-to-b from-[#eb483f]/[0.1] via-transparent to-transparent'
-        }`} />
-        
+          }`} />
+
         {/* Decorative Green Mesh Glows */}
-        <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${
-          isDark ? 'bg-[#eb483f]/[0.04]' : 'bg-[#eb483f]/[0.15]'
-        }`} />
-        <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${
-          isDark ? 'bg-[#eb483f]/[0.02]' : 'bg-blue-50/40'
-        }`} />
+        <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${'bg-[#eb483f]/[0.15]'
+          }`} />
+        <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${'bg-blue-50/40'
+          }`} />
 
         {/* Fine Neon Grid for Texture */}
-        <div className="absolute inset-0 opacity-[0.2]" 
-          style={{ 
-            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${isDark ? 'rgba(235, 72, 63, 0.1)' : 'rgba(235, 72, 63, 0.08)'} 1px, transparent 0)`, 
-            backgroundSize: '40px 40px' 
-          }} 
+        <div className="absolute inset-0 opacity-[0.2]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${'rgba(235, 72, 63, 0.08)'} 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }}
         />
       </div>
 
-      {/* â•â•â•â•â•â•â• Hero Header â€” Hidden on Desktop â•â•â•â•â•â•â• */}
+      {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Hero Header Ã¢â‚¬â€ Hidden on Desktop Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
       <div className="md:hidden">
-        <div ref={heroRef} className={`relative px-6 pt-4 pb-4 overflow-hidden ${isDark ? '' : 'bg-[#F3655D] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
+        <div ref={heroRef} className={`relative px-5 pt-3 pb-3 overflow-hidden bg-[#eb483f] shadow-[0_10px_30px_rgba(235, 72, 63, 0.2)]`}>
           {/* Stadium light streaks */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div
@@ -115,145 +144,116 @@ const UserHome = () => {
           </div>
 
           <div className="relative z-10">
-            {/* Main Top Row: Logo, Search, and Icons */}
-            <div className="flex flex-col gap-4">
-              {/* Title & Logo */}
-              <div className="flex justify-between items-center w-full">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40">
-                    Good Morning
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <ShuttlecockIcon size={24} className="text-[#eb483f]" />
-                    <span className="text-lg font-black tracking-tight uppercase italic font-display text-white">
-                      Badminton Arena
-                    </span>
-                  </div>
-                </div>
-
-                {/* Mobile Icons */}
-                <div className="flex items-center gap-2">
-                  <button onClick={toggleTheme} className="w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-                    {isDark ? <Sun size={18} className="text-[#FFD600]" /> : <Moon size={18} className="text-[#eb483f]" />}
-                  </button>
-                  <button onClick={() => navigate('/profile/notifications')} className="relative w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-                    <Bell size={18} className="text-white/60" />
-                    <div className="absolute top-2.5 right-3 w-2 h-2 bg-[#eb483f] rounded-full" />
-                  </button>
-                </div>
+            <div className="flex justify-between items-center w-full">
+              <div>
+                <span
+                  style={{ fontFamily: "'Montserrat', 'Outfit', sans-serif", textShadow: "0 0 8px rgba(255, 253, 208, 0.3)" }}
+                  className="text-[19px] font-bold tracking-tight uppercase text-[#fffdd0]"
+                >
+                  AMM Sports Arena
+                </span>
               </div>
 
-              {/* Search Bar */}
-              <div className="w-full">
-                <ScoreboardSearch placeholder="Search arenas, courts..." />
+              {/* Mobile Icons */}
+              <div className="flex items-center gap-2">
+
+                <button onClick={() => navigate('/profile/notifications')} className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm">
+                  <Bell size={16} className="text-[#fffdd0]" />
+                  <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#fffdd0] rounded-full shadow-[0_0_5px_#fffdd0]" />
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 md:px-8 space-y-10 mt-1">
-        {/* â•â•â•â•â•â•â• Featured Banner â•â•â•â•â•â•â• */}
-        <motion.div 
+      <div className="mt-0">
+        {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Featured Banner Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-7xl mx-auto w-full"
+          className="max-w-7xl mx-auto w-full px-0 md:px-8"
         >
           <MatchBanner promos={promos} />
         </motion.div>
 
-        {/* â•â•â•â•â•â•â• Categories â€” Sport Cards â•â•â•â•â•â•â• */}
-        <div className="max-w-7xl mx-auto w-full">
-          <motion.h3 
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className={`text-lg font-bold mb-6 font-display ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}
-          >
-            What do you want to book?
-          </motion.h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { 
-                title: 'Badminton', icon: ShuttlecockIcon, image: Card1, delay: 0,
-                gradient: 'from-purple-900/95 via-purple-600/40',
-                hoverBg: 'group-hover:bg-purple-500' 
-              },
-              { 
-                title: 'Table Tennis', icon: faTableTennisPaddleBall, image: Card2, delay: 0.1, isFA: true,
-                gradient: 'from-emerald-900/95 via-emerald-600/40',
-                hoverBg: 'group-hover:bg-emerald-500'
-              },
-              { 
-                title: 'Basketball', icon: faBasketball, image: Card3, delay: 0.2, isFA: true,
-                gradient: 'from-orange-900/95 via-orange-600/40',
-                hoverBg: 'group-hover:bg-orange-600'
-              },
-              { 
-                title: 'Football', icon: faFutbol, image: Card4, delay: 0.3, isFA: true,
-                gradient: 'from-blue-900/95 via-blue-600/40',
-                hoverBg: 'group-hover:bg-blue-600'
-              }
-            ].map((sport, i) => (
-              <motion.div
-                key={sport.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: sport.delay }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ backgroundImage: `url(${sport.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                className={`relative p-5 rounded-3xl h-64 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#F3655D]/8'} shadow-xl transition-all duration-300`}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-t ${sport.gradient} to-transparent transition-opacity duration-300 group-hover:opacity-80`} />
-                
-                {/* Floating Icon */}
-                <div className="absolute top-6 animate-float z-10">
-                  {sport.isFA ? (
-                    <FontAwesomeIcon icon={sport.icon} style={{ fontSize: 48 }} className="text-white/90 drop-shadow-2xl" />
-                  ) : (
-                    <sport.icon size={48} className="text-white/90 drop-shadow-2xl" />
-                  )}
-                </div>
-                
-                {/* Court line pattern */}
-                <div className="absolute inset-0 court-lines opacity-10 z-10" />
+        {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Categories Ã¢â‚¬â€ Sport Cards Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
+        <div className="px-4 md:px-8 space-y-10 mt-10">
+          <div className="max-w-7xl mx-auto w-full">
+            <motion.h3
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="text-2xl font-black mb-10 font-display text-[#eb483f] tracking-tight"
+            >
+              What do you want to book?
+            </motion.h3>
+            <div className="grid grid-cols-1 gap-10 max-w-4xl mx-auto px-4 md:px-0">
+              {[
+                {
+                  title: 'Badminton', icon: ShuttlecockIcon, image: Card1, delay: 0,
+                  gradient: 'from-black/80 via-black/20',
+                  hoverBg: 'group-hover:bg-[#eb483f]'
+                },
+                {
+                  title: 'Table Tennis', icon: faTableTennisPaddleBall, image: Card2, delay: 0.1, isFA: true,
+                  gradient: 'from-black/80 via-black/20',
+                  hoverBg: 'group-hover:bg-[#eb483f]'
+                }
+              ].map((sport, i) => (
+                <motion.div
+                  key={sport.title}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: sport.delay }}
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{ backgroundImage: `url(${sport.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                  className={`relative p-4 rounded-xl aspect-[16/9] md:h-[400px] flex flex-col items-center justify-end overflow-hidden group cursor-pointer border border-[#eb483f]/10 shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-500`}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-t ${sport.gradient} to-transparent transition-opacity duration-300 group-hover:opacity-80`} />
 
-                <div className={`bg-white/10 backdrop-blur-xl border border-white/20 w-full py-3 text-center rounded-2xl font-black text-white text-sm tracking-wider uppercase ${sport.hoverBg} transition-all duration-300 relative z-20 shadow-lg`}>
-                  {sport.title}
-                </div>
-              </motion.div>
-            ))}
+                  {/* Floating Icon */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-10 animate-float z-10">
+                    {sport.isFA ? (
+                      <FontAwesomeIcon icon={sport.icon} style={{ fontSize: 52 }} className="text-white/95 drop-shadow-2xl" />
+                    ) : (
+                      <sport.icon size={52} className="text-white/95 drop-shadow-2xl" />
+                    )}
+                  </div>
+
+                  {/* Court line pattern */}
+                  <div className="absolute inset-0 court-lines opacity-10 z-10" />
+
+                  <div className={`bg-white/10 backdrop-blur-3xl border border-white/30 px-6 py-2 text-center rounded-xl font-bold text-white text-[10px] md:text-[12px] tracking-[0.2em] uppercase ${sport.hoverBg} transition-all duration-500 relative z-20 shadow-2xl mb-1`}>
+                    {sport.title}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* â•â•â•â•â•â•â• Nearby Arenas â•â•â•â•â•â•â• */}
-        <div className="max-w-7xl mx-auto w-full pb-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex justify-between items-center mb-6"
-          >
-            <h3 className={`text-lg font-bold font-display ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}>Nearby Arenas</h3>
-            <Link to="/arenas" className="text-[#eb483f] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#eb483f]/10 px-4 py-2 rounded-full border border-[#eb483f]/20">
-              See all <ChevronRight size={14} />
-            </Link>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {ARENAS.slice(0, 4).map((arena, index) => (
-              <motion.div
-                key={arena.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <ArenaCard arena={arena} index={index} />
-              </motion.div>
-            ))}
+          {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Nearby Arenas Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
+          {/* Upcoming Events Section */}
+          <div className="max-w-7xl mx-auto w-full pb-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex justify-between items-center mb-6"
+            >
+              <h3 className={`text-lg font-bold font-display text-[#eb483f]`}>Upcoming Events</h3>
+              <Link to="/events" className="text-[#eb483f] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#eb483f]/10 px-4 py-2 rounded-full border border-[#eb483f]/20">
+                See all <ChevronRight size={14} />
+              </Link>
+            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {upcomingEvents.map((event, index) => (
+                <EventCard key={event.id} event={event} index={index} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -262,5 +262,7 @@ const UserHome = () => {
 };
 
 export default UserHome;
+
+
 
 

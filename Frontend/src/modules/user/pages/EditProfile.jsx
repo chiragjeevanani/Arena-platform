@@ -9,7 +9,7 @@ const EditProfile = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-[#F8FAFC]'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${'bg-[#F8FAFC]'}`}>
       {/* Premium Background Decorative Elements */}
       {!isDark && (
         <>
@@ -45,7 +45,7 @@ const EditProfile = () => {
             <div className="flex flex-col items-center">
               <div className="relative group">
                 <div className={`w-24 h-24 md:rounded-none rounded-xl overflow-hidden border-4 p-0.5 shadow-xl transition-all duration-500 ${
-                  isDark ? 'border-blue-500/20 bg-white/5' : 'border-white bg-white hover:border-blue-100 hover:scale-105'
+                  'border-white bg-white hover:border-blue-100 hover:scale-105'
                 }`}>
                   <img
                     src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
@@ -64,7 +64,7 @@ const EditProfile = () => {
             <div className="mt-8 space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                  <h3 className={`text-[9px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-500'}`}>Personal Information</h3>
+                  <h3 className={`text-[9px] font-black uppercase tracking-[0.2em] ${'text-slate-500'}`}>Personal Information</h3>
                 </div>
                 
                 <div className={`p-3 md:rounded-none rounded-xl border transition-all duration-500 relative overflow-hidden group ${
@@ -74,16 +74,16 @@ const EditProfile = () => {
                 }`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className={`w-10 h-10 md:rounded-none rounded-lg flex items-center justify-center transition-all duration-300 ${
-                      isDark ? 'bg-white/5 text-blue-400' : 'bg-blue-50 text-blue-600 group-hover:scale-110'
+                      'bg-blue-50 text-blue-600 group-hover:scale-110'
                     }`}>
                       <User size={16} />
                     </div>
                     <div className="flex-1">
-                      <p className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Full Name</p>
+                      <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Full Name</p>
                       <input 
                         type="text" 
                         defaultValue="Muhammad Haroos"
-                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}
+                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
                       />
                     </div>
                   </div>
@@ -96,16 +96,16 @@ const EditProfile = () => {
                 }`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className={`w-10 h-10 md:rounded-none rounded-lg flex items-center justify-center transition-all duration-300 ${
-                      isDark ? 'bg-white/5 text-emerald-400' : 'bg-emerald-50 text-emerald-600 group-hover:scale-110'
+                      'bg-emerald-50 text-emerald-600 group-hover:scale-110'
                     }`}>
                       <Mail size={16} />
                     </div>
                     <div className="flex-1">
-                      <p className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Email Address</p>
+                      <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Email Address</p>
                       <input 
                         type="email" 
                         defaultValue="haroos.design@gmail.com"
-                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}
+                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
                       />
                     </div>
                   </div>
@@ -118,16 +118,16 @@ const EditProfile = () => {
                 }`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className={`w-10 h-10 md:rounded-none rounded-lg flex items-center justify-center transition-all duration-300 ${
-                      isDark ? 'bg-white/5 text-amber-400' : 'bg-amber-50 text-amber-600 group-hover:scale-110'
+                      'bg-amber-50 text-amber-600 group-hover:scale-110'
                     }`}>
                       <Phone size={16} />
                     </div>
                     <div className="flex-1">
-                      <p className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Phone Number</p>
+                      <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Phone Number</p>
                       <input 
                         type="tel" 
                         defaultValue="+91 98765 43210"
-                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}
+                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
                       />
                     </div>
                   </div>
@@ -140,16 +140,16 @@ const EditProfile = () => {
                 }`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className={`w-10 h-10 md:rounded-none rounded-lg flex items-center justify-center transition-all duration-300 ${
-                      isDark ? 'bg-white/5 text-purple-400' : 'bg-purple-50 text-purple-600 group-hover:scale-110'
+                      'bg-purple-50 text-purple-600 group-hover:scale-110'
                     }`}>
                       <MapPin size={16} />
                     </div>
                     <div className="flex-1">
-                      <p className={`text-[8px] font-black uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Location</p>
+                      <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Location</p>
                       <input 
                         type="text" 
                         defaultValue="Dubai, UAE"
-                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}
+                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
                       />
                     </div>
                   </div>
@@ -176,4 +176,5 @@ const EditProfile = () => {
 };
 
 export default EditProfile;
+
 

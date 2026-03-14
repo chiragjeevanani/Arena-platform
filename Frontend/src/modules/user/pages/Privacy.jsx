@@ -38,29 +38,29 @@ const Privacy = () => {
       {/* Premium Background Decorative Elements (Desktop) */}
       <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
         <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${
-          isDark ? 'bg-[#eb483f]/[0.03]' : 'bg-[#eb483f]/[0.08]'
+          'bg-[#eb483f]/[0.08]'
         }`} />
         <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${
-          isDark ? 'bg-[#eb483f]/[0.02]' : 'bg-blue-50/30'
+          'bg-blue-50/30'
         }`} />
         <div className="absolute inset-0 opacity-[0.2]" 
           style={{ 
-            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${isDark ? 'rgba(235, 72, 63, 0.08)' : 'rgba(15, 23, 42, 0.04)'} 1px, transparent 0)`, 
+            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${'rgba(15, 23, 42, 0.04)'} 1px, transparent 0)`, 
             backgroundSize: '40px 40px' 
           }} 
         />
       </div>
 
       {/* Header */}
-      <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${isDark ? 'bg-[#F3655D]/80 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}>
+      <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${'bg-white border-blue-50 shadow-sm'}`}>
         <div className="max-w-6xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white border-blue-100 text-[#F3655D] shadow-sm'}`}
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${'bg-white border-blue-100 text-[#eb483f] shadow-sm'}`}
           >
             <ArrowLeft size={18} />
           </button>
-          <h1 className={`text-lg font-bold font-display uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Privacy & Security</h1>
+          <h1 className={`text-lg font-bold font-display uppercase tracking-tight ${'text-[#eb483f]'}`}>Privacy & Security</h1>
         </div>
       </div>
 
@@ -73,14 +73,14 @@ const Privacy = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className={`p-5 md:p-8 rounded-2xl md:rounded-[40px] flex flex-col items-center text-center border shadow-2xl ${
-                isDark ? 'bg-[#F3655D] border-white/10' : 'bg-[#F3655D] text-white'
+                'bg-[#eb483f] text-white'
               }`}
             >
-              <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-[28px] flex items-center justify-center mb-4 md:mb-6 ${isDark ? 'bg-white/5 text-[#eb483f]' : 'bg-white/10 text-white shadow-inner'}`}>
+              <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-[28px] flex items-center justify-center mb-4 md:mb-6 ${'bg-white/10 text-white shadow-inner'}`}>
                 <Shield size={28} className="md:w-10 md:h-10 drop-shadow-[0_0_15px_rgba(235, 72, 63,0.3)]" />
               </div>
               <h2 className="text-xl md:text-2xl font-black font-display uppercase tracking-tight">Your data is safe</h2>
-              <p className={`text-xs md:text-sm mt-3 md:mt-4 leading-relaxed opacity-60 ${isDark ? 'text-white' : 'text-white/80'}`}>
+              <p className={`text-xs md:text-sm mt-3 md:mt-4 leading-relaxed opacity-60 ${'text-white/80'}`}>
                 We prioritize your privacy and use advanced security measures to keep your account secure.
               </p>
             </motion.div>
@@ -99,7 +99,7 @@ const Privacy = () => {
                 >
                   <div className="flex items-center gap-3 md:gap-4">
                     <item.icon size={18} className={`md:w-5 md:h-5 ${item.color}`} />
-                    <span className={`font-bold text-xs md:text-sm ${isDark ? 'text-white/70' : 'text-[#F3655D]/70'}`}>{item.title}</span>
+                    <span className={`font-bold text-xs md:text-sm ${'text-[#eb483f]/70'}`}>{item.title}</span>
                   </div>
                   <ArrowLeft size={16} className="rotate-180 opacity-20 md:w-[18px] md:h-[18px]" />
                 </button>
@@ -109,7 +109,7 @@ const Privacy = () => {
 
           {/* RIGHT COLUMN: Detailed Privacy Sections */}
           <div className="flex-1 w-full space-y-4 md:space-y-6">
-            <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-2 md:mb-4 ${isDark ? 'text-white/40' : 'text-[#F3655D]/40'}`}>
+            <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-2 md:mb-4 ${'text-[#eb483f]/40'}`}>
               Detailed Policies & Security
             </h3>
             
@@ -121,7 +121,7 @@ const Privacy = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.1 }}
                   className={`p-5 md:p-6 rounded-[24px] md:rounded-[32px] border transition-all hover:translate-x-1 ${
-                    isDark ? 'bg-[#F3655D]/40 border-white/5 backdrop-blur-md' : 'bg-white border-blue-50 shadow-sm hover:shadow-md'
+                    'bg-white border-blue-50 shadow-sm hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-start gap-4 md:gap-5">
@@ -129,10 +129,10 @@ const Privacy = () => {
                       <section.icon size={20} className="md:w-6 md:h-6" />
                     </div>
                     <div>
-                      <h3 className={`font-black text-base md:text-lg tracking-tight mb-1 md:mb-2 ${isDark ? 'text-white/90' : 'text-[#F3655D]'}`}>
+                      <h3 className={`font-black text-base md:text-lg tracking-tight mb-1 md:mb-2 ${'text-[#eb483f]'}`}>
                         {section.title}
                       </h3>
-                      <p className={`text-xs md:text-sm leading-relaxed opacity-60 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>
+                      <p className={`text-xs md:text-sm leading-relaxed opacity-60 ${'text-[#eb483f]'}`}>
                         {section.content}
                       </p>
                     </div>
@@ -149,4 +149,6 @@ const Privacy = () => {
 };
 
 export default Privacy;
+
+
 

@@ -35,8 +35,8 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
             : '0 0 0px transparent'
         }}
         className={`
-          relative flex-1 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-2xl transition-all duration-300
-          ${isFocused ? 'border-[#eb483f]' : (isDark ? 'border-white/30' : 'border-white/40')}
+          relative flex-1 ${'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-2xl transition-all duration-300
+          ${isFocused ? 'border-[#eb483f]' : ('border-white/40')}
           border border-solid
         `}
       >
@@ -54,17 +54,17 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
         />
         <Search
           size={16}
-          className={`absolute right-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-[#eb483f]' : (isDark ? 'text-white/60' : 'text-white/80')}`}
+          className={`absolute right-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-[#eb483f]' : ('text-white/80')}`}
         />
       </motion.div>
 
       {/* Filter Button â€” Tournament Control Knob */}
       <button
         onClick={handleFilterClick}
-        className={`w-12 h-12 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-xl flex items-center justify-center border border-solid ${isDark ? 'border-white/30' : 'border-white/40'} hover:border-[#eb483f] transition-all duration-300 group`}
+        className={`w-12 h-12 ${'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-xl flex items-center justify-center border border-solid ${'border-white/40'} hover:border-[#eb483f] transition-all duration-300 group`}
       >
         <div ref={filterRef}>
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className={`${isDark ? 'text-white/50' : 'text-white/80'} group-hover:text-[#eb483f] transition-colors`}>
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className={`${'text-white/80'} group-hover:text-[#eb483f] transition-colors`}>
             <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
             <circle cx="10" cy="10" r="2" fill="currentColor" />
             <line x1="10" y1="3" x2="10" y2="5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -79,4 +79,5 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
 };
 
 export default ScoreboardSearch;
+
 

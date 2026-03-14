@@ -33,7 +33,7 @@ const CoachCard = ({ batch, index = 0 }) => {
           alt={batch.coachName}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#F3655D] via-[#F3655D]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#eb483f] via-[#eb483f]/40 to-transparent" />
 
         {/* Pro Badge */}
         <div className="absolute top-4 left-4 glass px-3 py-1.5 rounded-xl flex items-center gap-2">
@@ -54,25 +54,25 @@ const CoachCard = ({ batch, index = 0 }) => {
       {/* Content */}
       <div className="p-5 space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className={`${isDark ? 'glass-light' : 'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
+          <div className={`${'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
             <Clock size={15} className="text-[#eb483f] mb-1.5" />
-            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Timing</p>
-            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}>{batch.timing.split(' - ')[0]}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/40'}`}>Timing</p>
+            <p className={`text-xs font-bold mt-0.5 ${'text-[#eb483f]/80'}`}>{batch.timing.split(' - ')[0]}</p>
           </div>
-          <div className={`${isDark ? 'glass-light' : 'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
+          <div className={`${'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
             <Users size={15} className="text-[#FFD600] mb-1.5" />
-            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Level</p>
-            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}>{batch.level}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/40'}`}>Level</p>
+            <p className={`text-xs font-bold mt-0.5 ${'text-[#eb483f]/80'}`}>{batch.level}</p>
           </div>
         </div>
 
         {/* Progress Meter - fitness tracker style */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Seats Filled</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${'text-[#eb483f]/40'}`}>Seats Filled</span>
             <span className="text-[10px] text-[#eb483f] font-bold">{filledSeats}/{totalSeats}</span>
           </div>
-          <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
+          <div className={`h-1.5 rounded-full overflow-hidden ${'bg-slate-100'}`}>
             <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: `${seatPercent}%` }}
@@ -88,20 +88,20 @@ const CoachCard = ({ batch, index = 0 }) => {
           </div>
         </div>
 
-        <p className={`text-xs leading-relaxed ${isDark ? 'text-white/30' : 'text-[#F3655D]/50'}`}>
+        <p className={`text-xs leading-relaxed ${'text-[#eb483f]/50'}`}>
           {batch.days} classes. Footwork, racket handling & strategy.
         </p>
 
         {/* Footer */}
-        <div className={`pt-4 border-t flex items-center justify-between ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
+        <div className={`pt-4 border-t flex items-center justify-between ${'border-slate-100'}`}>
           <div>
-            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/20' : 'text-[#F3655D]/30'}`}>Fee / Month</p>
-            <p className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>â‚¹{batch.fees}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/30'}`}>Fee / Month</p>
+            <p className={`text-xl font-black font-display ${'text-[#eb483f]'}`}>â‚¹{batch.fees}</p>
           </div>
           <motion.button
             whileTap={{ scale: 0.95, rotate: -2 }}
             onClick={() => navigate('/coaching-summary', { state: { batch } })}
-            className="bg-[#eb483f] text-[#F3655D] px-6 py-3 rounded-2xl font-bold text-sm
+            className="bg-[#eb483f] text-[#eb483f] px-6 py-3 rounded-2xl font-bold text-sm
                        shadow-[0_0_20px_rgba(235, 72, 63,0.15)] hover:shadow-[0_0_30px_rgba(235, 72, 63,0.3)]
                        transition-all duration-300"
           >
@@ -114,4 +114,6 @@ const CoachCard = ({ batch, index = 0 }) => {
 };
 
 export default CoachCard;
+
+
 

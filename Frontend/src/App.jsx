@@ -24,6 +24,7 @@ import Profile from './modules/user/pages/Profile';
 import EditProfile from './modules/user/pages/EditProfile';
 import Wallet from './modules/user/pages/Wallet';
 import Notifications from './modules/user/pages/Notifications';
+import Events from './modules/user/pages/Events';
 import Privacy from './modules/user/pages/Privacy';
 import Help from './modules/user/pages/Help';
 import CoachingSummary from './modules/user/pages/CoachingSummary';
@@ -70,6 +71,7 @@ function App() {
           <Route index element={<UserHome />} />
           <Route path="arenas" element={<ArenaListing />} />
           <Route path="arenas/:id" element={<ArenaDetails />} />
+          <Route path="events" element={<Events />} />
           <Route path="bookings" element={<Dashboard />} />
           <Route path="coaching" element={<Coaching />} />
           <Route path="profile" element={<Profile />} />

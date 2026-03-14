@@ -9,17 +9,12 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('arena-theme') || 'dark';
-    }
-    return 'dark';
-  });
+  const [theme, setTheme] = useState('light');
 
-  const isDark = theme === 'dark';
+  const isDark = false;
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    // Disabled as per user request to remove dark mode permanently
   };
 
   useEffect(() => {

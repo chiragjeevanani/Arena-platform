@@ -13,33 +13,33 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
 
   const statusConfig = {
     Available: {
-      bg: isDark ? 'glass-neon' : 'bg-[#e9fff3]',
-      border: isDark ? 'border-[#eb483f]/20' : 'border-[#eb483f]/40',
-      text: isDark ? 'text-[#eb483f]' : 'text-[#069d4b]',
+      bg: 'bg-[#e9fff3]',
+      border: 'border-[#eb483f]/40',
+      text: 'text-[#069d4b]',
       label: null,
     },
     Booked: {
-      bg: isDark ? 'glass-light' : 'bg-slate-100/50',
-      border: isDark ? 'border-white/5' : 'border-slate-200',
-      text: isDark ? 'text-white/25' : 'text-slate-500',
+      bg: 'bg-slate-100/50',
+      border: 'border-slate-200',
+      text: 'text-slate-500',
       label: 'Booked',
     },
     Coaching: {
-      bg: isDark ? 'bg-[#FFD600]/5' : 'bg-amber-50',
-      border: isDark ? 'border-[#FFD600]/15' : 'border-amber-200/60',
-      text: isDark ? 'text-[#FFD600]/60' : 'text-amber-700',
+      bg: 'bg-amber-50',
+      border: 'border-amber-200/60',
+      text: 'text-amber-700',
       label: 'Coaching',
     },
     Maintenance: {
-      bg: isDark ? 'bg-red-500/5' : 'bg-red-50',
-      border: isDark ? 'border-red-500/15' : 'border-red-200/50',
-      text: isDark ? 'text-red-400/60' : 'text-red-700',
+      bg: 'bg-red-50',
+      border: 'border-red-200/50',
+      text: 'text-red-700',
       label: 'Maintenance',
     },
     Blocked: {
-      bg: isDark ? 'glass-light' : 'bg-slate-100/30',
-      border: isDark ? 'border-white/5' : 'border-slate-200/50',
-      text: isDark ? 'text-white/20' : 'text-slate-400',
+      bg: 'bg-slate-100/30',
+      border: 'border-slate-200/50',
+      text: 'text-slate-400',
       label: 'Blocked',
     },
   };
@@ -61,7 +61,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   };
 
   const selectedStyles = isSelected
-    ? `bg-[#eb483f]/15 ${isDark ? 'border-[#eb483f]/40 neon-glow' : 'border-[#eb483f]/60 shadow-[0_0_15px_rgba(235, 72, 63,0.3)]'}`
+    ? `bg-[#eb483f]/15 ${'border-[#eb483f]/60 shadow-[0_0_15px_rgba(235, 72, 63,0.3)]'}`
     : '';
 
   return (
@@ -91,7 +91,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
 
       {/* Price */}
       {slot.status === 'Available' && (
-        <span className={`block text-xs mt-1 font-bold ${isSelected ? 'text-[#eb483f]/70' : `${isDark ? 'text-white/30' : 'text-[#F3655D]/50'}`}`}>
+        <span className={`block text-xs mt-1 font-bold ${isSelected ? 'text-[#eb483f]/70' : `${'text-[#eb483f]/50'}`}`}>
           â‚¹{slot.price}
         </span>
       )}
@@ -109,4 +109,6 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
 };
 
 export default CourtSlot;
+
+
 

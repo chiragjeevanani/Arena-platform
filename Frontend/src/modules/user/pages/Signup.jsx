@@ -96,7 +96,7 @@ const Signup = () => {
             />
 
             <FormControlLabel
-              control={<Checkbox color="primary" sx={{ color: '#F3655D', '&.Mui-checked': { color: '#F3655D' } }} />}
+              control={<Checkbox color="primary" sx={{ color: '#eb483f', '&.Mui-checked': { color: '#eb483f' } }} />}
               label={<span className="text-sm text-slate-600 font-medium">I agree to the Terms & Conditions</span>}
             />
 
@@ -105,13 +105,13 @@ const Signup = () => {
               type="submit"
               variant="contained"
               size="large"
-              className="bg-[#F3655D] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
+              className="bg-[#eb483f] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
               sx={{
                 borderRadius: '16px',
                 textTransform: 'none',
                 fontSize: '1rem',
                 fontWeight: 'bold',
-                backgroundColor: '#F3655D'
+                backgroundColor: '#eb483f'
               }}
             >
               Sign Up
@@ -121,7 +121,7 @@ const Signup = () => {
           <div className="text-center">
             <p className="text-slate-500">
               Already have an account? {' '}
-              <Link to="/login" className="text-[#F3655D] font-bold underline">Login</Link>
+              <Link to="/login" className="text-[#eb483f] font-bold underline">Login</Link>
             </p>
           </div>
         </div>
@@ -131,4 +131,5 @@ const Signup = () => {
 };
 
 export default Signup;
+
 

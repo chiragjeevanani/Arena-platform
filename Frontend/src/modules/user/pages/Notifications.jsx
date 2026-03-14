@@ -51,7 +51,7 @@ const Notifications = () => {
   ];
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? '' : 'bg-slate-50/50'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${'bg-slate-50/50'}`}>
       {/* Premium Background Decorative Elements */}
       {!isDark && (
         <>
@@ -66,14 +66,14 @@ const Notifications = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className={`w-full overflow-hidden rounded-2xl md:rounded-none md:shadow-[0_20px_50px_-12px_rgba(15,23,42,0.1)] md:border transition-all duration-500 ${
-            isDark ? 'bg-[#F3655D] md:border-white/10' : 'bg-white md:bg-white md:border-slate-100'
+            isDark ? 'bg-[#eb483f] md:border-white/10' : 'bg-white md:bg-white md:border-slate-100'
           }`}
         >
           {/* Header */}
           <div className={`px-6 pt-3 pb-3 md:pt-5 md:pb-5 backdrop-blur-xl border-b transition-all ${
             isDark 
-              ? 'bg-[#F3655D]/80 border-white/5' 
-              : 'bg-[#F3655D] md:bg-white border-blue-50 shadow-sm'
+              ? 'bg-[#eb483f]/80 border-white/5' 
+              : 'bg-[#eb483f] md:bg-white border-blue-50 shadow-sm'
           }`}>
             <div className="flex items-center gap-4">
               <button
@@ -81,14 +81,14 @@ const Notifications = () => {
                 className={`w-10 h-10 rounded-2xl md:rounded-none flex items-center justify-center border active:scale-95 transition-all ${
                   isDark 
                     ? 'bg-white/5 border-white/10 text-white/60' 
-                    : 'bg-white/10 md:bg-white border-white/10 md:border-blue-100 text-white md:text-[#F3655D] shadow-sm'
+                    : 'bg-white/10 md:bg-white border-white/10 md:border-blue-100 text-white md:text-[#eb483f] shadow-sm'
                 }`}
               >
                 <ArrowLeft size={18} />
               </button>
               <h1 className={`text-lg font-bold font-display uppercase tracking-tight ${
-                isDark || (!isDark) ? 'text-white md:text-[#F3655D]' : ''
-              } ${isDark ? 'text-white' : ''}`}>
+                isDark || (!isDark) ? 'text-white md:text-[#eb483f]' : ''
+              } ${''}`}>
                 Notifications
               </h1>
             </div>
@@ -108,16 +108,16 @@ const Notifications = () => {
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex justify-between items-start">
-                    <h4 className={`font-black text-sm md:text-[15px] tracking-tight ${isDark ? 'text-white/90' : 'text-[#F3655D]'}`}>{notif.title}</h4>
+                    <h4 className={`font-black text-sm md:text-[15px] tracking-tight ${'text-[#eb483f]'}`}>{notif.title}</h4>
                     <div className="flex items-center gap-1 opacity-40">
                       <Clock size={8} className="md:w-[10px] md:h-[10px]" strokeWidth={3} />
-                      <span className={`text-[9px] md:text-[10px] font-black uppercase ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>{notif.time.split(' ')[0]} {notif.time.split(' ')[1].charAt(0)}</span>
+                      <span className={`text-[9px] md:text-[10px] font-black uppercase ${'text-[#eb483f]'}`}>{notif.time.split(' ')[0]} {notif.time.split(' ')[1].charAt(0)}</span>
                     </div>
                   </div>
-                  <p className={`text-xs md:text-sm mt-0.5 md:mt-1 leading-relaxed ${isDark ? 'text-white/50' : 'text-[#F3655D]/50'}`}>{notif.message}</p>
+                  <p className={`text-xs md:text-sm mt-0.5 md:mt-1 leading-relaxed ${'text-[#eb483f]/50'}`}>{notif.message}</p>
                   <div className="mt-2 md:mt-3 flex items-center gap-2">
                     <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg md:rounded-none ${notif.bg} ${notif.color}`}>{notif.type}</span>
-                    <div className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-blue-200'}`}>{notif.time}</div>
+                    <div className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${'text-blue-200'}`}>{notif.time}</div>
                   </div>
                 </div>
               </motion.div>
@@ -125,11 +125,11 @@ const Notifications = () => {
 
             {notifications.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20 px-10 text-center">
-                <div className={`w-20 h-20 md:rounded-none rounded-[32px] flex items-center justify-center mb-6 ${isDark ? 'bg-white/5 text-white/20' : 'bg-blue-50 text-blue-200'}`}>
+                <div className={`w-20 h-20 md:rounded-none rounded-[32px] flex items-center justify-center mb-6 ${'bg-blue-50 text-blue-200'}`}>
                   <Bell size={32} />
                 </div>
-                <h3 className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>No Notifications</h3>
-                <p className={`text-sm mt-3 leading-relaxed opacity-50 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Stay tuned! We'll notify you when something exciting happens.</p>
+                <h3 className={`text-xl font-black font-display ${'text-[#eb483f]'}`}>No Notifications</h3>
+                <p className={`text-sm mt-3 leading-relaxed opacity-50 ${'text-[#eb483f]'}`}>Stay tuned! We'll notify you when something exciting happens.</p>
               </div>
             )}
           </div>
@@ -140,4 +140,6 @@ const Notifications = () => {
 };
 
 export default Notifications;
+
+
 

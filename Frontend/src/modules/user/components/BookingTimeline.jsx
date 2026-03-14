@@ -47,7 +47,7 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
               alt={booking.arenaName} 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-            <div className={`absolute inset-0 bg-gradient-to-r ${isDark ? 'from-black/60 via-black/20 to-transparent' : 'from-blue-900/40 to-transparent'}`} />
+            <div className={`absolute inset-0 bg-gradient-to-r ${'from-blue-900/40 to-transparent'}`} />
             
             {/* Status vertical badge for completed */}
             {booking.status === 'Completed' ? (
@@ -55,7 +55,7 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
                 Past
               </div>
             ) : (
-              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#eb483f] text-[#F3655D] text-[8px] font-black uppercase tracking-widest shadow-lg z-10">
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#eb483f] text-[#eb483f] text-[8px] font-black uppercase tracking-widest shadow-lg z-10">
                 <div className="w-1 h-1 rounded-full bg-current animate-pulse" />
                 Live
               </div>
@@ -66,35 +66,35 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
           <div className="flex-1 p-4 flex flex-col justify-between">
             <div className="space-y-1">
               <div className="flex justify-between items-start gap-2">
-                <h4 className={`font-black text-[14px] leading-tight tracking-tight line-clamp-2 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
+                <h4 className={`font-black text-[14px] leading-tight tracking-tight line-clamp-2 ${'text-[#0F172A]'}`}>
                   {booking.arenaName}
                 </h4>
                 <div className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest border shrink-0 ${
                   booking.status === 'Upcoming' 
-                    ? (isDark ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]' : 'bg-emerald-50 border-emerald-100 text-emerald-600')
-                    : (isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-slate-50 border-slate-100 text-slate-400')
+                    ? ('bg-emerald-50 border-emerald-100 text-emerald-600')
+                    : ('bg-slate-50 border-slate-100 text-slate-400')
                 }`}>
                   {booking.status}
                 </div>
               </div>
               <div className="flex items-center gap-1 opacity-50">
-                <MapPin size={10} className={isDark ? 'text-white' : 'text-[#0F172A]'} strokeWidth={3} />
-                <span className={`text-[9px] font-bold truncate max-w-[100px] ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
+                <MapPin size={10} className={'text-[#0F172A]'} strokeWidth={3} />
+                <span className={`text-[9px] font-bold truncate max-w-[100px] ${'text-[#0F172A]'}`}>
                   {booking.location}
                 </span>
               </div>
             </div>
 
-            <div className={`grid grid-cols-2 gap-2 py-2.5 border-t border-dashed ${isDark ? 'border-white/10' : 'border-slate-100'}`}>
+            <div className={`grid grid-cols-2 gap-2 py-2.5 border-t border-dashed ${'border-slate-100'}`}>
               <div className="space-y-0.5">
-                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Date</p>
+                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${'text-[#eb483f]'}`}>Date</p>
                 <div className="flex items-center gap-1.5">
                   <Calendar size={11} className="text-[#eb483f]" strokeWidth={2.5} />
-                  <span className={`text-[10px] font-black tracking-tight ${isDark ? 'text-white/80' : 'text-[#F3655D]'}`}>{booking.date}</span>
+                  <span className={`text-[10px] font-black tracking-tight ${'text-[#eb483f]'}`}>{booking.date}</span>
                 </div>
               </div>
               <div className="space-y-0.5">
-                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Court</p>
+                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${'text-[#eb483f]'}`}>Court</p>
                 <div className="flex items-center gap-1.5">
                   <div className="w-1 h-1 rounded-full bg-[#eb483f]" />
                   <span className={`text-[10px] font-black text-[#eb483f]`}>{booking.courtName}</span>
@@ -104,32 +104,32 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
 
             <div className="flex justify-between items-end">
                <div className="space-y-0.5">
-                  <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Time Slot</p>
+                  <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${'text-[#eb483f]'}`}>Time Slot</p>
                   <div className="flex items-center gap-1">
                     <Clock size={11} className="text-blue-500" strokeWidth={2.5} />
-                    <span className={`text-[10px] font-black tracking-tight ${isDark ? 'text-white/80' : 'text-[#F3655D]'}`}>{booking.slot}</span>
+                    <span className={`text-[10px] font-black tracking-tight ${'text-[#eb483f]'}`}>{booking.slot}</span>
                   </div>
                </div>
                {booking.status === 'Completed' && (
-                 <span className={`text-[10px] font-black ${isDark ? 'text-white/30' : 'text-[#F3655D]/30'}`}>â‚¹{booking.price}</span>
+                 <span className={`text-[10px] font-black ${'text-[#eb483f]/30'}`}>â‚¹{booking.price}</span>
                )}
             </div>
           </div>
         </div>
 
         {/* Footer Action Bar */}
-        <div className={`p-4 pt-0 flex items-center justify-between gap-3 ${isDark ? '' : 'bg-slate-50/30'}`}>
+        <div className={`p-4 pt-0 flex items-center justify-between gap-3 ${'bg-slate-50/30'}`}>
            {booking.status === 'Upcoming' && (
-             <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-white shadow-sm border border-slate-100'}`}>
+             <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${'bg-white shadow-sm border border-slate-100'}`}>
                 <div className="w-1.5 h-1.5 rounded-full bg-[#FFD600] animate-pulse" />
-                <span className={`text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-[#FFD600]' : 'text-amber-500'}`}>
+                <span className={`text-[9px] font-black uppercase tracking-widest ${'text-amber-500'}`}>
                   Starts in {countdown}
                 </span>
              </div>
            )}
            <button className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all active:scale-95 ml-auto ${
              isDark 
-               ? 'bg-[#eb483f] text-[#F3655D] shadow-[0_8px_20px_-5px_rgba(235, 72, 63,0.3)]' 
+               ? 'bg-[#eb483f] text-[#eb483f] shadow-[0_8px_20px_-5px_rgba(235, 72, 63,0.3)]' 
                : 'bg-[#0F172A] text-white shadow-[0_8px_20px_-5px_rgba(15,23,42,0.3)]'
            }`}>
              View Details <ChevronRight size={12} strokeWidth={4} />
@@ -141,4 +141,6 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
 };
 
 export default BookingTimelineCard;
+
+
 

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Receipt } from 'lucide-react';
 import { USER_BOOKINGS } from '../../../data/mockData';
@@ -10,7 +10,8 @@ import { useTheme } from '../context/ThemeContext';
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('upcoming');
-  const { isDark } = useTheme();
+  const { toggleTheme } = useTheme();
+  const isDark = false;
   const [allBookings, setAllBookings] = useState([]);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-[#F8FAFC]'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${'bg-[#F8FAFC]'}`}>
       {/* Premium Background Decorative Elements */}
       {!isDark && (
         <>
@@ -42,7 +43,7 @@ const Dashboard = () => {
       {/* Header - Premium Dark Style */}
       {/* Header - Desktop Hidden Logo/Nav Row */}
       <div className="md:hidden">
-        <div className={`px-6 pt-6 pb-4 backdrop-blur-2xl border-b border-white/10 bg-[#0F172A] rounded-b-[40px] shadow-[0_15px_40px_rgba(15,23,42,0.25)]`}>
+        <div className={`px-6 pt-6 pb-4 backdrop-blur-2xl border-b border-white/10 bg-[#eb483f] rounded-b-[40px] shadow-[0_15px_40px_rgba(235, 72, 63, 0.25)]`}>
           <div className="max-w-5xl mx-auto flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
               <button
@@ -73,10 +74,8 @@ const Dashboard = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2.5 px-1 rounded-[16px] text-[9px] font-black uppercase tracking-wider transition-all duration-500 relative z-10 ${activeTab === tab.id
-                  ? 'bg-gradient-to-br from-[#eb483f] to-[#22dd77] text-[#F3655D] shadow-[0_5px_15px_rgba(235, 72, 63,0.3)]'
-                  : isDark 
-                    ? 'text-white/40 hover:text-white/60 hover:bg-white/5'
-                    : 'text-[#F3655D]/40 hover:text-[#F3655D]/70 hover:bg-slate-50'
+                  ? 'bg-gradient-to-br from-[#eb483f] to-[#eb483f] text-white shadow-[0_5px_15px_rgba(235, 72, 63, 0.3)]'
+                  : 'text-[#eb483f]/40 hover:text-[#eb483f]/70 hover:bg-slate-50'
                 }`}
             >
               {tab.name}
@@ -106,8 +105,8 @@ const Dashboard = () => {
                   <div className="w-20 h-20 rounded-[32px] bg-white/5 border border-white/10 mx-auto flex items-center justify-center mb-6">
                     <Receipt size={32} className="text-[#eb483f]/20" />
                   </div>
-                  <h3 className={`text-lg font-black font-display ${isDark ? 'text-white/80' : 'text-[#0F172A]'}`}>No upcoming slots</h3>
-                  <p className={`text-xs mt-2 font-bold opacity-30 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>Explore arenas and book your favorite court today!</p>
+                  <h3 className={`text-lg font-black font-display ${'text-[#0F172A]'}`}>No upcoming slots</h3>
+                  <p className={`text-xs mt-2 font-bold opacity-30 ${'text-[#0F172A]'}`}>Explore arenas and book your favorite court today!</p>
                 </div>
               )}
             </motion.div>
@@ -144,13 +143,13 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="max-w-5xl mx-auto text-center py-24 px-10">
-                  <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative ${isDark ? 'bg-white/5 border-white/5 shadow-black/40' : 'bg-white border-blue-100 shadow-blue-500/5'
+                  <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative ${'bg-white border-blue-100 shadow-blue-500/5'
                     }`}>
                     <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                    <GraduationCap size={40} className={`opacity-20 ${isDark ? 'text-white' : 'text-blue-500'}`} />
+                    <GraduationCap size={40} className={`opacity-20 ${'text-blue-500'}`} />
                   </div>
-                  <h3 className={`text-xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>No Academy History</h3>
-                  <p className={`text-xs mt-3 font-bold leading-relaxed opacity-30 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
+                  <h3 className={`text-xl font-black font-display tracking-tight ${'text-[#0F172A]'}`}>No Academy History</h3>
+                  <p className={`text-xs mt-3 font-bold leading-relaxed opacity-30 ${'text-[#0F172A]'}`}>
                     You haven't enrolled in any coaching classes yet. Start your training today!
                   </p>
                 </div>
@@ -165,15 +164,14 @@ const Dashboard = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="max-w-5xl mx-auto text-center py-24 px-10"
             >
-              <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative ${isDark ? 'bg-white/5 border-white/5 shadow-black/40' : 'bg-white border-blue-100 shadow-blue-500/5'
-                }`}>
+              <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative bg-white border-blue-100 shadow-[0_10px_30px_rgba(235, 72, 63, 0.05)]`}>
                 {/* Glossy Reflection */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                <Receipt size={40} className={`opacity-20 ${isDark ? 'text-white' : 'text-blue-500'}`} />
+                <Receipt size={40} className={`opacity-20 text-[#eb483f]`} />
               </div>
               <div>
-                <h3 className={`text-xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>No receipts found</h3>
-                <p className={`text-xs mt-3 font-bold leading-relaxed opacity-30 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
+                <h3 className={`text-xl font-black font-display tracking-tight ${'text-[#0F172A]'}`}>No receipts found</h3>
+                <p className={`text-xs mt-3 font-bold leading-relaxed opacity-30 ${'text-[#0F172A]'}`}>
                   Your payment receipts will appear here once processed.
                 </p>
               </div>
@@ -186,4 +184,6 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
 

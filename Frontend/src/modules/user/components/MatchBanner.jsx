@@ -4,7 +4,7 @@ import { ShuttlecockIcon } from './BadmintonIcons';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /**
- * MatchBanner â€” Dynamic promotional banner with shuttlecock flying animation
+ * MatchBanner Ã¢â‚¬â€ Dynamic promotional banner with shuttlecock flying animation
  * Updated with a high-end multi-card seamless carousel for desktop
  */
 const MatchBanner = ({ promos = [] }) => {
@@ -63,8 +63,8 @@ const MatchBanner = ({ promos = [] }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* ðŸ“± Mobile View (Existing Logic) */}
-      <div className="md:hidden relative h-52 rounded-[28px] overflow-hidden group">
+      {/* Ã°Å¸â€œÂ± Mobile View (Existing Logic) */}
+      <div className="md:hidden relative h-52 overflow-hidden group">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={current}
@@ -79,10 +79,10 @@ const MatchBanner = ({ promos = [] }) => {
               alt="Promo"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#F3655D]/80 via-[#F3655D]/40 to-transparent pointer-events-none" />
+            {/* Gradient overlay removed per user request */}
             <div className="absolute inset-0 p-5 flex flex-col justify-center">
               <p className="text-[#fffdd0] text-[9px] font-black uppercase tracking-[0.2em] mb-1.5">
-                {promos[current].subtitle || 'ðŸ¸ Featured'}
+                {promos[current].subtitle || 'Ã°Å¸ÂÂ¸ Featured'}
               </p>
               <h2 className="text-white text-xl font-black max-w-[200px] leading-tight font-display tracking-tight">
                 {promos[current].title}
@@ -93,7 +93,7 @@ const MatchBanner = ({ promos = [] }) => {
                 <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_15px_rgba(235, 72, 63,0.5)]" />
               </div>
 
-              <button className="mt-3 bg-[#fffdd0] text-[#F3655D] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(235, 72, 63,0.2)]">
+              <button className="mt-3 bg-[#fffdd0] text-[#eb483f] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(235, 72, 63,0.2)]">
                 {promos[current].buttonText || 'Join Match'}
               </button>
             </div>
@@ -114,7 +114,7 @@ const MatchBanner = ({ promos = [] }) => {
         </div>
       </div>
 
-      {/* ðŸ’» Desktop View (3-Card Infinite Carousel) */}
+      {/* Ã°Å¸â€™Â» Desktop View (3-Card Infinite Carousel) */}
       <div className="hidden md:block relative overflow-visible py-4">
         <div className="max-w-7xl mx-auto px-4 relative group/carousel">
           <div className="overflow-hidden p-2 -m-2">
@@ -159,7 +159,7 @@ const MatchBanner = ({ promos = [] }) => {
                       <h2 className="text-white text-base font-black leading-tight font-display line-clamp-2 mb-4">
                         {promo.title}
                       </h2>
-                      <div className="bg-[#fffdd0] text-[#F3655D] px-4 py-1.5 rounded-lg font-black text-[10px] w-fit uppercase tracking-wider">
+                      <div className="bg-[#fffdd0] text-[#eb483f] px-4 py-1.5 rounded-lg font-black text-[10px] w-fit uppercase tracking-wider">
                         {promo.buttonText}
                       </div>
                     </div>
@@ -173,13 +173,13 @@ const MatchBanner = ({ promos = [] }) => {
           <div className="absolute inset-y-0 -left-6 -right-6 flex items-center justify-between pointer-events-none opacity-0 group-hover/carousel:opacity-100 transition-opacity">
             <button 
               onClick={prevDesktop}
-              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#F3655D] transition-all hover:scale-110 shadow-lg"
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#eb483f] transition-all hover:scale-110 shadow-lg"
             >
               <ChevronLeft size={24} />
             </button>
             <button 
               onClick={nextDesktop}
-              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#F3655D] transition-all hover:scale-110 shadow-lg"
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#eb483f] transition-all hover:scale-110 shadow-lg"
             >
               <ChevronRight size={24} />
             </button>
@@ -210,4 +210,5 @@ const MatchBanner = ({ promos = [] }) => {
 };
 
 export default MatchBanner;
+
 

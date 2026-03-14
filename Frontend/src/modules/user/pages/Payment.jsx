@@ -29,7 +29,7 @@ const Payment = () => {
   };
 
   return (
-    <div className={`min-h-screen pb-40 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-slate-50'}`}>
+    <div className={`min-h-screen pb-40 relative overflow-hidden ${'bg-slate-50'}`}>
       {/* Background Decorative Glows */}
       {!isDark && (
         <>
@@ -40,14 +40,14 @@ const Payment = () => {
 
       {/* Header - Compact Consistent Styling */}
       <div className={`px-6 pt-5 pb-3 sticky top-0 z-[60] backdrop-blur-2xl border-b transition-all duration-500 ${
-        isDark ? 'bg-[#F3655D]/80 border-white/5' : 'bg-[#F3655D] border-blue-900/10 md:rounded-b-none rounded-b-[24px] shadow-[0_8px_25px_rgba(10,31,68,0.12)]'
+        'bg-[#eb483f] border-blue-900/10 md:rounded-b-none rounded-b-[24px] shadow-[0_8px_25px_rgba(10,31,68,0.12)]'
       }`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
               className={`w-9 h-9 md:w-10 md:h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${
-                isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-white/10 border-white/20 text-white'
+                'bg-white/10 border-white/20 text-white'
               }`}
             >
               <ArrowLeft size={16} />
@@ -74,14 +74,14 @@ const Payment = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className={`text-center py-10 md:py-12 rounded-[36px] border relative overflow-hidden shadow-2xl transition-all ${
-                isDark ? 'glass-card border-white/5 bg-white/5 shadow-black/40' : 'bg-white border-blue-50 shadow-[0_20px_60px_rgba(10,31,68,0.06)]'
+                'bg-white border-blue-50 shadow-[0_20px_60px_rgba(10,31,68,0.06)]'
               }`}
             >
-              <div className={`absolute inset-0 court-lines ${isDark ? 'opacity-10' : 'opacity-5'}`} />
+              <div className={`absolute inset-0 court-lines ${'opacity-5'}`} />
               
               <div className="relative z-10">
-                <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-2 ${isDark ? 'text-[#eb483f]/60' : 'text-blue-500'}`}>Total Payable</p>
-                <h2 className={`text-4xl md:text-5xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>
+                <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-2 ${'text-blue-500'}`}>Total Payable</p>
+                <h2 className={`text-4xl md:text-5xl font-black font-display tracking-tight ${'text-[#eb483f]'}`}>
                   â‚¹{state?.amount?.toFixed(2)}
                 </h2>
                 
@@ -93,31 +93,31 @@ const Payment = () => {
                    <div className="w-[1px] h-6 bg-slate-100 hidden md:block" />
                    <div className="text-center">
                       <p className={`text-[7px] font-black uppercase text-slate-400 tracking-widest mb-0.5`}>Order ID</p>
-                      <span className={`text-[9px] font-black uppercase ${isDark ? 'text-white/40' : 'text-slate-600'}`}>#ARN-8829</span>
+                      <span className={`text-[9px] font-black uppercase ${'text-slate-600'}`}>#ARN-8829</span>
                    </div>
                 </div>
               </div>
               
-              <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl rounded-full -mr-12 -mt-12 ${isDark ? 'bg-[#eb483f]/10' : 'bg-blue-100/50'}`} />
+              <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl rounded-full -mr-12 -mt-12 ${'bg-blue-100/50'}`} />
             </motion.div>
 
             {/* Security Badge Desktop Only */}
             <div className={`hidden lg:flex flex-col items-center justify-center gap-3 p-6 rounded-[32px] border border-dashed ${
-              isDark ? 'bg-white/[0.02] border-white/10' : 'bg-slate-50/50 border-slate-200'
+              'bg-slate-50/50 border-slate-200'
             }`}>
                <div className="w-10 h-10 rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                   <Lock size={20} />
                </div>
                <div className="text-center">
-                  <h4 className={`text-xs font-black tracking-tight ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>PCI-DSS Compliant</h4>
-                  <p className={`text-[9px] font-bold mt-0.5 opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Data encrypted with 256-bit SSL</p>
+                  <h4 className={`text-xs font-black tracking-tight ${'text-[#eb483f]'}`}>PCI-DSS Compliant</h4>
+                  <p className={`text-[9px] font-bold mt-0.5 opacity-40 ${'text-[#eb483f]'}`}>Data encrypted with 256-bit SSL</p>
                </div>
             </div>
           </div>
 
           {/* Right Column: Payment Selection */}
           <div className="md:col-span-12 lg:col-span-7 space-y-4">
-            <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ml-2 ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Choose Payment Method</h3>
+            <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ml-2 ${'text-[#eb483f]/40'}`}>Choose Payment Method</h3>
             <div className="space-y-3">
               {paymentMethods.map((method, index) => {
                 const Icon = method.icon;
@@ -130,7 +130,7 @@ const Payment = () => {
                     key={method.id}
                     className={`flex items-center p-5 rounded-[28px] border transition-all cursor-pointer relative group overflow-hidden ${
                       isSelected
-                        ? `shadow-xl ${isDark ? 'bg-[#eb483f]/5 border-[#eb483f]/40' : 'bg-white border-blue-500 shadow-blue-500/10'}`
+                        ? `shadow-xl ${'bg-white border-blue-500 shadow-blue-500/10'}`
                         : `${isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-slate-100 hover:border-slate-200'}`
                     }`}
                   >
@@ -149,12 +149,12 @@ const Payment = () => {
 
                     <div className="flex-1">
                       <span className={`text-sm md:text-base font-black tracking-tight block transition-colors ${
-                        isSelected ? (isDark ? 'text-white' : 'text-[#F3655D]') : (isDark ? 'text-white/40' : 'text-[#F3655D]/60')
+                        isSelected ? ('text-[#eb483f]') : ('text-[#eb483f]/60')
                       }`}>
                         {method.name}
                       </span>
                       <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] block mt-0.5 transition-colors ${
-                        isSelected ? (isDark ? 'text-[#eb483f]' : 'text-blue-500') : (isDark ? 'text-white/20' : 'text-slate-400')
+                        isSelected ? ('text-blue-500') : ('text-slate-400')
                       }`}>
                         {method.desc}
                       </span>
@@ -163,8 +163,8 @@ const Payment = () => {
                     {/* Custom Radio Circle */}
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                       isSelected 
-                        ? (isDark ? 'border-[#eb483f] scale-110 shadow-[0_0_10px_rgba(235, 72, 63,0.5)]' : 'border-blue-500 scale-110') 
-                        : (isDark ? 'border-white/10' : 'border-slate-200')
+                        ? ('border-blue-500 scale-110') 
+                        : ('border-slate-200')
                     }`}>
                       <AnimatePresence>
                         {isSelected && (
@@ -172,7 +172,7 @@ const Payment = () => {
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             exit={{ scale: 0 }}
-                            className={`w-2.5 h-2.5 rounded-full ${isDark ? 'bg-[#eb483f]' : 'bg-blue-500 shadow-lg shadow-blue-500/50'}`}
+                            className={`w-2.5 h-2.5 rounded-full ${'bg-blue-500 shadow-lg shadow-blue-500/50'}`}
                           />
                         )}
                       </AnimatePresence>
@@ -201,7 +201,7 @@ const Payment = () => {
 
       {/* Footer Payment Action - Mobile & Medium Screens */}
       <div className={`fixed bottom-0 left-0 right-0 p-6 z-[100] lg:hidden border-t backdrop-blur-xl transition-colors duration-500 ${
-        isDark ? 'bg-[#F3655D]/90 border-white/5' : 'bg-white/80 border-blue-50 shadow-[0_-20px_50px_rgba(10,31,68,0.1)]'
+        'bg-white/80 border-blue-50 shadow-[0_-20px_50px_rgba(10,31,68,0.1)]'
       }`}>
         <ShuttleButton
           variant="primary"
@@ -223,7 +223,7 @@ const Payment = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-[#F3655D]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-10 text-center"
+            className="fixed inset-0 z-[200] bg-[#eb483f]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-10 text-center"
           >
             <div className="relative">
               <motion.div
@@ -259,4 +259,6 @@ const Payment = () => {
 };
 
 export default Payment;
+
+
 

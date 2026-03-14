@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import { Email, Lock, Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
@@ -22,11 +22,11 @@ const Login = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full md:max-w-[440px] bg-white md:p-10 md:rounded-none rounded-[40px] md:shadow-[0_20px_60px_rgba(3,57,108,0.08)] md:border md:border-slate-100"
+        className="w-full md:max-w-[440px] bg-white md:p-10 md:rounded-none rounded-[40px] md:shadow-[0_20px_60px_rgba(235,72,63,0.08)] md:border md:border-slate-100"
       >
         <div className="space-y-8">
         <div className="text-center">
-          <div className="w-20 h-20 bg-[#F3655D] rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-blue-100">
+          <div className="w-20 h-20 bg-[#eb483f] rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-[#eb483f]/20">
             <LoginIcon className="text-white" sx={{ fontSize: 40 }} />
           </div>
           <h1 className="mt-6 text-3xl font-bold text-slate-900">Welcome Back</h1>
@@ -73,7 +73,7 @@ const Login = () => {
           />
 
           <div className="text-right">
-            <button type="button" className="text-[#F3655D] font-semibold text-sm">Forgot Password?</button>
+            <button type="button" className="text-[#eb483f] font-semibold text-sm">Forgot Password?</button>
           </div>
 
           <Button
@@ -81,13 +81,13 @@ const Login = () => {
             type="submit"
             variant="contained"
             size="large"
-            className="bg-[#F3655D] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
+            className="bg-[#eb483f] hover:bg-[#eb483f]/90 py-4 shadow-lg shadow-[#eb483f]/20"
             sx={{
               borderRadius: '16px',
               textTransform: 'none',
               fontSize: '1rem',
               fontWeight: 'bold',
-              backgroundColor: '#F3655D'
+              backgroundColor: '#eb483f'
             }}
           >
             Login
@@ -97,7 +97,7 @@ const Login = () => {
         <div className="text-center">
           <p className="text-slate-500">
             Don't have an account? {' '}
-            <Link to="/signup" className="text-[#F3655D] font-bold underline">Sign Up</Link>
+            <Link to="/signup" className="text-[#eb483f] font-bold underline">Sign Up</Link>
           </p>
         </div>
       </div>
@@ -107,4 +107,5 @@ const Login = () => {
 };
 
 export default Login;
+
 

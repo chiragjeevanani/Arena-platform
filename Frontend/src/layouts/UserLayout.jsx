@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CourtIcon, StadiumIcon, ShuttleCalendarIcon, RacketIcon, PlayerAvatarIcon } from '../modules/user/components/BadmintonIcons';
 import { useTheme } from '../modules/user/context/ThemeContext';
 import Header from '../modules/user/components/Header';
+import { Calendar } from 'lucide-react';
 
 const UserLayout = () => {
   const location = useLocation();
@@ -12,17 +13,14 @@ const UserLayout = () => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: CourtIcon },
-    { path: '/arenas', label: 'Arenas', icon: StadiumIcon },
+    { path: '/events', label: 'Events', icon: Calendar },
     { path: '/bookings', label: 'Bookings', icon: ShuttleCalendarIcon },
     { path: '/coaching', label: 'Coaching', icon: RacketIcon },
     { path: '/profile', label: 'Profile', icon: PlayerAvatarIcon },
   ];
 
   return (
-    <div className={`flex flex-col min-h-screen relative overflow-x-hidden transition-colors duration-500 ${isDark
-        ? 'bg-[#08142B]'
-        : 'bg-[#F8FAFC]'
-      }`}>
+    <div className={`flex flex-col min-h-screen relative overflow-x-hidden transition-colors duration-500 bg-[#F8FAFC]`}>
       
       {/* Global Header - Sticky on Desktop (except profile) */}
       {!isProfilePage && (
@@ -44,13 +42,9 @@ const UserLayout = () => {
       {/* Mobile Bottom Navigation - Hidden on Desktop (md:hidden) */}
       <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden">
         {/* Top glow line */}
-        <div className={`h-[1px] bg-gradient-to-r from-transparent to-transparent ${isDark ? 'via-[#22FF88]/20' : 'via-[#0A1F44]/10'
-          }`} />
+        <div className={`h-[1px] bg-gradient-to-r from-transparent via-[#eb483f]/20 to-transparent`} />
 
-        <div className={`backdrop-blur-xl px-2 py-3 pb-7 flex justify-around items-center transition-colors duration-500 ${isDark
-            ? 'bg-[#08142B]/90 border-t border-white/5'
-            : 'bg-white/80 border-t border-[#0A1F44]/5 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'
-          }`}>
+        <div className={`backdrop-blur-xl px-2 py-3 pb-7 flex justify-around items-center transition-colors duration-500 bg-white/80 border-t border-[#eb483f]/10 shadow-[0_-4px_20px_rgba(235, 72, 63,0.05)]`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -65,23 +59,19 @@ const UserLayout = () => {
                     {isActive && (
                       <motion.div
                         layoutId="nav-active"
-                        className="absolute -top-3 w-8 h-1 rounded-full bg-[#22FF88] shadow-[0_0_10px_rgba(34,255,136,0.5)]"
+                        className="absolute -top-3 w-8 h-1 rounded-full bg-[#eb483f] shadow-[0_0_10px_rgba(235, 72, 63,0.5)]"
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
                     <div className={`p-2 rounded-xl transition-all duration-300 ${isActive
-                        ? 'text-[#22FF88]'
-                        : isDark
-                          ? 'text-white/30 group-hover:text-white/50'
-                          : 'text-[#0A1F44]/50 group-hover:text-[#0A1F44]/70'
+                        ? 'text-[#eb483f]'
+                        : 'text-slate-400 group-hover:text-[#eb483f]/70'
                       }`}>
                       <Icon size={22} />
                     </div>
                     <span className={`text-[9px] font-bold uppercase tracking-[0.1em] mt-0.5 transition-colors duration-300 ${isActive
-                        ? 'text-[#22FF88]'
-                        : isDark
-                          ? 'text-white/20 group-hover:text-white/40'
-                          : 'text-[#0A1F44]/50 group-hover:text-[#0A1F44]/70'
+                        ? 'text-[#eb483f]'
+                        : 'text-slate-400 group-hover:text-[#eb483f]/70'
                       }`}>
                       {item.label}
                     </span>

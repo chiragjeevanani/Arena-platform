@@ -1,4 +1,4 @@
-﻿import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Sun, Moon, LogIn } from 'lucide-react';
 import { useEffect, useRef } from 'react';
@@ -34,7 +34,7 @@ const Header = () => {
 
   return (
     <header className={`relative px-6 pt-4 pb-4 overflow-hidden transition-all duration-500 z-[100] ${
-      isDark ? 'bg-[#F3655D]' : 'bg-[#F3655D] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'
+      'bg-[#eb483f] shadow-[0_10px_30px_rgba(235, 72, 63, 0.15)]'
     }`}>
       {/* Stadium light streaks */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -84,14 +84,7 @@ const Header = () => {
           {/* 3. Right Corner: Theme, Notification & Auth */}
           <div className="flex justify-end pr-[3px]">
             <div className="flex items-center gap-3 shrink-0">
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className="w-9 h-9 bg-white/5 backdrop-blur-sm md:rounded-xl rounded-xl flex items-center justify-center border border-white/20 hover:border-[#eb483f]/40 transition-all group"
-                title="Toggle Theme"
-              >
-                {isDark ? <Sun size={17} className="text-[#FFD600] group-hover:scale-110 transition-transform" /> : <Moon size={17} className="text-[#eb483f] group-hover:scale-110 transition-transform" />}
-              </button>
+
 
               {/* Notification Bell */}
               <button
@@ -107,7 +100,7 @@ const Header = () => {
                 /* Login / Sign Up Button - Shown when NOT logged in */
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-5 h-9 bg-[#eb483f] text-[#F3655D] font-bold text-[11px] uppercase tracking-wider md:rounded-xl rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg shadow-[#eb483f]/20 active:scale-95 ml-1"
+                  className="px-5 h-9 bg-[#eb483f] text-[#eb483f] font-bold text-[11px] uppercase tracking-wider md:rounded-xl rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg shadow-[#eb483f]/20 active:scale-95 ml-1"
                 >
                   <LogIn size={15} strokeWidth={3} />
                   <span className="hidden lg:inline whitespace-nowrap">Login/Sign Up</span>
@@ -136,4 +129,6 @@ const Header = () => {
 };
 
 export default Header;
+
+
 

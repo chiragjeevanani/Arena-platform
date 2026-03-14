@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 
@@ -20,13 +20,13 @@ const ShuttleButton = ({
   const glowRef = useRef(null);
 
   const variants = {
-    primary: 'bg-[#eb483f] text-[#F3655D] hover:shadow-[0_0_30px_rgba(235, 72, 63,0.3)]',
-    secondary: 'bg-[#F3655D] text-[#eb483f] border border-[#eb483f]/20 hover:border-[#eb483f]/40',
+    primary: 'bg-[#eb483f] text-white hover:shadow-[0_0_30px_rgba(235, 72, 63,0.3)]',
+    secondary: 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20 hover:border-[#eb483f]/40',
     outline: 'bg-transparent text-[#eb483f] border border-[#eb483f]/30 hover:bg-[#eb483f]/5',
-    ghost: 'bg-transparent text-[#F8FAFC] hover:bg-white/5',
-    danger: 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20',
-    blue: 'bg-gradient-to-br from-[#0F172A] via-[#2563EB] to-[#7C3AED] text-white shadow-xl shadow-blue-500/20 border border-white/20 hover:shadow-blue-500/40 relative overflow-hidden',
-    premium: 'bg-gradient-to-br from-[#0F172A] to-[#1e1b4b] text-white border border-white/10 hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]',
+    ghost: 'bg-transparent text-slate-600 hover:bg-slate-50',
+    danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20',
+    blue: 'bg-gradient-to-br from-[#eb483f] via-[#D94F47] to-[#eb483f] text-white shadow-xl shadow-[#eb483f]/20 border border-white/20 hover:shadow-[#eb483f]/40 relative overflow-hidden',
+    premium: 'bg-gradient-to-br from-[#eb483f] to-[#D94F47] text-white border border-white/10 hover:shadow-[0_0_30px_rgba(235, 72, 63,0.25)]',
   };
 
   const sizes = {
@@ -80,4 +80,5 @@ const ShuttleButton = ({
 };
 
 export default ShuttleButton;
+
 
