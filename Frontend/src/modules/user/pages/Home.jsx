@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
@@ -62,9 +62,9 @@ const UserHome = () => {
 
   return (
     <div className={`min-h-screen pb-28 relative transition-colors duration-500 ${
-      isDark ? 'md:bg-[#020D08]' : 'md:bg-[#F0FFF4]'
+      isDark ? 'md:bg-[#FFFDD0]' : 'md:bg-[#FFFDD0]'
     }`}>
-      {/* ━━━━━━━━━━━━━━━━━━━━━━ THEME-CENTRIC GREEN BACKGROUND (DESKTOP) ━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” THEME-CENTRIC GREEN BACKGROUND (DESKTOP) â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
         {/* Subtle Green Gradient Overlay */}
         <div className={`absolute inset-0 transition-opacity duration-1000 ${
@@ -75,7 +75,7 @@ const UserHome = () => {
         
         {/* Decorative Green Mesh Glows */}
         <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${
-          isDark ? 'bg-[#22FF88]/[0.04]' : 'bg-[#22FF88]/[0.15]'
+          isDark ? 'bg-[#eb483f]/[0.04]' : 'bg-[#eb483f]/[0.15]'
         }`} />
         <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${
           isDark ? 'bg-[#1EE7FF]/[0.02]' : 'bg-blue-50/40'
@@ -90,14 +90,14 @@ const UserHome = () => {
         />
       </div>
 
-      {/* ═══════ Hero Header — Hidden on Desktop ═══════ */}
+      {/* â•â•â•â•â•â•â• Hero Header â€” Hidden on Desktop â•â•â•â•â•â•â• */}
       <div className="md:hidden">
         <div ref={heroRef} className={`relative px-6 pt-4 pb-4 overflow-hidden ${isDark ? '' : 'bg-[#0A1F44] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
           {/* Stadium light streaks */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div
               ref={lightRef1}
-              className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-[#22FF88]/20 to-transparent -skew-x-12"
+              className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-[#eb483f]/20 to-transparent -skew-x-12"
             />
             <div
               ref={lightRef2}
@@ -108,9 +108,9 @@ const UserHome = () => {
           {/* Background court pattern */}
           <div className="absolute inset-0 opacity-30">
             <svg width="100%" height="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
-              <line x1="200" y1="0" x2="200" y2="200" stroke="#22FF88" strokeWidth="0.5" opacity="0.1" />
-              <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke="#22FF88" strokeWidth="0.3" opacity="0.08" />
-              <line x1="50" y1="100" x2="350" y2="100" stroke="#22FF88" strokeWidth="0.3" opacity="0.05" strokeDasharray="4 4" />
+              <line x1="200" y1="0" x2="200" y2="200" stroke="#eb483f" strokeWidth="0.5" opacity="0.1" />
+              <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke="#eb483f" strokeWidth="0.3" opacity="0.08" />
+              <line x1="50" y1="100" x2="350" y2="100" stroke="#eb483f" strokeWidth="0.3" opacity="0.05" strokeDasharray="4 4" />
             </svg>
           </div>
 
@@ -124,7 +124,7 @@ const UserHome = () => {
                     Good Morning
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <ShuttlecockIcon size={24} className="text-[#22FF88]" />
+                    <ShuttlecockIcon size={24} className="text-[#eb483f]" />
                     <span className="text-lg font-black tracking-tight uppercase italic font-display text-white">
                       Badminton Arena
                     </span>
@@ -138,7 +138,7 @@ const UserHome = () => {
                   </button>
                   <button onClick={() => navigate('/profile/notifications')} className="relative w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
                     <Bell size={18} className="text-white/60" />
-                    <div className="absolute top-2.5 right-3 w-2 h-2 bg-[#22FF88] rounded-full" />
+                    <div className="absolute top-2.5 right-3 w-2 h-2 bg-[#eb483f] rounded-full" />
                   </button>
                 </div>
               </div>
@@ -153,7 +153,7 @@ const UserHome = () => {
       </div>
 
       <div className="px-4 md:px-8 space-y-10 mt-1">
-        {/* ═══════ Featured Banner ═══════ */}
+        {/* â•â•â•â•â•â•â• Featured Banner â•â•â•â•â•â•â• */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -163,13 +163,13 @@ const UserHome = () => {
           <MatchBanner promos={promos} />
         </motion.div>
 
-        {/* ═══════ Categories — Sport Cards ═══════ */}
+        {/* â•â•â•â•â•â•â• Categories â€” Sport Cards â•â•â•â•â•â•â• */}
         <div className="max-w-7xl mx-auto w-full">
           <motion.h3 
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className={`text-lg font-bold mb-6 font-display ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}
+            className={`text-lg font-bold mb-6 font-display ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}
           >
             What do you want to book?
           </motion.h3>
@@ -229,7 +229,7 @@ const UserHome = () => {
           </div>
         </div>
 
-        {/* ═══════ Nearby Arenas ═══════ */}
+        {/* â•â•â•â•â•â•â• Nearby Arenas â•â•â•â•â•â•â• */}
         <div className="max-w-7xl mx-auto w-full pb-10">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -237,8 +237,8 @@ const UserHome = () => {
             viewport={{ once: true }}
             className="flex justify-between items-center mb-6"
           >
-            <h3 className={`text-lg font-bold font-display ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>Nearby Arenas</h3>
-            <Link to="/arenas" className="text-[#22FF88] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#22FF88]/10 px-4 py-2 rounded-full border border-[#22FF88]/20">
+            <h3 className={`text-lg font-bold font-display ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}>Nearby Arenas</h3>
+            <Link to="/arenas" className="text-[#eb483f] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#eb483f]/10 px-4 py-2 rounded-full border border-[#22FF88]/20">
               See all <ChevronRight size={14} />
             </Link>
           </motion.div>
@@ -262,3 +262,4 @@ const UserHome = () => {
 };
 
 export default UserHome;
+

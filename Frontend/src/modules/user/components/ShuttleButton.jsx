@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 
 /**
- * ShuttleButton — Premium action button with racket swing micro-interaction
+ * ShuttleButton â€” Premium action button with racket swing micro-interaction
  */
 const ShuttleButton = ({
   children,
@@ -20,9 +20,9 @@ const ShuttleButton = ({
   const glowRef = useRef(null);
 
   const variants = {
-    primary: 'bg-[#22FF88] text-[#08142B] hover:shadow-[0_0_30px_rgba(34,255,136,0.3)]',
-    secondary: 'bg-[#0A1F44] text-[#22FF88] border border-[#22FF88]/20 hover:border-[#22FF88]/40',
-    outline: 'bg-transparent text-[#22FF88] border border-[#22FF88]/30 hover:bg-[#22FF88]/5',
+    primary: 'bg-[#eb483f] text-[#F3655D] hover:shadow-[0_0_30px_rgba(235, 72, 63,0.3)]',
+    secondary: 'bg-[#F3655D] text-[#eb483f] border border-[#eb483f]/20 hover:border-[#eb483f]/40',
+    outline: 'bg-transparent text-[#eb483f] border border-[#eb483f]/30 hover:bg-[#eb483f]/5',
     ghost: 'bg-transparent text-[#F8FAFC] hover:bg-white/5',
     danger: 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20',
     blue: 'bg-gradient-to-br from-[#0F172A] via-[#2563EB] to-[#7C3AED] text-white shadow-xl shadow-blue-500/20 border border-white/20 hover:shadow-blue-500/40 relative overflow-hidden',
@@ -80,3 +80,4 @@ const ShuttleButton = ({
 };
 
 export default ShuttleButton;
+

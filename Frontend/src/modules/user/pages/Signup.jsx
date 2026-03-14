@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton, Checkbox, FormControlLabel } from '@mui/material';
 import { Person, Email, Lock, Phone, Visibility, VisibilityOff, AppRegistration } from '@mui/icons-material';
@@ -96,7 +96,7 @@ const Signup = () => {
             />
 
             <FormControlLabel
-              control={<Checkbox color="primary" sx={{ color: '#03396c', '&.Mui-checked': { color: '#03396c' } }} />}
+              control={<Checkbox color="primary" sx={{ color: '#F3655D', '&.Mui-checked': { color: '#F3655D' } }} />}
               label={<span className="text-sm text-slate-600 font-medium">I agree to the Terms & Conditions</span>}
             />
 
@@ -105,13 +105,13 @@ const Signup = () => {
               type="submit"
               variant="contained"
               size="large"
-              className="bg-[#03396c] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
+              className="bg-[#F3655D] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
               sx={{
                 borderRadius: '16px',
                 textTransform: 'none',
                 fontSize: '1rem',
                 fontWeight: 'bold',
-                backgroundColor: '#03396c'
+                backgroundColor: '#F3655D'
               }}
             >
               Sign Up
@@ -121,7 +121,7 @@ const Signup = () => {
           <div className="text-center">
             <p className="text-slate-500">
               Already have an account? {' '}
-              <Link to="/login" className="text-[#03396c] font-bold underline">Login</Link>
+              <Link to="/login" className="text-[#F3655D] font-bold underline">Login</Link>
             </p>
           </div>
         </div>
@@ -131,3 +131,4 @@ const Signup = () => {
 };
 
 export default Signup;
+

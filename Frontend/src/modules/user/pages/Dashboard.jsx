@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Receipt } from 'lucide-react';
 import { USER_BOOKINGS } from '../../../data/mockData';
@@ -30,12 +30,12 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#08142B]' : 'bg-[#F8FAFC]'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-[#F8FAFC]'}`}>
       {/* Premium Background Decorative Elements */}
       {!isDark && (
         <>
           <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#22FF88]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
@@ -53,7 +53,7 @@ const Dashboard = () => {
               </button>
               <h1 className="text-xl font-bold font-display text-white tracking-tight">My Bookings</h1>
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-[#22FF88]/10 border border-[#22FF88]/20 flex items-center justify-center text-[#22FF88]">
+            <div className="w-10 h-10 rounded-2xl bg-[#eb483f]/10 border border-[#eb483f]/20 flex items-center justify-center text-[#eb483f]">
               <Receipt size={20} />
             </div>
           </div>
@@ -73,10 +73,10 @@ const Dashboard = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2.5 px-1 rounded-[16px] text-[9px] font-black uppercase tracking-wider transition-all duration-500 relative z-10 ${activeTab === tab.id
-                  ? 'bg-gradient-to-br from-[#22FF88] to-[#22dd77] text-[#0A1F44] shadow-[0_5px_15px_rgba(34,255,136,0.3)]'
+                  ? 'bg-gradient-to-br from-[#eb483f] to-[#22dd77] text-[#F3655D] shadow-[0_5px_15px_rgba(235, 72, 63,0.3)]'
                   : isDark 
                     ? 'text-white/40 hover:text-white/60 hover:bg-white/5'
-                    : 'text-[#0A1F44]/40 hover:text-[#0A1F44]/70 hover:bg-slate-50'
+                    : 'text-[#F3655D]/40 hover:text-[#F3655D]/70 hover:bg-slate-50'
                 }`}
             >
               {tab.name}
@@ -104,7 +104,7 @@ const Dashboard = () => {
               ) : (
                 <div className="text-center py-20 px-10">
                   <div className="w-20 h-20 rounded-[32px] bg-white/5 border border-white/10 mx-auto flex items-center justify-center mb-6">
-                    <Receipt size={32} className="text-[#22FF88]/20" />
+                    <Receipt size={32} className="text-[#eb483f]/20" />
                   </div>
                   <h3 className={`text-lg font-black font-display ${isDark ? 'text-white/80' : 'text-[#0F172A]'}`}>No upcoming slots</h3>
                   <p className={`text-xs mt-2 font-bold opacity-30 ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>Explore arenas and book your favorite court today!</p>
@@ -186,3 +186,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

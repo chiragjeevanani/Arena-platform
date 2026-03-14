@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { COACHING_BATCHES } from '../../../data/mockData';
 import CoachCard from '../components/CoachCard';
@@ -11,9 +11,9 @@ const Coaching = () => {
 
   return (
     <div className="min-h-screen pb-28">
-      {/* Header — Hidden on Desktop */}
+      {/* Header â€” Hidden on Desktop */}
       <div className="md:hidden">
-        <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#0A1F44] border-white/10 rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
+        <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b ${isDark ? 'bg-[#F3655D]/80 border-white/5' : 'bg-[#F3655D] border-white/10 rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
           <div className="max-w-5xl mx-auto flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
@@ -42,3 +42,4 @@ const Coaching = () => {
 };
 
 export default Coaching;
+

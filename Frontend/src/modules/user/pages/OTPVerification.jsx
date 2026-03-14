@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { Message, ArrowBackIos } from '@mui/icons-material';
@@ -43,7 +43,7 @@ const OTPVerification = () => {
         >
           <div className="text-center">
             <div className="w-20 h-20 bg-blue-50 rounded-3xl mx-auto flex items-center justify-center">
-               <Message className="text-[#03396C]" sx={{ fontSize: 40 }} />
+               <Message className="text-[#F3655D]" sx={{ fontSize: 40 }} />
             </div>
             <h1 className="mt-6 text-3xl font-bold text-slate-900">Verify Code</h1>
             <p className="text-slate-500 mt-2">We sent a 4-digit code to your phone <br /> <span className="text-slate-900 font-semibold">+91 98765 43210</span></p>
@@ -59,7 +59,7 @@ const OTPVerification = () => {
                 maxLength={1}
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
-                className="w-16 h-16 border-2 border-slate-100 bg-slate-50 rounded-2xl text-center text-2xl font-bold text-slate-900 focus:border-[#03396C] focus:outline-none focus:ring-4 focus:ring-[#03396C]/10 transition-all"
+                className="w-16 h-16 border-2 border-slate-100 bg-slate-50 rounded-2xl text-center text-2xl font-bold text-slate-900 focus:border-[#F3655D] focus:outline-none focus:ring-4 focus:ring-[#F3655D]/10 transition-all"
               />
             ))}
           </div>
@@ -67,7 +67,7 @@ const OTPVerification = () => {
           <div className="text-center">
             <p className="text-slate-500">
               Resend code in {' '}
-              <span className="text-[#03396C] font-bold">00:45</span>
+              <span className="text-[#F3655D] font-bold">00:45</span>
             </p>
           </div>
 
@@ -76,8 +76,8 @@ const OTPVerification = () => {
             onClick={handleSubmit}
             variant="contained"
             size="large"
-            className="bg-[#03396C] py-4"
-            sx={{ borderRadius: '16px', textTransform: 'none', fontWeight: 'bold', backgroundColor: '#03396C' }}
+            className="bg-[#F3655D] py-4"
+            sx={{ borderRadius: '16px', textTransform: 'none', fontWeight: 'bold', backgroundColor: '#F3655D' }}
           >
             Verify & Continue
           </Button>
@@ -88,3 +88,4 @@ const OTPVerification = () => {
 };
 
 export default OTPVerification;
+

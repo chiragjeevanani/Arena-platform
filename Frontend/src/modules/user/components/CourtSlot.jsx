@@ -1,11 +1,11 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import gsap from 'gsap';
 
 import { useTheme } from '../context/ThemeContext';
 
 /**
- * CourtSlot — Tournament schedule board styled time slot
+ * CourtSlot â€” Tournament schedule board styled time slot
  */
 const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   const slotRef = useRef(null);
@@ -14,8 +14,8 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   const statusConfig = {
     Available: {
       bg: isDark ? 'glass-neon' : 'bg-[#e9fff3]',
-      border: isDark ? 'border-[#22FF88]/20' : 'border-[#22FF88]/40',
-      text: isDark ? 'text-[#22FF88]' : 'text-[#069d4b]',
+      border: isDark ? 'border-[#eb483f]/20' : 'border-[#eb483f]/40',
+      text: isDark ? 'text-[#eb483f]' : 'text-[#069d4b]',
       label: null,
     },
     Booked: {
@@ -61,7 +61,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   };
 
   const selectedStyles = isSelected
-    ? `bg-[#22FF88]/15 ${isDark ? 'border-[#22FF88]/40 neon-glow' : 'border-[#22FF88]/60 shadow-[0_0_15px_rgba(34,255,136,0.3)]'}`
+    ? `bg-[#eb483f]/15 ${isDark ? 'border-[#eb483f]/40 neon-glow' : 'border-[#eb483f]/60 shadow-[0_0_15px_rgba(235, 72, 63,0.3)]'}`
     : '';
 
   return (
@@ -74,11 +74,11 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
         relative py-4 px-4 rounded-2xl text-center font-bold border
         transition-all duration-300 overflow-hidden
         ${isSelected ? selectedStyles : `${config.bg} ${config.border}`}
-        ${slot.status !== 'Available' ? 'cursor-not-allowed' : 'cursor-pointer hover:border-[#22FF88]/30'}
+        ${slot.status !== 'Available' ? 'cursor-not-allowed' : 'cursor-pointer hover:border-[#eb483f]/30'}
       `}
     >
       {/* Time */}
-      <span className={`text-[13px] font-black block ${isSelected ? 'text-[#22FF88]' : config.text}`}>
+      <span className={`text-[13px] font-black block ${isSelected ? 'text-[#eb483f]' : config.text}`}>
         {slot.time}
       </span>
 
@@ -91,8 +91,8 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
 
       {/* Price */}
       {slot.status === 'Available' && (
-        <span className={`block text-xs mt-1 font-bold ${isSelected ? 'text-[#22FF88]/70' : `${isDark ? 'text-white/30' : 'text-[#0A1F44]/50'}`}`}>
-          ₹{slot.price}
+        <span className={`block text-xs mt-1 font-bold ${isSelected ? 'text-[#eb483f]/70' : `${isDark ? 'text-white/30' : 'text-[#F3655D]/50'}`}`}>
+          â‚¹{slot.price}
         </span>
       )}
 
@@ -101,7 +101,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#22FF88]"
+          className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#eb483f]"
         />
       )}
     </motion.button>
@@ -109,3 +109,4 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
 };
 
 export default CourtSlot;
+

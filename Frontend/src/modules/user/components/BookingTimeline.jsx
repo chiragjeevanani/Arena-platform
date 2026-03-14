@@ -1,17 +1,17 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 
 /**
- * BookingTimeline — Timeline-style booking card with countdown timer
+ * BookingTimeline â€” Timeline-style booking card with countdown timer
  */
 const BookingTimelineCard = ({ booking, index = 0 }) => {
   const [countdown, setCountdown] = useState('');
   const { isDark } = useTheme();
 
   useEffect(() => {
-    // Simple countdown — generates a mock time for demo
+    // Simple countdown â€” generates a mock time for demo
     const updateCountdown = () => {
       const hours = Math.floor(Math.random() * 24) + 1;
       const mins = Math.floor(Math.random() * 59);
@@ -31,12 +31,12 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
     >
       {/* Timeline connector */}
       {index > 0 && (
-        <div className="absolute -top-6 left-6 w-[2px] h-6 bg-gradient-to-b from-transparent to-[#22FF88]/20" />
+        <div className="absolute -top-6 left-6 w-[2px] h-6 bg-gradient-to-b from-transparent to-[#eb483f]/20" />
       )}
 
       <div className={`rounded-xl overflow-hidden transition-all duration-500 group border relative flex flex-col ${
         isDark 
-          ? 'glass-card border-white/5 bg-white/5 hover:border-[#22FF88]/20 shadow-2xl shadow-black/40' 
+          ? 'glass-card border-white/5 bg-white/5 hover:border-[#eb483f]/20 shadow-2xl shadow-black/40' 
           : 'bg-white border-blue-50 shadow-[0_15px_35px_-12px_rgba(10,31,68,0.12)] hover:shadow-[0_25px_50px_-15px_rgba(10,31,68,0.2)] hover:border-blue-200'
       }`}>
         <div className="flex items-stretch h-[160px]">
@@ -55,7 +55,7 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
                 Past
               </div>
             ) : (
-              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#22FF88] text-[#0A1F44] text-[8px] font-black uppercase tracking-widest shadow-lg z-10">
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#eb483f] text-[#F3655D] text-[8px] font-black uppercase tracking-widest shadow-lg z-10">
                 <div className="w-1 h-1 rounded-full bg-current animate-pulse" />
                 Live
               </div>
@@ -71,7 +71,7 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
                 </h4>
                 <div className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest border shrink-0 ${
                   booking.status === 'Upcoming' 
-                    ? (isDark ? 'bg-[#22FF88]/10 border-[#22FF88]/20 text-[#22FF88]' : 'bg-emerald-50 border-emerald-100 text-emerald-600')
+                    ? (isDark ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]' : 'bg-emerald-50 border-emerald-100 text-emerald-600')
                     : (isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-slate-50 border-slate-100 text-slate-400')
                 }`}>
                   {booking.status}
@@ -87,31 +87,31 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
 
             <div className={`grid grid-cols-2 gap-2 py-2.5 border-t border-dashed ${isDark ? 'border-white/10' : 'border-slate-100'}`}>
               <div className="space-y-0.5">
-                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Date</p>
+                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Date</p>
                 <div className="flex items-center gap-1.5">
-                  <Calendar size={11} className="text-[#22FF88]" strokeWidth={2.5} />
-                  <span className={`text-[10px] font-black tracking-tight ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{booking.date}</span>
+                  <Calendar size={11} className="text-[#eb483f]" strokeWidth={2.5} />
+                  <span className={`text-[10px] font-black tracking-tight ${isDark ? 'text-white/80' : 'text-[#F3655D]'}`}>{booking.date}</span>
                 </div>
               </div>
               <div className="space-y-0.5">
-                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Court</p>
+                <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Court</p>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1 h-1 rounded-full bg-[#22FF88]" />
-                  <span className={`text-[10px] font-black text-[#22FF88]`}>{booking.courtName}</span>
+                  <div className="w-1 h-1 rounded-full bg-[#eb483f]" />
+                  <span className={`text-[10px] font-black text-[#eb483f]`}>{booking.courtName}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-between items-end">
                <div className="space-y-0.5">
-                  <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Time Slot</p>
+                  <p className={`text-[7px] font-black uppercase tracking-[0.15em] opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Time Slot</p>
                   <div className="flex items-center gap-1">
                     <Clock size={11} className="text-blue-500" strokeWidth={2.5} />
-                    <span className={`text-[10px] font-black tracking-tight ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{booking.slot}</span>
+                    <span className={`text-[10px] font-black tracking-tight ${isDark ? 'text-white/80' : 'text-[#F3655D]'}`}>{booking.slot}</span>
                   </div>
                </div>
                {booking.status === 'Completed' && (
-                 <span className={`text-[10px] font-black ${isDark ? 'text-white/30' : 'text-[#0A1F44]/30'}`}>₹{booking.price}</span>
+                 <span className={`text-[10px] font-black ${isDark ? 'text-white/30' : 'text-[#F3655D]/30'}`}>â‚¹{booking.price}</span>
                )}
             </div>
           </div>
@@ -129,7 +129,7 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
            )}
            <button className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all active:scale-95 ml-auto ${
              isDark 
-               ? 'bg-[#22FF88] text-[#0A1F44] shadow-[0_8px_20px_-5px_rgba(34,255,136,0.3)]' 
+               ? 'bg-[#eb483f] text-[#F3655D] shadow-[0_8px_20px_-5px_rgba(235, 72, 63,0.3)]' 
                : 'bg-[#0F172A] text-white shadow-[0_8px_20px_-5px_rgba(15,23,42,0.3)]'
            }`}>
              View Details <ChevronRight size={12} strokeWidth={4} />
@@ -141,3 +141,4 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
 };
 
 export default BookingTimelineCard;
+

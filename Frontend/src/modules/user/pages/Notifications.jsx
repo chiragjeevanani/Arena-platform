@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, Calendar, Wallet, Tag, Info, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
@@ -22,7 +22,7 @@ const Notifications = () => {
       id: 2,
       type: 'wallet',
       title: 'Low Wallet Balance',
-      message: 'Your wallet balance is below ₹200. Top up now to continue booking.',
+      message: 'Your wallet balance is below â‚¹200. Top up now to continue booking.',
       time: '5 hours ago',
       icon: Wallet,
       color: 'text-amber-500',
@@ -56,7 +56,7 @@ const Notifications = () => {
       {!isDark && (
         <>
           <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#22FF88]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
@@ -66,14 +66,14 @@ const Notifications = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className={`w-full overflow-hidden rounded-2xl md:rounded-none md:shadow-[0_20px_50px_-12px_rgba(15,23,42,0.1)] md:border transition-all duration-500 ${
-            isDark ? 'bg-[#08142B] md:border-white/10' : 'bg-white md:bg-white md:border-slate-100'
+            isDark ? 'bg-[#F3655D] md:border-white/10' : 'bg-white md:bg-white md:border-slate-100'
           }`}
         >
           {/* Header */}
           <div className={`px-6 pt-3 pb-3 md:pt-5 md:pb-5 backdrop-blur-xl border-b transition-all ${
             isDark 
-              ? 'bg-[#08142B]/80 border-white/5' 
-              : 'bg-[#0A1F44] md:bg-white border-blue-50 shadow-sm'
+              ? 'bg-[#F3655D]/80 border-white/5' 
+              : 'bg-[#F3655D] md:bg-white border-blue-50 shadow-sm'
           }`}>
             <div className="flex items-center gap-4">
               <button
@@ -81,13 +81,13 @@ const Notifications = () => {
                 className={`w-10 h-10 rounded-2xl md:rounded-none flex items-center justify-center border active:scale-95 transition-all ${
                   isDark 
                     ? 'bg-white/5 border-white/10 text-white/60' 
-                    : 'bg-white/10 md:bg-white border-white/10 md:border-blue-100 text-white md:text-[#0A1F44] shadow-sm'
+                    : 'bg-white/10 md:bg-white border-white/10 md:border-blue-100 text-white md:text-[#F3655D] shadow-sm'
                 }`}
               >
                 <ArrowLeft size={18} />
               </button>
               <h1 className={`text-lg font-bold font-display uppercase tracking-tight ${
-                isDark || (!isDark) ? 'text-white md:text-[#0A1F44]' : ''
+                isDark || (!isDark) ? 'text-white md:text-[#F3655D]' : ''
               } ${isDark ? 'text-white' : ''}`}>
                 Notifications
               </h1>
@@ -108,13 +108,13 @@ const Notifications = () => {
                 </div>
                 <div className="flex-1 text-left">
                   <div className="flex justify-between items-start">
-                    <h4 className={`font-black text-sm md:text-[15px] tracking-tight ${isDark ? 'text-white/90' : 'text-[#0A1F44]'}`}>{notif.title}</h4>
+                    <h4 className={`font-black text-sm md:text-[15px] tracking-tight ${isDark ? 'text-white/90' : 'text-[#F3655D]'}`}>{notif.title}</h4>
                     <div className="flex items-center gap-1 opacity-40">
                       <Clock size={8} className="md:w-[10px] md:h-[10px]" strokeWidth={3} />
-                      <span className={`text-[9px] md:text-[10px] font-black uppercase ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{notif.time.split(' ')[0]} {notif.time.split(' ')[1].charAt(0)}</span>
+                      <span className={`text-[9px] md:text-[10px] font-black uppercase ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>{notif.time.split(' ')[0]} {notif.time.split(' ')[1].charAt(0)}</span>
                     </div>
                   </div>
-                  <p className={`text-xs md:text-sm mt-0.5 md:mt-1 leading-relaxed ${isDark ? 'text-white/50' : 'text-[#0A1F44]/50'}`}>{notif.message}</p>
+                  <p className={`text-xs md:text-sm mt-0.5 md:mt-1 leading-relaxed ${isDark ? 'text-white/50' : 'text-[#F3655D]/50'}`}>{notif.message}</p>
                   <div className="mt-2 md:mt-3 flex items-center gap-2">
                     <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg md:rounded-none ${notif.bg} ${notif.color}`}>{notif.type}</span>
                     <div className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-blue-200'}`}>{notif.time}</div>
@@ -128,8 +128,8 @@ const Notifications = () => {
                 <div className={`w-20 h-20 md:rounded-none rounded-[32px] flex items-center justify-center mb-6 ${isDark ? 'bg-white/5 text-white/20' : 'bg-blue-50 text-blue-200'}`}>
                   <Bell size={32} />
                 </div>
-                <h3 className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>No Notifications</h3>
-                <p className={`text-sm mt-3 leading-relaxed opacity-50 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Stay tuned! We'll notify you when something exciting happens.</p>
+                <h3 className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>No Notifications</h3>
+                <p className={`text-sm mt-3 leading-relaxed opacity-50 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Stay tuned! We'll notify you when something exciting happens.</p>
               </div>
             )}
           </div>
@@ -140,3 +140,4 @@ const Notifications = () => {
 };
 
 export default Notifications;
+

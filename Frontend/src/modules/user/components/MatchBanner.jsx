@@ -1,33 +1,61 @@
-import { motion, AnimatePresence } from 'framer-motion';
+﻿import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { ShuttlecockIcon } from './BadmintonIcons';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /**
- * MatchBanner — Dynamic promotional banner with shuttlecock flying animation
- * Updated with a high-end multi-card carousel for desktop
+ * MatchBanner â€” Dynamic promotional banner with shuttlecock flying animation
+ * Updated with a high-end multi-card seamless carousel for desktop
  */
 const MatchBanner = ({ promos = [] }) => {
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(0); // For Mobile
+  const [desktopCurrent, setDesktopCurrent] = useState(0); // Handled in effect
+  const [isSnapping, setIsSnapping] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  // Initialize desktop index safely in the middle block
+  useEffect(() => {
+    if (promos.length > 0 && desktopCurrent === 0) {
+      setDesktopCurrent(promos.length);
+    }
+  }, [promos.length]);
 
   useEffect(() => {
     if (promos.length <= 1 || isHovered) return;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % promos.length);
-    }, 5000);
+      if (window.innerWidth < 768) {
+        setCurrent((prev) => (prev >= promos.length - 1 ? 0 : prev + 1));
+      } else {
+        setDesktopCurrent((prev) => prev + 1);
+      }
+    }, 3000); // Faster automatic scroll
     return () => clearInterval(timer);
   }, [promos.length, isHovered]);
 
-  const prevSlide = () => {
-    setCurrent((prev) => (prev - 1 + promos.length) % promos.length);
+  const prevDesktop = () => setDesktopCurrent((prev) => prev - 1);
+  const nextDesktop = () => setDesktopCurrent((prev) => prev + 1);
+
+  const handleDesktopAnimationComplete = () => {
+    if (promos.length === 0) return;
+    if (desktopCurrent >= promos.length * 2) {
+      setIsSnapping(true);
+      setDesktopCurrent(desktopCurrent - promos.length);
+    } else if (desktopCurrent <= 0) {
+      setIsSnapping(true);
+      setDesktopCurrent(desktopCurrent + promos.length);
+    }
   };
 
-  const nextSlide = () => {
-    setCurrent((prev) => (prev + 1) % promos.length);
-  };
+  useEffect(() => {
+    if (isSnapping) {
+      const snapTimer = setTimeout(() => setIsSnapping(false), 50);
+      return () => clearTimeout(snapTimer);
+    }
+  }, [isSnapping]);
 
   if (!promos.length) return null;
+
+  const desktopPromos = [...promos, ...promos, ...promos];
 
   return (
     <div 
@@ -35,7 +63,7 @@ const MatchBanner = ({ promos = [] }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 📱 Mobile View (Existing Logic) */}
+      {/* ðŸ“± Mobile View (Existing Logic) */}
       <div className="md:hidden relative h-52 rounded-[28px] overflow-hidden group">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
@@ -51,10 +79,10 @@ const MatchBanner = ({ promos = [] }) => {
               alt="Promo"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#08142B]/80 via-[#08142B]/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#F3655D]/80 via-[#F3655D]/40 to-transparent pointer-events-none" />
             <div className="absolute inset-0 p-5 flex flex-col justify-center">
-              <p className="text-[#22FF88] text-[9px] font-black uppercase tracking-[0.2em] mb-1.5">
-                {promos[current].subtitle || '🏸 Featured'}
+              <p className="text-[#fffdd0] text-[9px] font-black uppercase tracking-[0.2em] mb-1.5">
+                {promos[current].subtitle || 'ðŸ¸ Featured'}
               </p>
               <h2 className="text-white text-xl font-black max-w-[200px] leading-tight font-display tracking-tight">
                 {promos[current].title}
@@ -62,10 +90,10 @@ const MatchBanner = ({ promos = [] }) => {
 
               {/* Floating Shuttlecock Icon (Restored) */}
               <div className="absolute top-4 right-4 animate-float opacity-80 z-20">
-                <ShuttlecockIcon size={40} className="text-[#22FF88] drop-shadow-[0_0_15px_rgba(34,255,136,0.5)]" />
+                <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_15px_rgba(235, 72, 63,0.5)]" />
               </div>
 
-              <button className="mt-3 bg-[#22FF88] text-[#08142B] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(34,255,136,0.2)]">
+              <button className="mt-3 bg-[#fffdd0] text-[#F3655D] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(235, 72, 63,0.2)]">
                 {promos[current].buttonText || 'Join Match'}
               </button>
             </div>
@@ -79,74 +107,101 @@ const MatchBanner = ({ promos = [] }) => {
               key={index}
               onClick={() => setCurrent(index)}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                current === index ? 'w-8 bg-[#22FF88]' : 'w-2 bg-white/20'
+                current === index ? 'w-8 bg-[#fffdd0]' : 'w-2 bg-white/20'
               }`}
             />
           ))}
         </div>
       </div>
 
-      {/* 💻 Desktop View (3-Card Carousel) */}
+      {/* ðŸ’» Desktop View (3-Card Infinite Carousel) */}
       <div className="hidden md:block relative overflow-visible py-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative group/carousel">
+          <div className="overflow-hidden p-2 -m-2">
             <motion.div 
-               className="flex gap-4"
-               animate={{ x: `-${current * 0}%` }} // Adjusted for static look if 3 items, or sliding if more
-               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+               className="flex"
+               animate={{ x: `-${desktopCurrent * 33.3333}%` }}
+               transition={isSnapping ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 25 }}
+               onAnimationComplete={handleDesktopAnimationComplete}
             >
-              {promos.map((promo, index) => (
-                <motion.div 
-                  key={index}
-                  className={`relative min-w-[calc(33.333%-11px)] h-60 rounded-[24px] overflow-hidden border transition-all duration-500 cursor-pointer group/card
-                    ${current === index ? 'border-[#22FF88]/40 shadow-[0_15px_35px_rgba(0,0,0,0.2)]' : 'border-white/5 opacity-90'}`}
-                  whileHover={{ scale: 1.02, translateY: -5 }}
-                >
-                  {/* Image */}
-                  <img 
-                    src={promo.image} 
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110" 
-                    alt={promo.title}
-                  />
-                  
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#08142B]/90 via-[#08142B]/20 to-transparent" />
-                  
-                  {/* Floating Shuttlecock Icon (Restored) */}
-                  <div className="absolute top-6 right-6 animate-float opacity-0 group-hover/card:opacity-100 transition-all duration-500 z-30 pointer-events-none">
-                    <ShuttlecockIcon size={48} className="text-[#22FF88] drop-shadow-[0_0_20px_rgba(34,255,136,0.6)]" />
-                  </div>
+              {desktopPromos.map((promo, index) => {
+                const actualIndex = index % promos.length;
+                // Highlight logic for items mathematically in view right now
+                const isVisible = index >= desktopCurrent && index <= desktopCurrent + 2;
 
-                  {/* Content */}
-                  <div className="absolute inset-x-0 bottom-0 p-6 z-20">
-                    <span className="text-[#22FF88] text-[8px] font-black uppercase tracking-[0.3em] mb-1 block">
-                      {promo.subtitle}
-                    </span>
-                    <h2 className="text-white text-base font-black leading-tight font-display line-clamp-2 mb-3">
-                      {promo.title}
-                    </h2>
-                    <div className="bg-[#22FF88] text-[#08142B] px-4 py-1.5 rounded-lg font-black text-[10px] w-fit uppercase tracking-wider">
-                      {promo.buttonText}
+                return (
+                <div key={`${actualIndex}-${index}`} className="min-w-[33.3333%] px-2">
+                  <motion.div 
+                    className={`relative w-full h-[180px] rounded-[16px] overflow-hidden border transition-all duration-500 cursor-pointer group/card
+                      ${isVisible ? 'border-[#fffdd0]/40 shadow-[0_15px_35px_rgba(0,0,0,0.2)]' : 'border-white/5 opacity-80'}`}
+                    whileHover={{ scale: 1.02, translateY: -5 }}
+                  >
+                    {/* Image */}
+                    <img 
+                      src={promo.image} 
+                      className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover/card:scale-110" 
+                      alt={promo.title}
+                    />
+                    
+                    {/* Overlay - Gradient removed as requested */}
+                    <div className="absolute inset-0" />
+                    
+                    {/* Floating Shuttlecock Icon */}
+                    <div className="absolute top-6 right-6 animate-float opacity-0 group-hover/card:opacity-100 transition-all duration-500 z-30 pointer-events-none">
+                      <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_20px_rgba(235, 72, 63,0.6)]" />
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+
+                    {/* Content */}
+                    <div className="absolute inset-x-0 bottom-0 p-6 z-20">
+                      <span className="text-[#fffdd0] text-[8px] font-black uppercase tracking-[0.3em] mb-1.5 block">
+                        {promo.subtitle}
+                      </span>
+                      <h2 className="text-white text-base font-black leading-tight font-display line-clamp-2 mb-4">
+                        {promo.title}
+                      </h2>
+                      <div className="bg-[#fffdd0] text-[#F3655D] px-4 py-1.5 rounded-lg font-black text-[10px] w-fit uppercase tracking-wider">
+                        {promo.buttonText}
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              )})}
             </motion.div>
           </div>
 
+          {/* Navigation Arrows for Desktop */}
+          <div className="absolute inset-y-0 -left-6 -right-6 flex items-center justify-between pointer-events-none opacity-0 group-hover/carousel:opacity-100 transition-opacity">
+            <button 
+              onClick={prevDesktop}
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#F3655D] transition-all hover:scale-110 shadow-lg"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button 
+              onClick={nextDesktop}
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#F3655D] transition-all hover:scale-110 shadow-lg"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+
           {/* Indicators for Desktop (Centered) */}
-          <div className="mt-8 flex justify-center items-center space-x-3">
-            {promos.map((_, index) => (
+          <div className="mt-8 flex justify-center items-center space-x-2">
+            {promos.map((_, index) => {
+              const activeNormalized = (desktopCurrent % promos.length + promos.length) % promos.length;
+              return (
               <button
                 key={index}
-                onClick={() => setCurrent(index)}
+                onClick={() => {
+                  setDesktopCurrent(promos.length + index);
+                }}
                 className="group py-2"
               >
-                <div className={`h-1 mx-1 rounded-full transition-all duration-500 ${
-                  current === index ? 'w-10 bg-[#22FF88]' : 'w-3 bg-white/20 group-hover:bg-white/40'
+                <div className={`h-1.5 rounded-full transition-all duration-500 ${
+                  activeNormalized === index ? 'w-8 bg-[#fffdd0]' : 'w-4 bg-white/20 group-hover:bg-white/40'
                 }`} />
               </button>
-            ))}
+            )})}
           </div>
         </div>
       </div>
@@ -155,3 +210,4 @@ const MatchBanner = ({ promos = [] }) => {
 };
 
 export default MatchBanner;
+

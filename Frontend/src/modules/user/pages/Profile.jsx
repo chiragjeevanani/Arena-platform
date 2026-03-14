@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
@@ -19,16 +19,16 @@ const Profile = () => {
   ];
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#08142B]' : 'bg-[#F8FAFC]'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-[#F8FAFC]'}`}>
       {/* Background Decorative Glows */}
       {!isDark && (
         <>
           <div className="absolute top-24 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#22FF88]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
-      {/* ━━━━━━━━━━━━━━━━━━━━━━ DESKTOP VIEW ━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” DESKTOP VIEW â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <div className="hidden md:block max-w-6xl mx-auto md:pt-10 md:px-8 relative z-20">
         {/* Header Navigation */}
         <div className="flex items-center gap-4 mb-8">
@@ -57,7 +57,7 @@ const Profile = () => {
             <div className="flex flex-col items-center">
               <div className="relative group">
                 <div className={`w-32 h-32 rounded-full overflow-hidden border-[3px] p-1 transition-all duration-500 ${
-                  isDark ? 'border-[#22FF88]/20 bg-white/5' : 'border-blue-50 bg-slate-50'
+                  isDark ? 'border-[#eb483f]/20 bg-white/5' : 'border-blue-50 bg-slate-50'
                 }`}>
                   <img
                     src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
@@ -68,7 +68,7 @@ const Profile = () => {
                 <button 
                   onClick={() => navigate('/profile/edit')}
                   className={`absolute bottom-0 right-1 w-10 h-10 rounded-xl border-[2px] flex items-center justify-center active:scale-90 transition-all shadow-xl ${
-                    isDark ? 'bg-[#22FF88] text-[#08142B] border-[#08142B]' : 'bg-[#0F172A] text-white border-white'
+                    isDark ? 'bg-[#eb483f] text-[#F3655D] border-[#F3655D]' : 'bg-[#0F172A] text-white border-white'
                   }`}
                 >
                   <Pencil size={14} strokeWidth={3} />
@@ -80,9 +80,9 @@ const Profile = () => {
                 <p className={`text-[12px] font-medium mt-1 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>haroos@arenahub.com</p>
                 
                 <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mt-4 border ${
-                  isDark ? 'bg-[#22FF88]/10 border-[#22FF88]/20 text-[#22FF88]' : 'bg-blue-50 border-blue-100 text-blue-600'
+                  isDark ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]' : 'bg-blue-50 border-blue-100 text-blue-600'
                 }`}>
-                  <div className={`w-1.5 h-1.5 rounded-full bg-[#22FF88] animate-pulse`} />
+                  <div className={`w-1.5 h-1.5 rounded-full bg-[#eb483f] animate-pulse`} />
                   <span className="text-[10px] font-black uppercase tracking-[0.1em]">Premium Member</span>
                 </div>
               </div>
@@ -93,7 +93,7 @@ const Profile = () => {
                   <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Bookings</p>
                 </div>
                 <div className="text-center">
-                  <p className={`text-2xl font-black font-display ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>₹4.8k</p>
+                  <p className={`text-2xl font-black font-display ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>â‚¹4.8k</p>
                   <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Spent</p>
                 </div>
               </div>
@@ -118,12 +118,12 @@ const Profile = () => {
                     onClick={() => navigate(item.path)}
                     className={`w-full group flex items-center gap-5 p-5 transition-all text-left border rounded-2xl mb-4 last:mb-0 backdrop-blur-sm ${
                       isDark 
-                        ? 'bg-white/[0.02] border-white/10 hover:border-[#22FF88]/30 hover:bg-white/[0.04] shadow-lg shadow-black/10' 
+                        ? 'bg-white/[0.02] border-white/10 hover:border-[#eb483f]/30 hover:bg-white/[0.04] shadow-lg shadow-black/10' 
                         : 'bg-white/50 border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md shadow-sm'
                     }`}
                   >
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
-                      isDark ? 'bg-white/5 text-white/40 group-hover:bg-[#22FF88]/10 group-hover:text-[#22FF88]' : 'bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600'
+                      isDark ? 'bg-white/5 text-white/40 group-hover:bg-[#eb483f]/10 group-hover:text-[#eb483f]' : 'bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600'
                     }`}>
                       <item.icon size={22} />
                     </div>
@@ -151,12 +151,12 @@ const Profile = () => {
                     onClick={() => navigate(item.path)}
                     className={`w-full group flex items-center gap-5 p-5 transition-all text-left border rounded-2xl mb-4 last:mb-0 backdrop-blur-sm ${
                       isDark 
-                        ? 'bg-white/[0.02] border-white/10 hover:border-[#22FF88]/30 hover:bg-white/[0.04] shadow-lg shadow-black/10' 
+                        ? 'bg-white/[0.02] border-white/10 hover:border-[#eb483f]/30 hover:bg-white/[0.04] shadow-lg shadow-black/10' 
                         : 'bg-white/50 border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md shadow-sm'
                     }`}
                   >
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
-                      isDark ? 'bg-white/5 text-white/40 group-hover:bg-[#22FF88]/10 group-hover:text-[#22FF88]' : 'bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600'
+                      isDark ? 'bg-white/5 text-white/40 group-hover:bg-[#eb483f]/10 group-hover:text-[#eb483f]' : 'bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600'
                     }`}>
                       <item.icon size={22} />
                     </div>
@@ -189,7 +189,7 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* ━━━━━━━━━━━━━━━━━━━━━━ MOBILE VIEW ━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” MOBILE VIEW â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <div className="md:hidden">
         {/* Settings Button - Top Right */}
         <div className="absolute top-6 right-6 z-20">
@@ -208,7 +208,7 @@ const Profile = () => {
           isDark ? 'bg-gradient-to-b from-white/[0.03] to-transparent' : 'bg-gradient-to-br from-[#0F172A] to-[#1E293B]'
         }`}>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#22FF88]/5 rounded-full -ml-24 -mb-24 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#eb483f]/5 rounded-full -ml-24 -mb-24 blur-3xl pointer-events-none" />
           
           <div className="flex flex-col items-center relative z-10 px-6 md:px-8">
             <div className="relative">
@@ -216,7 +216,7 @@ const Profile = () => {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-[2px] p-0.5 shadow-2xl transition-all duration-500 ${
-                  isDark ? 'border-[#22FF88]/20 bg-white/5' : 'border-white/20 bg-white/10'
+                  isDark ? 'border-[#eb483f]/20 bg-white/5' : 'border-white/20 bg-white/10'
                 }`}
               >
                 <img
@@ -227,7 +227,7 @@ const Profile = () => {
               </motion.div>
               <button 
                 onClick={() => navigate('/profile/edit')}
-                className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-xl border-[2px] flex items-center justify-center active:scale-90 transition-all shadow-xl bg-[#22FF88] text-[#08142B] border-[#08142B]`}
+                className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-xl border-[2px] flex items-center justify-center active:scale-90 transition-all shadow-xl bg-[#eb483f] text-[#F3655D] border-[#F3655D]`}
               >
                 <Pencil size={12} strokeWidth={3} />
               </button>
@@ -236,7 +236,7 @@ const Profile = () => {
             <div className="text-center mt-4 md:mt-6">
               <h2 className="text-xl md:text-2xl font-black tracking-tight font-display text-white">Muhammad Haroos</h2>
               <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mt-2 border bg-white/10 border-white/10 text-blue-100`}>
-                <div className="w-1.5 h-1.5 rounded-full bg-[#22FF88] animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f] animate-pulse" />
                 <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em]">Premium Member</span>
               </div>
             </div>
@@ -248,7 +248,7 @@ const Profile = () => {
               <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5">Bookings</p>
             </div>
             <div className="text-center px-4 md:px-8 border-x border-white/5">
-              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">₹4.8k</p>
+              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">â‚¹4.8k</p>
               <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5">Spent</p>
             </div>
             <div className="text-center">
@@ -299,3 +299,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

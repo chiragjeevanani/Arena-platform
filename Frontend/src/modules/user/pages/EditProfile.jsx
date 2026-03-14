@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, User, Mail, Phone, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
@@ -9,12 +9,12 @@ const EditProfile = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#08142B]' : 'bg-[#F8FAFC]'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-[#F8FAFC]'}`}>
       {/* Premium Background Decorative Elements */}
       {!isDark && (
         <>
           <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#22FF88]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
@@ -176,3 +176,4 @@ const EditProfile = () => {
 };
 
 export default EditProfile;
+

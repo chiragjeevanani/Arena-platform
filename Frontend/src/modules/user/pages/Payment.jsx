@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Smartphone, CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +14,7 @@ const Payment = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const paymentMethods = [
-    { id: 'upi', name: 'UPI (GPay/PhonePe)', icon: Smartphone, color: 'text-[#22FF88]', bg: 'bg-[#22FF88]/10', desc: 'Instant & Secure' },
+    { id: 'upi', name: 'UPI (GPay/PhonePe)', icon: Smartphone, color: 'text-[#eb483f]', bg: 'bg-[#eb483f]/10', desc: 'Instant & Secure' },
     { id: 'card', name: 'Credit / Debit Card', icon: CreditCard, color: 'text-blue-400', bg: 'bg-blue-400/10', desc: 'Full Security' },
     { id: 'netbanking', name: 'Net Banking', icon: Landmark, color: 'text-amber-400', bg: 'bg-amber-400/10', desc: 'All Major Banks' },
     { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-400/10', desc: 'On-Site Payment' },
@@ -29,18 +29,18 @@ const Payment = () => {
   };
 
   return (
-    <div className={`min-h-screen pb-40 relative overflow-hidden ${isDark ? 'bg-[#08142B]' : 'bg-slate-50'}`}>
+    <div className={`min-h-screen pb-40 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-slate-50'}`}>
       {/* Background Decorative Glows */}
       {!isDark && (
         <>
           <div className="absolute top-24 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#22FF88]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
       {/* Header - Compact Consistent Styling */}
       <div className={`px-6 pt-5 pb-3 sticky top-0 z-[60] backdrop-blur-2xl border-b transition-all duration-500 ${
-        isDark ? 'bg-[#08142B]/80 border-white/5' : 'bg-[#0A1F44] border-blue-900/10 md:rounded-b-none rounded-b-[24px] shadow-[0_8px_25px_rgba(10,31,68,0.12)]'
+        isDark ? 'bg-[#F3655D]/80 border-white/5' : 'bg-[#F3655D] border-blue-900/10 md:rounded-b-none rounded-b-[24px] shadow-[0_8px_25px_rgba(10,31,68,0.12)]'
       }`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -59,7 +59,7 @@ const Payment = () => {
           </div>
           
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-white/10">
-             <ShieldCheck size={12} className="text-[#22FF88]" />
+             <ShieldCheck size={12} className="text-[#eb483f]" />
              <span className="text-[9px] font-black text-white/80 uppercase tracking-widest">SSL Secure</span>
           </div>
         </div>
@@ -80,9 +80,9 @@ const Payment = () => {
               <div className={`absolute inset-0 court-lines ${isDark ? 'opacity-10' : 'opacity-5'}`} />
               
               <div className="relative z-10">
-                <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-2 ${isDark ? 'text-[#22FF88]/60' : 'text-blue-500'}`}>Total Payable</p>
-                <h2 className={`text-4xl md:text-5xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                  ₹{state?.amount?.toFixed(2)}
+                <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-2 ${isDark ? 'text-[#eb483f]/60' : 'text-blue-500'}`}>Total Payable</p>
+                <h2 className={`text-4xl md:text-5xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>
+                  â‚¹{state?.amount?.toFixed(2)}
                 </h2>
                 
                 <div className="mt-6 flex items-center justify-center gap-5">
@@ -98,26 +98,26 @@ const Payment = () => {
                 </div>
               </div>
               
-              <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl rounded-full -mr-12 -mt-12 ${isDark ? 'bg-[#22FF88]/10' : 'bg-blue-100/50'}`} />
+              <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl rounded-full -mr-12 -mt-12 ${isDark ? 'bg-[#eb483f]/10' : 'bg-blue-100/50'}`} />
             </motion.div>
 
             {/* Security Badge Desktop Only */}
             <div className={`hidden lg:flex flex-col items-center justify-center gap-3 p-6 rounded-[32px] border border-dashed ${
               isDark ? 'bg-white/[0.02] border-white/10' : 'bg-slate-50/50 border-slate-200'
             }`}>
-               <div className="w-10 h-10 rounded-xl bg-[#22FF88]/10 flex items-center justify-center text-[#22FF88]">
+               <div className="w-10 h-10 rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                   <Lock size={20} />
                </div>
                <div className="text-center">
-                  <h4 className={`text-xs font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>PCI-DSS Compliant</h4>
-                  <p className={`text-[9px] font-bold mt-0.5 opacity-40 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Data encrypted with 256-bit SSL</p>
+                  <h4 className={`text-xs font-black tracking-tight ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>PCI-DSS Compliant</h4>
+                  <p className={`text-[9px] font-bold mt-0.5 opacity-40 ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>Data encrypted with 256-bit SSL</p>
                </div>
             </div>
           </div>
 
           {/* Right Column: Payment Selection */}
           <div className="md:col-span-12 lg:col-span-7 space-y-4">
-            <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ml-2 ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Choose Payment Method</h3>
+            <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ml-2 ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Choose Payment Method</h3>
             <div className="space-y-3">
               {paymentMethods.map((method, index) => {
                 const Icon = method.icon;
@@ -130,7 +130,7 @@ const Payment = () => {
                     key={method.id}
                     className={`flex items-center p-5 rounded-[28px] border transition-all cursor-pointer relative group overflow-hidden ${
                       isSelected
-                        ? `shadow-xl ${isDark ? 'bg-[#22FF88]/5 border-[#22FF88]/40' : 'bg-white border-blue-500 shadow-blue-500/10'}`
+                        ? `shadow-xl ${isDark ? 'bg-[#eb483f]/5 border-[#eb483f]/40' : 'bg-white border-blue-500 shadow-blue-500/10'}`
                         : `${isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-slate-100 hover:border-slate-200'}`
                     }`}
                   >
@@ -149,12 +149,12 @@ const Payment = () => {
 
                     <div className="flex-1">
                       <span className={`text-sm md:text-base font-black tracking-tight block transition-colors ${
-                        isSelected ? (isDark ? 'text-white' : 'text-[#0A1F44]') : (isDark ? 'text-white/40' : 'text-[#0A1F44]/60')
+                        isSelected ? (isDark ? 'text-white' : 'text-[#F3655D]') : (isDark ? 'text-white/40' : 'text-[#F3655D]/60')
                       }`}>
                         {method.name}
                       </span>
                       <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] block mt-0.5 transition-colors ${
-                        isSelected ? (isDark ? 'text-[#22FF88]' : 'text-blue-500') : (isDark ? 'text-white/20' : 'text-slate-400')
+                        isSelected ? (isDark ? 'text-[#eb483f]' : 'text-blue-500') : (isDark ? 'text-white/20' : 'text-slate-400')
                       }`}>
                         {method.desc}
                       </span>
@@ -163,7 +163,7 @@ const Payment = () => {
                     {/* Custom Radio Circle */}
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                       isSelected 
-                        ? (isDark ? 'border-[#22FF88] scale-110 shadow-[0_0_10px_rgba(34,255,136,0.5)]' : 'border-blue-500 scale-110') 
+                        ? (isDark ? 'border-[#eb483f] scale-110 shadow-[0_0_10px_rgba(235, 72, 63,0.5)]' : 'border-blue-500 scale-110') 
                         : (isDark ? 'border-white/10' : 'border-slate-200')
                     }`}>
                       <AnimatePresence>
@@ -172,7 +172,7 @@ const Payment = () => {
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             exit={{ scale: 0 }}
-                            className={`w-2.5 h-2.5 rounded-full ${isDark ? 'bg-[#22FF88]' : 'bg-blue-500 shadow-lg shadow-blue-500/50'}`}
+                            className={`w-2.5 h-2.5 rounded-full ${isDark ? 'bg-[#eb483f]' : 'bg-blue-500 shadow-lg shadow-blue-500/50'}`}
                           />
                         )}
                       </AnimatePresence>
@@ -187,12 +187,12 @@ const Payment = () => {
                 variant="primary"
                 size="md"
                 fullWidth
-                className="shadow-2xl shadow-[#22FF88]/20 !rounded-[20px] active:scale-95 transition-all disabled:opacity-50 py-4 text-sm"
+                className="shadow-2xl shadow-[#eb483f]/20 !rounded-[20px] active:scale-95 transition-all disabled:opacity-50 py-4 text-sm"
                 icon={!isProcessing && <ChevronRight size={22} />}
                 disabled={isProcessing}
                 onClick={handlePay}
               >
-                {isProcessing ? 'Finalizing Secure Flow...' : `Complete Payment of ₹${state?.amount?.toFixed(2)}`}
+                {isProcessing ? 'Finalizing Secure Flow...' : `Complete Payment of â‚¹${state?.amount?.toFixed(2)}`}
               </ShuttleButton>
             </div>
           </div>
@@ -201,18 +201,18 @@ const Payment = () => {
 
       {/* Footer Payment Action - Mobile & Medium Screens */}
       <div className={`fixed bottom-0 left-0 right-0 p-6 z-[100] lg:hidden border-t backdrop-blur-xl transition-colors duration-500 ${
-        isDark ? 'bg-[#08142B]/90 border-white/5' : 'bg-white/80 border-blue-50 shadow-[0_-20px_50px_rgba(10,31,68,0.1)]'
+        isDark ? 'bg-[#F3655D]/90 border-white/5' : 'bg-white/80 border-blue-50 shadow-[0_-20px_50px_rgba(10,31,68,0.1)]'
       }`}>
         <ShuttleButton
           variant="primary"
           size="md"
           fullWidth
-          className="shadow-2xl shadow-[#22FF88]/20 !rounded-[20px] active:scale-95 transition-all disabled:opacity-50"
+          className="shadow-2xl shadow-[#eb483f]/20 !rounded-[20px] active:scale-95 transition-all disabled:opacity-50"
           icon={!isProcessing && <ChevronRight size={20} />}
           disabled={isProcessing}
           onClick={handlePay}
         >
-          {isProcessing ? 'Verifying Transaction...' : `Pay ₹${state?.amount?.toFixed(2)}`}
+          {isProcessing ? 'Verifying Transaction...' : `Pay â‚¹${state?.amount?.toFixed(2)}`}
         </ShuttleButton>
       </div>
 
@@ -223,7 +223,7 @@ const Payment = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-[#08142B]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-10 text-center"
+            className="fixed inset-0 z-[200] bg-[#F3655D]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-10 text-center"
           >
             <div className="relative">
               <motion.div
@@ -231,9 +231,9 @@ const Payment = () => {
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                 className="relative z-10"
               >
-                <ShuttlecockIcon size={80} className="text-[#22FF88] drop-shadow-[0_0_20px_rgba(34,255,136,0.5)]" />
+                <ShuttlecockIcon size={80} className="text-[#eb483f] drop-shadow-[0_0_20px_rgba(235, 72, 63,0.5)]" />
               </motion.div>
-              <div className="absolute inset-0 border-[4px] border-[#22FF88]/10 border-t-[#22FF88] rounded-full -m-4 animate-spin-slow"></div>
+              <div className="absolute inset-0 border-[4px] border-[#eb483f]/10 border-t-[#eb483f] rounded-full -m-4 animate-spin-slow"></div>
             </div>
             <motion.h3 
               initial={{ y: 20, opacity: 0 }}
@@ -259,3 +259,4 @@ const Payment = () => {
 };
 
 export default Payment;
+

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, Mail, Phone, ExternalLink, HelpCircle, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
@@ -14,7 +14,7 @@ const Help = () => {
   ];
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#08142B]' : 'bg-[#F8FAFC]'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${isDark ? 'bg-[#F3655D]' : 'bg-[#F8FAFC]'}`}>
       {/* Background Decorative Element */}
       {!isDark && (
         <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/30 rounded-full blur-[100px] pointer-events-none" />
@@ -26,7 +26,7 @@ const Help = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className={`w-full overflow-hidden md:rounded-3xl rounded-none md:shadow-[0_20px_50px_-12px_rgba(15,23,42,0.1)] md:border transition-all duration-500 ${
-            isDark ? 'md:bg-[#08142B] md:border-white/10' : 'md:bg-white md:border-slate-100'
+            isDark ? 'md:bg-[#F3655D] md:border-white/10' : 'md:bg-white md:border-slate-100'
           }`}
         >
           {/* Header - Always Dark */}
@@ -122,3 +122,4 @@ const Help = () => {
 };
 
 export default Help;
+

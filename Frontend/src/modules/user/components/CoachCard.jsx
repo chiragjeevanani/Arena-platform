@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { Clock, Users, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 /**
- * CoachCard — Coaching batch card with progress meter and sporty styling
+ * CoachCard â€” Coaching batch card with progress meter and sporty styling
  */
 const CoachCard = ({ batch, index = 0 }) => {
   const { isDark } = useTheme();
@@ -22,8 +22,8 @@ const CoachCard = ({ batch, index = 0 }) => {
       transition={{ delay: index * 0.15, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
       className={`rounded-3xl overflow-hidden group transition-all duration-500 border ${
         isDark 
-          ? 'glass-card border-white/5 bg-white/5 hover:border-[#22FF88]/20 shadow-lg' 
-          : 'bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-[#22FF88]/30'
+          ? 'glass-card border-white/5 bg-white/5 hover:border-[#eb483f]/20 shadow-lg' 
+          : 'bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-[#eb483f]/30'
       }`}
     >
       {/* Hero */}
@@ -33,12 +33,12 @@ const CoachCard = ({ batch, index = 0 }) => {
           alt={batch.coachName}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#08142B] via-[#08142B]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#F3655D] via-[#F3655D]/40 to-transparent" />
 
         {/* Pro Badge */}
         <div className="absolute top-4 left-4 glass px-3 py-1.5 rounded-xl flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#22FF88]" />
-          <span className="text-[10px] font-bold text-[#22FF88] uppercase tracking-[0.15em]">Professional</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f]" />
+          <span className="text-[10px] font-bold text-[#eb483f] uppercase tracking-[0.15em]">Professional</span>
         </div>
 
         {/* Name Overlay */}
@@ -55,22 +55,22 @@ const CoachCard = ({ batch, index = 0 }) => {
       <div className="p-5 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className={`${isDark ? 'glass-light' : 'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
-            <Clock size={15} className="text-[#1EE7FF] mb-1.5" />
-            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Timing</p>
-            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>{batch.timing.split(' - ')[0]}</p>
+            <Clock size={15} className="text-[#eb483f] mb-1.5" />
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Timing</p>
+            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}>{batch.timing.split(' - ')[0]}</p>
           </div>
           <div className={`${isDark ? 'glass-light' : 'bg-slate-50 border border-slate-100'} rounded-2xl p-3`}>
             <Users size={15} className="text-[#FFD600] mb-1.5" />
-            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Level</p>
-            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>{batch.level}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Level</p>
+            <p className={`text-xs font-bold mt-0.5 ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}>{batch.level}</p>
           </div>
         </div>
 
         {/* Progress Meter - fitness tracker style */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Seats Filled</span>
-            <span className="text-[10px] text-[#22FF88] font-bold">{filledSeats}/{totalSeats}</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-white/30' : 'text-[#F3655D]/40'}`}>Seats Filled</span>
+            <span className="text-[10px] text-[#eb483f] font-bold">{filledSeats}/{totalSeats}</span>
           </div>
           <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
             <motion.div
@@ -82,27 +82,27 @@ const CoachCard = ({ batch, index = 0 }) => {
               style={{
                 background: seatPercent > 80
                   ? 'linear-gradient(90deg, #FFD600, #FF6B35)'
-                  : 'linear-gradient(90deg, #22FF88, #1EE7FF)'
+                  : 'linear-gradient(90deg, #eb483f, #eb483f)'
               }}
             />
           </div>
         </div>
 
-        <p className={`text-xs leading-relaxed ${isDark ? 'text-white/30' : 'text-[#0A1F44]/50'}`}>
+        <p className={`text-xs leading-relaxed ${isDark ? 'text-white/30' : 'text-[#F3655D]/50'}`}>
           {batch.days} classes. Footwork, racket handling & strategy.
         </p>
 
         {/* Footer */}
         <div className={`pt-4 border-t flex items-center justify-between ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
           <div>
-            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>Fee / Month</p>
-            <p className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{batch.fees}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.15em] ${isDark ? 'text-white/20' : 'text-[#F3655D]/30'}`}>Fee / Month</p>
+            <p className={`text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#F3655D]'}`}>â‚¹{batch.fees}</p>
           </div>
           <motion.button
             whileTap={{ scale: 0.95, rotate: -2 }}
             onClick={() => navigate('/coaching-summary', { state: { batch } })}
-            className="bg-[#22FF88] text-[#08142B] px-6 py-3 rounded-2xl font-bold text-sm
-                       shadow-[0_0_20px_rgba(34,255,136,0.15)] hover:shadow-[0_0_30px_rgba(34,255,136,0.3)]
+            className="bg-[#eb483f] text-[#F3655D] px-6 py-3 rounded-2xl font-bold text-sm
+                       shadow-[0_0_20px_rgba(235, 72, 63,0.15)] hover:shadow-[0_0_30px_rgba(235, 72, 63,0.3)]
                        transition-all duration-300"
           >
             Join Class
@@ -114,3 +114,4 @@ const CoachCard = ({ batch, index = 0 }) => {
 };
 
 export default CoachCard;
+

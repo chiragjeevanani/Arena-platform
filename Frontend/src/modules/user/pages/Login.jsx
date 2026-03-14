@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import { Email, Lock, Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
@@ -26,7 +26,7 @@ const Login = () => {
       >
         <div className="space-y-8">
         <div className="text-center">
-          <div className="w-20 h-20 bg-[#03396c] rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-blue-100">
+          <div className="w-20 h-20 bg-[#F3655D] rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-blue-100">
             <LoginIcon className="text-white" sx={{ fontSize: 40 }} />
           </div>
           <h1 className="mt-6 text-3xl font-bold text-slate-900">Welcome Back</h1>
@@ -73,7 +73,7 @@ const Login = () => {
           />
 
           <div className="text-right">
-            <button type="button" className="text-[#03396c] font-semibold text-sm">Forgot Password?</button>
+            <button type="button" className="text-[#F3655D] font-semibold text-sm">Forgot Password?</button>
           </div>
 
           <Button
@@ -81,13 +81,13 @@ const Login = () => {
             type="submit"
             variant="contained"
             size="large"
-            className="bg-[#03396c] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
+            className="bg-[#F3655D] hover:bg-[#022c54] py-4 shadow-lg shadow-blue-100"
             sx={{
               borderRadius: '16px',
               textTransform: 'none',
               fontSize: '1rem',
               fontWeight: 'bold',
-              backgroundColor: '#03396c'
+              backgroundColor: '#F3655D'
             }}
           >
             Login
@@ -97,7 +97,7 @@ const Login = () => {
         <div className="text-center">
           <p className="text-slate-500">
             Don't have an account? {' '}
-            <Link to="/signup" className="text-[#03396c] font-bold underline">Sign Up</Link>
+            <Link to="/signup" className="text-[#F3655D] font-bold underline">Sign Up</Link>
           </p>
         </div>
       </div>
@@ -107,3 +107,4 @@ const Login = () => {
 };
 
 export default Login;
+
