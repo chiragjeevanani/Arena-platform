@@ -20,12 +20,12 @@ const FinancialReports = () => {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
-          <h2 className={`text-xl md:text-2xl font-black font-display tracking-wide flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
+          <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
             <PieChart className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Capital
           </h2>
-          <p className={`text-[11px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Income pulse.</p>
+          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Income pulse.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
            <button
@@ -42,16 +42,16 @@ const FinancialReports = () => {
         {[
           { label: 'Gross', value: '₹1.24 Cr', change: '+24.5%', icon: DollarSign, color: '#22FF88' },
           { label: 'OPEX', value: '₹22.40 L', change: '-2.1%', icon: Wallet, color: '#FF4B4B' },
-          { label: 'Earnings', value: '₹1.02 Cr', change: '+28.2%', icon: BarChart3, color: '#1EE7FF' },
+          { label: 'Net', value: '₹1.02 Cr', change: '+28.2%', icon: BarChart3, color: '#1EE7FF' },
           { label: 'Asset', value: '₹8.40 Cr', change: '+5.0%', icon: TrendingUp, color: '#FFD600' },
         ].map((stat, idx) => (
-          <div key={idx} className={`p-3 md:p-5 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
-            <div className={`w-7 h-7 md:w-10 md:h-10 rounded-lg md:rounded-2xl flex items-center justify-center mb-2 md:mb-4 border transition-colors duration-300`} style={{ backgroundColor: `${stat.color}10`, borderColor: `${stat.color}20`, color: stat.color }}>
-              <stat.icon size={12} className="md:w-[20px] md:h-[20px]" />
+          <div key={idx} className={`p-2.5 md:p-5 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+            <div className={`w-7 h-7 md:w-10 md:h-10 rounded-lg md:rounded-2xl flex items-center justify-center mb-1.5 md:mb-4 border transition-colors duration-300`} style={{ backgroundColor: `${stat.color}10`, borderColor: `${stat.color}20`, color: stat.color }}>
+              <stat.icon size={10} className="md:w-[20px] md:h-[20px]" />
             </div>
-            <p className={`text-[6px] md:text-[10px] font-black uppercase tracking-[0.2em] mb-0.5 md:mb-1 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>{stat.label}</p>
-            <h3 className={`text-sm md:text-2xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{stat.value}</h3>
-            <div className={`flex items-center gap-1 mt-1.5 md:mt-2 text-[7px] md:text-[10px] font-black ${stat.change.startsWith('+') ? 'text-[#22FF88]' : 'text-[#FF4B4B]'}`}>
+            <p className={`text-[6px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>{stat.label}</p>
+            <h3 className={`text-[10px] md:text-2xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{stat.value}</h3>
+            <div className={`flex items-center gap-1 mt-1 text-[7px] md:text-[10px] font-black ${stat.change.startsWith('+') ? 'text-[#22FF88]' : 'text-[#FF4B4B]'}`}>
                {stat.change.startsWith('+') ? <ArrowUpRight size={8} /> : <ArrowDownLeft size={8} />}
                {stat.change}
             </div>
@@ -61,18 +61,18 @@ const FinancialReports = () => {
 
       {/* Main Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div className={`lg:col-span-2 p-3 md:p-8 rounded-xl md:rounded-[2.5rem] border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
-          <div className="flex items-center justify-between mb-4 md:mb-8">
+        <div className={`lg:col-span-2 p-3 md:p-8 rounded-xl md:rounded-[2.5rem] border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+          <div className="flex items-center justify-between mb-3 md:mb-8">
              <div>
-                <h3 className={`font-black font-display uppercase tracking-widest text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Revenue velocity</h3>
-                <p className="text-[7px] md:text-[10px] font-bold text-white/20 mt-0.5 md:mt-1 uppercase tracking-widest">Year comparison</p>
+                <h3 className={`font-black font-display uppercase tracking-widest text-[8px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Velocity</h3>
+                <p className="text-[6px] md:text-[10px] font-black text-white/10 uppercase tracking-widest italic">Live Flow</p>
              </div>
-             <select className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-1 md:py-1.5 rounded-lg md:rounded-xl border outline-none ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-black/5 border-black/10 text-black'}`}>
-                <option>Arenas</option>
-                <option>Olympic Smash</option>
+             <select className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border outline-none ${isDark ? 'bg-white/5 border-white/5 text-white/40' : 'bg-black/5 border-black/10 text-black/40 shadow-sm'}`}>
+                <option>Units</option>
+                <option>Global</option>
              </select>
           </div>
-          <div className="h-[180px] md:h-[350px] w-full">
+          <div className="h-[140px] md:h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
                 <defs>
@@ -81,32 +81,32 @@ const FinancialReports = () => {
                     <stop offset="95%" stopColor="#22FF88" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(10,31,68,0.05)"} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(10,31,68,0.3)' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(10,31,68,0.3)' }} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.03)" : "rgba(10,31,68,0.03)"} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 900, fill: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(10,31,68,0.1)' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 900, fill: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(10,31,68,0.1)' }} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: isDark ? '#08142B' : '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontSize: '10px' }}
-                  itemStyle={{ color: '#22FF88', fontWeight: 900 }}
+                  contentStyle={{ backgroundColor: isDark ? '#08142B' : '#fff', border: '1px solid rgba(34,255,136,0.1)', borderRadius: '12px', fontSize: '8px', fontWeight: 900 }}
+                  itemStyle={{ color: '#22FF88' }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#22FF88" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
-                <Area type="monotone" dataKey="coaching" stroke="#1EE7FF" strokeWidth={3} fillOpacity={0} />
+                <Area type="monotone" dataKey="revenue" stroke="#22FF88" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
+                <Area type="monotone" dataKey="coaching" stroke="#1EE7FF" strokeWidth={2} fillOpacity={0} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className={`p-4 md:p-8 rounded-xl md:rounded-[2.5rem] border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
-           <h3 className={`font-black font-display uppercase tracking-widest text-xs md:text-sm mb-4 md:mb-6 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Compliance</h3>
-           <div className="space-y-6">
+        <div className={`p-4 md:p-8 rounded-xl md:rounded-[2.5rem] border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+           <h3 className={`font-black font-display uppercase tracking-widest text-[10px] md:text-sm mb-4 md:mb-6 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Trust</h3>
+           <div className="space-y-5 md:space-y-6 text-[10px]">
               {[
-                { label: 'GST (18%) Collected', value: '₹14,40,281', color: '#1EE7FF' },
-                { label: 'GST (18%) Paid', value: '₹4,12,092', color: '#22FF88' },
-                { label: 'TDS (Section 194C)', value: '₹56,102', color: '#FFD600' },
+                { label: 'GST Coll', value: '₹14.40L', color: '#1EE7FF' },
+                { label: 'ITC Avail', value: '₹4.12L', color: '#22FF88' },
+                { label: 'TDS Res', value: '₹56.1K', color: '#FFD600' },
               ].map((item, idx) => (
                 <div key={idx} className="relative">
-                   <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{item.label}</span>
-                      <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.value}</span>
+                   <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-[7px] md:text-[10px] font-black text-white/20 uppercase tracking-widest">{item.label}</span>
+                      <span className={`text-[10px] md:text-sm font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.value}</span>
                    </div>
                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                       <motion.div 
@@ -121,42 +121,42 @@ const FinancialReports = () => {
               ))}
            </div>
 
-           <div className={`mt-6 md:mt-10 p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between group cursor-pointer transition-all ${isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-black/5 border-black/10 hover:bg-black/10'}`}>
+           <div className={`mt-6 md:mt-10 p-2.5 md:p-4 rounded-lg md:rounded-2xl border flex items-center justify-between group cursor-pointer transition-all ${isDark ? 'bg-white/2 border-white/5 hover:bg-white/5' : 'bg-black/2 border-black/5 hover:bg-black/5'}`}>
               <div className="flex items-center gap-2 md:gap-3">
                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-[#22FF88]/10 flex items-center justify-center text-[#22FF88]">
-                    <CreditCard size={14} className="md:w-[18px] md:h-[18px]" />
+                    <CreditCard size={12} className="md:w-[18px] md:h-[18px]" />
                  </div>
                  <div>
-                    <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Compliance</p>
-                    <p className="text-[8px] md:text-[9px] font-bold text-[#22FF88] uppercase mt-0.5">Compliant</p>
+                    <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Tax IDs</p>
+                    <p className="text-[7px] md:text-[9px] font-black text-[#22FF88] uppercase italic">Verified</p>
                  </div>
               </div>
-              <ChevronRight size={14} className="md:w-[16px] md:h-[16px] text-white/20 group-hover:text-white transition-colors" />
+              <ChevronRight size={12} className="text-white/10 group-hover:text-white transition-colors" />
            </div>
         </div>
       </div>
 
       {/* Transaction Log Peek */}
-      <div className={`p-4 md:p-8 rounded-xl md:rounded-[2.5rem] border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
-         <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h3 className={`font-black font-display uppercase tracking-widest text-xs md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Financial Ledger</h3>
-            <button className="text-[8px] md:text-[10px] font-black text-[#22FF88] uppercase tracking-[0.2em] hover:underline">All Entries</button>
+      <div className={`p-4 md:p-8 rounded-xl md:rounded-[2.5rem] border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+         <div className="flex items-center justify-between mb-3 md:mb-6">
+            <h3 className={`font-black font-display uppercase tracking-widest text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Ledger</h3>
+            <button className="text-[7px] md:text-[10px] font-black text-[#22FF88] uppercase tracking-widest italic hover:underline">Full Audit</button>
          </div>
-         <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className={`flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl border transition-colors ${isDark ? 'bg-white/2 border-white/5 hover:bg-white/5' : 'bg-[#0A1F44]/2 border-[#0A1F44]/5 hover:bg-[#0A1F44]/5'}`}>
+         <div className="space-y-2">
+            {[1, 2].map((i) => (
+              <div key={i} className={`flex items-center justify-between p-2.5 md:p-4 rounded-lg md:rounded-2xl border transition-colors ${isDark ? 'bg-white/2 border-white/5 hover:bg-white/5' : 'bg-[#0A1F44]/2 border-[#0A1F44]/5 hover:bg-[#0A1F44]/5'}`}>
                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center border text-[#1EE7FF] ${isDark ? 'bg-[#1EE7FF]/10 border-[#1EE7FF]/20' : 'bg-[#1EE7FF]/20 border-[#1EE7FF]/40'}`}>
-                       <Receipt size={16} className="md:w-[18px] md:h-[18px]" />
+                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center border text-[#1EE7FF] ${isDark ? 'bg-[#1EE7FF]/10 border-[#1EE7FF]/10' : 'bg-[#1EE7FF]/10 border-[#1EE7FF]/20'}`}>
+                       <Receipt size={12} className="md:w-[18px] md:h-[18px]" />
                     </div>
                     <div>
-                       <p className={`text-[11px] md:text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{i % 2 === 0 ? 'Arena OPEX' : 'Academy Revenue'}</p>
-                       <p className="text-[8px] md:text-[10px] font-bold text-white/30 uppercase mt-0.5 tracking-widest">ID: TXN-0928{i}L</p>
+                       <p className={`text-[9px] md:text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{i % 2 === 0 ? 'Operation' : 'Academy'}</p>
+                       <p className="text-[7px] md:text-[10px] font-black text-white/10 uppercase tracking-widest">TR-{i}XN</p>
                     </div>
                  </div>
                  <div className="text-right">
-                    <p className={`text-xs md:text-sm font-black font-display ${i % 2 === 0 ? 'text-[#FF4B4B]' : 'text-[#22FF88]'}`}>{i % 2 === 0 ? '-' : '+'}₹8.2K</p>
-                    <p className="text-[8px] md:text-[9px] font-bold text-white/20 uppercase mt-0.5">12 Mar</p>
+                    <p className={`text-[10px] md:text-sm font-black font-display ${i % 2 === 0 ? 'text-[#FF4B4B]' : 'text-[#22FF88]'}`}>{i % 2 === 0 ? '-' : '+'}₹8.2K</p>
+                    <p className="text-[7px] md:text-[9px] font-black text-white/10 uppercase tracking-widest italic">12 Mar</p>
                  </div>
               </div>
             ))}

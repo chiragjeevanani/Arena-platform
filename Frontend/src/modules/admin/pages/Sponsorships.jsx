@@ -20,12 +20,12 @@ const Sponsorships = () => {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-white/5">
         <div>
-          <h2 className={`text-xl md:text-2xl font-black font-display tracking-wide flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
+          <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
             <Briefcase className="text-[#1EE7FF] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Portfolio
           </h2>
-          <p className={`text-[11px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Brand equity.</p>
+          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Equity hub.</p>
         </div>
         <button
           onClick={() => setShowNewPartnerModal(true)}
@@ -38,99 +38,99 @@ const Sponsorships = () => {
       {/* Stats Board */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
         <div className={`p-3 md:p-6 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
-          <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
+          <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-4">
              <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#22FF88]/10 flex items-center justify-center text-[#22FF88]">
-                <TrendingUp size={12} className="md:w-[20px] md:h-[20px]" />
+                <TrendingUp size={10} className="md:w-[20px] md:h-[20px]" />
              </div>
-             <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Equity</p>
+             <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>Equity</p>
           </div>
-          <h3 className={`text-sm md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹26.0L</h3>
-          <p className="text-[6px] md:text-[10px] font-bold text-[#22FF88] mt-1 md:mt-2 flex items-center gap-1">
-             +12% <ArrowUpRight size={6} className="md:w-[10px] md:h-[10px]" />
+          <h3 className={`text-[10px] md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹26.0L</h3>
+          <p className="text-[6px] md:text-[10px] font-bold text-[#22FF88] mt-0.5 md:mt-2 flex items-center gap-0.5">
+             +12% <ArrowUpRight size={5} className="md:w-[10px] md:h-[10px]" />
           </p>
         </div>
         <div className={`p-3 md:p-6 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
-          <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
+          <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-4">
              <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#1EE7FF]/10 flex items-center justify-center text-[#1EE7FF]">
-                <Calendar size={12} className="md:w-[20px] md:h-[20px]" />
+                <Calendar size={10} className="md:w-[20px] md:h-[20px]" />
              </div>
-             <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Due</p>
+             <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>Due</p>
           </div>
-          <h3 className={`text-sm md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>02</h3>
-          <p className="text-[6px] md:text-[10px] font-bold text-[#FF4B4B] mt-1 md:mt-2 uppercase tracking-widest">Renewal</p>
+          <h3 className={`text-[10px] md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>02</h3>
+          <p className="text-[6px] md:text-[10px] font-black text-[#FF4B4B]/60 mt-0.5 md:mt-2 uppercase tracking-widest italic">Renewal</p>
         </div>
         <div className={`p-3 md:p-6 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm col-span-2 lg:col-span-1'}`}>
           <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-4">
              <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#FFD600]/10 flex items-center justify-center text-[#FFD600]">
-                <Target size={12} className="md:w-[20px] md:h-[20px]" />
+                <Target size={10} className="md:w-[20px] md:h-[20px]" />
              </div>
-             <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>Ads</p>
+             <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>Ads</p>
           </div>
-          <h3 className={`text-sm md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>15</h3>
-          <p className="text-[6px] md:text-[10px] font-bold text-white/20 mt-1 md:mt-2 uppercase tracking-widest">Sponsorships</p>
+          <h3 className={`text-[10px] md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>15</h3>
+          <p className="text-[6px] md:text-[10px] font-black text-white/10 mt-0.5 md:mt-2 uppercase tracking-widest">Active</p>
         </div>
       </div>
 
       {/* Partners List */}
-      <div className={`rounded-2xl md:rounded-3xl border overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
-        <div className="p-3 md:p-6 border-b border-white/5 flex items-center justify-between gap-2 md:gap-4">
-           <h3 className={`font-black font-display uppercase tracking-widest text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Directory</h3>
+      <div className={`rounded-xl md:rounded-3xl border overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+        <div className="p-2.5 md:p-6 border-b border-white/5 flex items-center justify-between gap-3">
+           <h3 className={`font-black font-display uppercase tracking-widest text-[8px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Directory</h3>
            <div className="relative group flex-1 md:min-w-[200px]">
-              <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#1EE7FF]" />
-              <input type="text" placeholder="Search..." className={`w-full py-1.5 md:py-2 pl-8 md:pl-9 pr-4 text-[9px] md:text-[11px] rounded-lg border outline-none ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-black/5 border-black/10 text-black'}`} />
+              <Search size={10} className={`absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#1EE7FF]' : 'text-[#0A1F44]/30'}`} />
+              <input type="text" placeholder="Query..." className={`w-full py-1.5 md:py-2 pl-8 md:pl-9 pr-4 text-[9px] md:text-[11px] font-black rounded-lg border outline-none transition-all ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-black'}`} />
            </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
+        <div className="overflow-x-auto scrollbar-hide">
+          <table className="w-full text-left border-collapse min-w-[500px]">
              <thead>
-                <tr className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
+                <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
                    <th className="p-3 md:p-6">Partner</th>
                    <th className="p-3 md:p-6 text-center">Cat</th>
-                   <th className="p-3 md:p-6 text-center">Valuation</th>
+                   <th className="p-3 md:p-6 text-center">Value</th>
                    <th className="p-3 md:p-6 text-center">Status</th>
-                   <th className="p-3 md:p-6 text-right pr-6 md:pr-10">Admin</th>
+                   <th className="p-3 md:p-6 text-right pr-6 md:pr-10">Ops</th>
                 </tr>
              </thead>
              <tbody className="divide-y divide-white/5">
                 {SPONSORS.map(sp => (
-                   <tr key={sp.id} className="group transition-colors hover:bg-white/[0.02]">
+                   <tr key={sp.id} className="group transition-colors hover:bg-white/[0.01]">
                       <td className="p-3 md:p-6">
                          <div className="flex items-center gap-2 md:gap-4">
-                            <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-gradient-to-br from-[#1EE7FF]/20 to-[#22FF88]/20 border border-white/10 flex items-center justify-center font-black font-display text-[#1EE7FF] text-xs md:text-xl">
+                            <div className="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-gradient-to-br from-[#1EE7FF]/10 to-[#22FF88]/10 border border-white/5 flex items-center justify-center font-black font-display text-[#1EE7FF] text-[10px] md:text-xl">
                                {sp.logo}
                             </div>
                             <div>
                                <p className={`font-black tracking-tight text-[10px] md:text-base ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{sp.name}</p>
-                               <p className="text-[7px] md:text-[10px] font-bold text-white/20 truncate">{sp.contact.split(' ')[0]}</p>
+                               <p className="text-[7px] md:text-[10px] font-black uppercase text-white/10 truncate">{sp.contact.split(' ')[0]}</p>
                             </div>
                          </div>
                       </td>
                       <td className="p-3 md:p-6 text-center">
-                         <span className={`px-1.5 md:px-2 py-0.5 md:py-1 rounded text-[7px] md:text-[9px] font-black uppercase tracking-widest border ${isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-black/5 border-black/10 text-[#0A1F44]/40 shadow-sm'}`}>
+                         <span className={`px-1.5 py-0.5 rounded text-[6px] md:text-[9px] font-black uppercase tracking-widest border transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/20 hover:text-white' : 'bg-black/5 border-black/10 text-[#0A1F44]/40 shadow-sm'}`}>
                             {sp.category.split(' ')[0]}
                          </span>
                       </td>
                       <td className="p-3 md:p-6 text-center">
                          <p className={`font-display font-black text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{sp.value}</p>
-                         <p className="text-[7px] font-bold text-[#FF4B4B] uppercase mt-0.5 tracking-tight md:hidden">
-                            {sp.status === 'Active' ? 'Live' : 'Due'}
+                         <p className="text-[6px] font-black text-[#FF4B4B] uppercase mt-0.5 tracking-tight md:hidden opacity-60">
+                            {sp.status === 'Active' ? 'LIVE' : 'DUE'}
                          </p>
                       </td>
                       <td className="p-3 md:p-6 text-center">
-                         <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-[0.1em] border ${
+                         <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[6px] md:text-[9px] font-black uppercase tracking-widest border ${
                            sp.status === 'Active' ? 'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20' : 'bg-[#FFD600]/10 text-[#FFD600] border-[#FFD600]/20'
                          }`}>
                             {sp.status.split(' ')[0]}
                          </span>
                       </td>
                        <td className="p-3 md:p-6 pr-6 md:pr-10 text-right">
-                          <div className="flex items-center justify-end gap-1 md:gap-2 relative">
-                            <button className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all ${isDark ? 'bg-white/5 text-white/40 hover:text-[#1EE7FF]' : 'bg-black/5 text-[#0A1F44]/40 hover:text-[#0ea5e9] shadow-sm'}`}>
-                               <ExternalLink size={12} className="md:w-[18px] md:h-[18px]" />
+                          <div className="flex items-center justify-end gap-1 relative">
+                            <button className={`p-1.5 rounded-lg md:rounded-xl bg-white/5 text-white/20 hover:text-[#1EE7FF] transition-all`}>
+                               <ExternalLink size={10} className="md:w-[18px] md:h-[18px]" />
                             </button>
                             <button 
                               onClick={() => setActiveMenu(activeMenu === sp.id ? null : sp.id)}
-                              className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all border ${
+                              className={`p-1.5 rounded-lg md:rounded-xl transition-all border ${
                                 activeMenu === sp.id
                                   ? 'bg-[#1EE7FF] border-[#1EE7FF] text-[#0A1F44]'
                                   : isDark 
@@ -138,41 +138,38 @@ const Sponsorships = () => {
                                     : 'bg-black/5 border-black/10 text-black/20 hover:text-black shadow-sm'
                               }`}
                             >
-                               <MoreVertical size={12} className="md:w-[18px] md:h-[18px]" />
+                               <MoreVertical size={10} className="md:w-[18px] md:h-[18px]" />
                             </button>
 
                             <AnimatePresence>
                               {activeMenu === sp.id && (
                                 <>
-                                  <div 
-                                    className="fixed inset-0 z-10" 
-                                    onClick={() => setActiveMenu(null)} 
-                                  />
+                                  <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
                                   <motion.div
                                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                    className={`absolute right-0 top-full mt-2 w-56 p-2 rounded-2xl border z-20 shadow-2xl backdrop-blur-xl ${
-                                      isDark ? 'bg-[#0A1F44]/90 border-white/10 shadow-black' : 'bg-white/90 border-[#0A1F44]/10 shadow-blue-900/10'
+                                    className={`absolute right-0 top-full mt-1.5 w-44 p-1.5 rounded-xl border z-20 shadow-2xl backdrop-blur-xl ${
+                                      isDark ? 'bg-[#0A1F44]/90 border-white/10' : 'bg-white/90 border-[#0A1F44]/10'
                                     }`}
                                   >
-                                    <div className="space-y-1 text-left">
+                                    <div className="space-y-0.5 text-left">
                                       {[
-                                        { label: 'View Contract', icon: Eye, color: '#1EE7FF' },
-                                        { label: 'Renew Partnership', icon: RefreshCw, color: '#22FF88' },
-                                        { label: 'Lead History', icon: FileText, color: '#FFD600' },
-                                        { label: 'Edit Valuation', icon: Settings, color: '#A855F7' },
-                                        { label: 'Terminate Agreement', icon: Trash2, color: '#FF4B4B' },
+                                        { label: 'View', icon: Eye, color: '#1EE7FF' },
+                                        { label: 'Renew', icon: RefreshCw, color: '#22FF88' },
+                                        { label: 'Lead', icon: FileText, color: '#FFD600' },
+                                        { label: 'Setup', icon: Settings, color: '#A855F7' },
+                                        { label: 'Drop', icon: Trash2, color: '#FF4B4B' },
                                       ].map((opt, i) => (
                                         <button
                                           key={i}
                                           onClick={() => setActiveMenu(null)}
-                                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                            isDark ? 'hover:bg-white/5 text-white/60 hover:text-white' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F44]'
+                                          className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
+                                            isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F44]'
                                           }`}
                                         >
-                                          <div className={`p-1.5 rounded-lg border transition-colors`} style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}20`, color: opt.color }}>
-                                            <opt.icon size={12} />
+                                          <div className={`p-1 rounded-md border transition-colors`} style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}20`, color: opt.color }}>
+                                            <opt.icon size={10} />
                                           </div>
                                           {opt.label}
                                         </button>
