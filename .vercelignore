@@ -1,5 +1,0 @@
-node_modules
-.git
-Backend
-# If you only want to deploy the frontend, you can ignore other folders
-# But if you plan to have API functions in the root /api folder, keep this file minimal.
