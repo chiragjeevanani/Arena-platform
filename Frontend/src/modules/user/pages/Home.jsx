@@ -69,8 +69,8 @@ const UserHome = () => {
         {/* Subtle Green Gradient Overlay */}
         <div className={`absolute inset-0 transition-opacity duration-1000 ${
           isDark 
-            ? 'bg-gradient-to-b from-[#22FF88]/[0.03] via-transparent to-transparent' 
-            : 'bg-gradient-to-b from-[#22FF88]/[0.1] via-transparent to-transparent'
+            ? 'bg-gradient-to-b from-[#eb483f]/[0.03] via-transparent to-transparent' 
+            : 'bg-gradient-to-b from-[#eb483f]/[0.1] via-transparent to-transparent'
         }`} />
         
         {/* Decorative Green Mesh Glows */}
@@ -78,13 +78,13 @@ const UserHome = () => {
           isDark ? 'bg-[#eb483f]/[0.04]' : 'bg-[#eb483f]/[0.15]'
         }`} />
         <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${
-          isDark ? 'bg-[#1EE7FF]/[0.02]' : 'bg-blue-50/40'
+          isDark ? 'bg-[#eb483f]/[0.02]' : 'bg-blue-50/40'
         }`} />
 
         {/* Fine Neon Grid for Texture */}
         <div className="absolute inset-0 opacity-[0.2]" 
           style={{ 
-            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${isDark ? 'rgba(34, 255, 136, 0.1)' : 'rgba(34, 255, 136, 0.08)'} 1px, transparent 0)`, 
+            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${isDark ? 'rgba(235, 72, 63, 0.1)' : 'rgba(235, 72, 63, 0.08)'} 1px, transparent 0)`, 
             backgroundSize: '40px 40px' 
           }} 
         />
@@ -92,7 +92,7 @@ const UserHome = () => {
 
       {/* â•â•â•â•â•â•â• Hero Header â€” Hidden on Desktop â•â•â•â•â•â•â• */}
       <div className="md:hidden">
-        <div ref={heroRef} className={`relative px-6 pt-4 pb-4 overflow-hidden ${isDark ? '' : 'bg-[#0A1F44] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
+        <div ref={heroRef} className={`relative px-6 pt-4 pb-4 overflow-hidden ${isDark ? '' : 'bg-[#F3655D] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
           {/* Stadium light streaks */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div
@@ -101,7 +101,7 @@ const UserHome = () => {
             />
             <div
               ref={lightRef2}
-              className="absolute top-0 w-24 h-full bg-gradient-to-r from-transparent via-[#1EE7FF]/15 to-transparent skew-x-12"
+              className="absolute top-0 w-24 h-full bg-gradient-to-r from-transparent via-[#eb483f]/15 to-transparent skew-x-12"
             />
           </div>
 
@@ -134,7 +134,7 @@ const UserHome = () => {
                 {/* Mobile Icons */}
                 <div className="flex items-center gap-2">
                   <button onClick={toggleTheme} className="w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-                    {isDark ? <Sun size={18} className="text-[#FFD600]" /> : <Moon size={18} className="text-[#1EE7FF]" />}
+                    {isDark ? <Sun size={18} className="text-[#FFD600]" /> : <Moon size={18} className="text-[#eb483f]" />}
                   </button>
                   <button onClick={() => navigate('/profile/notifications')} className="relative w-10 h-10 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
                     <Bell size={18} className="text-white/60" />
@@ -205,7 +205,7 @@ const UserHome = () => {
                 whileHover={{ y: -8, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 style={{ backgroundImage: `url(${sport.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                className={`relative p-5 rounded-3xl h-64 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'} shadow-xl transition-all duration-300`}
+                className={`relative p-5 rounded-3xl h-64 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#F3655D]/8'} shadow-xl transition-all duration-300`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-t ${sport.gradient} to-transparent transition-opacity duration-300 group-hover:opacity-80`} />
                 
@@ -238,7 +238,7 @@ const UserHome = () => {
             className="flex justify-between items-center mb-6"
           >
             <h3 className={`text-lg font-bold font-display ${isDark ? 'text-white/80' : 'text-[#F3655D]/80'}`}>Nearby Arenas</h3>
-            <Link to="/arenas" className="text-[#eb483f] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#eb483f]/10 px-4 py-2 rounded-full border border-[#22FF88]/20">
+            <Link to="/arenas" className="text-[#eb483f] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#eb483f]/10 px-4 py-2 rounded-full border border-[#eb483f]/20">
               See all <ChevronRight size={14} />
             </Link>
           </motion.div>
@@ -262,4 +262,5 @@ const UserHome = () => {
 };
 
 export default UserHome;
+
 
