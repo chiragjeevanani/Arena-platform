@@ -49,85 +49,84 @@ const Inventory = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
-          <h2 className={`text-2xl font-black font-display tracking-wide flex items-center gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Package className="text-[#22FF88]" /> Inventory Hub
+          <h2 className={`text-xl md:text-2xl font-black font-display tracking-wide flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
+            <Package className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Assets
           </h2>
-          <p className={`text-sm mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Track sports equipment and supplies across units.</p>
+          <p className={`text-[11px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Track gear.</p>
         </div>
         <div className="flex gap-2">
            <button 
              onClick={() => setShowHistoryModal(true)}
-             className={`p-2.5 rounded-xl border transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-white border-black/10 text-black/40 hover:text-black'}`}
+             className={`p-2 md:p-2.5 rounded-lg md:rounded-xl border transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-white border-black/10 text-black/40 hover:text-black shadow-sm'}`}
            >
-              <History size={18} />
+              <History size={14} className="md:w-[18px] md:h-[18px]" />
            </button>
-           <button 
-             onClick={() => setShowAddItemModal(true)}
-             className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#22FF88]/20"
-           >
-              <Plus size={16} /> Add Item
-           </button>
+            <button 
+              onClick={() => setShowAddItemModal(true)}
+              className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20"
+            >
+               <Plus size={14} /> Catalog
+            </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-2 md:gap-6">
         {stats.map((stat, idx) => (
-          <div key={idx} className={`p-6 rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
-            <div className="flex items-center justify-between">
+          <div key={idx} className={`p-3 md:p-6 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-1">{stat.label}</p>
-                <h3 className={`text-4xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
+                <p className={`text-[6px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1 ${isDark ? 'text-white/30' : 'text-[#0A1F44]/40'}`}>{stat.label.split(' ')[0]}</p>
+                <h3 className={`text-sm md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
                   {stat.count.toString().padStart(2, '0')}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center border transition-colors duration-300" style={{ backgroundColor: `${stat.color}10`, borderColor: `${stat.color}20`, color: stat.color }}>
-                <stat.icon size={24} />
+              <div className="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center border transition-colors duration-300" style={{ backgroundColor: `${stat.color}10`, borderColor: `${stat.color}20`, color: stat.color }}>
+                <stat.icon size={12} className="md:w-[24px] md:h-[24px]" />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[250px] relative group">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#22FF88] transition-colors" />
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex-1 min-w-[120px] relative group">
+          <Search size={14} className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#22FF88] transition-colors" />
           <input
             type="text"
-            placeholder="Search items, SKU or category..."
+            placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full py-3 pl-11 pr-4 rounded-xl text-sm font-medium transition-all outline-none border ${
+            className={`w-full py-2 md:py-3 pl-9 md:pl-11 pr-4 rounded-lg md:rounded-xl text-[10px] md:text-sm font-medium transition-all outline-none border ${
               isDark 
                 ? 'bg-[#0A1F44]/50 border-white/5 focus:border-[#22FF88]/50 text-white' 
-                : 'bg-white border-[#0A1F44]/10 focus:border-[#22FF88] text-[#0A1F44]'
+                : 'bg-white border-[#0A1F44]/10 focus:border-[#22FF88] text-[#0A1F44] shadow-sm'
             }`}
           />
         </div>
         <button 
           onClick={() => setShowFilterDrawer(true)}
-          className={`px-4 py-3 rounded-xl border flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-          isDark ? 'bg-[#0A1F44]/50 border-white/5 text-white/60 hover:text-white' : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/60 hover:text-[#0A1F44]'
+          className={`px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl border flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
+          isDark ? 'bg-[#0A1F44]/50 border-white/5 text-white/60 hover:text-white' : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/60 hover:text-[#0A1F44] shadow-sm'
         }`}>
-          <Filter size={16} /> Filters
+          <Filter size={12} className="md:w-[16px] md:h-[16px]" /> Filter
         </button>
       </div>
 
-      <div className={`rounded-3xl border overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
+      <div className={`rounded-2xl md:rounded-3xl border overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
-             <thead>
-                <tr className={`text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
-                   <th className="p-6">Item & SKU</th>
-                   <th className="p-6 text-center">Category</th>
-                   <th className="p-6 text-center">Stock Level</th>
-                   <th className="p-6 text-center">Unit</th>
-                   <th className="p-6 text-center">Status</th>
-                   <th className="p-6 text-right pr-10">Actions</th>
-                </tr>
-             </thead>
+              <thead>
+                 <tr className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
+                    <th className="p-3 md:p-6">Asset & SKU</th>
+                    <th className="p-3 md:p-6 text-center">Cat</th>
+                    <th className="p-3 md:p-6 text-center">Units</th>
+                    <th className="p-3 md:p-6 text-center">Status</th>
+                    <th className="p-3 md:p-6 text-right pr-6 md:pr-10">Ops</th>
+                 </tr>
+              </thead>
              <tbody className="divide-y divide-white/5">
                 {filteredData.map((item, idx) => {
                    const status = item.stock === 0 ? 'Out of Stock' : 
@@ -140,20 +139,20 @@ const Inventory = () => {
                        transition={{ delay: idx * 0.05 }}
                        className={`group hover:bg-white/[0.02] ${!isDark && 'hover:bg-black/[0.02]'}`}
                      >
-                        <td className="p-6">
+                        <td className="p-3 md:p-6">
                            <div>
-                              <p className={`font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.name}</p>
-                              <p className="text-[10px] font-bold text-[#1EE7FF] uppercase tracking-widest mt-0.5">SKU-{item.id.slice(-4)}</p>
+                              <p className={`font-black tracking-tight text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.name}</p>
+                              <p className="text-[7px] md:text-[9px] font-bold text-[#1EE7FF] uppercase tracking-widest mt-0.5">#{item.id.slice(-4)}</p>
                            </div>
                         </td>
-                        <td className="p-6 text-center">
-                           <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-black/5 border-black/10 text-[#0A1F44]/60'}`}>
-                              Tools
+                        <td className="p-3 md:p-6 text-center">
+                           <span className={`px-1.5 md:px-2 py-0.5 md:py-1 rounded text-[7px] md:text-[9px] font-black uppercase tracking-widest border ${isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-black/5 border-black/10 text-[#0A1F44]/40 shadow-sm'}`}>
+                              Tool
                            </span>
                         </td>
-                        <td className="p-6 text-center">
-                           <div className="flex flex-col items-center gap-2">
-                              <div className={`w-full max-w-[100px] h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                        <td className="p-3 md:p-6 text-center">
+                           <div className="flex flex-col items-center gap-1">
+                              <div className={`w-full max-w-[60px] md:max-w-[100px] h-1 md:h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-black/5 shadow-inner'}`}>
                                  <div 
                                    className={`h-full transition-all duration-1000 ${
                                      item.stock === 0 ? 'bg-[#FF4B4B]' : 
@@ -162,39 +161,38 @@ const Inventory = () => {
                                    style={{ width: `${Math.min((item.stock / item.minStock) * 50, 100)}%` }} 
                                  />
                               </div>
-                              <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.stock}</span>
+                              <span className={`text-[9px] md:text-xs font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.stock}</span>
                            </div>
                         </td>
-                        <td className="p-6 text-center font-bold text-xs opacity-40 uppercase tracking-widest">Unit</td>
-                        <td className="p-6 text-center">
-                           <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.1em] border ${
+                        <td className="p-3 md:p-6 text-center">
+                           <span className={`px-1.5 md:px-3 py-0.5 md:py-1 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-[0.1em] border ${
                              status === 'In Stock' ? 'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20' : 
                              status === 'Low Stock' ? 'bg-[#FFD600]/10 text-[#FFD600] border-[#FFD600]/20' : 
                              'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20'
                            }`}>
-                              {status}
+                              {status.split(' ')[0]}
                            </span>
                         </td>
-                         <td className="p-6 pr-10 text-right">
-                            <div className="flex items-center justify-end gap-2 relative">
-                              <button 
-                                onClick={() => { setSelectedItem(item); setShowAdjustmentModal(true); }}
-                                className={`p-2 rounded-xl transition-all ${isDark ? 'bg-white/5 text-white/40 hover:text-[#22FF88]' : 'bg-black/5 text-[#0A1F44]/40 hover:text-[#059669]'}`}
-                              >
-                                 <ArrowUpDown size={16} />
-                              </button>
-                              <button 
-                                onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
-                                className={`p-2 rounded-xl transition-all border ${
-                                  activeMenu === item.id
-                                    ? 'bg-[#22FF88] border-[#22FF88] text-[#0A1F44]'
-                                    : isDark 
-                                      ? 'bg-white/5 border-white/5 text-white/40 hover:text-white hover:border-white/10' 
-                                      : 'bg-black/5 border-black/10 text-[#0A1F44]/40 hover:text-black hover:border-black/20'
-                                }`}
-                              >
-                                 <MoreHorizontal size={16} />
-                              </button>
+                          <td className="p-3 md:p-6 pr-6 md:pr-10 text-right">
+                             <div className="flex items-center justify-end gap-1 md:gap-2 relative">
+                               <button 
+                                 onClick={() => { setSelectedItem(item); setShowAdjustmentModal(true); }}
+                                 className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all ${isDark ? 'bg-white/5 text-white/40 hover:text-[#22FF88]' : 'bg-black/5 text-[#0A1F44]/40 hover:text-[#059669] shadow-sm'}`}
+                               >
+                                  <ArrowUpDown size={12} className="md:w-[16px] md:h-[16px]" />
+                               </button>
+                               <button 
+                                 onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
+                                 className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all border ${
+                                   activeMenu === item.id
+                                     ? 'bg-[#22FF88] border-[#22FF88] text-[#0A1F44]'
+                                     : isDark 
+                                       ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' 
+                                       : 'bg-black/5 border-black/10 text-[#0A1F44]/40 hover:text-black shadow-sm'
+                                 }`}
+                               >
+                                  <MoreHorizontal size={12} className="md:w-[16px] md:h-[16px]" />
+                               </button>
 
                               <AnimatePresence>
                                 {activeMenu === item.id && (
@@ -262,72 +260,70 @@ const Inventory = () => {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className={`relative w-full max-w-lg rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+              className={`relative w-full max-w-lg rounded-3xl md:rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
             >
-              <div className="p-8 border-b border-inherit flex items-center justify-between">
+              <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
                 <div>
-                  <h3 className="text-2xl font-black font-display tracking-tight flex items-center gap-3">
-                    <Package className="text-[#22FF88]" /> Add to Catalog
+                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
+                    <Package className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Add to Catalog
                   </h3>
-                  <p className="text-xs font-bold opacity-30 uppercase tracking-widest mt-1">Register new asset or supply unit</p>
+                  <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Register new asset</p>
                 </div>
                 <button 
                   onClick={() => setShowAddItemModal(false)}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}
+                  className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}
                 >
-                  <X size={20} />
+                  <X size={18} className="md:w-[20px] md:h-[20px]" />
                 </button>
               </div>
 
-              <div className="p-8 space-y-6">
-                <div className="space-y-4">
+              <div className="p-6 md:p-8 space-y-4 md:space-y-6">
+                <div className="space-y-3 md:space-y-4">
                   <div className="group">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Item Name & Brand</label>
+                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Item Name & Brand</label>
                     <div className="relative">
-                      <Tag size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#22FF88] group-focus-within:opacity-100 transition-all font-black text-[13px]" />
+                      <Tag size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#22FF88] group-focus-within:opacity-100 transition-all font-black text-[11px] md:text-[13px]" />
                       <input 
                         type="text" 
-                        placeholder="e.g. Yonex Astrox 88D Pro"
-                        className={`w-full py-4 pl-12 pr-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                        placeholder="e.g. Yonex Astrox"
+                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div className="group">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Category</label>
-                      <select className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
+                      <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Category</label>
+                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
                         <option>Equipment</option>
                         <option>Consumables</option>
-                        <option>Apparel</option>
-                        <option>Accessories</option>
                       </select>
                     </div>
                     <div className="group">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Base SKU</label>
+                      <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Base SKU</label>
                       <input 
                         type="text" 
-                        placeholder="YON-88D-PRO"
-                        className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                        placeholder="SKU-XXXX"
+                        className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div className="group">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Initial Qty</label>
+                      <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Qty</label>
                       <input 
                         type="number" 
                         defaultValue="0"
-                        className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                        className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
                       />
                     </div>
                     <div className="group">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-2 block">Min Stock Alert</label>
+                      <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Min Stock</label>
                       <input 
                         type="number" 
                         defaultValue="5"
-                        className={`w-full py-4 px-4 rounded-2xl border text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`}
+                        className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`}
                       />
                     </div>
                   </div>
@@ -346,9 +342,9 @@ const Inventory = () => {
 
                 <button 
                   onClick={() => setShowAddItemModal(false)}
-                  className="w-full py-5 rounded-[1.5rem] bg-[#22FF88] text-[#0A1F44] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:scale-[1.02] transition-all shadow-2xl shadow-[#22FF88]/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-2xl bg-[#22FF88] text-[#0A1F44] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#22FF88]/20 flex items-center justify-center gap-2"
                 >
-                  Commit to Inventory <ArrowRight size={16} />
+                  Commit <ArrowRight size={14} className="md:w-[16px] md:h-[16px]" />
                 </button>
               </div>
             </motion.div>

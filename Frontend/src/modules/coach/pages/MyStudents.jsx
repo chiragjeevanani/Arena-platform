@@ -15,33 +15,33 @@ const MyStudents = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/5">
         <div>
-          <h2 className="text-2xl font-black text-white font-display tracking-wide flex items-center gap-3">
-            <Users className="text-[#FFD600]" /> My Students
+          <h2 className={`text-xl md:text-2xl font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'} font-display tracking-wide flex items-center gap-2 md:gap-3`}>
+            <Users className="text-[#FFD600]" size={20} /> My Students
           </h2>
-          <p className="text-sm text-white/40 mt-1 font-medium">Manage your mentees and track their progress across batches.</p>
+          <p className="text-[11px] md:text-sm text-white/40 mt-0.5 md:mt-1 font-medium italic">Manage batch progress.</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[250px] relative group">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#FFD600] transition-colors" />
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="w-full sm:flex-1 relative group">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#FFD600] transition-colors" />
           <input
             type="text"
-            placeholder="Search students by name or ID..."
-            className={`w-full py-2.5 pl-11 pr-4 rounded-xl text-sm font-medium transition-all outline-none border ${
+            placeholder="Search mentee..."
+            className={`w-full py-2 md:py-2.5 pl-10 md:pl-11 pr-4 rounded-xl text-xs md:text-sm font-medium transition-all outline-none border ${
               isDark 
                 ? 'bg-[#0A1F44]/50 border-white/5 focus:border-[#FFD600]/50 text-white' 
                 : 'bg-white border-[#0A1F44]/10 focus:border-[#FFD600] text-[#0A1F44]'
             }`}
           />
         </div>
-        <button className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 text-sm font-bold transition-all ${
+        <button className={`w-full sm:w-auto px-4 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-[10px] md:text-sm font-black md:font-bold transition-all uppercase sm:normal-case tracking-widest sm:tracking-normal ${
           isDark ? 'bg-[#0A1F44]/50 border-white/5 text-white/60 hover:text-white' : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/60 hover:text-[#0A1F44]'
         }`}>
-          <Filter size={18} /> Filters
+          <Filter size={14} className="md:w-[18px] md:h-[18px]" /> Filters
         </button>
       </div>
 
@@ -52,64 +52,64 @@ const MyStudents = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className={`p-6 rounded-[2rem] border group transition-all duration-300 hover:shadow-2xl ${
+            className={`p-4 md:p-6 rounded-2xl md:rounded-[2rem] border group transition-all duration-300 hover:shadow-2xl ${
               isDark 
                 ? 'bg-[#0A1F44]/50 border-white/10 hover:border-[#FFD600]/30 hover:shadow-[#FFD600]/5' 
                 : 'bg-white border-[#0A1F44]/5 shadow-lg shadow-blue-500/5 hover:border-[#FFD600]'
             }`}
           >
-            <div className="flex justify-between items-start mb-4">
-               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFD600]/20 to-[#FF4B4B]/20 border border-[#FFD600]/30 flex items-center justify-center text-[#FFD600] font-black text-lg">
+            <div className="flex justify-between items-start mb-3 md:mb-4">
+               <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#FFD600]/20 to-[#FF4B4B]/20 border border-[#FFD600]/30 flex items-center justify-center text-[#FFD600] font-black text-base md:text-lg">
                     {student.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className={`font-black font-display tracking-tight text-lg ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{student.name}</h3>
-                    <p className="text-[10px] font-bold text-[#FFD600] uppercase tracking-widest">{student.id}</p>
+                    <h3 className={`font-black font-display tracking-tight text-base md:text-lg ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{student.name}</h3>
+                    <p className="text-[9px] font-bold text-[#FFD600] uppercase tracking-widest leading-none">{student.id}</p>
                   </div>
                </div>
                <button className="text-white/20 hover:text-white">
-                  <MoreHorizontal size={20} />
+                  <MoreHorizontal size={16} className="md:w-[20px] md:h-[20px]" />
                </button>
             </div>
 
-            <div className="space-y-3 mb-6">
-               <div className="flex justify-between text-xs font-bold">
-                  <span className="text-white/30 uppercase tracking-widest">Active Batch</span>
+            <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
+               <div className="flex justify-between text-[11px] md:text-xs font-bold">
+                  <span className="text-white/30 uppercase tracking-[0.1em] md:tracking-widest">Active Batch</span>
                   <span className={isDark ? 'text-white/70' : 'text-[#0A1F44]/70'}>{student.batch}</span>
                </div>
-               <div className="flex justify-between text-xs font-bold">
-                  <span className="text-white/30 uppercase tracking-widest">Skill Level</span>
+               <div className="flex justify-between text-[11px] md:text-xs font-bold">
+                  <span className="text-white/30 uppercase tracking-[0.1em] md:tracking-widest">Skill Level</span>
                   <span className="text-[#1EE7FF]">{student.level}</span>
                </div>
-               <div className="flex justify-between text-xs font-bold">
-                  <span className="text-white/30 uppercase tracking-widest">Attendance</span>
+               <div className="flex justify-between text-[11px] md:text-xs font-bold">
+                  <span className="text-white/30 uppercase tracking-[0.1em] md:tracking-widest">Attendance</span>
                   <span className="text-[#22FF88]">{student.attendance}</span>
                </div>
             </div>
 
-            <div className={`p-4 rounded-2xl border flex items-center justify-between mb-4 ${isDark ? 'bg-black/20 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
+            <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between mb-4 ${isDark ? 'bg-black/20 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
                <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Current Rating</span>
-                  <div className="flex items-center gap-1 mt-1">
-                     <Star size={14} className="text-[#FFD600] fill-[#FFD600]" />
-                     <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{student.rating}</span>
+                  <span className="text-[8px] md:text-[10px] font-black text-white/30 uppercase tracking-[0.1em] md:tracking-[0.2em]">Rating</span>
+                  <div className="flex items-center gap-1 mt-0.5 md:mt-1">
+                     <Star size={12} className="md:w-[14px] md:h-[14px] text-[#FFD600] fill-[#FFD600]" />
+                     <span className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{student.rating}</span>
                   </div>
                </div>
                <div className="text-right">
-                  <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Status</span>
-                  <p className={`text-[10px] font-black uppercase mt-1 ${student.status === 'Active' ? 'text-[#22FF88]' : 'text-[#FF4B4B]'}`}>{student.status}</p>
+                  <span className="text-[8px] md:text-[10px] font-black text-white/30 uppercase tracking-[0.1em] md:tracking-[0.2em]">Status</span>
+                  <p className={`text-[9px] md:text-[10px] font-black uppercase mt-0.5 md:mt-1 ${student.status === 'Active' ? 'text-[#22FF88]' : 'text-[#FF4B4B]'}`}>{student.status}</p>
                </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-               <button className={`py-2.5 rounded-xl border flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
+               <button className={`py-2 md:py-2.5 rounded-lg md:rounded-xl border flex items-center justify-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
                  isDark ? 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white' : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44]/70 hover:bg-[#0A1F44]/10 hover:text-[#0A1F44]'
                }`}>
-                  <MessageSquare size={14} /> Remarks
+                  <MessageSquare size={12} className="md:w-[14px] md:h-[14px]" /> Remarks
                </button>
-               <button className="py-2.5 rounded-xl bg-[#FFD600] text-[#0A1F44] flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-[#FFD600]/20">
-                  <GraduationCap size={14} /> Profile
+               <button className="py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#FFD600] text-[#0A1F44] flex items-center justify-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-[#FFD600]/20">
+                  <GraduationCap size={12} className="md:w-[14px] md:h-[14px]" /> Profile
                </button>
             </div>
           </motion.div>

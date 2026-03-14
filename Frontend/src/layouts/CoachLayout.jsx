@@ -142,20 +142,20 @@ const CoachLayout = () => {
       {/* Main Workspace */}
       <div className="flex-1 flex flex-col min-w-0 relative h-screen shadow-[-20px_0_50px_-20px_rgba(0,0,0,0.8)] z-10 overflow-hidden">
         {/* Topbar */}
-        <header className="h-20 bg-[#08142B]/90 backdrop-blur-3xl border-b border-[#22FF88]/10 flex items-center justify-between px-6 sticky top-0 z-30">
+        <header className="h-16 md:h-20 bg-[#08142B]/90 backdrop-blur-3xl border-b border-[#22FF88]/10 flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
           <button 
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 -ml-2 rounded-xl text-white/80 hover:bg-white/5 md:hidden"
+            className="p-2 -ml-1 rounded-xl text-white/80 hover:bg-white/5 md:hidden"
           >
-            <Menu size={24} />
+            <Menu size={20} className="md:w-[24px] md:h-[24px]" />
           </button>
           
           <div className="hidden md:block" /> {/* spacer */}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={toggleTheme}
-              className={`p-2 rounded-xl transition-all duration-300 border ${
+              className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-300 border ${
                 isDark 
                   ? 'border-white/10 hover:bg-white/5 text-white/60 hover:text-white' 
                   : 'border-[#0A1F44]/10 hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F44]'
@@ -166,19 +166,19 @@ const CoachLayout = () => {
                 animate={{ rotate: isDark ? 0 : 180 }}
                 transition={{ duration: 0.4, type: 'spring' }}
               >
-                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                {isDark ? <Sun size={16} className="md:w-[18px] md:h-[18px]" /> : <Moon size={16} className="md:w-[18px] md:h-[18px]" />}
               </motion.div>
             </button>
-            <button className="relative w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors">
-              <Bell size={18} />
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#FFD600] border border-[#08142B]" />
+            <button className="relative w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+              <Bell size={16} className="md:w-[18px] md:h-[18px]" />
+              <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#FFD600] border border-[#08142B]" />
             </button>
-            <div className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-2xl border border-white/5 bg-[#0A1F44]/50">
+            <div className="flex items-center gap-2 md:gap-3 pl-2 pr-1 py-0.5 md:py-1 rounded-xl md:rounded-2xl border border-white/5 bg-[#0A1F44]/50">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-white leading-none">Vikram Singh</p>
-                <p className="text-[10px] font-bold text-[#FFD600] uppercase tracking-wider mt-1">Head Coach</p>
+                <p className="text-[10px] md:text-xs font-bold text-white leading-none">Vikram Singh</p>
+                <p className="text-[8px] md:text-[10px] font-bold text-[#FFD600] uppercase tracking-wider mt-0.5 md:mt-1">Head Coach</p>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFD600]/20 to-[#FF4B4B]/20 overflow-hidden border border-[#FFD600]/30 selection:bg-transparent">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#FFD600]/20 to-[#FF4B4B]/20 overflow-hidden border border-[#FFD600]/30 selection:bg-transparent">
                 <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=150&auto=format&fit=crop" className="w-full h-full object-cover" />
               </div>
             </div>
@@ -186,7 +186,7 @@ const CoachLayout = () => {
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto scrollbar-hide relative z-10 px-4 py-6 md:px-8 md:py-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto scrollbar-hide relative z-10 px-4 py-4 md:px-8 md:py-8">
           <Outlet />
         </main>
       </div>

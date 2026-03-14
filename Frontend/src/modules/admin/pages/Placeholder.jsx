@@ -10,7 +10,7 @@ const Placeholder = ({ title }) => {
       >
         <div className="w-12 h-12 rounded-full border-4 border-t-[#22FF88] border-r-[#1EE7FF] border-b-transparent border-l-transparent animate-spin" />
       </motion.div>
-      <h2 className="text-3xl font-black text-white font-display mb-3">{title}</h2>
+      <h2 className="text-2xl md:text-3xl font-black text-white font-display mb-3">{title}</h2>
       <p className="text-white/40 max-w-sm mx-auto font-medium">
         This module is currently under development. It will be available in the upcoming release.
       </p>

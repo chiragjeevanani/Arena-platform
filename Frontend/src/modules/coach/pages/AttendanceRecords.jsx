@@ -46,23 +46,23 @@ const AttendanceRecords = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/5">
         <div>
-          <h2 className="text-2xl font-black text-white font-display tracking-wide flex items-center gap-3">
-            <ClipboardCheck className="text-[#FFD600]" /> Attendance Records
+          <h2 className={`text-xl md:text-2xl font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'} font-display tracking-wide flex items-center gap-2 md:gap-3`}>
+            <ClipboardCheck className="text-[#FFD600]" size={20} /> Attendance
           </h2>
-          <p className="text-sm text-white/40 mt-1 font-medium">Verify daily presence and export monthly participation reports.</p>
+          <p className="text-[11px] md:text-sm text-white/40 mt-0.5 md:mt-1 font-medium italic">Verify daily presence.</p>
         </div>
         <button
           onClick={exportToCSV}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${
+          className={`flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl border transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest ${
             isDark
               ? 'bg-white/5 border-white/10 text-white hover:bg-[#22FF88] hover:text-[#0A1F44] hover:border-transparent'
               : 'bg-white border-black/10 text-black hover:bg-[#22FF88] hover:text-[#0A1F44] hover:border-transparent'
           }`}
         >
-          <Download size={16} /> Export CSV
+          <Download size={14} className="md:w-[16px] md:h-[16px]" /> Export
         </button>
       </div>
 
@@ -70,16 +70,16 @@ const AttendanceRecords = () => {
         {[
           { label: 'Avg Attendance', value: '94.2%', icon: CheckCircle2, color: '#22FF88' },
           { label: 'Classes Logged', value: '42', icon: Clock, color: '#FFD600' },
-          { label: 'Students Missing', value: '03', icon: XCircle, color: '#FF4B4B' },
+          { label: 'Missing', value: '03', icon: XCircle, color: '#FF4B4B' },
         ].map((stat, idx) => (
-          <div key={idx} className={`p-5 rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+          <div key={idx} className={`p-4 md:p-5 rounded-2xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-1">{stat.label}</p>
-                <h3 className={`text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{stat.value}</h3>
+                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white/30 mb-0.5 md:mb-1">{stat.label}</p>
+                <h3 className={`text-2xl md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{stat.value}</h3>
               </div>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center border transition-colors duration-300" style={{ backgroundColor: `${stat.color}10`, borderColor: `${stat.color}20`, color: stat.color }}>
-                <stat.icon size={20} />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center border transition-colors duration-300" style={{ backgroundColor: `${stat.color}10`, borderColor: `${stat.color}20`, color: stat.color }}>
+                <stat.icon size={16} className="md:w-[20px] md:h-[20px]" />
               </div>
             </div>
           </div>
@@ -90,13 +90,13 @@ const AttendanceRecords = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className={`text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
-                <th className="p-6">Date</th>
-                <th className="p-6">Batch Name</th>
-                <th className="p-6 text-center">Present</th>
-                <th className="p-6 text-center">Absent</th>
-                <th className="p-6 text-center">Status</th>
-                <th className="p-6 text-right pr-10">Details</th>
+              <tr className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
+                <th className="p-4 md:p-6 text-[8px] md:text-[10px]">Date</th>
+                <th className="p-4 md:p-6 text-[8px] md:text-[10px]">Batch Name</th>
+                <th className="p-4 md:p-6 text-center text-[8px] md:text-[10px]">Present</th>
+                <th className="p-4 md:p-6 text-center text-[8px] md:text-[10px]">Absent</th>
+                <th className="p-4 md:p-6 text-center text-[8px] md:text-[10px]">Status</th>
+                <th className="p-4 md:p-6 text-right pr-6 md:pr-10 text-[8px] md:text-[10px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -108,33 +108,33 @@ const AttendanceRecords = () => {
                   transition={{ delay: idx * 0.05 }}
                   className="group hover:bg-white/[0.02] cursor-pointer"
                 >
-                  <td className="p-6">
-                    <div className="flex items-center gap-3">
-                       <Calendar size={16} className="text-[#FFD600]" />
-                       <span className={`font-black text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{log.date}</span>
+                  <td className="p-4 md:p-6">
+                    <div className="flex items-center gap-2 md:gap-3">
+                       <Calendar size={14} className="md:w-[16px] md:h-[16px] text-[#FFD600]" />
+                       <span className={`font-black text-[11px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{log.date}</span>
                     </div>
                   </td>
-                  <td className="p-6">
-                    <p className={`font-bold text-sm ${isDark ? 'text-white/70' : 'text-[#0A1F44]/70'}`}>{log.batch}</p>
+                  <td className="p-4 md:p-6">
+                    <p className={`font-bold text-[11px] md:text-sm ${isDark ? 'text-white/70' : 'text-[#0A1F44]/70'}`}>{log.batch}</p>
                   </td>
-                  <td className="p-6 text-center">
-                    <span className="text-[#22FF88] font-black">{log.present}</span>
+                  <td className="p-4 md:p-6 text-center">
+                    <span className="text-[#22FF88] font-black text-xs md:text-sm">{log.present}</span>
                   </td>
-                  <td className="p-6 text-center">
-                    <span className="text-[#FF4B4B] font-black">{log.absent}</span>
+                  <td className="p-4 md:p-6 text-center">
+                    <span className="text-[#FF4B4B] font-black text-xs md:text-sm">{log.absent}</span>
                   </td>
-                  <td className="p-6 text-center">
-                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                  <td className="p-4 md:p-6 text-center">
+                    <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest border ${
                       log.status === 'Logged' ? 'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20' : 'bg-[#FFD600]/10 text-[#FFD600] border-[#FFD600]/20 animate-pulse'
                     }`}>
                       {log.status}
                     </span>
                   </td>
-                  <td className="p-6 text-right pr-10">
+                  <td className="p-4 md:p-6 text-right pr-6 md:pr-10">
                     <div className="flex justify-end relative">
                       <button 
                         onClick={() => setActiveMenu(activeMenu === log.id ? null : log.id)}
-                        className={`p-2.5 rounded-xl transition-all border ${
+                        className={`p-1.5 md:p-2.5 rounded-lg md:rounded-xl transition-all border ${
                           activeMenu === log.id
                             ? 'bg-[#FFD600] border-[#FFD600] text-[#0A1F44]'
                             : isDark 
@@ -142,7 +142,7 @@ const AttendanceRecords = () => {
                               : 'bg-black/5 border-black/10 text-black/40 hover:text-black hover:border-black/20'
                         }`}
                       >
-                         <MoreVertical size={16} />
+                         <MoreVertical size={14} className="md:w-[16px] md:h-[16px]" />
                       </button>
 
                       <AnimatePresence>

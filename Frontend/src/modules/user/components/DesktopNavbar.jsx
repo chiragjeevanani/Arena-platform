@@ -24,8 +24,8 @@ const DesktopNavbar = () => {
             end={item.path === '/'}
             className={({ isActive }) => `
               relative px-4 py-2 md:rounded-none rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 flex items-center gap-2
-              ${isActive 
-                ? 'text-[#22FF88] bg-[#22FF88]/10 shadow-[0_4px_15px_rgba(34,255,136,0.15)] border border-[#22FF88]/20' 
+              ${isActive
+                ? 'text-[#22FF88] bg-[#22FF88]/10 shadow-[0_4px_15px_rgba(34,255,136,0.15)] border border-[#22FF88]/20'
                 : 'text-white hover:text-[#22FF88] hover:bg-white/5'
               }
             `}

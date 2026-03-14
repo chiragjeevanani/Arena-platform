@@ -36,7 +36,7 @@ const MatchBanner = ({ promos = [] }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 📱 Mobile View (Existing Logic) */}
-      <div className="md:hidden relative h-44 rounded-[28px] overflow-hidden group">
+      <div className="md:hidden relative h-52 rounded-[28px] overflow-hidden group">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={current}
@@ -59,6 +59,12 @@ const MatchBanner = ({ promos = [] }) => {
               <h2 className="text-white text-xl font-black max-w-[200px] leading-tight font-display tracking-tight">
                 {promos[current].title}
               </h2>
+
+              {/* Floating Shuttlecock Icon (Restored) */}
+              <div className="absolute top-4 right-4 animate-float opacity-80 z-20">
+                <ShuttlecockIcon size={40} className="text-[#22FF88] drop-shadow-[0_0_15px_rgba(34,255,136,0.5)]" />
+              </div>
+
               <button className="mt-3 bg-[#22FF88] text-[#08142B] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(34,255,136,0.2)]">
                 {promos[current].buttonText || 'Join Match'}
               </button>
@@ -92,7 +98,7 @@ const MatchBanner = ({ promos = [] }) => {
               {promos.map((promo, index) => (
                 <motion.div 
                   key={index}
-                  className={`relative min-w-[calc(33.333%-11px)] h-48 rounded-[24px] overflow-hidden border transition-all duration-500 cursor-pointer group/card
+                  className={`relative min-w-[calc(33.333%-11px)] h-60 rounded-[24px] overflow-hidden border transition-all duration-500 cursor-pointer group/card
                     ${current === index ? 'border-[#22FF88]/40 shadow-[0_15px_35px_rgba(0,0,0,0.2)]' : 'border-white/5 opacity-90'}`}
                   whileHover={{ scale: 1.02, translateY: -5 }}
                 >
@@ -106,8 +112,13 @@ const MatchBanner = ({ promos = [] }) => {
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#08142B]/90 via-[#08142B]/20 to-transparent" />
                   
+                  {/* Floating Shuttlecock Icon (Restored) */}
+                  <div className="absolute top-6 right-6 animate-float opacity-0 group-hover/card:opacity-100 transition-all duration-500 z-30 pointer-events-none">
+                    <ShuttlecockIcon size={48} className="text-[#22FF88] drop-shadow-[0_0_20px_rgba(34,255,136,0.6)]" />
+                  </div>
+
                   {/* Content */}
-                  <div className="absolute inset-x-0 bottom-0 p-6">
+                  <div className="absolute inset-x-0 bottom-0 p-6 z-20">
                     <span className="text-[#22FF88] text-[8px] font-black uppercase tracking-[0.3em] mb-1 block">
                       {promo.subtitle}
                     </span>

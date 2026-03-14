@@ -35,7 +35,7 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
             : '0 0 0px transparent'
         }}
         className={`
-          relative flex-1 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md md:rounded-none rounded-2xl transition-all duration-300
+          relative flex-1 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-2xl transition-all duration-300
           ${isFocused ? 'border-[#22FF88]' : (isDark ? 'border-white/30' : 'border-white/40')}
           border border-solid
         `}
@@ -47,7 +47,7 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className={`w-full bg-transparent md:rounded-none rounded-2xl py-3 pl-5 pr-12 text-sm font-medium focus:outline-none focus:ring-0 border-none ${isDark
+          className={`w-full bg-transparent md:rounded-xl rounded-2xl py-3 pl-5 pr-12 text-sm font-medium focus:outline-none focus:ring-0 border-none ${isDark
               ? 'text-white/90 placeholder:text-white/40'
               : 'text-white placeholder:text-white/60'
             }`}
@@ -61,7 +61,7 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
       {/* Filter Button — Tournament Control Knob */}
       <button
         onClick={handleFilterClick}
-        className={`w-12 h-12 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md md:rounded-none rounded-xl flex items-center justify-center border border-solid ${isDark ? 'border-white/30' : 'border-white/40'} hover:border-[#22FF88] transition-all duration-300 group`}
+        className={`w-12 h-12 ${isDark ? 'bg-white/5' : 'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-xl flex items-center justify-center border border-solid ${isDark ? 'border-white/30' : 'border-white/40'} hover:border-[#22FF88] transition-all duration-300 group`}
       >
         <div ref={filterRef}>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className={`${isDark ? 'text-white/50' : 'text-white/80'} group-hover:text-[#22FF88] transition-colors`}>

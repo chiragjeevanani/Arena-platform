@@ -87,7 +87,7 @@ const Header = () => {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="w-9 h-9 bg-white/5 backdrop-blur-sm md:rounded-none rounded-xl flex items-center justify-center border border-white/20 hover:border-[#22FF88]/40 transition-all group"
+                className="w-9 h-9 bg-white/5 backdrop-blur-sm md:rounded-xl rounded-xl flex items-center justify-center border border-white/20 hover:border-[#22FF88]/40 transition-all group"
                 title="Toggle Theme"
               >
                 {isDark ? <Sun size={17} className="text-[#FFD600] group-hover:scale-110 transition-transform" /> : <Moon size={17} className="text-[#1EE7FF] group-hover:scale-110 transition-transform" />}
@@ -96,7 +96,7 @@ const Header = () => {
               {/* Notification Bell */}
               <button
                 onClick={() => navigate('/profile/notifications')}
-                className="relative w-9 h-9 bg-white/5 backdrop-blur-sm md:rounded-none rounded-xl flex items-center justify-center border border-white/20 hover:border-[#22FF88]/40 transition-all group"
+                className="relative w-9 h-9 bg-white/5 backdrop-blur-sm md:rounded-xl rounded-xl flex items-center justify-center border border-white/20 hover:border-[#22FF88]/40 transition-all group"
                 title="Notifications"
               >
                 <Bell size={17} className="text-white/60 group-hover:text-white transition-colors" />
@@ -107,7 +107,7 @@ const Header = () => {
                 /* Login / Sign Up Button - Shown when NOT logged in */
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-5 h-9 bg-[#22FF88] text-[#0A1F44] font-bold text-[11px] uppercase tracking-wider md:rounded-none rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg shadow-[#22FF88]/20 active:scale-95 ml-1"
+                  className="px-5 h-9 bg-[#22FF88] text-[#0A1F44] font-bold text-[11px] uppercase tracking-wider md:rounded-xl rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg shadow-[#22FF88]/20 active:scale-95 ml-1"
                 >
                   <LogIn size={15} strokeWidth={3} />
                   <span className="hidden lg:inline whitespace-nowrap">Login/Sign Up</span>
@@ -116,7 +116,7 @@ const Header = () => {
                 /* Profile Icon Button - Shown ONLY when logged in */
                 <button
                   onClick={() => navigate('/profile')}
-                  className="w-9 h-9 bg-white/5 text-white/60 md:rounded-none rounded-xl flex items-center justify-center border border-white/20 hover:border-[#22FF88]/40 hover:text-[#22FF88] transition-all active:scale-95 group ml-1"
+                  className="w-9 h-9 bg-white/5 text-white/60 md:rounded-xl rounded-xl flex items-center justify-center border border-white/20 hover:border-[#22FF88]/40 hover:text-[#22FF88] transition-all active:scale-95 group ml-1"
                   title="My Profile"
                 >
                   <PlayerAvatarIcon size={20} className="group-hover:scale-110 transition-transform" />

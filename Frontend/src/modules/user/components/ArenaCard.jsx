@@ -31,7 +31,7 @@ const ArenaCard = ({ arena, index = 0 }) => {
       <Link to={`/arenas/${arena.id}`} className="block">
         <div className="glass-card rounded-[24px] overflow-hidden transition-all duration-500 group-hover:border-[#22FF88]/20 bg-white dark:bg-[#0A1F44] border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-[0_0_30px_rgba(34,255,136,0.08)]">
           {/* Image */}
-          <div className="relative h-32 overflow-hidden">
+          <div className="relative h-48 overflow-hidden">
             <img
               src={arena.image}
               alt={arena.name}

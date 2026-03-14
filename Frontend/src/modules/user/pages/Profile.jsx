@@ -48,8 +48,10 @@ const Profile = () => {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`p-10 rounded-3xl border sticky top-10 ${
-              isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-100'
+            className={`p-10 rounded-3xl border sticky top-10 backdrop-blur-xl transition-all duration-500 ${
+              isDark 
+                ? 'bg-white/[0.03] border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)]' 
+                : 'bg-white/80 border-white shadow-[0_8px_32px_rgba(31,38,135,0.07)]'
             }`}
           >
             <div className="flex flex-col items-center">
@@ -112,10 +114,12 @@ const Profile = () => {
                 ].map((item, i) => (
                   <motion.button
                     key={i}
-                    whileHover={{ x: 10 }}
+                    whileHover={{ x: 10, scale: 1.01 }}
                     onClick={() => navigate(item.path)}
-                    className={`w-full group flex items-center gap-5 p-5 transition-all text-left border-b last:border-0 ${
-                      isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-slate-50 hover:bg-white'
+                    className={`w-full group flex items-center gap-5 p-5 transition-all text-left border rounded-2xl mb-4 last:mb-0 backdrop-blur-sm ${
+                      isDark 
+                        ? 'bg-white/[0.02] border-white/10 hover:border-[#22FF88]/30 hover:bg-white/[0.04] shadow-lg shadow-black/10' 
+                        : 'bg-white/50 border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md shadow-sm'
                     }`}
                   >
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
@@ -143,10 +147,12 @@ const Profile = () => {
                 ].map((item, i) => (
                   <motion.button
                     key={i}
-                    whileHover={{ x: 10 }}
+                    whileHover={{ x: 10, scale: 1.01 }}
                     onClick={() => navigate(item.path)}
-                    className={`w-full group flex items-center gap-5 p-5 transition-all text-left border-b last:border-0 ${
-                      isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-slate-50 hover:bg-white'
+                    className={`w-full group flex items-center gap-5 p-5 transition-all text-left border rounded-2xl mb-4 last:mb-0 backdrop-blur-sm ${
+                      isDark 
+                        ? 'bg-white/[0.02] border-white/10 hover:border-[#22FF88]/30 hover:bg-white/[0.04] shadow-lg shadow-black/10' 
+                        : 'bg-white/50 border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md shadow-sm'
                     }`}
                   >
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
@@ -168,8 +174,10 @@ const Profile = () => {
             <motion.button
               whileHover={{ scale: 1.01 }}
               onClick={() => navigate('/login')}
-              className={`w-full p-4 rounded-2xl flex items-center transition-all border group ${
-                isDark ? 'bg-red-500/5 border-red-500/10 hover:bg-red-500/10' : 'bg-red-50/30 border-red-100 hover:bg-red-50'
+              className={`w-full p-4 rounded-2xl flex items-center transition-all border group backdrop-blur-md ${
+                isDark 
+                  ? 'bg-red-500/5 border-red-500/20 hover:bg-red-500/10' 
+                  : 'bg-red-50/50 border-red-100 hover:bg-red-50 hover:shadow-sm'
               }`}
             >
               <div className="w-10 h-10 rounded-xl bg-red-500 text-white flex items-center justify-center mr-4 group-hover:rotate-12 transition-transform">
@@ -196,18 +204,18 @@ const Profile = () => {
         </div>
 
         {/* Profile Header - Compact Flat Version */}
-        <div className={`relative pt-8 pb-6 overflow-hidden transition-all duration-700 ${
+        <div className={`relative pt-6 pb-4 md:pt-8 md:pb-6 overflow-hidden transition-all duration-700 ${
           isDark ? 'bg-gradient-to-b from-white/[0.03] to-transparent' : 'bg-gradient-to-br from-[#0F172A] to-[#1E293B]'
         }`}>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#22FF88]/5 rounded-full -ml-24 -mb-24 blur-3xl pointer-events-none" />
           
-          <div className="flex flex-col items-center relative z-10 px-8">
+          <div className="flex flex-col items-center relative z-10 px-6 md:px-8">
             <div className="relative">
               <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className={`w-24 h-24 rounded-2xl overflow-hidden border-[2px] p-0.5 shadow-2xl transition-all duration-500 ${
+                className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-[2px] p-0.5 shadow-2xl transition-all duration-500 ${
                   isDark ? 'border-[#22FF88]/20 bg-white/5' : 'border-white/20 bg-white/10'
                 }`}
               >
@@ -225,53 +233,62 @@ const Profile = () => {
               </button>
             </div>
 
-            <div className="text-center mt-6">
-              <h2 className="text-2xl font-black tracking-tight font-display text-white">Muhammad Haroos</h2>
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mt-2.5 border bg-white/10 border-white/10 text-blue-100`}>
+            <div className="text-center mt-4 md:mt-6">
+              <h2 className="text-xl md:text-2xl font-black tracking-tight font-display text-white">Muhammad Haroos</h2>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mt-2 border bg-white/10 border-white/10 text-blue-100`}>
                 <div className="w-1.5 h-1.5 rounded-full bg-[#22FF88] animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-[0.2em]">Premium Member</span>
+                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em]">Premium Member</span>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center justify-center mt-6 w-full max-w-[320px] gap-12 border-t border-white/10 pt-4">
-              <div className="text-center">
-                <p className="text-2xl font-black font-display text-white leading-none">12</p>
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5">Bookings</p>
-              </div>
-              <div className="text-center px-8 border-x border-white/5">
-                <p className="text-2xl font-black font-display text-white leading-none">₹4.8k</p>
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5">Spent</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-black font-display text-white leading-none">4.9</p>
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5 flex items-center justify-center gap-1">Level <Star size={8} className="text-[#FFD600] fill-[#FFD600]" /></p>
-              </div>
+          <div className="flex items-center justify-center mt-4 md:mt-6 w-full max-w-[320px] mx-auto gap-8 md:gap-12 border-t border-white/10 pt-4 px-4">
+            <div className="text-center">
+              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">12</p>
+              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5">Bookings</p>
+            </div>
+            <div className="text-center px-4 md:px-8 border-x border-white/5">
+              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">₹4.8k</p>
+              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5">Spent</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">4.9</p>
+              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1.5 flex items-center justify-center gap-1">Level <Star size={8} className="text-[#FFD600] fill-[#FFD600]" /></p>
             </div>
           </div>
         </div>
 
-        <div className="px-6 py-10 grid grid-cols-1 gap-5">
+        <div className="px-5 py-6 md:py-10 grid grid-cols-1 gap-3 md:gap-5">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             return (
               <motion.button
                 key={index}
                 onClick={() => navigate(item.path)}
-                className={`w-full p-3 rounded-2xl flex items-center transition-all border relative overflow-hidden ${
-                  isDark ? 'bg-white/[0.03] border-white/5' : 'bg-white border-slate-100 shadow-sm'
+                className={`w-full p-3.5 md:p-4 rounded-2xl md:rounded-[24px] flex items-center transition-all border relative overflow-hidden backdrop-blur-xl ${
+                  isDark 
+                    ? 'bg-white/[0.03] border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.1)]' 
+                    : 'bg-white/70 border-white shadow-[0_4px_24px_rgba(0,0,0,0.03)]'
                 }`}
               >
-                <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center ${item.color} mr-4`}>
-                  <Icon size={18} />
+                <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${item.bg} flex items-center justify-center ${item.color} mr-4`}>
+                  <Icon size={16} className="md:w-5 md:h-5" />
                 </div>
                 <span className={`flex-1 text-left font-bold text-[13px] ${isDark ? 'text-white/70' : 'text-[#0F172A]'}`}>{item.label}</span>
                 <ChevronRight size={12} className="opacity-30" />
               </motion.button>
             );
           })}
-          <button onClick={() => navigate('/login')} className="w-full p-3 rounded-2xl flex items-center mt-4 border border-red-500/10 bg-red-500/5">
-            <div className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center mr-4">
-              <LogOut size={18} />
+          <button 
+            onClick={() => navigate('/login')} 
+            className={`w-full p-3.5 md:p-4 rounded-2xl md:rounded-[24px] flex items-center mt-2 md:mt-4 border backdrop-blur-md transition-all ${
+              isDark 
+                ? 'border-red-500/20 bg-red-500/5' 
+                : 'border-red-100 bg-red-50/50 shadow-[0_4px_24px_rgba(239,68,68,0.05)]'
+            }`}
+          >
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center mr-4">
+              <LogOut size={16} className="md:w-[18px] md:h-[18px]" />
             </div>
             <span className="flex-1 text-left font-black text-red-500 text-[12px] tracking-widest uppercase text-center pr-10">Logout Account</span>
           </button>

@@ -30,80 +30,84 @@ const Wallet = () => {
         </div>
       </div>
 
-      <div className="px-6 mt-6 max-w-[400px] mx-auto">
-        {/* Compact & Premium Wallet Card */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className={`relative overflow-hidden p-6 rounded-[32px] shadow-2xl ${
-            isDark 
-              ? 'bg-gradient-to-br from-[#0A1F44] to-[#08142B] border border-white/5' 
-              : 'bg-gradient-to-br from-[#0A1F44] to-[#122b5a] shadow-[0_20px_50px_rgba(10,31,68,0.25)]'
-          }`}
-        >
-          {/* Decorative Background Elements */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#22FF88]/10 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full -ml-12 -mb-12 blur-2xl pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col items-center">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white mb-3 shadow-lg ${
-              isDark ? 'bg-white/5 border border-white/10' : 'bg-white/10 backdrop-blur-md'
-            }`}>
-              <WalletIcon size={22} className="text-[#22FF88]" />
-            </div>
+      <div className="px-6 mt-6 max-w-[400px] md:max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          {/* LEFT COLUMN: Balance Card */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`w-full md:w-[340px] md:aspect-square relative overflow-hidden p-5 md:p-6 rounded-2xl md:rounded-[32px] shadow-2xl shrink-0 flex flex-col justify-center ${
+              isDark 
+                ? 'bg-gradient-to-br from-[#0A1F44] to-[#08142B] border border-white/5' 
+                : 'bg-gradient-to-br from-[#0A1F44] to-[#122b5a] shadow-[0_20px_50px_rgba(10,31,68,0.25)]'
+            }`}
+          >
+            {/* Decorative Background Elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#22FF88]/10 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full -ml-12 -mb-12 blur-2xl pointer-events-none" />
             
-            <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.25em]">Available Balance</p>
-            <h2 className="text-3xl font-black text-white font-display mt-1.5 flex items-baseline gap-1">
-              <span className="text-xl opacity-60">₹</span>2,450
-            </h2>
-            
-            <div className="mt-7 w-full">
-              <button className="w-full bg-white hover:bg-slate-50 text-[#0A1F44] font-black py-4 rounded-2xl text-[11px] uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 group">
-                <div className="w-6 h-6 rounded-lg bg-[#0A1F44] text-white flex items-center justify-center transition-transform group-hover:rotate-90">
-                  <Plus size={14} strokeWidth={3} />
-                </div>
-                Add Money
-              </button>
+            <div className="relative z-10 flex flex-col items-center">
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white mb-2 md:mb-3 shadow-lg ${
+                isDark ? 'bg-white/5 border border-white/10' : 'bg-white/10 backdrop-blur-md'
+              }`}>
+                <WalletIcon size={20} className="md:w-6 md:h-6 text-[#22FF88]" />
+              </div>
+              
+              <p className="text-white/30 text-[8px] md:text-[9px] font-black uppercase tracking-[0.25em]">Available Balance</p>
+              <h2 className="text-3xl md:text-4xl font-black text-white font-display mt-1 md:mt-2 flex items-baseline gap-1">
+                <span className="text-lg md:text-xl opacity-60">₹</span>2,450
+              </h2>
+              
+              <div className="mt-6 md:mt-8 w-full">
+                <button className="w-full bg-white hover:bg-slate-50 text-[#0A1F44] font-black py-3 md:py-3.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 group">
+                  <div className="w-5 h-5 md:w-6 md:h-6 rounded-lg bg-[#0A1F44] text-white flex items-center justify-center transition-transform group-hover:rotate-90">
+                    <Plus size={10} md:size={12} strokeWidth={3} />
+                  </div>
+                  Add Money
+                </button>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Transactions List */}
-        <div className="mt-10 space-y-6">
-          <div className="flex justify-between items-center px-1">
-            <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Recent Transactions</h3>
-            <button className="text-[10px] font-black uppercase text-blue-500 tracking-wider">See All</button>
-          </div>
+          {/* RIGHT COLUMN: Transactions List */}
+          <div className="flex-1 w-full space-y-6">
+            <div className="flex justify-between items-center px-1">
+              <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Recent Transactions</h3>
+              <button className="text-[10px] font-black uppercase text-blue-500 tracking-wider hover:underline">See All Activity</button>
+            </div>
 
-          <div className="space-y-4">
-            {transactions.map((tx, idx) => (
-              <motion.div 
-                key={tx.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + (idx * 0.1) }}
-                className={`p-4 rounded-[24px] border flex items-center transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-blue-50 shadow-sm'}`}
-              >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center mr-4 ${
-                  tx.type === 'received' 
-                    ? (isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') 
-                    : (isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')
-                }`}>
-                  {tx.type === 'received' ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
-                </div>
-                <div className="flex-1 text-left">
-                  <h4 className={`font-bold text-sm tracking-tight ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{tx.title}</h4>
-                  <p className={`text-[10px] font-bold mt-0.5 opacity-50 flex items-center gap-1 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                    <Clock size={10} /> {tx.date}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className={`font-black tracking-tight ${tx.type === 'received' ? 'text-emerald-500' : (isDark ? 'text-white/70' : 'text-[#0A1F44]/70')}`}>
-                    {tx.type === 'received' ? '+' : '-'}₹{Math.abs(tx.amount)}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+            <div className={`grid grid-cols-1 ${transactions.length > 2 ? 'lg:grid-cols-2' : ''} gap-3 md:gap-4`}>
+              {transactions.map((tx, idx) => (
+                <motion.div 
+                  key={tx.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 + (idx * 0.1) }}
+                  className={`p-4 md:p-5 rounded-2xl md:rounded-[24px] border flex items-center transition-all hover:scale-[1.02] cursor-pointer ${
+                    isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-blue-50 shadow-sm hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center mr-3 md:mr-4 shrink-0 ${
+                    tx.type === 'received' 
+                      ? (isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600') 
+                      : (isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')
+                  }`}>
+                    {tx.type === 'received' ? <ArrowDownLeft size={18} className="md:w-5 md:h-5" /> : <ArrowUpRight size={18} className="md:w-5 md:h-5" />}
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <h4 className={`font-bold text-sm md:text-base tracking-tight truncate ${isDark ? 'text-white/80' : 'text-[#0A1F44]'}`}>{tx.title}</h4>
+                    <p className={`text-[10px] md:text-[11px] font-bold mt-0.5 opacity-50 flex items-center gap-1 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
+                      <Clock size={10} /> {tx.date}
+                    </p>
+                  </div>
+                  <div className="text-right ml-3 md:ml-4">
+                    <p className={`font-black text-sm md:text-base tracking-tight ${tx.type === 'received' ? 'text-emerald-500' : (isDark ? 'text-white/70' : 'text-[#0A1F44]/70')}`}>
+                      {tx.type === 'received' ? '+' : '-'}₹{Math.abs(tx.amount)}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { useTheme } from '../../user/context/ThemeContext';
 import { useAuth } from '../../user/context/AuthContext';
 import { MOCK_DB } from '../../../data/mockDatabase';
 
-const AdminTopbar = ({ isCollapsed, setIsCollapsed }) => {
+const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { isDark, toggleTheme } = useTheme();
@@ -23,11 +23,21 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed }) => {
   };
 
   return (
-    <header className={`h-20 backdrop-blur-3xl border-b flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 ${
+    <header className={`h-16 md:h-20 backdrop-blur-3xl border-b flex items-center justify-between px-4 md:px-6 sticky top-0 z-40 transition-colors duration-500 ${
       isDark ? 'bg-[#08142B]/90 border-[#22FF88]/10 shadow-none' : 'bg-white/80 border-[#0A1F44]/10 shadow-sm'
     }`}>
-      {/* Left part: Search Bar */}
-      <div className="flex items-center gap-4 flex-1">
+      {/* Left part: Hamburger (mobile) + Search Bar */}
+      <div className="flex items-center gap-3 flex-1">
+        {/* Mobile Hamburger */}
+        <button
+          onClick={onMobileMenuClick}
+          className={`md:hidden p-2 rounded-xl transition-all border ${
+            isDark ? 'border-white/10 bg-white/5 text-white/60 hover:text-white' : 'border-[#0A1F44]/10 bg-white text-[#0A1F44]/60 hover:text-[#0A1F44] shadow-sm'
+          }`}
+        >
+          <Menu size={18} />
+        </button>
+
         <div className="relative w-full max-w-md hidden md:block group">
           <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
             isDark ? 'text-white/30 group-focus-within:text-[#1EE7FF]' : 'text-[#0A1F44]/30 group-focus-within:text-[#22FF88]'

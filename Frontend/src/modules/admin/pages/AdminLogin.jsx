@@ -71,7 +71,7 @@ const AdminLogin = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className={`w-full max-w-[1100px] h-[650px] rounded-[2.5rem] border overflow-hidden flex shadow-2xl relative z-10 ${
+        className={`w-full max-w-[1100px] min-h-[500px] md:h-[650px] rounded-2xl md:rounded-[2.5rem] border overflow-hidden flex flex-col lg:flex-row shadow-2xl relative z-10 ${
           isDark ? 'bg-[#0A1F44]/80 border-white/10 backdrop-blur-2xl' : 'bg-white/90 border-[#0A1F44]/5 backdrop-blur-xl shadow-blue-900/10'
         }`}
       >
@@ -114,21 +114,21 @@ const AdminLogin = () => {
         </div>
 
         {/* Right Side: Login Form */}
-        <div className="w-full lg:w-[450px] p-8 lg:p-12 flex flex-col justify-center relative">
-          <div className="mb-10 text-center lg:text-left">
-            <h2 className={`text-3xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Staff Login</h2>
-            <p className={`text-sm font-medium mt-2 ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Enter your credentials to access the portal.</p>
+        <div className="w-full lg:w-[450px] p-6 sm:p-8 lg:p-12 flex flex-col justify-center relative">
+          <div className="mb-6 md:mb-10 text-center lg:text-left">
+            <h2 className={`text-2xl md:text-3xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Staff Login</h2>
+            <p className={`text-[11px] md:text-sm font-medium mt-1 md:mt-2 ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Access the management portal.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Role Selection Tabs */}
-            <div className={`flex gap-1 p-1 rounded-2xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
+            <div className={`flex gap-1 p-1 rounded-xl md:rounded-2xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
               {roles.map((r) => (
                 <button
                   key={r.id}
                   type="button"
                   onClick={() => handleRoleChange(r.id)}
-                  className={`flex-1 py-3 px-1 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex-1 py-2 md:py-3 px-1 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
                     formData.role === r.id 
                       ? 'bg-[#22FF88] text-[#0A1F44] shadow-lg scale-[1.02]' 
                       : `${isDark ? 'text-white/40 hover:text-white' : 'text-[#0A1F44]/40 hover:text-[#0A1F44]'}`
@@ -139,14 +139,14 @@ const AdminLogin = () => {
               ))}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               <div className="relative group">
-                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#22FF88]' : 'text-[#0A1F44]/20 group-focus-within:text-[#22FF88]'}`} size={18} />
+                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors md:w-[18px] md:h-[18px] ${isDark ? 'text-white/20 group-focus-within:text-[#22FF88]' : 'text-[#0A1F44]/20 group-focus-within:text-[#22FF88]'}`} size={16} />
                 <input
                   type="email"
                   required
                   placeholder="Email Address"
-                  className={`w-full py-4 pl-12 pr-4 rounded-2xl text-sm font-bold transition-all outline-none border ${
+                  className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl text-xs md:text-sm font-bold transition-all outline-none border ${
                     isDark 
                       ? 'bg-black/20 border-white/5 focus:border-[#22FF88]/50 text-white' 
                       : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 focus:border-[#22FF88] text-[#0A1F44]'
@@ -157,12 +157,12 @@ const AdminLogin = () => {
               </div>
 
               <div className="relative group">
-                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#22FF88]' : 'text-[#0A1F44]/20 group-focus-within:text-[#22FF88]'}`} size={18} />
+                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors md:w-[18px] md:h-[18px] ${isDark ? 'text-white/20 group-focus-within:text-[#22FF88]' : 'text-[#0A1F44]/20 group-focus-within:text-[#22FF88]'}`} size={16} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="Password"
-                  className={`w-full py-4 pl-12 pr-12 rounded-2xl text-sm font-bold transition-all outline-none border ${
+                  className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-10 md:pr-12 rounded-xl md:rounded-2xl text-xs md:text-sm font-bold transition-all outline-none border ${
                     isDark 
                       ? 'bg-black/20 border-white/5 focus:border-[#22FF88]/50 text-white' 
                       : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 focus:border-[#22FF88] text-[#0A1F44]'
@@ -175,7 +175,7 @@ const AdminLogin = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} className="md:w-[18px] md:h-[18px]" /> : <Eye size={16} className="md:w-[18px] md:h-[18px]" />}
                 </button>
               </div>
             </div>
@@ -194,14 +194,14 @@ const AdminLogin = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-4 rounded-2xl bg-[#22FF88] text-[#0A1F44] font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-[#22FF88]/20 ${
+              className={`w-full py-3 md:py-4 rounded-xl md:rounded-2xl bg-[#22FF88] text-[#0A1F44] font-black text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-center gap-2 md:gap-3 transition-all active:scale-95 shadow-lg md:shadow-xl shadow-[#22FF88]/20 ${
                 isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#1EE7FF] hover:shadow-[#1EE7FF]/30'
               }`}
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-[#0A1F44]/30 border-t-[#0A1F44] rounded-full animate-spin" />
               ) : (
-                <>Sign In Securely <ArrowRight size={16} /></>
+                <>Sign In Securely <ArrowRight size={14} className="md:w-[16px] md:h-[16px]" /></>
               )}
             </button>
           </form>

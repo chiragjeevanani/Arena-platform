@@ -58,173 +58,167 @@ const Bookings = () => {
   };
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/5">
+    <div className="space-y-4 md:space-y-6">
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
-          <h2 className="text-2xl font-black text-white font-display tracking-wide flex items-center gap-3">
-            <Receipt className="text-[#1EE7FF]" /> Bookings History
+          <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
+            <Receipt className="text-[#1EE7FF] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Ledger
           </h2>
-          <p className="text-sm text-white/40 mt-1 font-medium">Detailed tracking of all court and coaching transactions.</p>
+          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Registry flows.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <button
             onClick={exportToCSV}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest border ${
               isDark
-                ? 'bg-white/5 border-white/10 text-white hover:bg-[#22FF88] hover:text-[#0A1F44] hover:border-transparent'
-                : 'bg-white border-black/10 text-black hover:bg-[#22FF88] hover:text-[#0A1F44] hover:border-transparent'
+                ? 'bg-white/5 border-white/10 text-white hover:bg-[#22FF88] hover:text-[#0A1F44]'
+                : 'bg-white border-black/10 text-black hover:bg-[#22FF88] hover:text-[#0A1F44] shadow-sm'
             }`}
           >
-            <Download size={16} /> Export CSV
+            <Download size={12} /> Sync
           </button>
         </div>
       </div>
 
       {/* Analytics Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
-          { label: 'Total Volume', value: '₹42,850', color: '#22FF88' },
-          { label: 'Active Bookings', value: '156', color: '#1EE7FF' },
-          { label: 'Cancelled', value: '12', color: '#FF4B4B' },
-          { label: 'New Revenue', value: '₹5,200', color: '#FFD600' }
+          { label: 'Network', value: '₹42K', color: '#22FF88' },
+          { label: 'Flow', value: '156', color: '#1EE7FF' },
+          { label: 'Void', value: '12', color: '#FF4B4B' },
+          { label: 'Yield', value: '₹5K', color: '#FFD600' }
         ].map((stat, idx) => (
-          <div key={idx} className={`p-4 rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
-            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-            <div className="flex items-end justify-between">
-              <h3 className={`text-2xl font-black font-display tracking-wide ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{stat.value}</h3>
-              <ArrowUpRight size={18} style={{ color: stat.color }} />
+          <div key={idx} className={`p-2.5 md:p-6 rounded-xl md:rounded-[2rem] border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+            <p className={`text-[6px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>{stat.label}</p>
+            <div className="flex items-center justify-between">
+              <h3 className={`text-base md:text-2xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{stat.value}</h3>
+              <ArrowUpRight size={10} className="md:w-[18px] md:h-[18px]" style={{ color: stat.color }} />
             </div>
           </div>
         ))}
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[300px] relative group">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#1EE7FF] transition-colors" />
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="w-full sm:flex-1 relative group">
+          <Search size={14} className={`absolute left-3 md:left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/30 group-focus-within:text-[#1EE7FF]' : 'text-[#0A1F44]/30'}`} />
           <input
             type="text"
-            placeholder="Search by Booking ID, Customer name..."
+            placeholder="Query ledger..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full py-3.5 pl-12 pr-4 rounded-2xl text-sm font-medium transition-all outline-none border ${
+            className={`w-full py-2.5 md:py-3.5 pl-9 md:pl-12 pr-4 rounded-lg md:rounded-2xl text-[10px] md:text-sm font-bold transition-all outline-none border ${
               isDark 
-                ? 'bg-[#0A1F44]/50 border-white/5 focus:border-[#1EE7FF]/50 text-white shadow-inner' 
-                : 'bg-white border-[#0A1F44]/10 focus:border-[#1EE7FF] text-[#0A1F44] shadow-sm'
+                ? 'bg-[#0A1F44]/50 border-white/10 text-white placeholder:text-white/20' 
+                : 'bg-white border-[#0A1F44]/10 text-[#0A1F44] shadow-sm'
             }`}
           />
         </div>
 
         <button 
           onClick={() => setShowFilterDrawer(true)}
-          className={`px-6 py-3.5 rounded-2xl border flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-          isDark 
-            ? 'bg-[#0A1F44]/50 border-white/5 text-white/60 hover:text-white hover:border-[#1EE7FF]/50' 
-            : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/60 hover:text-[#0A1F44] hover:border-[#1EE7FF]'
+          className={`w-full sm:w-auto px-6 py-2.5 md:py-3.5 rounded-lg md:rounded-2xl border flex items-center justify-center gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
+          isDark ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/40 hover:text-[#0A1F44]'
         } ${statusFilter !== 'All' ? 'border-[#1EE7FF] text-[#1EE7FF]' : ''}`}>
-          <Filter size={16} /> Filters {statusFilter !== 'All' && `(${statusFilter})`}
+          <Filter size={12} /> Status
         </button>
       </div>
 
       {/* Table Container */}
-      <div className={`rounded-3xl border overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
-        <div className="overflow-x-auto overflow-y-hidden">
-          <table className="w-full text-left border-collapse min-w-[900px]">
+      <div className={`rounded-xl md:rounded-[2rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
+        <div className="overflow-x-auto scrollbar-hide">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className={`border-b ${isDark ? 'border-white/5 bg-white/5 text-white/40' : 'border-[#0A1F44]/10 bg-[#0A1F44]/2 text-[#0A1F44]/40'}`}>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest pl-8">ID & Customer</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-center">Court / Arena</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-center">Schedule</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-center">Amount</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-center">Status</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-right pr-8">Actions</th>
+               <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
+                <th className="p-3 md:p-6">Client</th>
+                <th className="p-3 md:p-6 text-center">Unit</th>
+                <th className="p-3 md:p-6 text-center">Schedule</th>
+                <th className="p-3 md:p-6 text-center">Flow</th>
+                <th className="p-3 md:p-6 text-center">State</th>
+                <th className="p-3 md:p-6 text-right pr-6 md:pr-10">Ops</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-[#0A1F44]/5'}`}>
               {filteredBookings.map((booking, idx) => (
                 <motion.tr
                   key={booking.id}
-                  whileHover={{ backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(10,31,68,0.02)' }}
-                  className="group transition-colors"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="group hover:bg-white/[0.02] transition-colors"
                 >
-                  <td className="p-4 pl-8">
-                    <p className={`font-black tracking-wide text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{booking.customer}</p>
-                    <p className="text-[10px] font-bold text-[#22FF88] uppercase tracking-[0.1em] mt-0.5">{booking.id}</p>
+                  <td className="p-3 md:p-6">
+                    <p className={`font-black tracking-tight text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{booking.customer.split(' ')[0]}</p>
+                    <p className="text-[6px] md:text-[9px] font-bold text-[#1EE7FF] uppercase tracking-widest leading-tight opacity-40">{booking.id}</p>
                   </td>
-                  <td className="p-4 text-center">
-                    <p className={`text-xs font-bold ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>{booking.court}</p>
-                    <p className="text-[10px] font-medium text-white/30 truncate max-w-[120px] mx-auto">{booking.arena}</p>
+                   <td className="p-3 md:p-6 text-center">
+                    <p className={`text-[9px] md:text-xs font-bold ${isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}`}>{booking.court}</p>
+                    <p className="text-[6px] md:text-[9px] font-black uppercase tracking-widest text-[#22FF88] opacity-60">{booking.arena.split(' ')[0]}</p>
                   </td>
-                  <td className="p-4 text-center">
-                    <div className="inline-flex flex-col items-center">
-                      <div className={`p-1 pl-2 pr-3 rounded bg-[#0A1F44]/50 border border-white/5 flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                        <Clock size={10} className="text-[#FFD600]" />
-                        <span className="text-[10px] font-black">{booking.time}</span>
+                   <td className="p-3 md:p-6 text-center">
+                      <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#0A1F44]/30 border border-white/5 ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>
+                        <Clock size={8} className="text-[#FFD600]" />
+                        <span className="text-[8px] md:text-[10px] font-black">{booking.time}</span>
                       </div>
-                      <p className="text-[9px] font-bold text-white/20 mt-1 uppercase mt-1.5">{booking.date}</p>
-                    </div>
+                      <p className="text-[6px] md:text-[8px] font-black text-white/20 mt-0.5 uppercase tracking-widest">{booking.date}</p>
                   </td>
-                  <td className="p-4 text-center">
-                    <p className={`font-display font-black text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{booking.amount}</p>
-                    <p className={`text-[9px] font-bold uppercase tracking-widest ${booking.payment === 'Paid' ? 'text-[#22FF88]' : 'text-[#FF4B4B]'}`}>{booking.payment}</p>
+                   <td className="p-3 md:p-6 text-center">
+                    <p className={`font-display font-black text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{booking.amount}</p>
+                    <p className={`text-[6px] md:text-[8px] font-black uppercase tracking-widest ${booking.payment === 'Paid' ? 'text-[#22FF88]/60' : 'text-[#FF4B4B]/60'}`}>{booking.payment}</p>
                   </td>
-                  <td className="p-4 text-center">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border ${
+                   <td className="p-3 md:p-6 text-center">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest border ${
                       booking.status === 'Completed' ? 'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20' :
                       booking.status === 'Upcoming' ? 'bg-[#1EE7FF]/10 text-[#1EE7FF] border-[#1EE7FF]/20' :
                       'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20'
                     }`}>
-                      {booking.status === 'Completed' ? <CheckCircle size={10} /> : booking.status === 'Upcoming' ? <Clock size={10} /> : <XCircle size={10} />}
-                      {booking.status}
+                      {booking.status === 'Completed' ? 'Done' : booking.status === 'Upcoming' ? 'Wait' : 'Void'}
                     </span>
                   </td>
-                  <td className="p-4 pr-8 text-right">
+                   <td className="p-3 md:p-6 text-right pr-6 md:pr-10">
                     <div className="flex justify-end relative">
                       <button 
                         onClick={() => setActiveMenu(activeMenu === booking.id ? null : booking.id)}
-                        className={`p-2.5 rounded-xl transition-all border ${
+                        className={`p-1.5 md:p-2.5 rounded-lg md:rounded-xl transition-all border ${
                           activeMenu === booking.id
                             ? 'bg-[#1EE7FF] border-[#1EE7FF] text-[#0A1F44]'
                             : isDark 
-                              ? 'bg-white/5 border-white/5 text-white/40 hover:text-white hover:border-white/10' 
-                              : 'bg-white border border-black/5 text-black/40 hover:text-black hover:border-black/20'
+                              ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' 
+                              : 'bg-white border border-black/10 text-black/40 hover:text-black'
                         }`}
                       >
-                        <MoreHorizontal size={18} />
+                        <MoreHorizontal size={12} className="md:w-[16px] md:h-[16px]" />
                       </button>
 
                       <AnimatePresence>
                         {activeMenu === booking.id && (
                           <>
-                            <div 
-                              className="fixed inset-0 z-10" 
-                              onClick={() => setActiveMenu(null)} 
-                            />
+                            <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
                             <motion.div
                               initial={{ opacity: 0, scale: 0.95, x: 20 }}
                               animate={{ opacity: 1, scale: 1, x: 0 }}
                               exit={{ opacity: 0, scale: 0.95, x: 20 }}
-                              className={`absolute right-0 top-full mt-2 w-56 p-2 rounded-2xl border z-20 shadow-2xl backdrop-blur-xl ${
-                                isDark ? 'bg-[#0A1F44]/90 border-white/10 shadow-black' : 'bg-white/90 border-[#0A1F44]/10 shadow-blue-900/10'
+                              className={`absolute right-0 top-full mt-1.5 w-48 p-1.5 rounded-xl border z-20 shadow-2xl backdrop-blur-xl ${
+                                isDark ? 'bg-[#0A1F44]/90 border-white/10' : 'bg-white/90 border-[#0A1F44]/10'
                               }`}
                             >
-                              <div className="space-y-1 text-left">
+                               <div className="space-y-0.5 text-left">
                                 {[
-                                  { label: 'View Receipt', icon: Eye, color: '#1EE7FF' },
+                                  { label: 'View', icon: Eye, color: '#1EE7FF' },
                                   { label: 'Reschedule', icon: CalendarRange, color: '#22FF88' },
-                                  { label: 'Process Refund', icon: RefreshCw, color: '#FFD600' },
-                                  { label: 'Contact Customer', icon: Smartphone, color: '#A855F7' },
-                                  { label: 'Cancel Booking', icon: Trash2, color: '#FF4B4B' },
+                                  { label: 'Refund', icon: RefreshCw, color: '#FFD600' },
+                                  { label: 'Cancel', icon: Trash2, color: '#FF4B4B' },
                                 ].map((opt, i) => (
                                   <button
                                     key={i}
                                     onClick={() => setActiveMenu(null)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                      isDark ? 'hover:bg-white/5 text-white/60 hover:text-white' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F44]'
+                                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
+                                      isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F0A]'
                                     }`}
                                   >
-                                    <div className={`p-1.5 rounded-lg border transition-colors`} style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}20`, color: opt.color }}>
-                                      <opt.icon size={12} />
+                                    <div className={`p-1 rounded-md border transition-colors`} style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}20`, color: opt.color }}>
+                                      <opt.icon size={10} />
                                     </div>
                                     {opt.label}
                                   </button>

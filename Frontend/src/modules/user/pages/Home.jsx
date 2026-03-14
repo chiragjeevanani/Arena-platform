@@ -61,7 +61,35 @@ const UserHome = () => {
   }, []);
 
   return (
-    <div className="min-h-screen pb-28">
+    <div className={`min-h-screen pb-28 relative transition-colors duration-500 ${
+      isDark ? 'md:bg-[#020D08]' : 'md:bg-[#F0FFF4]'
+    }`}>
+      {/* ━━━━━━━━━━━━━━━━━━━━━━ THEME-CENTRIC GREEN BACKGROUND (DESKTOP) ━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
+        {/* Subtle Green Gradient Overlay */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${
+          isDark 
+            ? 'bg-gradient-to-b from-[#22FF88]/[0.03] via-transparent to-transparent' 
+            : 'bg-gradient-to-b from-[#22FF88]/[0.1] via-transparent to-transparent'
+        }`} />
+        
+        {/* Decorative Green Mesh Glows */}
+        <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${
+          isDark ? 'bg-[#22FF88]/[0.04]' : 'bg-[#22FF88]/[0.15]'
+        }`} />
+        <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${
+          isDark ? 'bg-[#1EE7FF]/[0.02]' : 'bg-blue-50/40'
+        }`} />
+
+        {/* Fine Neon Grid for Texture */}
+        <div className="absolute inset-0 opacity-[0.2]" 
+          style={{ 
+            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${isDark ? 'rgba(34, 255, 136, 0.1)' : 'rgba(34, 255, 136, 0.08)'} 1px, transparent 0)`, 
+            backgroundSize: '40px 40px' 
+          }} 
+        />
+      </div>
+
       {/* ═══════ Hero Header — Hidden on Desktop ═══════ */}
       <div className="md:hidden">
         <div ref={heroRef} className={`relative px-6 pt-4 pb-4 overflow-hidden ${isDark ? '' : 'bg-[#0A1F44] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
@@ -177,7 +205,7 @@ const UserHome = () => {
                 whileHover={{ y: -8, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 style={{ backgroundImage: `url(${sport.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                className={`relative p-5 rounded-3xl h-56 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'} shadow-xl transition-all duration-300`}
+                className={`relative p-5 rounded-3xl h-64 flex flex-col items-center justify-end overflow-hidden group cursor-pointer border ${isDark ? 'border-white/10' : 'border-[#0A1F44]/8'} shadow-xl transition-all duration-300`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-t ${sport.gradient} to-transparent transition-opacity duration-300 group-hover:opacity-80`} />
                 

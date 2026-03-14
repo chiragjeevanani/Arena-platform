@@ -62,15 +62,21 @@ const Dashboard = () => {
       </div>
 
       {/* Tabs Row - Visible on both but styled for desktop consistency */}
-      <div className="px-6 py-4 md:py-8 sticky top-0 md:top-[74px] z-[50] backdrop-blur-xl md:backdrop-blur-none">
-        <div className="max-w-md mx-auto flex gap-1.5 p-1.5 rounded-[22px] bg-white/5 border border-white/10 backdrop-blur-md relative overflow-hidden">
+      <div className="px-6 py-4 md:pt-6 md:pb-2 z-[50] transition-all">
+        <div className={`max-w-md mx-auto flex gap-1.5 p-1.5 rounded-[22px] backdrop-blur-md relative overflow-hidden border transition-all ${
+          isDark 
+            ? 'bg-white/5 border-white/10' 
+            : 'bg-white border-blue-100 shadow-sm'
+        }`}>
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2.5 px-1 rounded-[16px] text-[9px] font-black uppercase tracking-wider transition-all duration-500 relative z-10 ${activeTab === tab.id
                   ? 'bg-gradient-to-br from-[#22FF88] to-[#22dd77] text-[#0A1F44] shadow-[0_5px_15px_rgba(34,255,136,0.3)]'
-                  : 'text-white/40 hover:text-white/60 hover:bg-white/5'
+                  : isDark 
+                    ? 'text-white/40 hover:text-white/60 hover:bg-white/5'
+                    : 'text-[#0A1F44]/40 hover:text-[#0A1F44]/70 hover:bg-slate-50'
                 }`}
             >
               {tab.name}
@@ -79,7 +85,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="px-6 py-8 space-y-6 relative z-10">
+      <div className="px-6 py-6 md:pt-2 md:pb-8 space-y-6 relative z-10">
         <AnimatePresence mode="wait">
           {activeTab === 'upcoming' && (
             <motion.div

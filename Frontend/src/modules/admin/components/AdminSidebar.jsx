@@ -58,7 +58,7 @@ const SIDEBAR_STRUCTURE = [
   }
 ];
 
-const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
+const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
   const { isDark } = useTheme();
   const { user } = useAuth();
 
@@ -73,8 +73,8 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
     <motion.aside
       animate={{ width: isCollapsed ? 80 : 260 }}
       transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-      className={`h-screen sticky top-0 backdrop-blur-3xl border-r flex flex-col z-[100] overflow-visible relative ${
-        isDark ? 'bg-[#0A1F44]/50 border-[#22FF88]/10' : 'bg-white/80 border-[#0A1F44]/10'
+      className={`h-full md:h-screen sticky top-0 backdrop-blur-3xl border-r flex flex-col z-[100] overflow-visible relative ${
+        isDark ? 'bg-[#0A1F44] border-[#22FF88]/10' : 'bg-white border-[#0A1F44]/10'
       }`}
     >
       <div className={`absolute inset-0 transition-opacity duration-500 -z-10 ${
@@ -135,6 +135,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
                   key={item.path}
                   to={item.path}
                   end={item.path === '/admin'}
+                  onClick={() => onMobileClose?.()}
                   className={({ isActive }) =>
                     `relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group ${
                       isActive 
