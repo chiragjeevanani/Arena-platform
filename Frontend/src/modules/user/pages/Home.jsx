@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { Bell, ChevronRight, Sun, Moon } from 'lucide-react';
 import { ARENAS } from '../../../data/mockData';
-import { ShuttlecockIcon } from '../components/BadmintonIcons';
+import { ShuttlecockIcon, PlayerAvatarIcon } from '../components/BadmintonIcons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTableTennisPaddleBall, faBasketball, faFutbol } from '@fortawesome/free-solid-svg-icons';
 import ScoreboardSearch from '../components/ScoreboardSearch';
@@ -17,6 +17,11 @@ import Card1 from '../../../assets/Cards/Card1.jpg';
 import Card2 from '../../../assets/Cards/Card2.jpg';
 import Card3 from '../../../assets/Cards/Card3.jpg';
 import Card4 from '../../../assets/Cards/Card4.jpg';
+import BadmintonCard from '../../../assets/Category/BadmintonCard.png';
+import TennisCard from '../../../assets/Category/TennisCard.png';
+import Event1 from '../../../assets/Events/Events1 .jpeg';
+import Event2 from '../../../assets/Events/Events2.jpeg';
+import Event3 from '../../../assets/Events/Events3.jpeg';
 
 const UserHome = () => {
   const navigate = useNavigate();
@@ -50,33 +55,15 @@ const UserHome = () => {
   const upcomingEvents = [
     {
       id: 1,
-      title: "Monsoon Smash Tournament",
-      date: "25 Oct",
-      time: "09:00 AM",
-      location: "AMM Sports Arena, Noida",
-      image: Card1,
-      price: "499",
-      category: "Badminton"
+      image: Event1,
     },
     {
       id: 2,
-      title: "Table Tennis Championship",
-      date: "28 Oct",
-      time: "11:00 AM",
-      location: "Sector 62, Noida",
-      image: Card2,
-      price: "299",
-      category: "Table Tennis"
+      image: Event2,
     },
     {
       id: 3,
-      title: "Junior Badminton Cup",
-      date: "02 Nov",
-      time: "08:00 AM",
-      location: "AMM Sports Arena",
-      image: Card3,
-      price: "199",
-      category: "Badminton"
+      image: Event3,
     }
   ];
 
@@ -95,13 +82,12 @@ const UserHome = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen pb-28 relative transition-colors duration-500 md:bg-[#FFFDD0]`}>
-      {/* Ã¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€Â THEME-CENTRIC GREEN BACKGROUND (DESKTOP) Ã¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€ÂÃ¢â€Â */}
+    <div className={`min-h-screen pb-28 relative transition-colors duration-500 bg-[#FDFBCF]`}>
       <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
         {/* Subtle Green Gradient Overlay */}
         <div className={`absolute inset-0 transition-opacity duration-1000 ${isDark
-            ? 'bg-gradient-to-b from-[#eb483f]/[0.03] via-transparent to-transparent'
-            : 'bg-gradient-to-b from-[#eb483f]/[0.1] via-transparent to-transparent'
+          ? 'bg-gradient-to-b from-[#eb483f]/[0.03] via-transparent to-transparent'
+          : 'bg-gradient-to-b from-[#eb483f]/[0.1] via-transparent to-transparent'
           }`} />
 
         {/* Decorative Green Mesh Glows */}
@@ -156,6 +142,9 @@ const UserHome = () => {
 
               {/* Mobile Icons */}
               <div className="flex items-center gap-2">
+                <button onClick={() => navigate('/profile')} className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm">
+                  <PlayerAvatarIcon size={16} className="text-[#fffdd0]" />
+                </button>
 
                 <button onClick={() => navigate('/profile/notifications')} className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm">
                   <Bell size={16} className="text-[#fffdd0]" />
@@ -179,27 +168,23 @@ const UserHome = () => {
         </motion.div>
 
         {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Categories Ã¢â‚¬â€ Sport Cards Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
-        <div className="px-4 md:px-8 space-y-10 mt-10">
+        <div className="px-4 md:px-8 space-y-4 mt-4">
           <div className="max-w-7xl mx-auto w-full">
             <motion.h3
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="text-2xl font-black mb-10 font-display text-[#eb483f] tracking-tight"
+              className="text-2xl font-black mb-4 font-display text-black tracking-tight"
             >
               What do you want to book?
             </motion.h3>
-            <div className="grid grid-cols-1 gap-10 max-w-4xl mx-auto px-4 md:px-0">
+            <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto px-4 md:px-0">
               {[
                 {
-                  title: 'Badminton', icon: ShuttlecockIcon, image: Card1, delay: 0,
-                  gradient: 'from-black/80 via-black/20',
-                  hoverBg: 'group-hover:bg-[#eb483f]'
+                  title: 'Badminton', image: BadmintonCard, delay: 0,
                 },
                 {
-                  title: 'Table Tennis', icon: faTableTennisPaddleBall, image: Card2, delay: 0.1, isFA: true,
-                  gradient: 'from-black/80 via-black/20',
-                  hoverBg: 'group-hover:bg-[#eb483f]'
+                  title: 'Table Tennis', image: TennisCard, delay: 0.1,
                 }
               ].map((sport, i) => (
                 <motion.div
@@ -210,48 +195,55 @@ const UserHome = () => {
                   transition={{ delay: sport.delay }}
                   whileHover={{ y: -5, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  style={{ backgroundImage: `url(${sport.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                  className={`relative p-4 rounded-xl aspect-[16/9] md:h-[400px] flex flex-col items-center justify-end overflow-hidden group cursor-pointer border border-[#eb483f]/10 shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-500`}
+                  className="relative rounded-xl overflow-hidden group cursor-pointer shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-500"
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-t ${sport.gradient} to-transparent transition-opacity duration-300 group-hover:opacity-80`} />
-
-                  {/* Floating Icon */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-10 animate-float z-10">
-                    {sport.isFA ? (
-                      <FontAwesomeIcon icon={sport.icon} style={{ fontSize: 52 }} className="text-white/95 drop-shadow-2xl" />
-                    ) : (
-                      <sport.icon size={52} className="text-white/95 drop-shadow-2xl" />
-                    )}
-                  </div>
-
-                  {/* Court line pattern */}
-                  <div className="absolute inset-0 court-lines opacity-10 z-10" />
-
-                  <div className={`bg-white/10 backdrop-blur-3xl border border-white/30 px-6 py-2 text-center rounded-xl font-bold text-white text-[10px] md:text-[12px] tracking-[0.2em] uppercase ${sport.hoverBg} transition-all duration-500 relative z-20 shadow-2xl mb-1`}>
-                    {sport.title}
-                  </div>
+                  <img src={sport.image} alt={sport.title} className="w-full h-auto block" />
+                  
+                  {/* Subtle dark overlay on hover to indicate clickability */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
                 </motion.div>
               ))}
             </div>
           </div>
 
           {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â Nearby Arenas Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
-          {/* Upcoming Events Section */}
-          <div className="max-w-7xl mx-auto w-full pb-10">
+          {/* Our Events Section */}
+          <div className="max-w-7xl mx-auto w-full pb-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="flex justify-between items-center mb-6"
             >
-              <h3 className={`text-lg font-bold font-display text-[#eb483f]`}>Upcoming Events</h3>
-              <Link to="/events" className="text-[#eb483f] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#eb483f]/10 px-4 py-2 rounded-full border border-[#eb483f]/20">
+              <h3 className="text-lg font-bold font-display text-black">Our Events</h3>
+              <Link to="/events" className="text-[#eb483f] font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-widest bg-[#eb483f]/5 px-4 py-2 rounded-full border border-[#eb483f]/30 hover:bg-[#eb483f]/10">
                 See all <ChevronRight size={14} />
               </Link>
             </motion.div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-7 max-w-7xl mx-auto px-4 md:px-0">
               {upcomingEvents.map((event, index) => (
-                <EventCard key={event.id} event={event} index={index} />
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate(`/events/${event.id}`)}
+                  className="group relative aspect-[4/5] bg-[#0F172A] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer"
+                >
+                  <img
+                    src={event.image}
+                    alt="Event Banner"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-50" />
+                  {/* Tap hint overlay */}
+                  <div className="absolute inset-0 flex items-end justify-center pb-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span className="bg-[#eb483f] text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
+                      View Details
+                    </span>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>

@@ -10,13 +10,18 @@ import { useTheme } from '../context/ThemeContext';
 const ArenaListing = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const { toggleTheme } = useTheme();
   const isDark = false; // Forced for removal of dark mode
 
-  const filteredArenas = ARENAS.filter(a =>
-    a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const categories = ['All', 'Badminton', 'Football', 'Squash', 'Tennis'];
+
+  const filteredArenas = ARENAS.filter(a => {
+    const matchesSearch = a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || a.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="min-h-screen pb-28">
@@ -43,6 +48,22 @@ const ArenaListing = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+
+          {/* Categories */}
+          <div className="flex gap-2 overflow-x-auto pb-1 mt-4 scrollbar-hide no-scrollbar">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 ${selectedCategory === cat
+                  ? 'bg-white text-[#eb483f] shadow-lg scale-105'
+                  : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
           {/* Desktop Navigation */}
           <DesktopNavbar />
@@ -86,14 +107,14 @@ const ArenaListing = () => {
               <div className="flex justify-between items-start">
                 <h3 className={`text-lg font-bold font-display ${'text-[#eb483f]'}`}>{arena.name}</h3>
                 <div className="text-right">
-                  <p className="text-[#eb483f] font-bold text-lg font-display">â‚¹{arena.pricePerHour}</p>
+                  <p className="text-[#eb483f] font-bold text-lg font-display">₹{arena.pricePerHour}</p>
                   <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/40'}`}>per hour</p>
                 </div>
               </div>
 
               <div className={`flex items-center text-xs mt-2 gap-1 ${'text-[#eb483f]/70'}`}>
                 <MapPin size={13} />
-                <span>{arena.location} â€¢ {arena.distance}</span>
+                <span>{arena.location} • {arena.distance}</span>
               </div>
 
               {/* Stats + CTA */}

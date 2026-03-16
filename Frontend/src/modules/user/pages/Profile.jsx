@@ -192,65 +192,74 @@ const Profile = () => {
 
       {/* â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” MOBILE VIEW â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” */}
       <div className="md:hidden">
-        {/* Settings Button - Top Right */}
-        <div className="absolute top-6 right-6 z-20">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            className={`w-10 h-10 rounded-2xl flex items-center justify-center border backdrop-blur-md transition-all ${
-              'bg-white/20 border-white/30 text-white shadow-xl'
-            }`}
-          >
-            <Settings size={20} />
-          </motion.button>
-        </div>
-
         {/* Profile Header - Compact Flat Version */}
-        <div className={`relative pt-6 pb-4 md:pt-8 md:pb-6 overflow-hidden transition-all duration-700 bg-[#eb483f]`}>
+        <div className={`relative pt-5 pb-4 overflow-hidden bg-[#eb483f] shadow-md`}>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-3xl pointer-events-none" />
           
-          <div className="flex flex-col items-center relative z-10 px-6 md:px-8">
+          {/* Header Top Bar */}
+          <div className="flex items-center justify-between px-6 relative z-20 mb-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-md text-white transition-all active:scale-95"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <h1 className="text-xl font-bold text-white tracking-wide" style={{ fontFamily: "'Montserrat', 'Outfit', sans-serif" }}>My Profile</h1>
+            <button
+              onClick={() => navigate('/profile/edit')}
+              className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-md text-white transition-all active:scale-95"
+            >
+              <Settings size={18} />
+            </button>
+          </div>
+
+          <div className="flex flex-col items-center relative z-10 px-6">
             <div className="relative">
               <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-[2px] p-0.5 shadow-2xl transition-all duration-500 border-white/30 bg-white/20`}
+                className={`w-[60px] h-[60px] rounded-[22px] overflow-hidden border-2 p-0.5 shadow-xl transition-all duration-500 border-white/30 bg-white/10 backdrop-blur-md`}
               >
                 <img
                   src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
                   alt="User"
-                  className="w-full h-full object-cover rounded-xl"
+                  className="w-full h-full object-cover rounded-[24px]"
                 />
               </motion.div>
               <button 
                 onClick={() => navigate('/profile/edit')}
-                className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-xl border-[2px] flex items-center justify-center active:scale-90 transition-all shadow-xl bg-[#fffdd0] text-[#eb483f] border-white`}
+                className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-xl border-2 flex items-center justify-center active:scale-90 transition-all shadow-xl bg-white text-[#eb483f] border-[#eb483f]`}
               >
                 <Pencil size={12} strokeWidth={3} />
               </button>
             </div>
 
-            <div className="text-center mt-4 md:mt-6">
-              <h2 className="text-xl md:text-2xl font-black tracking-tight font-display text-white">Muhammad Haroos</h2>
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mt-2 border bg-white/20 border-white/20 text-[#fffdd0]`}>
-                <div className="w-1.5 h-1.5 rounded-full bg-[#fffdd0] animate-pulse" />
-                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em]">Premium Member</span>
+            <div className="text-center mt-2">
+              <h2 className="text-lg font-black tracking-tight font-display text-white">Muhammad Haroos</h2>
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full mt-1.5 border bg-white/10 backdrop-blur-md border-white/20 text-white/90`}>
+                <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" />
+                <span className="text-[9px] font-black uppercase tracking-[0.1em]">Premium Member</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-center mt-4 md:mt-6 w-full max-w-[320px] mx-auto gap-8 md:gap-12 border-t border-white/20 pt-4 px-4">
-            <div className="text-center">
-              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">12</p>
-              <p className="text-[8px] font-black text-white/60 uppercase tracking-widest mt-1.5">Bookings</p>
+          <div className="flex items-center justify-center mt-3 w-full max-w-[280px] mx-auto gap-1 border-t border-white/20 pt-3 px-2">
+            <div className="text-center flex-1">
+              <p className="text-lg font-black font-display text-white leading-none">12</p>
+              <p className="text-[9px] font-bold text-white/70 tracking-wide mt-1">Bookings</p>
             </div>
-            <div className="text-center px-4 md:px-8 border-x border-white/10">
-              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">â‚¹4.8k</p>
-              <p className="text-[8px] font-black text-white/60 uppercase tracking-widest mt-1.5">Spent</p>
+            <div className="w-px h-8 bg-white/20" />
+            <div className="text-center flex-1">
+              <p className="text-lg font-black font-display text-white leading-none">₹4.8k</p>
+              <p className="text-[9px] font-bold text-white/70 tracking-wide mt-1">Spent</p>
             </div>
-            <div className="text-center">
-              <p className="text-xl md:text-2xl font-black font-display text-white leading-none">4.9</p>
-              <p className="text-[8px] font-black text-white/60 uppercase tracking-widest mt-1.5 flex items-center justify-center gap-1">Level <Star size={8} className="text-[#FFD600] fill-[#FFD600]" /></p>
+            <div className="w-px h-8 bg-white/20" />
+            <div className="text-center flex-1">
+              <p className="text-lg font-black font-display text-white leading-none">4.9</p>
+              <p className="text-[9px] font-bold text-white/70 tracking-wide mt-1 flex items-center justify-center gap-1">
+                Level <Star size={10} className="text-[#FFD600] fill-[#FFD600]" />
+              </p>
             </div>
           </div>
         </div>

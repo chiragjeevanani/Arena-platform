@@ -112,13 +112,11 @@ const ArenaDetails = () => {
                   }));
                   navigate(`/book/${arena.id}/${court.id}`);
                 }}
-                className={`p-3.5 rounded-[24px] flex items-center gap-4 cursor-pointer transition-all duration-300 border group ${isDark
-                    ? 'bg-white/[0.03] border-white/5 hover:border-blue-500/30 hover:bg-blue-500/[0.05]'
-                    : 'bg-white border-blue-50/50 shadow-[0_4px_20px_rgba(10,31,68,0.02)] hover:shadow-[0_8px_30px_rgba(10,31,68,0.06)] hover:border-blue-200'
+                className={`p-3.5 rounded-[24px] flex items-center gap-4 cursor-pointer transition-all duration-300 border group ${'bg-white border-slate-100 shadow-[0_4px_20px_rgba(235,72,63,0.02)] hover:shadow-[0_8px_30px_rgba(235,72,63,0.06)] hover:border-[#eb483f]/20'
                   }`}
               >
                 {/* Court Thumbnail */}
-                <div className={`w-16 h-16 flex-shrink-0 rounded-[20px] overflow-hidden border transition-transform duration-500 group-hover:scale-105 ${'border-blue-100/50 shadow-inner'}`}>
+                <div className={`w-16 h-16 flex-shrink-0 rounded-[20px] overflow-hidden border transition-transform duration-500 group-hover:scale-105 ${'border-slate-100 shadow-inner'}`}>
                   <img
                     src={courtThumbnail}
                     alt=""
@@ -128,10 +126,10 @@ const ArenaDetails = () => {
 
                 {/* Court Info */}
                 <div className="flex-1">
-                  <h4 className={`font-bold text-base transition-colors ${isDark ? 'text-white group-hover:text-blue-400' : 'text-[#eb483f] group-hover:text-blue-600'}`}>{court.name}</h4>
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider mt-2 transition-colors ${isDark ? 'bg-white/5 text-white/40 group-hover:bg-blue-500/10 group-hover:text-blue-400' : 'bg-blue-50 text-blue-400 border border-blue-100/50 group-hover:bg-blue-100/50 group-hover:text-blue-600 group-hover:border-transparent'
+                  <h4 className={`font-bold text-base transition-colors ${'text-[#eb483f] group-hover:text-[#eb483f]'}`}>{court.name}</h4>
+                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider mt-2 transition-colors ${'bg-[#eb483f]/5 text-[#eb483f]/60 border border-[#eb483f]/10 group-hover:bg-[#eb483f]/10 group-hover:text-[#eb483f] group-hover:border-transparent'
                     }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${court.type === 'Wooden' ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${court.type === 'Wooden' ? 'bg-amber-400' : 'bg-[#eb483f]'}`} />
                     {court.type}
                   </div>
                 </div>
@@ -149,12 +147,12 @@ const ArenaDetails = () => {
       {/* Booking Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] md:max-w-[450px] md:mx-auto">
         <div className={`h-[1px] ${'bg-slate-100'}`} />
-        <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t ${'bg-white/95 border-blue-50 shadow-[0_-10px_30px_rgba(10,31,68,0.04)]'}`}>
+        <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t ${'bg-white/95 border-slate-50 shadow-[0_-10px_30px_rgba(235,72,63,0.04)]'}`}>
           <div>
-            <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-blue-600'}`}>Starting from</p>
+            <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/60'}`}>Starting from</p>
             <div className="flex items-baseline gap-1">
-              <span className={`text-2xl font-bold font-display ${'text-[#eb483f]'}`}>â‚¹{arena.pricePerHour}</span>
-              <span className={`text-xs ${'text-blue-300'}`}>/ hr</span>
+              <span className={`text-2xl font-bold font-display ${'text-[#eb483f]'}`}>₹{arena.pricePerHour}</span>
+              <span className={`text-xs ${'text-[#eb483f]/40'}`}>/ hr</span>
             </div>
           </div>
           <ShuttleButton

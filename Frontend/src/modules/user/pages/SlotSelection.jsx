@@ -152,17 +152,20 @@ const SlotSelection = () => {
         <div className={`h-[1px] ${'bg-slate-100'}`} />
         <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t transition-all duration-300 ${'bg-white border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
           }`}>
-          <div>
-            <p className={`text-[9px] font-black uppercase tracking-[0.15em] ${'text-[#eb483f]/60'}`}>Total Amount</p>
-            <span className={`text-2xl font-black font-display ${'text-[#eb483f]'}`}>
-              â‚¹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}
-            </span>
+          <div className="flex flex-col">
+            <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ${'text-[#eb483f]/40'}`}>Total Amount</p>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-3xl font-black font-display tracking-tight ${'text-[#eb483f]'}`}>
+                ₹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}
+              </span>
+              <span className={`text-[10px] font-bold ${'text-[#eb483f]/30'}`}>INR</span>
+            </div>
           </div>
 
           <ShuttleButton
             variant="primary"
-            size="md"
-            className="!rounded-2xl px-6"
+            size="lg"
+            className={`!rounded-2xl px-8 !bg-[#eb483f] !text-white transform transition-all duration-300 ${!selectedSlot ? 'opacity-50 grayscale' : 'hover:scale-105 active:scale-95 shadow-[0_8px_25px_rgba(235,72,63,0.3)]'}`}
             disabled={!selectedSlot}
             onClick={() => navigate('/booking-summary', {
               state: {

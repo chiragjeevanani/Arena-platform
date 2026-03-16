@@ -1,4 +1,4 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, User, Mail, Phone, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
@@ -27,8 +27,8 @@ const EditProfile = () => {
             isDark ? 'md:bg-white/[0.02] md:border-white/10' : 'md:bg-white md:border-slate-100'
           }`}
         >
-          {/* Header - Always Dark */}
-          <div className={`px-6 pt-5 pb-5 backdrop-blur-2xl border-b border-white/10 transition-all duration-500 bg-[#0F172A] shadow-[0_15px_40px_rgba(15,23,42,0.25)]`}>
+          {/* Header - Always Project Theme */}
+          <div className={`px-6 pt-5 pb-5 backdrop-blur-2xl border-b border-white/10 transition-all duration-500 bg-[#eb483f] shadow-[0_15px_40px_rgba(235,72,63,0.25)]`}>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate(-1)}
@@ -54,7 +54,7 @@ const EditProfile = () => {
                   />
                   {!isDark && <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />}
                 </div>
-                <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 text-white md:rounded-none rounded-lg border-2 border-white flex items-center justify-center shadow-xl active:scale-90 transition-all hover:bg-blue-700">
+                <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#eb483f] text-white md:rounded-none rounded-lg border-2 border-white flex items-center justify-center shadow-xl active:scale-90 transition-all hover:bg-[#eb483f]/90">
                   <Camera size={14} />
                 </button>
               </div>
@@ -158,8 +158,8 @@ const EditProfile = () => {
             </div>
             <div className="mt-10">
               <ShuttleButton 
-                className="w-full !rounded-none !py-4 active:scale-[0.98] transition-all shadow-xl shadow-blue-500/20 text-[12px] uppercase tracking-widest font-black"
-                variant="blue"
+                className="w-full !rounded-none !py-4 active:scale-[0.98] transition-all shadow-xl shadow-[#eb483f]/20 text-[12px] uppercase tracking-widest font-black"
+                variant="red"
                 onClick={() => {
                   // Simulate save
                   navigate('/profile');

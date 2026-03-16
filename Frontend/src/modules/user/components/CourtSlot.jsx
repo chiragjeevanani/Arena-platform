@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import gsap from 'gsap';
 
@@ -92,7 +92,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
       {/* Price */}
       {slot.status === 'Available' && (
         <span className={`block text-xs mt-1 font-bold ${isSelected ? 'text-[#eb483f]/70' : `${'text-[#eb483f]/50'}`}`}>
-          â‚¹{slot.price}
+          ₹{slot.price}
         </span>
       )}
 

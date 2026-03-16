@@ -1,4 +1,4 @@
-﻿import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
@@ -122,27 +122,30 @@ const BookingSummary = () => {
 
             {/* Bottom Section: Payment Summary */}
             <div className={`mt-8 pt-6 border-t ${'border-slate-100'}`}>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex justify-between items-center px-1">
-                  <span className={`text-[11px] font-bold font-display ${'text-[#eb483f]/40'}`}>Base Rate Fee</span>
-                  <span className={`font-bold text-xs tracking-tight ${'text-[#eb483f]/60'}`}>â‚¹{total.toFixed(2)}</span>
+                  <span className={`text-[11px] font-bold uppercase tracking-wider ${'text-slate-400'}`}>Base Rate Fee</span>
+                  <span className={`font-bold text-sm tracking-tight ${'text-[#eb483f]'}`}>₹{total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center px-1">
-                  <span className={`text-[11px] font-bold font-display ${'text-[#eb483f]/40'}`}>GST Charges (18%)</span>
-                  <span className={`font-bold text-xs tracking-tight ${'text-[#eb483f]/60'}`}>â‚¹{tax.toFixed(2)}</span>
+                  <span className={`text-[11px] font-bold uppercase tracking-wider ${'text-slate-400'}`}>GST Charges (18%)</span>
+                  <span className={`font-bold text-sm tracking-tight ${'text-[#eb483f]'}`}>₹{tax.toFixed(2)}</span>
                 </div>
 
                 {/* Fixed Total Amount Box */}
-                <div className={`mt-4 p-4 rounded-[24px] flex justify-between items-center relative overflow-hidden ${'bg-blue-50 border border-blue-100/50'
+                <div className={`mt-6 p-5 rounded-[28px] flex justify-between items-center relative overflow-hidden ${'bg-[#eb483f]/5 border border-[#eb483f]/10 shadow-sm'
                   }`}>
-                  <div className="z-10 flex-1">
-                    <span className={`text-[8px] font-black uppercase tracking-[0.3em] block mb-0.5 ${'text-blue-500/60'}`}>Total Payable</span>
-                    <span className={`text-2xl font-black font-display leading-tight ${'text-[#eb483f]'}`}>â‚¹{(total + tax).toFixed(2)}</span>
+                  <div className="z-10 flex-2">
+                    <span className={`text-[9px] font-black uppercase tracking-[0.3em] block mb-1 ${'text-[#eb483f]/60'}`}>Total Payable Amount</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-3xl font-black font-display leading-tight tracking-tight ${'text-[#eb483f]'}`}>₹{(total + tax).toFixed(2)}</span>
+                      <span className={`text-[10px] font-bold ${'text-[#eb483f]/30'}`}>INR</span>
+                    </div>
                   </div>
 
-                  <div className={`shrink-0 px-3 py-1 rounded-xl border font-black text-[8px] uppercase tracking-widest flex items-center gap-1.5 z-10 ${'bg-white border-blue-200 text-blue-600 shadow-sm'
+                  <div className={`shrink-0 px-4 py-2 rounded-2xl border font-black text-[9px] uppercase tracking-widest flex items-center gap-1.5 z-10 ${'bg-white border-[#eb483f]/10 text-[#eb483f] shadow-[0_4px_15px_rgba(235,72,63,0.1)]'
                     }`}>
-                    <div className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shadow-[0_0_5px_currentColor]" />
                     Unpaid
                   </div>
                 </div>

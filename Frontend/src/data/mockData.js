@@ -1,72 +1,22 @@
 import Arena1 from '../assets/Arenas/Arena1.jpg';
 import Arena2 from '../assets/Arenas/Arena2.jpg';
 import Arena3 from '../assets/Arenas/Arena3.jpg';
+import AmmArena1 from '../assets/Arenas/AmmArena1.jpeg';
 
 export const ARENAS = [
   {
     id: 1,
-    name: "Olympic Smash Arena",
+    name: "Amm Sports arena",
     location: "Sector 62, Noida",
     distance: "1.2 km",
     rating: 4.8,
     reviews: 120,
     pricePerHour: 400,
     courtsCount: 6,
-    image: Arena1,
+    image: AmmArena1,
+    category: 'Badminton',
     amenities: ["Parking", "Shower", "Locker", "Cafe"],
     description: "Premium wooden flooring courts with professional lighting and gallery seating."
-  },
-  {
-    id: 2,
-    name: "Badminton Hub",
-    location: "Indirapuram, Ghaziabad",
-    distance: "2.5 km",
-    rating: 4.5,
-    reviews: 85,
-    pricePerHour: 350,
-    courtsCount: 4,
-    image: Arena2,
-    amenities: ["Parking", "Locker", "Water"],
-    description: "Friendly environment with synthetic mats and coaching facilities."
-  },
-  {
-    id: 3,
-    name: "Classic Shuttle Court",
-    location: "Sector 18, Noida",
-    distance: "4.0 km",
-    rating: 4.2,
-    reviews: 210,
-    pricePerHour: 300,
-    courtsCount: 8,
-    image: Arena3,
-    amenities: ["Parking", "Shower", "Locker", "Sports Shop"],
-    description: "One of the oldest and most reliable courts in the city."
-  },
-  {
-    id: 4,
-    name: "Elite Sports Complex",
-    location: "Sector 137, Noida",
-    distance: "3.5 km",
-    rating: 4.7,
-    reviews: 156,
-    pricePerHour: 450,
-    courtsCount: 5,
-    image: Arena1,
-    amenities: ["Parking", "AC", "Locker", "Cafe"],
-    description: "State-of-the-art sports complex with fully air-conditioned courts."
-  },
-  {
-    id: 5,
-    name: "Smash Factor Arena",
-    location: "Vaishali, Ghaziabad",
-    distance: "5.1 km",
-    rating: 4.4,
-    reviews: 92,
-    pricePerHour: 300,
-    courtsCount: 3,
-    image: Arena2,
-    amenities: ["Parking", "Water", "Equipment Rental"],
-    description: "Perfect for casual games and weekend tournaments."
   }
 ];
 
@@ -127,24 +77,13 @@ export const COACHING_BATCHES = [
 export const USER_BOOKINGS = [
   {
     id: "BK-10293",
-    arenaName: "Olympic Smash Arena",
-    arenaImage: Arena1,
+    arenaName: "Amm Sports arena",
+    arenaImage: AmmArena1,
     location: "Sector 62, Noida",
     courtName: "Court 2",
     date: "2024-03-20",
     slot: "07:00 PM - 08:00 PM",
     status: "Upcoming",
     price: 450
-  },
-  {
-    id: "BK-09821",
-    arenaName: "Badminton Hub",
-    arenaImage: Arena2,
-    location: "Indirapuram, Ghaziabad",
-    courtName: "Court 1",
-    date: "2024-03-15",
-    slot: "06:00 PM - 07:00 PM",
-    status: "Completed",
-    price: 350
   }
 ];

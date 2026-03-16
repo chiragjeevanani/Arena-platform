@@ -1,4 +1,4 @@
-﻿import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Check, Share2, Download, Receipt, Home, PartyPopper, CalendarDays, MapPin, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
@@ -44,7 +44,7 @@ const BookingSuccess = () => {
     // Save booking/enrollment to localStorage for persistence in Dashboard
     if (state) {
       const existingBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-      
+
       let newBooking;
       if (state.batch) {
         // Coaching enrollment
@@ -76,7 +76,7 @@ const BookingSuccess = () => {
           price: state.amount
         };
       }
-      
+
       // Prevent duplicate saving on re-renders
       if (!existingBookings.find(b => b.id === newBooking.id)) {
         localStorage.setItem('userBookings', JSON.stringify([newBooking, ...existingBookings]));
@@ -96,9 +96,8 @@ const BookingSuccess = () => {
   }, [state]);
 
   return (
-    <div className={`min-h-screen flex flex-col pt-12 md:pt-16 relative overflow-hidden transition-colors duration-500 ${
-      'bg-slate-50'
-    }`}>
+    <div className={`min-h-screen flex flex-col pt-12 md:pt-16 relative overflow-hidden transition-colors duration-500 ${'bg-slate-50'
+      }`}>
       {/* Background Decorative Glows */}
       {!isDark && (
         <>
@@ -124,15 +123,14 @@ const BookingSuccess = () => {
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-              className={`w-16 h-16 md:w-20 md:h-20 rounded-[24px] md:rounded-[28px] mx-auto flex items-center justify-center relative z-10 ${
-                'bg-white border-4 border-emerald-50 shadow-xl shadow-emerald-500/20'
-              }`}
+              className={`w-16 h-16 md:w-20 md:h-20 rounded-[24px] md:rounded-[28px] mx-auto flex items-center justify-center relative z-10 ${'bg-white border-4 border-emerald-50 shadow-xl shadow-emerald-500/20'
+                }`}
             >
               <Check size={32} strokeWidth={3} className={'text-emerald-500'} />
             </motion.div>
-            
+
             {/* Pulsing ring */}
-            <motion.div 
+            <motion.div
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
               className={`absolute inset-0 rounded-[24px] md:rounded-[28px] -m-1.5 md:-m-2.5 border-2 ${'border-emerald-500/20'}`}
@@ -160,14 +158,13 @@ const BookingSuccess = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start max-w-4xl mx-auto">
-           {/* Success Ticket Card - Left/Center */}
+          {/* Success Ticket Card - Left/Center */}
           <motion.div
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, type: 'spring', stiffness: 100 }}
-            className={`lg:col-span-7 rounded-[36px] p-6 md:p-8 border shadow-2xl relative overflow-hidden transition-all group ${
-              'bg-white border-blue-50 shadow-[0_20px_60px_rgba(10,31,68,0.08)]'
-            }`}
+            className={`lg:col-span-7 rounded-[36px] p-6 md:p-8 border shadow-2xl relative overflow-hidden transition-all group ${'bg-white border-blue-50 shadow-[0_20px_60px_rgba(10,31,68,0.08)]'
+              }`}
           >
             {/* Subtle court lines */}
             <div className={`absolute inset-0 court-lines ${'opacity-5'} transition-opacity group-hover:opacity-10`} />
@@ -180,8 +177,8 @@ const BookingSuccess = () => {
                   <span>Verified E-Ticket</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="font-mono">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-mono">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
                 </div>
               </div>
 
@@ -203,15 +200,15 @@ const BookingSuccess = () => {
                 <div className="space-y-1.5">
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${'text-slate-300'}`}>Date</p>
                   <div className="flex items-center gap-2.5">
-                     <CalendarDays size={16} className={'text-slate-400'} />
-                     <p className={`text-sm md:text-base font-black ${'text-[#eb483f]'}`}>{state?.date}</p>
+                    <CalendarDays size={16} className={'text-slate-400'} />
+                    <p className={`text-sm md:text-base font-black ${'text-[#eb483f]'}`}>{state?.date}</p>
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${'text-slate-300'}`}>Timing</p>
                   <div className="flex items-center gap-2.5">
-                     <Clock size={16} className={'text-slate-400'} />
-                     <p className={`text-sm md:text-base font-black ${'text-[#eb483f]'}`}>{state?.batch ? state.batch.timing : state?.slot?.time}</p>
+                    <Clock size={16} className={'text-slate-400'} />
+                    <p className={`text-sm md:text-base font-black ${'text-[#eb483f]'}`}>{state?.batch ? state.batch.timing : state?.slot?.time}</p>
                   </div>
                 </div>
               </div>
@@ -229,11 +226,10 @@ const BookingSuccess = () => {
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-1 ${'text-emerald-500/40'}`}>Grand Total Paid</p>
                   <p className={`text-2xl md:text-3xl font-black font-display leading-none ${'text-[#eb483f]'}`}>â‚¹{state?.amount?.toFixed(2)}</p>
                 </div>
-                <div className={`px-4 py-2 rounded-[16px] font-black text-[9px] md:text-[10px] uppercase tracking-widest border transition-all ${
-                  isDark 
-                    ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]' 
+                <div className={`px-4 py-2 rounded-[16px] font-black text-[9px] md:text-[10px] uppercase tracking-widest border transition-all ${isDark
+                    ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]'
                     : 'bg-emerald-500 text-white border-emerald-600 shadow-xl shadow-emerald-500/20'
-                }`}>
+                  }`}>
                   Securely Paid
                 </div>
               </div>
@@ -242,52 +238,49 @@ const BookingSuccess = () => {
 
           {/* Desktop Right Column: Quick Actions & Dashboard Navigation */}
           <div className="lg:col-span-5 space-y-6">
-             <div className="space-y-3">
-                <h4 className={`text-[10px] font-black uppercase tracking-[0.25em] ml-2 ${'text-slate-400'}`}>Action Center</h4>
-                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-                  <button className={`h-16 rounded-[24px] font-black text-xs border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
-                    isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-xl shadow-blue-900/5 text-[#eb483f] hover:border-blue-200'
+            <div className="space-y-3">
+              <h4 className={`text-[10px] font-black uppercase tracking-[0.25em] ml-2 ${'text-slate-400'}`}>Action Center</h4>
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                <button className={`h-16 rounded-[24px] font-black text-xs border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-xl shadow-blue-900/5 text-[#eb483f] hover:border-blue-200'
                   }`}>
-                    <Share2 size={18} className="text-[#eb483f]" />
-                    <span className="text-[9px] uppercase tracking-widest">Share Ticket</span>
-                  </button>
-                  <button className={`h-16 rounded-[24px] font-black text-xs border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
-                    isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-xl shadow-blue-900/5 text-[#eb483f] hover:border-blue-200'
+                  <Share2 size={18} className="text-[#eb483f]" />
+                  <span className="text-[9px] uppercase tracking-widest">Share Ticket</span>
+                </button>
+                <button className={`h-16 rounded-[24px] font-black text-xs border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-xl shadow-blue-900/5 text-[#eb483f] hover:border-blue-200'
                   }`}>
-                    <Download size={18} className="text-[#eb483f]" />
-                    <span className="text-[9px] uppercase tracking-widest">Download PDF</span>
-                  </button>
-                </div>
-             </div>
+                  <Download size={18} className="text-[#eb483f]" />
+                  <span className="text-[9px] uppercase tracking-widest">Download PDF</span>
+                </button>
+              </div>
+            </div>
 
-             <div className={`p-6 rounded-[32px] border hidden lg:block ${'bg-blue-600 shadow-2xl shadow-blue-600/30 text-white border-blue-500'}`}>
-                <div className="flex flex-col items-center text-center gap-4">
-                   <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/20">
-                      <Home size={24} className="text-white" />
-                   </div>
-                   <div className="space-y-1">
-                      <h4 className="text-lg font-black font-display tracking-tight">Ready for more?</h4>
-                      <p className="text-[9px] font-bold opacity-70 leading-relaxed uppercase tracking-widest">Your dashboard has been updated.</p>
-                   </div>
-                   <ShuttleButton
-                     variant="secondary"
-                     size="sm"
-                     fullWidth
-                     onClick={() => navigate('/home')}
-                     className="!rounded-xl py-4 !bg-white !text-blue-600 hover:scale-105 transition-all shadow-xl"
-                   >
-                     Go to Dashboard
-                   </ShuttleButton>
+            <div className={`p-6 rounded-[32px] border hidden lg:block ${'bg-blue-600 shadow-2xl shadow-blue-600/30 text-white border-blue-500'}`}>
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/20">
+                  <Home size={24} className="text-white" />
                 </div>
-             </div>
+                <div className="space-y-1">
+                  <h4 className="text-lg font-black font-display tracking-tight">Ready for more?</h4>
+                  <p className="text-[9px] font-bold opacity-70 leading-relaxed uppercase tracking-widest">Your dashboard has been updated.</p>
+                </div>
+                <ShuttleButton
+                  variant="secondary"
+                  size="sm"
+                  fullWidth
+                  onClick={() => navigate('/home')}
+                  className="!rounded-xl py-4 !bg-white !text-blue-600 hover:scale-105 transition-all shadow-xl"
+                >
+                  Go to Dashboard
+                </ShuttleButton>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Dashboard Sticky Footer - Mobile/Tablet Only */}
-      <div className={`fixed bottom-0 left-0 right-0 p-5 z-[60] lg:hidden border-t backdrop-blur-xl transition-all ${
-        'bg-white/80 border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
-      }`}>
+      <div className={`fixed bottom-0 left-0 right-0 p-5 z-[60] lg:hidden border-t backdrop-blur-xl transition-all ${'bg-white/80 border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
+        }`}>
         <ShuttleButton
           variant="primary"
           size="md"
