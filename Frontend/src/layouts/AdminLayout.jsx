@@ -11,10 +11,10 @@ const AdminLayout = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className={`admin-panel flex h-screen overflow-hidden font-sans transition-colors duration-500 ${isDark ? 'bg-[#08142B] text-white selection:bg-[#22FF88]/30 selection:text-[#22FF88]' : 'bg-[#F0F4F8] text-[#0A1F44] selection:bg-[#0A1F44]/15 selection:text-[#0A1F44]'}`}>
+    <div className={`admin-panel flex h-screen overflow-hidden font-sans transition-colors duration-500 ${isDark ? 'bg-[#0f1115] text-white selection:bg-[#eb483f]/30 selection:text-[#eb483f]' : 'bg-[#FFF1F1] text-[#0A1F44] selection:bg-[#eb483f]/15 selection:text-[#eb483f]'}`}>
       {/* Background Gradient & Pattern */}
-      <div className={`fixed inset-0 pointer-events-none -z-20 transition-opacity duration-500 ${isDark ? 'bg-gradient-to-br from-[#08142B] via-[#0A1F44] to-[#08142B] opacity-100' : 'bg-gradient-to-b from-[#F0F4F8] to-[#E8EDF3] opacity-100'}`} />
-      <div className="fixed inset-0 court-lines opacity-10 -z-10 pointer-events-none" />
+      <div className={`fixed inset-0 pointer-events-none -z-20 transition-opacity duration-500 ${isDark ? 'bg-gradient-to-br from-[#0f1115] via-[#1a1d24] to-[#0f1115] opacity-100' : 'bg-gradient-to-b from-[#FFF1F1] to-[#FFE4E4] opacity-100'}`} />
+      <div className="fixed inset-0 court-lines opacity-[0.03] -z-10 pointer-events-none" />
 
       {/* Mobile Backdrop Overlay */}
       <AnimatePresence>

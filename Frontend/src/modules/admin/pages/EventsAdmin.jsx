@@ -18,28 +18,28 @@ const EventsAdmin = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-white/5">
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Trophy className="text-[#FFD600] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Arena
+            <Trophy className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Arena
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>League ops.</p>
         </div>
         <button 
           onClick={() => setShowNewEventModal(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
         >
           <Plus size={14} /> Deck
         </button>
       </div>
 
       {/* Featured Metric */}
-      <div className={`p-3 md:p-8 rounded-xl md:rounded-[2.5rem] border relative overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#FFD600]/20 shadow-sm'}`}>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD600]/5 blur-[60px] -z-10" />
+      <div className={`p-3 md:p-8 rounded-xl md:rounded-[2.5rem] border relative overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#eb483f]/20 shadow-sm'}`}>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#eb483f]/5 blur-[60px] -z-10" />
         <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6 relative z-10">
           <div className="flex items-center gap-3 md:gap-6">
-            <div className={`w-8 h-8 md:w-16 md:h-16 rounded-lg md:rounded-3xl flex items-center justify-center border md:border-2 border-[#FFD600]/30 ${isDark ? 'bg-[#FFD600]/5 text-[#FFD600]' : 'bg-[#FFD600]/5 text-[#d97706]'}`}>
+            <div className={`w-8 h-8 md:w-16 md:h-16 rounded-lg md:rounded-3xl flex items-center justify-center border md:border-2 border-[#eb483f]/30 ${isDark ? 'bg-[#eb483f]/5 text-[#eb483f]' : 'bg-[#eb483f]/5 text-[#eb483f]'}`}>
               <Medal size={14} className="md:w-[32px] md:h-[32px]" />
             </div>
             <div>
-              <p className="text-[6px] md:text-[10px] font-black uppercase tracking-widest text-[#FFD600] mb-0.5">Registry</p>
+              <p className="text-[6px] md:text-[10px] font-black uppercase tracking-widest text-[#eb483f] mb-0.5">Registry</p>
               <h3 className={`text-sm md:text-4xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>3.4K <span className="text-[7px] md:text-sm font-black opacity-10 ml-0.5 uppercase">Elite</span></h3>
             </div>
           </div>
@@ -48,9 +48,9 @@ const EventsAdmin = () => {
                <p className="text-[5px] md:text-[9px] font-black text-white/10 tracking-widest mb-0.5">Wait</p>
                <p className={`text-[10px] md:text-xl font-black font-display ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>12</p>
             </div>
-            <div className={`flex-1 md:flex-none p-2 md:p-4 rounded-lg md:rounded-2xl border ${isDark ? 'bg-white/2 border-white/5' : 'bg-[#22FF88]/5 border-[#22FF88]/5 font-black uppercase'}`}>
-               <p className="text-[5px] md:text-[9px] font-black text-[#22FF88]/20 tracking-widest mb-0.5">Asset</p>
-               <p className="text-[10px] md:text-xl font-black font-display text-[#22FF88]">12.4L</p>
+            <div className={`flex-1 md:flex-none p-2 md:p-4 rounded-lg md:rounded-2xl border ${isDark ? 'bg-white/2 border-white/5' : 'bg-[#eb483f]/5 border-[#eb483f]/5 font-black uppercase'}`}>
+               <p className="text-[5px] md:text-[9px] font-black text-[#eb483f]/20 tracking-widest mb-0.5">Asset</p>
+               <p className="text-[10px] md:text-xl font-black font-display text-[#eb483f]">12.4L</p>
             </div>
           </div>
         </div>
@@ -59,14 +59,14 @@ const EventsAdmin = () => {
       {/* Toolbar */}
       <div className="flex items-center gap-2">
         <div className="flex-1 relative group">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#FFD600] transition-colors" />
+          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#eb483f] transition-colors" />
           <input
             type="text"
             placeholder="Search..."
             className={`w-full py-2 pl-9 pr-4 rounded-lg md:rounded-xl text-[9px] md:text-[11px] font-black uppercase tracking-widest transition-all outline-none border ${
               isDark 
-                ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/20 text-white' 
-                : 'bg-white border-[#0A1F44]/10 focus:border-[#FFD600] text-[#0A1F44]'
+                ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/20 text-white' 
+                : 'bg-white border-[#0A1F44]/10 focus:border-[#eb483f] text-[#0A1F44]'
             }`}
           />
         </div>
@@ -85,7 +85,7 @@ const EventsAdmin = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: idx * 0.1 }}
-            className={`p-3 md:p-8 rounded-xl md:rounded-[2rem] border group transition-all duration-300 relative ${isDark ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#FFD600]/20' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}
+            className={`p-3 md:p-8 rounded-xl md:rounded-[2rem] border group transition-all duration-300 relative ${isDark ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#eb483f]/20' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}
           >
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2 md:gap-6">
               <div className="flex-1 space-y-1 md:space-y-2">
@@ -93,7 +93,7 @@ const EventsAdmin = () => {
                   <span className={`px-1.5 py-0.5 rounded text-[6px] md:text-[9px] font-black uppercase tracking-widest border transition-all ${
                     item.status === 'Live' ? 'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20' :
                     item.status === 'Draft' ? 'bg-white/5 text-white/20 border-white/5' :
-                    'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20'
+                    'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20'
                   }`}>
                     {item.status.split(' ')[0]}
                   </span>
@@ -102,10 +102,10 @@ const EventsAdmin = () => {
                 <h3 className={`text-xs md:text-2xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.title}</h3>
                 <div className="flex flex-wrap items-center gap-3">
                    <div className="flex items-center gap-1 text-[8px] md:text-xs font-black uppercase tracking-widest opacity-20">
-                     <Calendar size={10} className="text-[#1EE7FF]" /> {item.date}
+                     <Calendar size={10} className="text-[#eb483f]" /> {item.date}
                    </div>
                    <div className="flex items-center gap-1 text-[8px] md:text-xs font-black uppercase tracking-widest opacity-20">
-                     <Target size={10} className="text-[#22FF88]" /> {item.venue.split(' ')[0]}
+                     <Target size={10} className="text-[#eb483f]" /> {item.venue.split(' ')[0]}
                    </div>
                 </div>
               </div>
@@ -118,7 +118,7 @@ const EventsAdmin = () => {
                     <button className={`p-1.5 rounded-lg md:rounded-2xl transition-all ${isDark ? 'bg-white/5 text-white/10 hover:text-white' : 'bg-[#0A1F44]/5 text-[#0A1F44]/20 hover:text-[#0A1F44]'}`}>
                        <Share2 size={10} className="md:w-[20px] md:h-[20px]" />
                     </button>
-                    <button className={`px-3 md:px-6 py-1 pr-2 rounded-lg md:rounded-2xl transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 ${isDark ? 'bg-[#1EE7FF]/10 text-[#1EE7FF] border border-[#1EE7FF]/10' : 'bg-[#0284c7] text-white shadow-sm'}`}>
+                    <button className={`px-3 md:px-6 py-1 pr-2 rounded-lg md:rounded-2xl transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 ${isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/10' : 'bg-[#0284c7] text-white shadow-sm'}`}>
                        Log <ArrowRight size={10} className="md:w-[16px] md:h-[16px]" />
                     </button>
                  </div>
@@ -148,7 +148,7 @@ const EventsAdmin = () => {
               <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <Trophy className="text-[#FFD600] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Launch
+                    <Trophy className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Launch
                   </h3>
                   <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Tournament frame</p>
                 </div>
@@ -165,43 +165,43 @@ const EventsAdmin = () => {
                     <input 
                       type="text" 
                       placeholder="e.g. Smash Masters 2026"
-                      className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`}
+                      className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div className="group">
                       <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Prize Pool</label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#22FF88]">₹</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#eb483f]">₹</span>
                         <input 
                           type="text" 
                           placeholder="50K"
-                          className={`w-full py-3 md:py-4 pl-8 md:pl-10 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                          className={`w-full py-3 md:py-4 pl-8 md:pl-10 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
                         />
                       </div>
                     </div>
                     <div className="group">
                       <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Venue</label>
-                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`}>
+                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                         <option>Olympic</option>
                         <option>Hub</option>
                       </select>
                     </div>
                   </div>
                 </div>
-                <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border border-dashed flex items-center gap-3 md:gap-4 ${isDark ? 'bg-[#FFD600]/5 border-[#FFD600]/20' : 'bg-[#FFD600]/5 border-[#FFD600]/30'}`}>
-                   <ShieldCheck className="text-[#FFD600] md:w-[24px] md:h-[24px]" size={20} />
+                <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border border-dashed flex items-center gap-3 md:gap-4 ${isDark ? 'bg-[#eb483f]/5 border-[#eb483f]/20' : 'bg-[#eb483f]/5 border-[#eb483f]/30'}`}>
+                   <ShieldCheck className="text-[#eb483f] md:w-[24px] md:h-[24px]" size={20} />
                    <div className="flex-1">
-                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#FFD600]">Verification</p>
+                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#eb483f]">Verification</p>
                       <p className="text-[10px] md:text-xs font-bold mt-0.5 opacity-40">Digital ID required</p>
                    </div>
-                   <div className="w-8 h-5 md:w-10 md:h-6 bg-[#FFD600] rounded-full relative shadow-lg shadow-[#FFD600]/20">
+                   <div className="w-8 h-5 md:w-10 md:h-6 bg-[#eb483f] rounded-full relative shadow-lg shadow-[#eb483f]/20">
                       <div className="absolute right-1 top-1 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full" />
                    </div>
                 </div>
                 <button 
                   onClick={() => setShowNewEventModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#FFD600] text-[#0A1F44] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#FFD600]/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
                 >
                   Create <ArrowRight size={14} className="md:w-[16px] md:h-[16px]" />
                 </button>
@@ -215,3 +215,5 @@ const EventsAdmin = () => {
 };
 
 export default EventsAdmin;
+
+

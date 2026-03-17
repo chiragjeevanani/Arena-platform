@@ -21,13 +21,13 @@ const CourtManagement = () => {
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Target className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Units
+            <Target className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Units
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Facility hub.</p>
         </div>
         <button
           onClick={() => setShowAddCourtModal(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
         >
           <Plus size={14} /> Add
         </button>
@@ -36,7 +36,7 @@ const CourtManagement = () => {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 md:gap-3">
         <div className="flex-1 min-w-[150px] relative group">
-          <Search size={12} className={`absolute left-3 md:left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/30 group-focus-within:text-[#22FF88]' : 'text-[#0A1F44]/30'}`} />
+          <Search size={12} className={`absolute left-3 md:left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/30 group-focus-within:text-[#eb483f]' : 'text-[#0A1F44]/30'}`} />
           <input
             type="text"
             placeholder="Query..."
@@ -53,7 +53,7 @@ const CourtManagement = () => {
           onChange={(e) => setSelectedArena(Number(e.target.value))}
           className={`px-2.5 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-sm font-black transition-all outline-none border cursor-pointer uppercase tracking-widest ${
             isDark 
-              ? 'bg-white/5 border-white/10 text-white focus:border-[#22FF88]/50' 
+              ? 'bg-white/5 border-white/10 text-white focus:border-[#eb483f]/50' 
               : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-[#0A1F44] shadow-sm'
           }`}
         >
@@ -81,7 +81,7 @@ const CourtManagement = () => {
             transition={{ delay: idx * 0.05 }}
             className={`group rounded-xl md:rounded-3xl p-3 md:p-5 border transition-all duration-300 relative overflow-hidden ${
               isDark 
-                ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#22FF88]/30' 
+                ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#eb483f]/30' 
                 : 'bg-white border-[#0A1F44]/10 hover:shadow-lg'
             }`}
           >
@@ -89,7 +89,7 @@ const CourtManagement = () => {
             <div className="flex justify-between items-start mb-3 md:mb-4">
               <div className={`px-2 py-0.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest flex items-center gap-1 ${
                 court.status === 'Active' 
-                  ? 'bg-[#22FF88]/10 text-[#22FF88] border border-[#22FF88]/20' 
+                  ? 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20' 
                   : 'bg-[#FF4B4B]/10 text-[#FF4B4B] border border-[#FF4B4B]/20'
               }`}>
                 {court.status === 'Active' ? <CheckCircle2 size={8} /> : <XCircle size={8} />}
@@ -100,7 +100,7 @@ const CourtManagement = () => {
                   onClick={() => setActiveMenu(activeMenu === court.id ? null : court.id)}
                   className={`p-1.5 rounded-lg transition-all border ${
                     activeMenu === court.id
-                      ? 'bg-[#22FF88] border-[#22FF88] text-[#0A1F44]'
+                      ? 'bg-[#eb483f] border-[#eb483f] text-[#0A1F44]'
                       : isDark 
                         ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' 
                         : 'bg-black/5 border-black/10 text-[#0A1F44]/40 hover:text-black'
@@ -123,9 +123,9 @@ const CourtManagement = () => {
                       >
                          <div className="space-y-0.5 text-left">
                           {[
-                            { label: 'Edit', icon: Edit2, color: '#1EE7FF' },
-                            { label: 'Setup', icon: Settings2, color: '#22FF88' },
-                            { label: 'Log', icon: FileText, color: '#FFD600' },
+                            { label: 'Edit', icon: Edit2, color: '#eb483f' },
+                            { label: 'Setup', icon: Settings2, color: '#eb483f' },
+                            { label: 'Log', icon: FileText, color: '#eb483f' },
                             { label: 'Stats', icon: Activity, color: '#A855F7' },
                             { label: 'Halt', icon: Trash2, color: '#FF4B4B' },
                           ].map((opt, i) => (
@@ -175,7 +175,7 @@ const CourtManagement = () => {
             <div className="flex gap-1 mb-3 md:mb-6">
               {['AC', 'LED', 'CCTV'].map(tag => (
                 <span key={tag} className={`px-1 py-0.5 rounded text-[6px] font-black uppercase tracking-widest border transition-colors ${
-                  isDark ? 'bg-white/5 border-white/10 text-white/20 hover:text-[#22FF88]' : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44]/30'
+                  isDark ? 'bg-white/5 border-white/10 text-white/20 hover:text-[#eb483f]' : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44]/30'
                 }`}>
                   {tag}
                 </span>
@@ -184,7 +184,7 @@ const CourtManagement = () => {
 
             <button className={`w-full py-2 rounded-lg md:rounded-xl text-[8px] md:text-xs font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-2 ${
               isDark 
-                ? 'bg-white/5 border-white/10 text-white hover:bg-[#22FF88] hover:text-[#0A1F44]' 
+                ? 'bg-white/5 border-white/10 text-white hover:bg-[#eb483f] hover:text-[#0A1F44]' 
                 : 'bg-white border-[#0A1F44]/10 text-[#0A1F44] hover:bg-[#0A1F44] hover:text-white'
             }`}>
               <Settings2 size={10} /> Queue
@@ -213,7 +213,7 @@ const CourtManagement = () => {
               <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <Target className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Register Court
+                    <Target className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Register Court
                   </h3>
                   <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Add facility unit</p>
                 </div>
@@ -226,12 +226,12 @@ const CourtManagement = () => {
               </div>              <div className="p-6 md:p-8 space-y-4 md:space-y-5">
                 <div className="group">
                   <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Name</label>
-                  <input type="text" placeholder="e.g. Court 7" className={`w-full py-3 md:py-4 px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                  <input type="text" placeholder="e.g. Court 7" className={`w-full py-3 md:py-4 px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                 </div>
                 <div className="grid grid-cols-2 gap-3 md:gap-4">
                   <div className="group">
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Surface</label>
-                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
+                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                       <option>Synthetic</option>
                       <option>Wooden</option>
                       <option>PU Surface</option>
@@ -240,16 +240,16 @@ const CourtManagement = () => {
                   </div>
                   <div className="group">
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Pax</label>
-                    <input type="number" defaultValue="4" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                    <input type="number" defaultValue="4" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                   </div>
                 </div>
                 <div className="group">
                   <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Rate (₹/hr)</label>
-                  <input type="number" defaultValue="800" className={`w-full py-3 md:py-4 px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`} />
+                  <input type="number" defaultValue="800" className={`w-full py-3 md:py-4 px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                 </div>
                 <button
                   onClick={() => setShowAddCourtModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-[1.5rem] bg-[#22FF88] text-[#0A1F44] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#22FF88]/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-xl md:rounded-[1.5rem] bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
                 >
                   Deploy Unit <ArrowRight size={14} className="md:w-[16px] md:h-[16px]" />
                 </button>
@@ -263,3 +263,5 @@ const CourtManagement = () => {
 };
 
 export default CourtManagement;
+
+

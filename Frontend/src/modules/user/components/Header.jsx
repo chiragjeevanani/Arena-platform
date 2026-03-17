@@ -1,9 +1,9 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Sun, Moon, LogIn } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { ShuttlecockIcon, PlayerAvatarIcon } from './BadmintonIcons';
+import { ShuttlecockIcon, PlayerAvatarIcon, CourtIcon, StadiumIcon, ShuttleCalendarIcon, RacketIcon } from './BadmintonIcons';
 import ScoreboardSearch from './ScoreboardSearch';
 import DesktopNavbar from './DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
@@ -32,8 +32,16 @@ const Header = () => {
     }
   }, []);
 
+  const navItems = [
+    { path: '/', label: 'Home' },
+    { path: '/events', label: 'Events' },
+    { path: '/book/1/1', label: 'Book' },
+    { path: '/bookings', label: 'Bookings' },
+    { path: '/coaching', label: 'Coaching' },
+  ];
+
   return (
-    <header className={`relative px-6 pt-4 pb-4 overflow-hidden transition-all duration-500 z-[100] ${
+    <header className={`relative px-6 pt-2 pb-2 md:pt-3 md:pb-3 overflow-hidden transition-all duration-500 z-[100] ${
       'bg-[#eb483f] shadow-[0_10px_30px_rgba(235, 72, 63, 0.15)]'
     }`}>
       {/* Stadium light streaks */}
@@ -59,7 +67,7 @@ const Header = () => {
 
       <div className="relative z-10 w-full px-2">
         {/* Main Header Row â€” Grid for Perfect Centering */}
-        <div className="grid grid-cols-3 items-center w-full h-12">
+        <div className="grid grid-cols-3 items-center w-full h-10 md:h-12">
           
           {/* 1. Left Corner: Logo */}
           <div className="flex justify-start">
@@ -67,60 +75,83 @@ const Header = () => {
               className="flex items-center gap-2 cursor-pointer ml-[3px] shrink-0 px-1" 
               onClick={() => navigate('/')}
             >
-              <ShuttlecockIcon size={24} className="text-[#eb483f]" />
+              <ShuttlecockIcon size={24} className="text-[#eb483f] md:text-white" />
               <span className="hidden sm:inline text-lg md:text-xl font-black tracking-tight uppercase italic font-display text-white">
-                Badminton Arena
+                AmmSportsArena
+              </span>
+              <span className="sm:hidden text-lg font-black tracking-tight uppercase italic font-display text-white">
+                ASA
               </span>
             </div>
           </div>
 
-          {/* 2. Center: Search Bar */}
+          {/* 2. Center: Navigation (Desktop) / Search (Mobile) */}
           <div className="flex justify-center w-full">
-            <div className="w-full max-w-md">
-              <ScoreboardSearch placeholder="Search arenas, courts..." />
+            {/* Desktop Navigation Menu */}
+            <div className="hidden md:flex items-center gap-8">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  className={({ isActive }) => `
+                    text-[11px] font-black uppercase tracking-widest transition-all duration-300 relative py-1
+                    ${isActive ? 'text-white' : 'text-white/60 hover:text-white'}
+                  `}
+                >
+                  {item.label}
+                  {location.pathname === item.path && (
+                    <motion.div 
+                      layoutId="headerNavUnderline"
+                      className="absolute -bottom-1 inset-x-0 h-1 bg-white rounded-full"
+                    />
+                  )}
+                </NavLink>
+              ))}
+            </div>
+
+            {/* Mobile Search Bar - Kept for mobile flow */}
+            <div className="md:hidden w-full max-w-[180px]">
+              <ScoreboardSearch placeholder="Search..." />
             </div>
           </div>
 
           {/* 3. Right Corner: Theme, Notification & Auth */}
           <div className="flex justify-end pr-[3px]">
-            <div className="flex items-center gap-3 shrink-0">
-
-
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
               {/* Notification Bell */}
               <button
                 onClick={() => navigate('/profile/notifications')}
-                className="relative w-9 h-9 bg-white/5 backdrop-blur-sm md:rounded-xl rounded-xl flex items-center justify-center border border-white/20 hover:border-[#eb483f]/40 transition-all group"
+                className="relative w-8 h-8 md:w-9 md:h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 hover:border-[#eb483f]/40 transition-all group"
                 title="Notifications"
               >
-                <Bell size={17} className="text-white/60 group-hover:text-white transition-colors" />
-                <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#eb483f] rounded-full shadow-[0_0_5px_rgba(235, 72, 63,0.5)]" />
+                <Bell size={16} className="text-white/60 group-hover:text-white transition-colors" />
+                <div className="absolute top-2 right-2 md:right-2.5 w-1.5 h-1.5 bg-[#eb483f] rounded-full shadow-[0_0_5px_rgba(235, 72, 63,0.5)]" />
               </button>
 
               {!isLoggedIn ? (
-                /* Login / Sign Up Button - Shown when NOT logged in */
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-5 h-9 bg-[#eb483f] text-[#eb483f] font-bold text-[11px] uppercase tracking-wider md:rounded-xl rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg shadow-[#eb483f]/20 active:scale-95 ml-1"
+                  className="px-4 md:px-5 h-8 md:h-9 bg-[#eb483f] text-[#eb483f] font-bold text-[10px] md:text-[11px] uppercase tracking-wider rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg active:scale-95 ml-1"
                 >
-                  <LogIn size={15} strokeWidth={3} />
-                  <span className="hidden lg:inline whitespace-nowrap">Login/Sign Up</span>
+                  <LogIn size={14} strokeWidth={3} />
+                  <span className="hidden lg:inline whitespace-nowrap">Login</span>
                 </button>
               ) : (
-                /* Profile Icon Button - Shown ONLY when logged in */
                 <button
                   onClick={() => navigate('/profile')}
-                  className="w-9 h-9 bg-white/5 text-white/60 md:rounded-xl rounded-xl flex items-center justify-center border border-white/20 hover:border-[#eb483f]/40 hover:text-[#eb483f] transition-all active:scale-95 group ml-1"
+                  className="w-8 h-8 md:w-9 md:h-9 bg-white/5 text-white/60 rounded-xl flex items-center justify-center border border-white/20 hover:border-white/40 hover:text-white transition-all active:scale-95 group ml-1"
                   title="My Profile"
                 >
-                  <PlayerAvatarIcon size={20} className="group-hover:scale-110 transition-transform" />
+                  <PlayerAvatarIcon size={18} className="group-hover:scale-110 transition-transform" />
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Nav Row */}
-        <div className="mt-4 md:mt-3 flex justify-center">
+        {/* This extra nav row is now hidden on desktop to save height */}
+        <div className="md:hidden mt-4 flex justify-center">
           <DesktopNavbar />
         </div>
       </div>

@@ -24,8 +24,8 @@ const RevenueChart = () => {
         >
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22FF88" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#22FF88" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#eb483f" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#eb483f" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
@@ -44,14 +44,14 @@ const RevenueChart = () => {
             tickFormatter={(value) => `₹${value}`}
           />
           <Tooltip 
-            contentStyle={{ backgroundColor: '#08142B', borderColor: '#22FF8820', borderRadius: '12px', color: '#fff' }}
-            itemStyle={{ color: '#22FF88', fontWeight: 'bold' }}
+            contentStyle={{ backgroundColor: '#1a1d24', borderColor: '#eb483f20', borderRadius: '12px', color: '#fff' }}
+            itemStyle={{ color: '#eb483f', fontWeight: 'bold' }}
             formatter={(value) => [`₹${value}`, 'Revenue']}
           />
           <Area 
             type="monotone" 
             dataKey="revenue" 
-            stroke="#22FF88" 
+            stroke="#eb483f" 
             strokeWidth={3}
             fillOpacity={1} 
             fill="url(#colorRevenue)" 
@@ -63,3 +63,5 @@ const RevenueChart = () => {
 };
 
 export default RevenueChart;
+
+

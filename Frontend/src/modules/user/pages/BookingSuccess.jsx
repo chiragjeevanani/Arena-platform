@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Check, Share2, Download, Receipt, Home, PartyPopper, CalendarDays, MapPin, Clock } from 'lucide-react';
+import { Check, Share2, Download, Receipt, Home, CalendarDays, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
@@ -19,9 +19,9 @@ const ShuttleParticle = ({ delay, x, y, isDark }) => (
       rotate: [0, 360],
     }}
     transition={{ duration: 2, delay, ease: 'easeOut' }}
-    className={`absolute top-1/2 left-1/2 ${'text-blue-500/20'}`}
+    className={`absolute top-1/2 left-1/2 ${isDark ? 'text-[#eb483f]/30' : 'text-[#eb483f]/20'}`}
   >
-    < ShuttlecockIcon size={16} />
+    <ShuttlecockIcon size={16} />
   </motion.div>
 );
 
@@ -39,6 +39,8 @@ const BookingSuccess = () => {
     x: (Math.random() - 0.5) * 300,
     y: (Math.random() - 0.5) * 400,
   }));
+
+  const amount = state?.amount || 0;
 
   useEffect(() => {
     // Save booking/enrollment to localStorage for persistence in Dashboard
@@ -96,12 +98,11 @@ const BookingSuccess = () => {
   }, [state]);
 
   return (
-    <div className={`min-h-screen flex flex-col pt-12 md:pt-16 relative overflow-hidden transition-colors duration-500 ${'bg-slate-50'
-      }`}>
+    <div className={`min-h-screen flex flex-col pt-8 md:pt-12 relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0f1115]' : 'bg-slate-50'}`}>
       {/* Background Decorative Glows */}
       {!isDark && (
         <>
-          <div className="absolute top-24 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-24 -right-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
@@ -115,25 +116,24 @@ const BookingSuccess = () => {
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto w-full px-6 space-y-6 md:space-y-8 relative z-10 pb-12">
+      <div className="max-w-3xl mx-auto w-full px-6 space-y-6 md:space-y-8 relative z-10 pb-16">
         {/* Success Icon Section */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3">
           <div className="relative inline-block">
             <motion.div
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-              className={`w-16 h-16 md:w-20 md:h-20 rounded-[24px] md:rounded-[28px] mx-auto flex items-center justify-center relative z-10 ${'bg-white border-4 border-emerald-50 shadow-xl shadow-emerald-500/20'
-                }`}
+              className={`w-14 h-14 md:w-16 md:h-16 rounded-[20px] md:rounded-[24px] mx-auto flex items-center justify-center relative z-10 ${isDark ? 'bg-[#eb483f]/10 border-2 border-[#eb483f] shadow-lg shadow-[#eb483f]/20' : 'bg-white border-4 border-[#eb483f]/10 shadow-xl shadow-[#eb483f]/20'}`}
             >
-              <Check size={32} strokeWidth={3} className={'text-emerald-500'} />
+              <Check size={28} strokeWidth={3} className={'text-[#eb483f]'} />
             </motion.div>
 
             {/* Pulsing ring */}
             <motion.div
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className={`absolute inset-0 rounded-[24px] md:rounded-[28px] -m-1.5 md:-m-2.5 border-2 ${'border-emerald-500/20'}`}
+              className={`absolute inset-0 rounded-[24px] md:rounded-[28px] -m-1.5 md:-m-2.5 border-2 ${isDark ? 'border-[#eb483f]/30' : 'border-[#eb483f]/20'}`}
             />
           </div>
 
@@ -142,93 +142,95 @@ const BookingSuccess = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className={`text-2xl md:text-3xl font-black tracking-tight font-display mb-1.5 ${'text-[#eb483f]'}`}
+              className={`text-2xl md:text-3xl font-black tracking-tight font-display mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}
             >
-              {state?.batch ? 'All Set for Training!' : 'Slot Secured!'}
+              {state?.batch ? 'Ready for Training!' : 'Slot Secured!'}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className={`text-[9px] md:text-xs font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] ${'text-blue-600/60'}`}
+              className={`text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}
             >
               {state?.batch ? 'Your academic journey begins here' : 'Prepare for your match at the arena'}
             </motion.p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start max-w-3xl mx-auto">
           {/* Success Ticket Card - Left/Center */}
           <motion.div
-            initial={{ y: 80, opacity: 0 }}
+            initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, type: 'spring', stiffness: 100 }}
-            className={`lg:col-span-7 rounded-[36px] p-6 md:p-8 border shadow-2xl relative overflow-hidden transition-all group ${'bg-white border-blue-50 shadow-[0_20px_60px_rgba(10,31,68,0.08)]'
-              }`}
+            className={`lg:col-span-8 rounded-[32px] p-5 md:p-6 border shadow-2xl relative overflow-hidden transition-all group ${isDark ? 'bg-[#1a1d24] border-white/5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]' : 'bg-white border-[#eb483f]/10 shadow-[0_20px_60px_rgba(235,72,63,0.08)]'}`}
           >
             {/* Subtle court lines */}
-            <div className={`absolute inset-0 court-lines ${'opacity-5'} transition-opacity group-hover:opacity-10`} />
+            <div className={`absolute inset-0 court-lines ${isDark ? 'opacity-[0.03]' : 'opacity-5'} transition-opacity group-hover:opacity-10`} />
 
-            <div className="space-y-6 md:space-y-8 relative z-10">
+            {/* Accent Banner */}
+            <div className={`absolute top-0 left-0 right-0 h-1.5 ${isDark ? 'bg-gradient-to-r from-[#eb483f] to-[#d43b33]' : 'bg-gradient-to-r from-[#eb483f] to-[#d43b33]'}`} />
+
+            <div className="space-y-5 md:space-y-6 relative z-10 pt-2">
               {/* Ticket Header */}
-              <div className={`flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.25em] ${'text-blue-500/40'}`}>
+              <div className={`flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                 <div className="flex items-center gap-2">
-                  <Receipt size={14} className={'text-blue-500/40'} />
+                  <Receipt size={14} className={isDark ? 'text-[#eb483f]/80' : 'text-[#eb483f]'} />
                   <span>Verified E-Ticket</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f] animate-pulse" />
                   <span className="font-mono">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
                 </div>
               </div>
 
               {/* Arena Info */}
-              <div className="space-y-2">
-                <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${'text-slate-300'}`}>
+              <div className="space-y-1">
+                <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                   {state?.batch ? 'Academic Program' : 'Arena Details'}
                 </p>
-                <h3 className={`text-xl md:text-2xl font-black font-display leading-tight tracking-tight ${'text-[#eb483f]'}`}>
+                <h3 className={`text-xl md:text-2xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {state?.batch ? state.batch.coachName : state?.arena?.name}
-                  <span className={`block text-lg md:text-xl mt-1 ${'text-blue-600'}`}>
+                  <span className={`block text-lg md:text-xl mt-0.5 ${isDark ? 'text-[#eb483f]/80' : 'text-[#eb483f]'}`}>
                     {state?.batch ? state.batch.level + ' Batch' : state?.court?.name}
                   </span>
                 </h3>
               </div>
 
               {/* Detail Grid */}
-              <div className="grid grid-cols-2 gap-6 md:gap-8">
-                <div className="space-y-1.5">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${'text-slate-300'}`}>Date</p>
-                  <div className="flex items-center gap-2.5">
-                    <CalendarDays size={16} className={'text-slate-400'} />
-                    <p className={`text-sm md:text-base font-black ${'text-[#eb483f]'}`}>{state?.date}</p>
+              <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100">
+                <div className="space-y-1">
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Date</p>
+                  <div className="flex items-center gap-2">
+                    <CalendarDays size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.date}</p>
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${'text-slate-300'}`}>Timing</p>
-                  <div className="flex items-center gap-2.5">
-                    <Clock size={16} className={'text-slate-400'} />
-                    <p className={`text-sm md:text-base font-black ${'text-[#eb483f]'}`}>{state?.batch ? state.batch.timing : state?.slot?.time}</p>
+                <div className="space-y-1">
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Timing</p>
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.batch ? state.batch.timing : state?.slot?.time}</p>
                   </div>
                 </div>
               </div>
 
               {/* Bottom Notch Separator */}
-              <div className="relative h-px flex items-center">
-                <div className={`absolute left-0 -translate-x-10 md:-translate-x-12 w-8 h-8 rounded-full border ${'bg-slate-50 border-blue-50 shadow-inner'}`} />
-                <div className={`w-full border-t-[2px] border-dashed ${'border-slate-100'}`} />
-                <div className={`absolute right-0 translate-x-10 md:translate-x-12 w-8 h-8 rounded-full border ${'bg-slate-50 border-blue-50 shadow-inner'}`} />
+              <div className="relative h-px flex items-center pt-2">
+                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#eb483f]/10 shadow-inner'}`} />
+                <div className={`w-full border-t-[2px] border-dashed ${isDark ? 'border-white/10' : 'border-slate-200'}`} />
+                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#eb483f]/10 shadow-inner'}`} />
               </div>
 
               {/* Total Paid Section */}
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-between pt-2">
                 <div>
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-1 ${'text-emerald-500/40'}`}>Grand Total Paid</p>
-                  <p className={`text-2xl md:text-3xl font-black font-display leading-none ${'text-[#eb483f]'}`}>â‚¹{state?.amount?.toFixed(2)}</p>
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Grand Total Paid</p>
+                  <p className={`text-2xl md:text-3xl font-black font-display leading-none ${isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'}`}>₹{amount.toFixed(2)}</p>
                 </div>
-                <div className={`px-4 py-2 rounded-[16px] font-black text-[9px] md:text-[10px] uppercase tracking-widest border transition-all ${isDark
+                <div className={`px-3 py-1.5 rounded-[12px] font-black text-[8px] md:text-[9px] uppercase tracking-widest border transition-all ${isDark
                     ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]'
-                    : 'bg-emerald-500 text-white border-emerald-600 shadow-xl shadow-emerald-500/20'
+                    : 'bg-[#eb483f] text-white border-[#eb483f] shadow-lg shadow-[#eb483f]/20'
                   }`}>
                   Securely Paid
                 </div>
@@ -237,40 +239,40 @@ const BookingSuccess = () => {
           </motion.div>
 
           {/* Desktop Right Column: Quick Actions & Dashboard Navigation */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="space-y-3">
-              <h4 className={`text-[10px] font-black uppercase tracking-[0.25em] ml-2 ${'text-slate-400'}`}>Action Center</h4>
-              <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-                <button className={`h-16 rounded-[24px] font-black text-xs border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-xl shadow-blue-900/5 text-[#eb483f] hover:border-blue-200'
+          <div className="lg:col-span-4 space-y-4">
+            <div className="space-y-2">
+              <h4 className={`text-[9px] font-black uppercase tracking-[0.25em] ml-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Actions</h4>
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
+                <button className={`h-12 rounded-[20px] font-black text-[10px] border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-[#eb483f]/10 shadow-lg shadow-[#eb483f]/5 text-[#eb483f] hover:border-[#eb483f]/30'
                   }`}>
-                  <Share2 size={18} className="text-[#eb483f]" />
-                  <span className="text-[9px] uppercase tracking-widest">Share Ticket</span>
+                  <Share2 size={16} className={isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'} />
+                  <span className="uppercase tracking-widest mt-0.5">Share</span>
                 </button>
-                <button className={`h-16 rounded-[24px] font-black text-xs border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-100 shadow-xl shadow-blue-900/5 text-[#eb483f] hover:border-blue-200'
+                <button className={`h-12 rounded-[20px] font-black text-[10px] border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-[#eb483f]/10 shadow-lg shadow-[#eb483f]/5 text-[#eb483f] hover:border-[#eb483f]/30'
                   }`}>
-                  <Download size={18} className="text-[#eb483f]" />
-                  <span className="text-[9px] uppercase tracking-widest">Download PDF</span>
+                  <Download size={16} className={isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'} />
+                  <span className="uppercase tracking-widest mt-0.5">Download</span>
                 </button>
               </div>
             </div>
 
-            <div className={`p-6 rounded-[32px] border hidden lg:block ${'bg-blue-600 shadow-2xl shadow-blue-600/30 text-white border-blue-500'}`}>
-              <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/20">
-                  <Home size={24} className="text-white" />
+            <div className={`p-5 rounded-[24px] border hidden lg:block ${isDark ? 'bg-gradient-to-br from-[#eb483f]/20 to-[#d43b33]/10 border-[#eb483f]/20' : 'bg-gradient-to-br from-[#eb483f] to-[#d43b33] shadow-xl shadow-[#eb483f]/30 text-white border-[#eb483f]'}`}>
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border ${isDark ? 'bg-[#eb483f]/10 border-[#eb483f]/20' : 'bg-white/10 border-white/20'}`}>
+                  <Home size={20} className={isDark ? 'text-[#eb483f]' : 'text-white'} />
                 </div>
-                <div className="space-y-1">
-                  <h4 className="text-lg font-black font-display tracking-tight">Ready for more?</h4>
-                  <p className="text-[9px] font-bold opacity-70 leading-relaxed uppercase tracking-widest">Your dashboard has been updated.</p>
+                <div className="space-y-0.5">
+                  <h4 className={`text-base font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-white'}`}>Ready for more?</h4>
+                  <p className={`text-[8px] font-bold opacity-70 leading-relaxed uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-white/80'}`}>Dashboard updated.</p>
                 </div>
                 <ShuttleButton
                   variant="secondary"
                   size="sm"
                   fullWidth
                   onClick={() => navigate('/home')}
-                  className="!rounded-xl py-4 !bg-white !text-blue-600 hover:scale-105 transition-all shadow-xl"
+                  className={`!rounded-[16px] py-3 transition-all shadow-lg text-[11px] ${isDark ? '!bg-[#eb483f] !text-white' : '!bg-white !text-[#eb483f] hover:scale-105'}`}
                 >
-                  Go to Dashboard
+                  Dashboard
                 </ShuttleButton>
               </div>
             </div>
@@ -279,7 +281,7 @@ const BookingSuccess = () => {
       </div>
 
       {/* Dashboard Sticky Footer - Mobile/Tablet Only */}
-      <div className={`fixed bottom-0 left-0 right-0 p-5 z-[60] lg:hidden border-t backdrop-blur-xl transition-all ${'bg-white/80 border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
+      <div className={`fixed bottom-0 left-0 right-0 p-4 z-[60] lg:hidden border-t backdrop-blur-xl transition-all rounded-t-[28px] ${isDark ? 'bg-[#0f1115]/90 border-white/10 shadow-[0_-15px_50px_rgba(0,0,0,0.5)]' : 'bg-white/90 border-[#eb483f]/10 shadow-[0_-15px_50px_rgba(235,72,63,0.08)]'
         }`}>
         <ShuttleButton
           variant="primary"
@@ -287,7 +289,7 @@ const BookingSuccess = () => {
           fullWidth
           icon={<Home size={18} />}
           onClick={() => navigate('/home')}
-          className="shadow-2xl shadow-blue-500/20 !rounded-2xl active:scale-95 transition-all py-4"
+          className="shadow-2xl shadow-[#eb483f]/30 !rounded-[20px] active:scale-95 transition-all py-3.5 text-sm"
         >
           Back to Dashboard
         </ShuttleButton>
@@ -297,6 +299,3 @@ const BookingSuccess = () => {
 };
 
 export default BookingSuccess;
-
-
-

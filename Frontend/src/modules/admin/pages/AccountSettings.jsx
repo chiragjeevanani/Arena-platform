@@ -18,11 +18,11 @@ const AccountSettings = () => {
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <User className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Settings
+            <User className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Settings
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Profile & Trust.</p>
         </div>
-        <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20">
+        <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20">
           <Save size={14} /> Sync
         </button>
       </div>
@@ -36,7 +36,7 @@ const AccountSettings = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 lg:flex-none flex items-center gap-3 px-4 py-2.5 rounded-lg md:rounded-2xl transition-all border whitespace-nowrap min-w-fit ${
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-[#22FF88]/10 to-transparent border-[#22FF88]/30 border-l-4 border-l-[#22FF88] text-[#22FF88]'
+                  ? 'bg-gradient-to-r from-[#eb483f]/10 to-transparent border-[#eb483f]/30 border-l-4 border-l-[#eb483f] text-[#eb483f]'
                   : isDark 
                     ? 'border-transparent text-white/20 hover:bg-white/5' 
                     : 'border-transparent text-[#0A1F44]/40 hover:bg-[#0A1F44]/5'
@@ -61,16 +61,16 @@ const AccountSettings = () => {
                 {/* Avatar Section */}
                 <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-8">
                   <div className="relative group">
-                    <div className="w-20 h-20 md:w-32 md:h-32 rounded-2xl md:rounded-[2.5rem] bg-gradient-to-br from-[#1EE7FF]/10 to-[#22FF88]/10 border border-[#22FF88]/20 overflow-hidden flex items-center justify-center">
-                      <User size={32} className="text-[#22FF88]/20 md:w-[64px] md:h-[64px]" />
+                    <div className="w-20 h-20 md:w-32 md:h-32 rounded-2xl md:rounded-[2.5rem] bg-gradient-to-br from-[#eb483f]/10 to-[#eb483f]/10 border border-[#eb483f]/20 overflow-hidden flex items-center justify-center">
+                      <User size={32} className="text-[#eb483f]/20 md:w-[64px] md:h-[64px]" />
                     </div>
-                    <button className="absolute -bottom-1 -right-1 w-7 h-7 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] flex items-center justify-center shadow-lg">
+                    <button className="absolute -bottom-1 -right-1 w-7 h-7 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] flex items-center justify-center shadow-lg">
                       <Camera size={12} />
                     </button>
                   </div>
                   <div className="text-center sm:text-left">
                     <h3 className={`text-base md:text-xl font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Super Admin</h3>
-                    <p className="text-[7px] md:text-[10px] font-black text-[#1EE7FF] uppercase tracking-widest mt-0.5">Arena Scope</p>
+                    <p className="text-[7px] md:text-[10px] font-black text-[#eb483f] uppercase tracking-widest mt-0.5">Arena Scope</p>
                     <p className={`text-[7px] md:text-[10px] mt-2 md:mt-4 font-black opacity-20 uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>High Trust Account</p>
                   </div>
                 </div>
@@ -85,7 +85,7 @@ const AccountSettings = () => {
                       type="text"
                       defaultValue="Badminton Admin"
                       className={`w-full bg-transparent border rounded-lg md:rounded-2xl px-4 py-2.5 md:py-3.5 text-[10px] md:text-sm font-black focus:outline-none transition-all ${
-                        isDark ? 'border-white/5 text-white focus:border-[#22FF88]/50' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#22FF88]'
+                        isDark ? 'border-white/5 text-white focus:border-[#eb483f]/50' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#eb483f]'
                       }`}
                     />
                   </div>
@@ -95,7 +95,7 @@ const AccountSettings = () => {
                       type="email"
                       defaultValue="admin@badminton.io"
                       className={`w-full bg-transparent border rounded-lg md:rounded-2xl px-4 py-2.5 md:py-3.5 text-[10px] md:text-sm font-black focus:outline-none transition-all ${
-                        isDark ? 'border-white/5 text-white focus:border-[#22FF88]/50' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#22FF88]'
+                        isDark ? 'border-white/5 text-white focus:border-[#eb483f]/50' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#eb483f]'
                       }`}
                     />
                   </div>
@@ -105,7 +105,7 @@ const AccountSettings = () => {
                       type="tel"
                       defaultValue="+91 98765 43210"
                       className={`w-full bg-transparent border rounded-lg md:rounded-2xl px-4 py-2.5 md:py-3.5 text-[10px] md:text-sm font-black focus:outline-none transition-all ${
-                        isDark ? 'border-white/5 text-white focus:border-[#22FF88]/50' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#22FF88]'
+                        isDark ? 'border-white/5 text-white focus:border-[#eb483f]/50' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#eb483f]'
                       }`}
                     />
                   </div>
@@ -126,7 +126,7 @@ const AccountSettings = () => {
 
             {activeTab === 'security' && (
               <div className="space-y-6 md:space-y-8">
-                <div className="flex items-center gap-3 text-[#22FF88] opacity-60">
+                <div className="flex items-center gap-3 text-[#eb483f] opacity-60">
                   <Shield size={16} />
                   <h3 className="text-[10px] md:text-lg font-black uppercase tracking-widest">Credentials</h3>
                 </div>
@@ -137,7 +137,7 @@ const AccountSettings = () => {
                     <input
                       type="password"
                       className={`w-full bg-transparent border rounded-lg md:rounded-2xl px-4 py-2.5 text-[10px] md:text-sm font-black focus:outline-none transition-all ${
-                        isDark ? 'border-white/5 text-white focus:border-[#22FF88]/20' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#22FF88]'
+                        isDark ? 'border-white/5 text-white focus:border-[#eb483f]/20' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#eb483f]'
                       }`}
                     />
                   </div>
@@ -147,7 +147,7 @@ const AccountSettings = () => {
                       <input
                         type="password"
                         className={`w-full bg-transparent border rounded-lg md:rounded-2xl px-4 py-2.5 text-[10px] md:text-sm font-black focus:outline-none transition-all ${
-                          isDark ? 'border-white/5 text-white focus:border-[#22FF88]/20' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#22FF88]'
+                          isDark ? 'border-white/5 text-white focus:border-[#eb483f]/20' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#eb483f]'
                         }`}
                       />
                     </div>
@@ -156,7 +156,7 @@ const AccountSettings = () => {
                       <input
                         type="password"
                         className={`w-full bg-transparent border rounded-lg md:rounded-2xl px-4 py-2.5 text-[10px] md:text-sm font-black focus:outline-none transition-all ${
-                          isDark ? 'border-white/5 text-white focus:border-[#22FF88]/20' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#22FF88]'
+                          isDark ? 'border-white/5 text-white focus:border-[#eb483f]/20' : 'border-[#0A1F44]/10 text-[#0A1F44] focus:border-[#eb483f]'
                         }`}
                       />
                     </div>
@@ -177,7 +177,7 @@ const AccountSettings = () => {
 
             {activeTab === 'notifications' && (
               <div className="space-y-6 md:space-y-8">
-                <div className="flex items-center gap-3 text-[#FFD600] opacity-60">
+                <div className="flex items-center gap-3 text-[#eb483f] opacity-60">
                   <Bell size={16} />
                   <h3 className="text-[10px] md:text-lg font-black uppercase tracking-widest">Alerts</h3>
                 </div>
@@ -194,8 +194,8 @@ const AccountSettings = () => {
                         <p className={`text-[9px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{pref.label}</p>
                         <p className={`text-[7px] font-black opacity-10 mt-0.5 italic`}>{pref.desc}</p>
                       </div>
-                      <div className={`w-8 h-4 md:w-12 md:h-6 rounded-full relative transition-colors cursor-pointer ${isDark ? 'bg-[#22FF88]/10' : 'bg-[#22FF88]/20'}`}>
-                        <div className="absolute right-0.5 top-0.5 w-3 md:w-5 h-3 md:h-5 rounded-full bg-[#22FF88] shadow-lg shadow-[#22FF88]/20" />
+                      <div className={`w-8 h-4 md:w-12 md:h-6 rounded-full relative transition-colors cursor-pointer ${isDark ? 'bg-[#eb483f]/10' : 'bg-[#eb483f]/20'}`}>
+                        <div className="absolute right-0.5 top-0.5 w-3 md:w-5 h-3 md:h-5 rounded-full bg-[#eb483f] shadow-lg shadow-[#eb483f]/20" />
                       </div>
                     </div>
                   ))}
@@ -210,3 +210,5 @@ const AccountSettings = () => {
 };
 
 export default AccountSettings;
+
+

@@ -43,112 +43,193 @@ const SlotSelection = () => {
       )}
 
       {/* Header */}
-      <div className={`px-6 pt-5 pb-4 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${'bg-[#eb483f] border-blue-900/10 rounded-b-[24px] shadow-[0_8px_25px_rgba(10,31,68,0.12)]'}`}>
-        <div className="flex items-center gap-4">
+      <div className={`px-6 pt-3 md:pt-4 pb-3 md:pb-4 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${'bg-[#eb483f] border-white/10 rounded-b-[20px] md:rounded-none shadow-lg'}`}>
+        <div className="max-w-7xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border active:scale-95 transition-all ${'bg-white/10 border-white/20 text-white shadow-sm'}`}
+            className={`w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center border active:scale-95 transition-all ${'bg-white/10 border-white/20 text-white shadow-sm hover:bg-white/20'}`}
           >
             <ArrowLeft size={16} />
           </button>
-          <h1 className="text-base font-bold text-white font-display">Select Time Slot</h1>
+          <h1 className="text-sm md:text-base font-black text-white uppercase tracking-wider font-display">Select Time Slot</h1>
         </div>
       </div>
 
-
-      <div className="px-6 mt-4 space-y-5">
-        {/* Arena Info Card */}
-        <div className={`flex items-center gap-4 rounded-[24px] p-4 border transition-all duration-300 bg-white border-blue-50 shadow-[0_6px_20px_rgba(235, 72, 63, 0.04)] hover:shadow-[0_10px_30px_rgba(235, 72, 63, 0.06)]`}>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-500 ${'bg-blue-50 text-[#eb483f] shadow-inner'
-            }`}>
-            <ShuttlecockIcon size={20} />
-          </div>
-          <div>
-            <h2 className={`font-bold text-sm ${'text-[#eb483f]'}`}>{arena?.name}</h2>
-            <div className={`flex items-center text-[8px] gap-1 ${'text-slate-600'}`}>
-              <MapPin size={10} />
-              {arena?.location}
+      <div className="max-w-7xl mx-auto px-6 mt-4 md:mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
+          
+          {/* Left Column: Info, Visualizer, Date */}
+          <div className="lg:col-span-7 space-y-6 md:space-y-8">
+            {/* Arena Info Card */}
+            <div className={`flex items-center gap-4 rounded-[24px] p-5 border transition-all duration-300 bg-white border-blue-50/50 shadow-sm hover:shadow-md`}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-500 bg-[#eb483f]/5 text-[#eb483f] shadow-inner`}>
+                <ShuttlecockIcon size={24} />
+              </div>
+              <div>
+                <h2 className="font-black text-base md:text-lg text-[#eb483f]">{arena?.name}</h2>
+                <div className="flex items-center text-[10px] md:text-xs gap-1.5 text-slate-500 font-medium">
+                  <MapPin size={12} className="text-[#eb483f]/60" />
+                  {arena?.location}
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="px-2 py-0.5 rounded-md bg-[#eb483f]/5 text-[#eb483f] text-[9px] font-black uppercase tracking-widest border border-[#eb483f]/10">
+                    {currentCourt?.name}
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{currentCourt?.type}</span>
+                </div>
+              </div>
             </div>
-            <p className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${'text-[#eb483f]'}`}>
-              {currentCourt?.name} <span className="mx-1 opacity-20">|</span> {currentCourt?.type}
-            </p>
-          </div>
-        </div>
 
-        {/* Court Visualizer */}
-        <CourtVisualizer
-          courts={arenaCourts}
-          selectedCourt={selectedCourt}
-          onCourtSelect={setSelectedCourt}
-        />
-
-        {/* Date Selection */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ${'text-[#eb483f]/70'}`}>March 2026</h3>
-            <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border transition-all ${'bg-white text-[#eb483f]/80 border-blue-50 shadow-sm'
-              }`}>Month</div>
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {days.map((d, i) => (
-              <button
-                key={i}
-                onClick={() => setSelectedDate(d.date)}
-                className={`flex flex-col items-center justify-center min-w-[48px] py-3 rounded-[20px] transition-all duration-300 border ${selectedDate === d.date
-                    ? `bg-[#eb483f]/15 ${'border-[#eb483f]/60 shadow-[0_8px_25px_rgba(235, 72, 63,0.2)]'}`
-                    : `${isDark ? 'glass-light border-white/5 hover:border-white/10' : 'bg-white border-blue-50/50 hover:border-blue-200 shadow-[0_4px_15px_rgba(10,31,68,0.04)]'}`
-                  }`}
-              >
-                <span className={`text-[9px] uppercase font-black tracking-tighter ${selectedDate === d.date ? 'text-[#eb483f]' : `${'text-[#eb483f]/60'}`
-                  }`}>{d.day}</span>
-                <span className={`text-base font-black mt-0.5 ${selectedDate === d.date ? 'text-[#eb483f]' : `${'text-[#eb483f]'}`
-                  }`}>{d.date}</span>
-              </button>
-
-            ))}
-          </div>
-        </div>
-
-        <div className={`-mx-6 px-6 py-8 rounded-t-[36px] border-t transition-all duration-500 ${'bg-white border-blue-50 shadow-[0_-12px_40px_rgba(10,31,68,0.05)]'
-          }`}>
-          <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 ${'text-[#eb483f]/60'}`}>Select your slot</h3>
-
-          {/* Color Guide - Moved below heading */}
-          <div className="mb-6 flex flex-wrap gap-y-2 gap-x-4">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${'bg-slate-200'}`} />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-600'}`}>Booked</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FFD600]/40" />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-600'}`}>Coaching</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-red-400/40" />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-600'}`}>Maintenance</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#eb483f]" />
-              <span className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-600'}`}>Selected</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {SLOTS.map(slot => (
-              <CourtSlot
-                key={slot.id}
-                slot={slot}
-                isSelected={selectedSlot === slot.id}
-                onSelect={setSelectedSlot}
+            {/* Court Visualizer */}
+            <div className="bg-white/50 backdrop-blur-sm rounded-[32px] p-2 md:p-6 border border-white">
+              <CourtVisualizer
+                courts={arenaCourts}
+                selectedCourt={selectedCourt}
+                onCourtSelect={setSelectedCourt}
               />
-            ))}
+            </div>
+
+            {/* Date Selection */}
+            <div className="bg-white rounded-[32px] p-6 border border-blue-50/50 shadow-sm">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[#eb483f]/60">Select Date</h3>
+                  <p className="text-lg font-black text-slate-900 mt-1">March 2026</p>
+                </div>
+                <div className="px-4 py-2 rounded-xl text-[10px] font-black uppercase text-[#eb483f] bg-[#eb483f]/5 border border-[#eb483f]/10 shadow-sm">
+                  Full Month
+                </div>
+              </div>
+
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {days.map((d, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedDate(d.date)}
+                    className={`flex flex-col items-center justify-center min-w-[56px] py-4 rounded-[24px] transition-all duration-300 border ${selectedDate === d.date
+                        ? "bg-[#eb483f] border-[#eb483f] shadow-[0_12px_24px_rgba(235,72,63,0.25)] -translate-y-1"
+                        : "bg-white border-blue-50/80 hover:border-[#eb483f]/30 hover:bg-[#eb483f]/5"
+                      }`}
+                  >
+                    <span className={`text-[10px] uppercase font-black tracking-tight ${selectedDate === d.date ? 'text-white/80' : 'text-slate-400'}`}>
+                      {d.day}
+                    </span>
+                    <span className={`text-lg font-black mt-1 ${selectedDate === d.date ? 'text-white' : 'text-[#eb483f]'}`}>
+                      {d.date}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Slots & Inline Summary */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className={`px-6 py-8 md:py-8 md:px-8 rounded-[36px] border transition-all duration-500 bg-white border-blue-50 shadow-[0_12px_40px_rgba(10,31,68,0.05)]`}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#eb483f]/60">Available Slots</h3>
+                
+                {/* Color Guide Desktop Inline */}
+                <div className="hidden xl:flex items-center gap-4">
+                   <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-400">
+                     <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                     Booked
+                   </div>
+                   <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-400">
+                     <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f]" />
+                     Selected
+                   </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 gap-3">
+                {SLOTS.map(slot => (
+                  <CourtSlot
+                    key={slot.id}
+                    slot={slot}
+                    isSelected={selectedSlot === slot.id}
+                    onSelect={setSelectedSlot}
+                  />
+                ))}
+              </div>
+
+              {/* Mobile Guide only */}
+              <div className="mt-8 flex flex-wrap gap-y-2 gap-x-4 xl:hidden">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full bg-slate-200`} />
+                  <span className={`text-[8px] font-black uppercase tracking-wider text-slate-600`}>Booked</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#FFD600]/40" />
+                  <span className={`text-[8px] font-black uppercase tracking-wider text-slate-600`}>Coaching</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#eb483f]" />
+                  <span className={`text-[8px] font-black uppercase tracking-wider text-slate-600`}>Selected</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Only Summary Card */}
+            <div className="hidden lg:block sticky top-24">
+               <div className="rounded-[32px] p-8 bg-white border border-[#eb483f]/10 shadow-[0_20px_50px_rgba(235,72,63,0.08)] relative overflow-hidden">
+                 {/* Decorative background circle */}
+                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#eb483f]/5 rounded-full blur-3xl pointer-events-none" />
+                 
+                 <div className="relative z-10">
+                   <h4 className="text-[11px] font-black uppercase tracking-widest text-[#eb483f] mb-6">Selection Summary</h4>
+                   
+                   <div className="space-y-4 mb-8">
+                     <div className="flex justify-between items-center text-sm">
+                       <span className="text-slate-500 font-bold tracking-tight">Court Fee</span>
+                       <span className="text-slate-900 font-black">₹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm">
+                       <span className="text-slate-500 font-bold tracking-tight">Taxes & Fees</span>
+                       <span className="text-slate-900 font-black">₹0</span>
+                     </div>
+                     <div className="h-[1px] bg-slate-100 w-full my-2" />
+                     <div className="flex justify-between items-end">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-[#eb483f]/40">Total Amount</span>
+                       <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-black font-display text-[#eb483f]">
+                            ₹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}
+                          </span>
+                          <span className="text-[10px] font-black text-[#eb483f]/40 uppercase tracking-widest">INR</span>
+                       </div>
+                     </div>
+                   </div>
+
+                   <button
+                     disabled={!selectedSlot}
+                     onClick={() => navigate('/booking-summary', {
+                       state: {
+                         arena,
+                         court: currentCourt,
+                         date: `March ${selectedDate}, 2026`,
+                         slot: SLOTS.find(s => s.id === selectedSlot)
+                       }
+                     })}
+                     className={`w-full py-5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all duration-500 flex items-center justify-center gap-2 ${
+                       selectedSlot 
+                        ? 'bg-[#eb483f] text-white shadow-[0_15px_30px_rgba(235,72,63,0.3)] hover:shadow-[0_20px_40px_rgba(235,72,63,0.4)] hover:-translate-y-1 active:scale-95' 
+                        : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-50'
+                     }`}
+                   >
+                     Review Order
+                   </button>
+                   {!selectedSlot && (
+                     <p className="text-[9px] text-center mt-4 text-slate-400 font-bold italic uppercase tracking-wider">Please select a time slot to proceed</p>
+                   )}
+                 </div>
+               </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Booking Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] md:max-w-[450px] md:mx-auto">
+      {/* Booking Bar (Mobile Only) */}
+      <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
         <div className={`h-[1px] ${'bg-slate-100'}`} />
         <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t transition-all duration-300 ${'bg-white border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
           }`}>

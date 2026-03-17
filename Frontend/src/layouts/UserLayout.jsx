@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CourtIcon, StadiumIcon, ShuttleCalendarIcon, RacketIcon, PlayerAvatarIcon } from '../modules/user/components/BadmintonIcons';
 import { useTheme } from '../modules/user/context/ThemeContext';
 import Header from '../modules/user/components/Header';
+import DesktopFooter from '../modules/user/components/DesktopFooter';
 import { Calendar, Plus } from 'lucide-react';
 
 const UserLayout = () => {
@@ -21,7 +22,7 @@ const UserLayout = () => {
   ];
 
   return (
-    <div className={`flex flex-col min-h-screen relative overflow-x-hidden transition-colors duration-500 bg-[#FFF1F1]`}>
+    <div className={`flex flex-col min-h-screen relative overflow-x-hidden transition-colors duration-500 ${isDark ? 'bg-[#0f1115]' : 'bg-[#FFF1F1]'}`}>
 
       {/* Global Header - Sticky on Desktop (except profile) */}
       {!isProfilePage && (
@@ -31,7 +32,7 @@ const UserLayout = () => {
       )}
 
       {/* Court line pattern background */}
-      <div className="fixed inset-0 court-lines opacity-10 pointer-events-none z-0" />
+      <div className={`fixed inset-0 court-lines ${isDark ? 'opacity-10' : 'opacity-20'} pointer-events-none z-0`} />
 
       {/* Scrollable Content */}
       <main className="flex-1 relative z-10 w-full min-h-screen">
@@ -39,6 +40,9 @@ const UserLayout = () => {
           <Outlet />
         </div>
       </main>
+
+      {/* Desktop Footer */}
+      <DesktopFooter />
 
       {/* Mobile Bottom Navigation - Hidden on Desktop (md:hidden) */}
       <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden">

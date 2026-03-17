@@ -24,7 +24,7 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
 
   return (
     <header className={`h-16 md:h-20 backdrop-blur-3xl border-b flex items-center justify-between px-4 md:px-6 sticky top-0 z-40 transition-colors duration-500 ${
-      isDark ? 'bg-[#08142B]/90 border-[#22FF88]/10 shadow-none' : 'bg-white/80 border-[#0A1F44]/10 shadow-sm'
+      isDark ? 'bg-[#1a1d24]/90 border-[#eb483f]/10 shadow-none' : 'bg-white/80 border-[#eb483f]/10 shadow-sm'
     }`}>
       {/* Left part: Hamburger (mobile) + Search Bar */}
       <div className="flex items-center gap-3 flex-1">
@@ -40,15 +40,15 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
 
         <div className="relative w-full max-w-md hidden md:block group">
           <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
-            isDark ? 'text-white/30 group-focus-within:text-[#1EE7FF]' : 'text-[#0A1F44]/30 group-focus-within:text-[#22FF88]'
+            isDark ? 'text-white/30 group-focus-within:text-[#eb483f]' : 'text-[#0A1F44]/30 group-focus-within:text-[#eb483f]'
           }`} />
           <input
             type="text"
             placeholder="Search everything..."
             className={`w-full border rounded-2xl py-2.5 pl-11 pr-4 text-sm font-medium transition-all focus:outline-none ${
               isDark 
-                ? 'bg-[#0A1F44]/50 border-[#22FF88]/10 text-white placeholder:text-white/20 focus:border-[#1EE7FF]/50 focus:bg-[#0A1F44] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' 
-                : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44] placeholder:text-[#0A1F44]/30 focus:border-[#22FF88] focus:bg-white shadow-sm'
+                ? 'bg-[#1a1d24]/50 border-[#eb483f]/10 text-white placeholder:text-white/20 focus:border-[#eb483f]/50 focus:bg-[#1a1d24] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' 
+                : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44] placeholder:text-[#0A1F44]/30 focus:border-[#eb483f] focus:bg-white shadow-sm'
             }`}
           />
         </div>
@@ -60,7 +60,7 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
         <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-colors ${
           isDark ? 'border-white/5 bg-white/5 text-white hover:bg-white/10' : 'border-[#0A1F44]/10 bg-white text-[#0A1F44] hover:bg-[#0A1F44]/5 shadow-sm'
         }`}>
-          <div className="w-2 h-2 rounded-full bg-[#22FF88] shadow-[0_0_10px_#22FF88] animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-[#eb483f] shadow-[0_0_10px_#eb483f] animate-pulse" />
           <span className="text-xs font-black uppercase tracking-widest italic font-display">{getArenaDisplay()}</span>
           <ChevronDown size={14} className="opacity-40" />
         </div>
@@ -70,8 +70,8 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
           onClick={toggleTheme}
           className={`p-2.5 rounded-xl transition-all duration-300 border ${
             isDark 
-              ? 'border-white/10 bg-white/5 text-white/60 hover:text-[#FFD600]' 
-              : 'border-[#0A1F44]/10 bg-white text-[#0A1F44]/60 hover:text-[#22FF88] shadow-sm'
+              ? 'border-white/10 bg-white/5 text-white/60 hover:text-[#eb483f]' 
+              : 'border-[#0A1F44]/10 bg-white text-[#0A1F44]/60 hover:text-[#eb483f] shadow-sm'
           }`}
         >
           <motion.div initial={false} animate={{ rotate: isDark ? 0 : 180 }}>
@@ -84,7 +84,7 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
           isDark ? 'border-white/10 text-white/60 hover:text-white hover:bg-white/5' : 'border-[#0A1F44]/10 bg-white text-[#0A1F44]/60 hover:text-[#0A1F44] shadow-sm'
         }`}>
           <Bell size={18} />
-          <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#FFD600] border-2 border-inherit shadow-[0_0_5px_rgba(255,214,0,0.5)]" />
+          <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#eb483f] border-2 border-inherit shadow-[0_0_5px_rgba(235,72,63,0.5)]" />
         </button>
 
         {/* Profile Dropdown */}
@@ -93,19 +93,19 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className={`flex items-center gap-3 pl-3 pr-1 py-1 rounded-2xl border transition-all ${
               isDark 
-                ? 'border-white/5 bg-[#0A1F44]/50 hover:bg-[#0A1F44] hover:border-[#22FF88]/30' 
-                : 'border-[#0A1F44]/10 bg-white hover:border-[#22FF88] shadow-sm'
+                ? 'border-white/5 bg-[#1a1d24]/50 hover:bg-[#1a1d24] hover:border-[#eb483f]/30' 
+                : 'border-[#0A1F44]/10 bg-white hover:border-[#eb483f] shadow-sm'
             }`}
           >
             <div className="text-right hidden sm:block">
               <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{user?.role?.replace('_', ' ')}</p>
-              <p className="text-[8px] font-black text-[#1EE7FF] uppercase tracking-[0.2em] mt-0.5">{user?.name}</p>
+              <p className="text-[8px] font-black text-[#eb483f] uppercase tracking-[0.2em] mt-0.5">{user?.name}</p>
             </div>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden border border-[#22FF88]/30 shadow-lg shadow-[#22FF88]/10 transition-transform group-active:scale-95">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden border border-[#eb483f]/30 shadow-lg shadow-[#eb483f]/10 transition-transform group-active:scale-95">
               {user?.avatar ? (
                 <img src={user.avatar} alt="Profile" className="w-full h-full object-crop" />
               ) : (
-                <UserCircle size={20} className="text-[#22FF88]" />
+                <UserCircle size={20} className="text-[#eb483f]" />
               )}
             </div>
           </button>
@@ -133,19 +133,19 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
                       setShowProfileMenu(false);
                     }}
                     className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest hover:rounded-xl flex items-center gap-3 transition-all ${
-                      isDark ? 'hover:bg-white/5 text-white/70 hover:text-[#22FF88]' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/70 hover:text-[#22FF88]'
+                      isDark ? 'hover:bg-white/5 text-white/70 hover:text-[#eb483f]' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/70 hover:text-[#eb483f]'
                     }`}
                   >
-                    <div className="w-7 h-7 rounded-lg bg-[#1EE7FF]/10 flex items-center justify-center text-[#1EE7FF]">
+                    <div className="w-7 h-7 rounded-lg bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                       <Settings size={14} />
                     </div>
                     Account Settings
                   </button>
                   
                   <button className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest hover:rounded-xl flex items-center gap-3 transition-all ${
-                    isDark ? 'hover:bg-white/5 text-white/70 hover:text-[#1EE7FF]' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/70 hover:text-[#1EE7FF]'
+                    isDark ? 'hover:bg-white/5 text-white/70 hover:text-[#eb483f]' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/70 hover:text-[#eb483f]'
                   }`}>
-                    <div className="w-7 h-7 rounded-lg bg-[#FFD600]/10 flex items-center justify-center text-[#FFD600]">
+                    <div className="w-7 h-7 rounded-lg bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                       <Bell size={14} />
                     </div>
                     Global Notifications
@@ -173,3 +173,5 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
 };
 
 export default AdminTopbar;
+
+

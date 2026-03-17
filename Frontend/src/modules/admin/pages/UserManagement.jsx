@@ -34,13 +34,13 @@ const UserManagement = () => {
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Users className="text-[#1EE7FF] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Core
+            <Users className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Core
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Identity hub.</p>
         </div>
         <button 
           onClick={() => setShowNewUserModal(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#1EE7FF] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#1EE7FF]/20"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
         >
           <UserPlus size={14} /> Assign
         </button>
@@ -50,14 +50,14 @@ const UserManagement = () => {
         {/* Table Toolbar */}
         <div className={`p-2 md:p-4 border-b flex flex-col sm:flex-row gap-2 md:gap-4 items-center justify-between ${isDark ? 'border-white/5' : 'border-[#0A1F44]/5'}`}>
           <div className="relative w-full sm:max-w-sm group">
-            <Search size={12} className={`absolute left-3 md:left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/30 group-focus-within:text-[#1EE7FF]' : 'text-[#0A1F44]/30 group-focus-within:text-[#1EE7FF]'}`} />
+            <Search size={12} className={`absolute left-3 md:left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/30 group-focus-within:text-[#eb483f]' : 'text-[#0A1F44]/30 group-focus-within:text-[#eb483f]'}`} />
             <input
               type="text"
               placeholder="Query..."
               className={`w-full border rounded-lg md:rounded-xl py-2 md:py-2.5 pl-8 md:pl-11 pr-4 text-[10px] md:text-sm font-bold transition-all outline-none ${
                 isDark 
-                  ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-[#1EE7FF]/50' 
-                  : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-[#0A1F44] placeholder:text-[#0A1F44]/30 focus:border-[#1EE7FF]'
+                  ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-[#eb483f]/50' 
+                  : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-[#0A1F44] placeholder:text-[#0A1F44]/30 focus:border-[#eb483f]'
               }`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -67,7 +67,7 @@ const UserManagement = () => {
             onClick={() => setShowFilterDrawer(true)}
             className={`w-full sm:w-auto px-4 py-2 rounded-lg md:rounded-xl border flex items-center justify-center gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
             isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44]/40 hover:text-[#0A1F44]'
-          } ${roleFilter !== 'All' ? 'border-[#1EE7FF] text-[#1EE7FF]' : ''}`}>
+          } ${roleFilter !== 'All' ? 'border-[#eb483f] text-[#eb483f]' : ''}`}>
             <Filter size={10} /> Mode
           </button>
         </div>
@@ -76,7 +76,7 @@ const UserManagement = () => {
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-               <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
+               <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/40 border-white/5 bg-white/5' : 'text-[#eb483f] border-[#eb483f]/10 bg-[#eb483f]/2'}`}>
                 <th className="p-3 md:p-6">Member</th>
                 <th className="p-3 md:p-6">Auth</th>
                 <th className="p-3 md:p-6">Scope</th>
@@ -97,14 +97,14 @@ const UserManagement = () => {
                     <div className="flex items-center gap-2 md:gap-4">
                       <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center font-black text-[10px] md:text-lg font-display border transition-all ${
                         isDark 
-                          ? 'bg-gradient-to-br from-[#1EE7FF]/10 to-[#22FF88]/10 border-white/10 text-white' 
-                          : 'bg-gradient-to-br from-[#1EE7FF]/10 to-[#22FF88]/10 border-[#1EE7FF]/20 text-[#0A1F44]'
+                          ? 'bg-gradient-to-br from-[#eb483f]/10 to-[#eb483f]/10 border-white/10 text-white' 
+                          : 'bg-gradient-to-br from-[#eb483f]/10 to-[#eb483f]/10 border-[#eb483f]/20 text-[#0A1F44]'
                       }`}>
                         {user.name.charAt(0)}
                       </div>
                       <div>
                         <p className={`font-black tracking-tight text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{user.name.split(' ')[0]}</p>
-                        <p className="text-[6px] md:text-[9px] font-bold text-[#1EE7FF] uppercase tracking-widest leading-tight opacity-40">{user.email.split('@')[0]}</p>
+                        <p className="text-[6px] md:text-[9px] font-bold text-[#eb483f] uppercase tracking-widest leading-tight opacity-40">{user.email.split('@')[0]}</p>
                       </div>
                     </div>
                   </td>
@@ -112,13 +112,13 @@ const UserManagement = () => {
                     <span className={`flex items-center gap-1.5 px-1.5 md:px-3 py-1 rounded-md md:rounded-xl border text-[7px] md:text-[9px] font-black uppercase tracking-widest w-max opacity-60 ${
                       isDark ? 'bg-white/5 border-white/10' : 'bg-[#0A1F44]/5 border-[#0A1F44]/10'
                     }`}>
-                      <Shield size={8} className={user.role === 'SUPER_ADMIN' ? 'text-[#FFD600]' : 'opacity-40'} />
+                      <Shield size={8} className={user.role === 'SUPER_ADMIN' ? 'text-[#eb483f]' : 'opacity-40'} />
                       {user.role}
                     </span>
                   </td>
                   <td className="p-3 md:p-6">
                     <div className={`flex items-center gap-1.5 text-[7px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>
-                      <MapPin size={10} className="text-[#22FF88] opacity-60" />
+                      <MapPin size={10} className="text-[#eb483f] opacity-60" />
                       {getArenaName(user.arenaId).split(' ')[0]}
                     </div>
                   </td>
@@ -126,7 +126,7 @@ const UserManagement = () => {
                     <div className="flex items-center justify-center">
                        <span className={`px-2 py-0.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest border ${
                          user.status === 'Active' 
-                           ? 'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20' 
+                           ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' 
                            : 'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20'
                        }`}>
                          {user.status === 'Active' ? 'Live' : 'Off'}
@@ -139,7 +139,7 @@ const UserManagement = () => {
                         onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
                         className={`p-1.5 md:p-2.5 rounded-lg md:rounded-xl transition-all border ${
                           activeMenu === user.id
-                            ? 'bg-[#1EE7FF] border-[#1EE7FF] text-[#0A1F44]'
+                            ? 'bg-[#eb483f] border-[#eb483f] text-[#0A1F44]'
                             : isDark 
                               ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' 
                               : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44]/40 hover:text-black'
@@ -162,9 +162,9 @@ const UserManagement = () => {
                             >
                                <div className="space-y-0.5 text-left">
                                 {[
-                                  { label: 'View', icon: Eye, color: '#1EE7FF' },
-                                  { label: 'Rules', icon: UserCog, color: '#22FF88' },
-                                  { label: 'Pin', icon: Key, color: '#FFD600' },
+                                  { label: 'View', icon: Eye, color: '#eb483f' },
+                                  { label: 'Rules', icon: UserCog, color: '#eb483f' },
+                                  { label: 'Pin', icon: Key, color: '#eb483f' },
                                   { label: 'Fire', icon: UserMinus, color: '#FF4B4B' },
                                 ].map((item, i) => (
                                   <button
@@ -214,7 +214,7 @@ const UserManagement = () => {
               <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <UserPlus className="text-[#1EE7FF] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Delegate
+                    <UserPlus className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Delegate
                   </h3>
                   <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Administrative registration</p>
                 </div>
@@ -231,11 +231,11 @@ const UserManagement = () => {
                   <div className="group">
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Name</label>
                     <div className="relative">
-                      <Users size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#1EE7FF] group-focus-within:opacity-100 transition-all font-black text-[10px] md:w-[14px] md:h-[14px]" />
+                      <Users size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all font-black text-[10px] md:w-[14px] md:h-[14px]" />
                       <input 
                         type="text" 
                         placeholder="Full Name"
-                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`}
+                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
                       />
                     </div>
                   </div>
@@ -243,11 +243,11 @@ const UserManagement = () => {
                   <div className="group">
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Email</label>
                     <div className="relative">
-                      <Mail size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#1EE7FF] group-focus-within:opacity-100 transition-all font-black text-[10px] md:w-[14px] md:h-[14px]" />
+                      <Mail size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all font-black text-[10px] md:w-[14px] md:h-[14px]" />
                       <input 
                         type="email" 
                         placeholder="admin@arena.com"
-                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`}
+                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
                       />
                     </div>
                   </div>
@@ -255,7 +255,7 @@ const UserManagement = () => {
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div className="group">
                       <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Role</label>
-                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`}>
+                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                         <option>ARENA_ADMIN</option>
                         <option>STAFF</option>
                         <option>COACH</option>
@@ -263,7 +263,7 @@ const UserManagement = () => {
                     </div>
                     <div className="group">
                       <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Arena</label>
-                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`}>
+                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                         {MOCK_DB.arenas.map(arena => (
                           <option key={arena.id} value={arena.id}>{arena.name.split(' ')[0]}</option>
                         ))}
@@ -272,20 +272,20 @@ const UserManagement = () => {
                   </div>
                 </div>
 
-                <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border border-dashed flex items-center gap-3 md:gap-4 ${isDark ? 'bg-[#1EE7FF]/5 border-[#1EE7FF]/20' : 'bg-[#1EE7FF]/5 border-[#1EE7FF]/30'}`}>
-                   <ShieldCheck className="text-[#1EE7FF] md:w-[24px] md:h-[24px]" size={18} />
+                <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border border-dashed flex items-center gap-3 md:gap-4 ${isDark ? 'bg-[#eb483f]/5 border-[#eb483f]/20' : 'bg-[#eb483f]/5 border-[#eb483f]/30'}`}>
+                   <ShieldCheck className="text-[#eb483f] md:w-[24px] md:h-[24px]" size={18} />
                    <div className="flex-1">
-                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#1EE7FF]">Security</p>
+                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#eb483f]">Security</p>
                       <p className="text-[10px] md:text-xs font-bold mt-0.5 opacity-40">2FA required</p>
                    </div>
-                   <div className="w-8 h-5 md:w-10 md:h-6 bg-[#1EE7FF] rounded-full relative shadow-lg shadow-[#1EE7FF]/20">
+                   <div className="w-8 h-5 md:w-10 md:h-6 bg-[#eb483f] rounded-full relative shadow-lg shadow-[#eb483f]/20">
                       <div className="absolute right-1 top-1 w-3 h-3 md:w-4 md:h-4 bg-[#0A1F44] rounded-full" />
                    </div>
                 </div>
 
                 <button 
                   onClick={() => setShowNewUserModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#1EE7FF] text-[#0A1F44] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#1EE7FF]/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
                 >
                   Confirm <ArrowRight size={14} className="md:w-[16px] md:h-[16px]" />
                 </button>
@@ -315,7 +315,7 @@ const UserManagement = () => {
             >
               <div className="p-8 border-b border-inherit flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-black font-display tracking-tight text-[#1EE7FF]">Filter Registry</h3>
+                  <h3 className="text-xl font-black font-display tracking-tight text-[#eb483f]">Filter Registry</h3>
                   <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest mt-1">Refine user management view</p>
                 </div>
                 <button onClick={() => setShowFilterDrawer(false)} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40' : 'hover:bg-black/5 text-black/40'}`}>
@@ -333,7 +333,7 @@ const UserManagement = () => {
                         onClick={() => setRoleFilter(role)}
                         className={`w-full py-4 px-4 rounded-2xl border text-[10px] font-black uppercase tracking-widest text-left transition-all ${
                           roleFilter === role 
-                            ? 'bg-[#1EE7FF]/10 border-[#1EE7FF] text-[#1EE7FF]' 
+                            ? 'bg-[#eb483f]/10 border-[#eb483f] text-[#eb483f]' 
                             : isDark ? 'bg-white/5 border-white/5 text-white/40 hover:border-white/20' : 'bg-black/5 border-black/5 text-[#0A1F44]/40 hover:border-black/20'
                         }`}
                       >
@@ -347,7 +347,7 @@ const UserManagement = () => {
               <div className="p-8 border-t border-inherit">
                 <button 
                   onClick={() => { setRoleFilter('All'); setShowFilterDrawer(false); }}
-                  className="w-full py-4 rounded-2xl bg-[#1EE7FF] text-[#0A1F44] text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-xl shadow-[#1EE7FF]/20"
+                  className="w-full py-4 rounded-2xl bg-[#eb483f] text-[#0A1F44] text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-xl shadow-[#eb483f]/20"
                 >
                   Clear All Filters
                 </button>
@@ -361,3 +361,5 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+
+

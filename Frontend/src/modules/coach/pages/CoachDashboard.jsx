@@ -17,9 +17,9 @@ const CoachDashboard = () => {
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-wide flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Calendar className="text-[#FFD600]" size={20} /> Today's Agenda
+            <Calendar className="text-[#eb483f]" size={20} /> Today's Agenda
           </h2>
-          <p className="text-[11px] md:text-sm text-white/40 mt-0.5 md:mt-1 font-medium">You have <span className="text-[#22FF88]">3 sessions</span> today.</p>
+          <p className={`text-[11px] md:text-sm mt-0.5 md:mt-1 font-medium ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>You have <span className="text-[#eb483f]">3 sessions</span> today.</p>
         </div>
       </div>
 
@@ -32,8 +32,8 @@ const CoachDashboard = () => {
             transition={{ delay: idx * 0.1 }}
             className={`p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] border transition-all duration-300 group hover:shadow-2xl ${
               isDark 
-                ? `${session.type === 'Online' ? 'bg-gradient-to-br from-[#1EE7FF]/10 to-[#0A1F44]/50 border-[#1EE7FF]/20' : 'bg-[#0A1F44]/50 border-white/5'} hover:bg-[#0A1F44] hover:shadow-[#1EE7FF]/2`
-                : `${session.type === 'Online' ? 'bg-gradient-to-br from-[#1EE7FF]/5 to-white border-[#1EE7FF]/20 shadow-lg shadow-blue-500/5' : 'bg-white border-[#0A1F44]/10 shadow-lg shadow-blue-900/5'} hover:border-[#FFD600]`
+                ? `${session.type === 'Online' ? 'bg-gradient-to-br from-[#eb483f]/10 to-[#0A1F44]/50 border-[#eb483f]/20' : 'bg-[#0A1F44]/50 border-white/5'} hover:bg-[#0A1F44] hover:shadow-[#eb483f]/5`
+                : `${session.type === 'Online' ? 'bg-gradient-to-br from-[#eb483f]/5 to-white border-[#eb483f]/20 shadow-lg shadow-red-500/5' : 'bg-white border-[#0A1F44]/10 shadow-lg shadow-blue-900/5'} hover:border-[#eb483f]`
             }`}
           >
             <div className="flex flex-col md:flex-row justify-between gap-6">
@@ -44,41 +44,41 @@ const CoachDashboard = () => {
                      <div className="flex gap-2 mt-1 md:mt-2">
                         <span className={`px-2 md:px-3 py-1 text-[8px] md:text-[9px] font-black uppercase tracking-widest rounded-lg border ${
                           session.level === 'Advanced' ? 'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20' : 
-                          session.level === 'Intermediate' ? 'bg-[#FFD600]/10 text-[#FFD600] border-[#FFD600]/20' : 
-                          'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20'
+                          session.level === 'Intermediate' ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' : 
+                          'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20'
                         }`}>
                           {session.level}
                         </span>
                         <span className={`px-2 md:px-3 py-1 text-[8px] md:text-[9px] font-black uppercase tracking-widest rounded-lg border ${
-                          session.type === 'Online' ? 'bg-[#1EE7FF]/10 text-[#1EE7FF] border-[#1EE7FF]/20' : 'bg-white/5 border-white/10 text-white/40'
+                          session.type === 'Online' ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-black/5 border-black/10 text-[#0A1F44]/40'
                         }`}>
                           {session.type}
                         </span>
                      </div>
                    </div>
-                   <div className={`flex items-center gap-2 md:gap-3 text-[#22FF88] font-black text-lg md:text-2xl px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl border font-display transition-all group-hover:bg-[#22FF88] group-hover:text-[#0A1F44] ${isDark ? 'bg-white/5 border-white/10' : 'bg-[#0A1F44]/2 border-black/5'}`}>
+                   <div className={`flex items-center gap-2 md:gap-3 text-[#eb483f] font-black text-lg md:text-2xl px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl border font-display transition-all group-hover:bg-[#eb483f] group-hover:text-white ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-[#eb483f]/10 shadow-sm'}`}>
                      <Clock size={16} className="md:w-[20px] md:h-[20px]" />
                      {session.time}
                    </div>
                 </div>
                 
                 <div className={`flex flex-wrap items-center gap-4 md:gap-6 mt-3 md:mt-4 border-t pt-4 md:pt-5 ${isDark ? 'border-white/5' : 'border-[#0A1F44]/5'}`}>
-                  <div className={`flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>
-                    {session.type === 'Online' ? <Video size={14} className="text-[#1EE7FF]" /> : <MapPin size={14} className="text-[#22FF88]" />}
-                    <span className={session.type === 'Online' ? 'text-[#1EE7FF]' : 'text-[#22FF88]'}>{session.arena}</span>
+                  <div className={`flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>
+                    {session.type === 'Online' ? <Video size={14} className="text-[#eb483f]" /> : <MapPin size={14} className="text-[#eb483f]" />}
+                    <span className="text-[#eb483f]">{session.arena}</span>
                   </div>
-                  <div className={`flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>
-                    <Users size={14} className="text-[#FFD600]" />
-                    {session.students} Students
+                  <div className={`flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>
+                    <Users size={14} className="text-[#eb483f]" />
+                    <span className={isDark ? 'text-white' : 'text-[#0A1F44]'}>{session.students} Students</span>
                   </div>
                 </div>
               </div>
               
               <div className={`flex flex-col border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-8 shrink-0 justify-center gap-2 ${isDark ? 'border-white/5' : 'border-[#0A1F44]/5'}`}>
-                 <button className="flex items-center gap-2 md:gap-3 justify-center w-full md:w-52 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-[#22FF88] border border-transparent hover:bg-white hover:border-[#22FF88]/50 text-[#0A1F44] transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-lg shadow-[#22FF88]/20">
+                 <button className="flex items-center gap-2 md:gap-3 justify-center w-full md:w-52 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-[#eb483f] border border-transparent hover:bg-white hover:border-[#eb483f] text-white hover:text-[#eb483f] transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-lg shadow-[#eb483f]/20">
                    <ClipboardCheck size={16} /> Take Attendance
                  </button>
-                 <button className={`flex items-center gap-2 md:gap-3 justify-center w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest ${isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-[#0A1F44]/5 border-black/5 text-[#0A1F44]/40 hover:text-black'}`}>
+                 <button className={`flex items-center gap-2 md:gap-3 justify-center w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border transition-all font-black text-[9px] md:text-[10px] uppercase tracking-widest ${isDark ? 'bg-white/5 border-white/10 text-white/60 hover:text-white' : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/60 hover:border-[#eb483f] hover:text-[#0A1F44]'}`}>
                     Batch Details
                  </button>
               </div>

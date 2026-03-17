@@ -50,13 +50,13 @@ const RetailPOS = () => {
         {/* Compact Header */}
         <div className="flex items-center justify-between mb-3 md:mb-6">
           <div className="flex items-center gap-2 md:gap-3">
-            <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center transition-all ${isDark ? 'bg-[#0A1F44] border border-white/5 text-[#22FF88]' : 'bg-white border border-black/5 text-[#22FF88]'}`}>
+            <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center transition-all ${isDark ? 'bg-[#0A1F44] border border-white/5 text-[#eb483f]' : 'bg-white border border-black/5 text-[#eb483f]'}`}>
               <ShoppingCart size={14} className="md:w-[24px] md:h-[24px]" />
             </div>
             <div>
               <h2 className={`text-[10px] md:text-xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Shop</h2>
               <div className="flex items-center gap-1 mt-0.5">
-                <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-[#22FF88] animate-pulse" />
+                <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-[#eb483f] animate-pulse" />
                 <p className={`text-[6px] md:text-[10px] font-black uppercase tracking-widest opacity-20 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Live</p>
               </div>
             </div>
@@ -69,7 +69,7 @@ const RetailPOS = () => {
                 onClick={() => setSelectedCategory(cat === 'Gear' ? 'Equipment' : cat)}
                 className={`whitespace-nowrap px-2 py-1.5 rounded-lg md:rounded-xl text-[7px] md:text-[10px] font-black uppercase tracking-widest transition-all border ${
                   (cat === 'Gear' ? 'Equipment' : cat) === selectedCategory 
-                    ? 'bg-[#22FF88] border-[#22FF88] text-[#0A1F44]' 
+                    ? 'bg-[#eb483f] border-[#eb483f] text-[#0A1F44]' 
                     : isDark ? 'border-white/5 bg-white/5 text-white/20 hover:text-white' : 'border-black/5 bg-black/5 text-black/30 hover:text-black shadow-sm'
                 }`}
               >
@@ -89,8 +89,8 @@ const RetailPOS = () => {
             placeholder="Query..."
             className={`w-full py-2 md:py-4 pl-8 md:pl-14 pr-4 md:pr-6 rounded-lg md:rounded-2xl text-[9px] md:text-[13px] font-black uppercase tracking-widest transition-all outline-none border ${
               isDark 
-                ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/20 text-white placeholder:text-white/10' 
-                : 'bg-white border-black/5 focus:border-[#22FF88] text-[#0A1F44] shadow-sm'
+                ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/20 text-white placeholder:text-white/10' 
+                : 'bg-white border-black/5 focus:border-[#eb483f] text-[#0A1F44] shadow-sm'
             }`}
           />
         </div>
@@ -106,8 +106,8 @@ const RetailPOS = () => {
               onClick={() => addToCart(item)}
               className={`p-2.5 md:p-5 rounded-xl md:rounded-2xl border cursor-pointer transition-all flex flex-col justify-between group relative overflow-hidden ${
                 isDark 
-                  ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#22FF88]/20' 
-                  : 'bg-white border-black/5 hover:border-[#22FF88] shadow-sm'
+                  ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#eb483f]/20' 
+                  : 'bg-white border-black/5 hover:border-[#eb483f] shadow-sm'
               }`}
             >
               <div className="relative z-10">
@@ -117,9 +117,9 @@ const RetailPOS = () => {
                   }`}>
                     {item.category.slice(0, 3)}
                   </span>
-                  {item.category === 'Equipment' && <div className="w-1 h-1 rounded-full bg-[#FFD600]" />}
+                  {item.category === 'Equipment' && <div className="w-1 h-1 rounded-full bg-[#eb483f]" />}
                 </div>
-                <h3 className={`font-black text-[9px] md:text-[13px] leading-tight mb-1 group-hover:text-[#22FF88] transition-colors ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.name}</h3>
+                <h3 className={`font-black text-[9px] md:text-[13px] leading-tight mb-1 group-hover:text-[#eb483f] transition-colors ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.name}</h3>
               </div>
 
               <div className="mt-2 md:mt-4 flex items-center justify-between relative z-10">
@@ -129,7 +129,7 @@ const RetailPOS = () => {
                 </div>
                 <div className={`w-5 h-5 md:w-8 md:h-8 rounded-md md:rounded-lg border flex items-center justify-center transition-all ${
                   isDark ? 'bg-white/5 border-white/5 text-white/20' : 'bg-black/5 border-black/5 text-[#0A1F44] shadow-sm'
-                } group-hover:bg-[#22FF88] group-hover:text-[#0A1F44] group-hover:border-transparent`}>
+                } group-hover:bg-[#eb483f] group-hover:text-[#0A1F44] group-hover:border-transparent`}>
                   <Plus size={8} className="md:w-[14px] md:h-[14px]" />
                 </div>
               </div>
@@ -143,7 +143,7 @@ const RetailPOS = () => {
         <div className={`p-3 md:p-6 border-b shrink-0 flex items-center justify-between ${isDark ? 'border-white/5' : 'border-[#0A1F44]/5'}`}>
           <h3 className={`font-black font-display uppercase tracking-widest text-[8px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Basket</h3>
           <div className="flex items-center gap-1.5 md:gap-2">
-            <span className="text-[6px] md:text-[10px] font-black uppercase px-2 py-0.5 md:py-1 rounded bg-[#1EE7FF]/10 text-[#1EE7FF]">
+            <span className="text-[6px] md:text-[10px] font-black uppercase px-2 py-0.5 md:py-1 rounded bg-[#eb483f]/10 text-[#eb483f]">
               {cart.reduce((sum, i) => sum + i.qty, 0)} Pcs
             </span>
             <button onClick={() => setCart([])} className={`transition-colors ${isDark ? 'text-white/10 hover:text-[#FF4B4B]' : 'text-[#0A1F44]/10 hover:text-[#FF4B4B]'}`}><Trash2 size={10} className="md:w-[16px] md:h-[16px]" /></button>
@@ -158,11 +158,11 @@ const RetailPOS = () => {
             </div>
             <div>
               <p className={`text-[8px] md:text-[11px] font-black uppercase ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Guest</p>
-              <p className={`text-[6px] md:text-[8px] font-black opacity-10 uppercase tracking-widest ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Walk-in</p>
+              <p className={`text-[6px] md:text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Walk-in</p>
             </div>
           </div>
-          <button className={`p-1 rounded-md border transition-all ${isDark ? 'border-white/5 hover:bg-white/5' : 'border-black/5 hover:bg-black/5'}`}>
-             <Plus size={8} className="opacity-20" />
+          <button className={`p-1 rounded-md border transition-all ${isDark ? 'border-white/5 hover:bg-white/5' : 'border-[#0A1F44]/10 hover:bg-[#0A1F44]/5'}`}>
+             <Plus size={8} className={isDark ? 'opacity-40' : 'opacity-60'} />
           </button>
         </div>
 
@@ -176,18 +176,18 @@ const RetailPOS = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 className={`flex items-center gap-2 py-1 px-2 rounded-lg transition-all border border-transparent ${
-                  isDark ? 'hover:bg-white/2' : 'hover:bg-black/2'
+                  isDark ? 'hover:bg-white/2' : 'hover:bg-[#0A1F44]/2'
                 }`}
               >
                 <div className="flex-1 min-w-0 pr-2">
                   <p className={`text-[9px] font-black truncate leading-tight uppercase ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.name}</p>
-                  <p className={`text-[7px] font-black opacity-10 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{item.price.toFixed(0)}</p>
+                  <p className={`text-[7px] font-black ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>₹{item.price.toFixed(0)}</p>
                 </div>
                 
-                <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-black/40' : 'bg-slate-100 shadow-inner'}`}>
+                <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-black/40' : 'bg-[#0A1F44]/5 shadow-inner'}`}>
                    <button onClick={() => updateQty(item.id, -1)} className="hover:text-[#FF4B4B] transition-colors"><Minus size={6} /></button>
                    <span className={`text-[8px] font-black w-2 text-center ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{item.qty}</span>
-                   <button onClick={() => addToCart(item)} className="hover:text-[#22FF88] transition-colors"><Plus size={6} /></button>
+                   <button onClick={() => addToCart(item)} className="hover:text-[#eb483f] transition-colors"><Plus size={6} /></button>
                 </div>
                 
                 <div className={`text-right min-w-[35px] font-black text-[9px] ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
@@ -197,7 +197,7 @@ const RetailPOS = () => {
             ))}
           </AnimatePresence>
           {cart.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center opacity-5 py-6">
+            <div className={`h-full flex flex-col items-center justify-center py-6 ${isDark ? 'opacity-10' : 'opacity-20'}`}>
               <ShoppingCart size={16} />
               <p className="text-[6px] font-black uppercase tracking-widest mt-1">Empty</p>
             </div>
@@ -205,18 +205,18 @@ const RetailPOS = () => {
         </div>
 
         {/* Summary */}
-        <div className={`p-4 md:p-6 mt-auto border-t space-y-3 md:space-y-4 ${isDark ? 'bg-black/40 border-white/5' : 'bg-white border-[#0A1F44]/5'}`}>
+        <div className={`p-4 md:p-6 mt-auto border-t space-y-3 md:space-y-4 ${isDark ? 'bg-black/40 border-white/5' : 'bg-[#0A1F44]/2 border-[#0A1F44]/5'}`}>
           <div className="space-y-1">
-             <div className="flex justify-between items-center text-[7px] md:text-[10px] font-black uppercase tracking-widest opacity-10">
-                <span className={isDark ? 'text-white' : 'text-[#0A1F44]'}>Subtotal</span>
+             <div className="flex justify-between items-center text-[7px] md:text-[10px] font-black uppercase tracking-widest">
+                <span className={isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}>Subtotal</span>
                 <span className={isDark ? 'text-white' : 'text-[#0A1F44]'}>₹{subtotal.toFixed(0)}</span>
              </div>
-             <div className="flex justify-between items-center text-[7px] md:text-[10px] font-black uppercase tracking-widest opacity-10 pb-1.5 border-b border-white/5">
-                <span className={isDark ? 'text-white' : 'text-[#0A1F44]'}>GST (18%)</span>
+             <div className="flex justify-between items-center text-[7px] md:text-[10px] font-black uppercase tracking-widest pb-1.5 border-b border-white/5">
+                <span className={isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}>GST (18%)</span>
                 <span className={isDark ? 'text-white' : 'text-[#0A1F44]'}>₹{tax.toFixed(0)}</span>
              </div>
              <div className="flex justify-between items-baseline pt-1">
-                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-[#1EE7FF]' : 'text-blue-600'}`}>Total</span>
+                <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'}`}>Total</span>
                 <p className={`text-lg md:text-2xl font-black font-display leading-none ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{total.toLocaleString()}</p>
              </div>
           </div>
@@ -225,16 +225,16 @@ const RetailPOS = () => {
             disabled={cart.length === 0}
             className={`w-full py-2.5 md:py-4 rounded-xl flex items-center justify-center gap-2 md:gap-3 transition-all font-black text-[8px] md:text-[11px] uppercase tracking-widest border ${
               cart.length > 0 
-                ? 'bg-[#22FF88] border-[#22FF88] text-[#0A1F44]' 
-                : 'bg-transparent border-white/5 text-white/5 cursor-not-allowed'
+                ? 'bg-[#eb483f] border-[#eb483f] text-[#0A1F44] shadow-lg shadow-[#eb483f]/20 hover:scale-[1.02]' 
+                : isDark ? 'bg-transparent border-white/5 text-white/5 cursor-not-allowed' : 'bg-transparent border-black/5 text-[#0A1F44]/5 cursor-not-allowed'
             }`}
           >
             <CheckCircle2 size={10} className="md:w-[16px] md:h-[16px]" /> Settlement
           </button>
           
-          <div className="flex items-center justify-around opacity-10 text-[5px] md:text-[8px] font-black tracking-widest uppercase">
+          <div className="flex items-center justify-around text-[5px] md:text-[8px] font-black tracking-widest uppercase pb-1">
              {['UPI', 'CARD', 'CASH'].map(method => (
-               <p key={method} className={isDark ? 'text-white' : 'text-[#0A1F44]'}>{method}</p>
+               <p key={method} className={isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}>{method}</p>
              ))}
           </div>
         </div>
@@ -245,3 +245,5 @@ const RetailPOS = () => {
 
 
 export default RetailPOS;
+
+

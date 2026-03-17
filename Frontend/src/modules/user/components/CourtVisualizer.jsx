@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 
 /**
@@ -10,9 +10,9 @@ const CourtVisualizer = ({ courts = [], selectedCourt, onCourtSelect }) => {
   return (
     <div className={`rounded-3xl p-6 overflow-hidden relative border ${'bg-slate-50 border-slate-100'}`}>
       {/* Court lines background */}
-      <div className={`absolute inset-0 court-lines ${'opacity-10'}`} />
+      <div className={`absolute inset-0 court-lines ${'opacity-30'}`} />
 
-      <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 relative z-10 ${'text-slate-400'}`}>
+      <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 relative z-10 ${'text-slate-500'}`}>
         Court Layout
       </h3>
 
@@ -27,21 +27,21 @@ const CourtVisualizer = ({ courts = [], selectedCourt, onCourtSelect }) => {
               className={`
                 relative p-3 rounded-2xl border transition-all duration-300
                 ${isSelected
-                  ? `bg-[#eb483f]/10 ${'border-[#eb483f]/50 shadow-[0_0_10px_rgba(235, 72, 63,0.2)]'}`
-                  : `${isDark ? 'border-white/10 bg-white/5 hover:border-white/20' : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'}`
+                  ? `bg-[#eb483f]/10 ${'border-[#eb483f]/60 shadow-[0_0_10px_rgba(235, 72, 63,0.2)]'}`
+                  : `${isDark ? 'border-white/10 bg-white/5 hover:border-white/20' : 'border-slate-300 bg-white hover:border-slate-400 shadow-sm'}`
                 }
               `}
             >
               {/* Mini court graphic */}
               <div className="relative w-full aspect-[2/3] mb-2">
                 <div className={`absolute inset-0 border rounded-lg transition-colors duration-300 ${
-                  isSelected ? 'border-[#eb483f]/30' : `${'border-slate-200'}`
+                  isSelected ? 'border-[#eb483f]/70' : `${'border-slate-400'}`
                 }`} />
                 <div className={`absolute left-0 right-0 top-1/2 h-[1px] transition-colors duration-300 ${
-                  isSelected ? 'bg-[#eb483f]/30' : `${'bg-slate-100'}`
+                  isSelected ? 'bg-[#eb483f]/60' : `${'bg-slate-400'}`
                 }`} />
                 <div className={`absolute top-0 bottom-0 left-1/2 w-[1px] transition-colors duration-300 ${
-                  isSelected ? 'bg-[#eb483f]/20' : `${'bg-slate-50'}`
+                  isSelected ? 'bg-[#eb483f]/40' : `${'bg-slate-300'}`
                 }`} />
 
                 {/* Active booking shuttle marker */}

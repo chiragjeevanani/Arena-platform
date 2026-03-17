@@ -10,6 +10,7 @@ import {
 import { ShuttlecockIcon } from '../../user/components/BadmintonIcons';
 import { useTheme } from '../../user/context/ThemeContext';
 import { useAuth } from '../../user/context/AuthContext';
+import Logo from '../../../assets/Logo.png';
 
 const SIDEBAR_STRUCTURE = [
   {
@@ -74,7 +75,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       animate={{ width: isCollapsed ? 80 : 260 }}
       transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
       className={`h-full md:h-screen sticky top-0 backdrop-blur-3xl border-r flex flex-col z-[100] overflow-visible relative ${
-        isDark ? 'bg-[#0A1F44] border-[#22FF88]/10' : 'bg-white border-[#0A1F44]/10'
+        isDark ? 'bg-[#1a1d24] border-[#eb483f]/10' : 'bg-white border-[#eb483f]/10'
       }`}
     >
       <div className={`absolute inset-0 transition-opacity duration-500 -z-10 ${
@@ -84,31 +85,19 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
 
       {/* Header */}
       <div className={`h-20 flex items-center justify-between px-6 border-b shrink-0 ${
-        isDark ? 'border-[#22FF88]/10' : 'border-[#0A1F44]/10'
+        isDark ? 'border-[#eb483f]/10' : 'border-[#eb483f]/10'
       }`}>
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="shrink-0 w-8 h-8 rounded-xl bg-[#22FF88]/10 border border-[#22FF88]/20 flex items-center justify-center">
-            <ShuttlecockIcon size={18} className="text-[#22FF88]" />
+        <div className="flex items-center justify-center w-full">
+          <div className="shrink-0 w-14 h-14 flex items-center justify-center scale-110">
+            <img src={Logo} alt="AMM Sports" className="w-full h-full object-contain" />
           </div>
-          <AnimatePresence mode="popLayout">
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className={`whitespace-nowrap font-bold font-display tracking-wide ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}
-              >
-                ARENA<span className="text-[#22FF88]">CRM</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
 
       {/* Collapse Button (floating) */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-24 -right-3 w-6 h-6 bg-[#1EE7FF]/10 border border-[#1EE7FF]/30 rounded-full flex items-center justify-center text-[#1EE7FF] hover:bg-[#1EE7FF] hover:text-[#08142B] transition-colors z-50 shadow-lg"
+        className="absolute top-24 -right-3 w-6 h-6 bg-[#eb483f]/10 border border-[#eb483f]/30 rounded-full flex items-center justify-center text-[#eb483f] hover:bg-[#eb483f] hover:text-white transition-colors z-50 shadow-lg"
       >
         {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>
@@ -139,7 +128,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                   className={({ isActive }) =>
                     `relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group ${
                       isActive 
-                        ? `bg-[#22FF88]/10 text-[#22FF88]` 
+                        ? `bg-[#eb483f]/10 text-[#eb483f]` 
                         : `${isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-[#0A1F44]/60 hover:bg-[#0A1F44]/5 hover:text-[#0A1F44]'}`
                     }`
                   }
@@ -149,13 +138,13 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                       {isActive && (
                         <motion.div
                           layoutId="active-indicator"
-                          className="absolute left-[-4px] top-2 bottom-2 w-1.5 bg-[#22FF88] rounded-full shadow-[0_0_15px_rgba(34,255,136,0.5)]"
+                          className="absolute left-[-4px] top-2 bottom-2 w-1.5 bg-[#eb483f] rounded-full shadow-[0_0_15px_rgba(235,72,63,0.5)]"
                         />
                       )}
                       <item.icon
                         size={18}
                         className={`shrink-0 transition-all duration-300 ${
-                          isActive ? 'text-[#22FF88]' : 'group-hover:text-[#22FF88]'
+                          isActive ? 'text-[#eb483f]' : 'group-hover:text-[#eb483f]'
                         }`}
                       />
                       <AnimatePresence mode="popLayout">
@@ -180,13 +169,13 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       </nav>
 
       {/* Profile Section */}
-      <div className={`p-4 border-t ${isDark ? 'border-[#22FF88]/10' : 'border-[#0A1F44]/10'}`}>
+      <div className={`p-4 border-t ${isDark ? 'border-[#eb483f]/10' : 'border-[#0A1F44]/10'}`}>
         <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'px-2'}`}>
-          <img src={user?.avatar} className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#22FF88] to-[#1EE7FF] shrink-0 object-cover" />
+          <img src={user?.avatar} className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#eb483f] to-[#eb483f] shrink-0 object-cover" />
           {!isCollapsed && (
             <div className="overflow-hidden">
               <p className={`text-xs font-black truncate ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{user?.name}</p>
-              <p className="text-[9px] text-[#22FF88] font-black uppercase tracking-wider">{user?.role?.replace('_', ' ')}</p>
+              <p className="text-[9px] text-[#eb483f] font-black uppercase tracking-wider">{user?.role?.replace('_', ' ')}</p>
             </div>
           )}
         </div>
@@ -196,3 +185,5 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
 };
 
 export default AdminSidebar;
+
+

@@ -23,13 +23,13 @@ const Sponsorships = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-white/5">
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Briefcase className="text-[#1EE7FF] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Portfolio
+            <Briefcase className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Portfolio
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Equity hub.</p>
         </div>
         <button
           onClick={() => setShowNewPartnerModal(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
         >
           <Plus size={14} /> Sponsor
         </button>
@@ -39,19 +39,19 @@ const Sponsorships = () => {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
         <div className={`p-3 md:p-6 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
           <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-4">
-             <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#22FF88]/10 flex items-center justify-center text-[#22FF88]">
+             <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                 <TrendingUp size={10} className="md:w-[20px] md:h-[20px]" />
              </div>
              <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>Equity</p>
           </div>
           <h3 className={`text-[10px] md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹26.0L</h3>
-          <p className="text-[6px] md:text-[10px] font-bold text-[#22FF88] mt-0.5 md:mt-2 flex items-center gap-0.5">
+          <p className="text-[6px] md:text-[10px] font-bold text-[#eb483f] mt-0.5 md:mt-2 flex items-center gap-0.5">
              +12% <ArrowUpRight size={5} className="md:w-[10px] md:h-[10px]" />
           </p>
         </div>
         <div className={`p-3 md:p-6 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
           <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-4">
-             <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#1EE7FF]/10 flex items-center justify-center text-[#1EE7FF]">
+             <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                 <Calendar size={10} className="md:w-[20px] md:h-[20px]" />
              </div>
              <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>Due</p>
@@ -61,7 +61,7 @@ const Sponsorships = () => {
         </div>
         <div className={`p-3 md:p-6 rounded-xl md:rounded-3xl border ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm col-span-2 lg:col-span-1'}`}>
           <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-4">
-             <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#FFD600]/10 flex items-center justify-center text-[#FFD600]">
+             <div className="w-5 h-5 md:w-10 md:h-10 rounded-md md:rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                 <Target size={10} className="md:w-[20px] md:h-[20px]" />
              </div>
              <p className={`text-[6px] md:text-xs font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>Ads</p>
@@ -76,14 +76,14 @@ const Sponsorships = () => {
         <div className="p-2.5 md:p-6 border-b border-white/5 flex items-center justify-between gap-3">
            <h3 className={`font-black font-display uppercase tracking-widest text-[8px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Directory</h3>
            <div className="relative group flex-1 md:min-w-[200px]">
-              <Search size={10} className={`absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#1EE7FF]' : 'text-[#0A1F44]/30'}`} />
+              <Search size={10} className={`absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#eb483f]' : 'text-[#0A1F44]/30'}`} />
               <input type="text" placeholder="Query..." className={`w-full py-1.5 md:py-2 pl-8 md:pl-9 pr-4 text-[9px] md:text-[11px] font-black rounded-lg border outline-none transition-all ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-black'}`} />
            </div>
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left border-collapse min-w-[500px]">
              <thead>
-                <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
+                <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/40 border-white/5 bg-white/5' : 'text-[#eb483f] border-[#eb483f]/10 bg-[#eb483f]/2'}`}>
                    <th className="p-3 md:p-6">Partner</th>
                    <th className="p-3 md:p-6 text-center">Cat</th>
                    <th className="p-3 md:p-6 text-center">Value</th>
@@ -96,7 +96,7 @@ const Sponsorships = () => {
                    <tr key={sp.id} className="group transition-colors hover:bg-white/[0.01]">
                       <td className="p-3 md:p-6">
                          <div className="flex items-center gap-2 md:gap-4">
-                            <div className="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-gradient-to-br from-[#1EE7FF]/10 to-[#22FF88]/10 border border-white/5 flex items-center justify-center font-black font-display text-[#1EE7FF] text-[10px] md:text-xl">
+                            <div className="w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl bg-gradient-to-br from-[#eb483f]/10 to-[#eb483f]/10 border border-white/5 flex items-center justify-center font-black font-display text-[#eb483f] text-[10px] md:text-xl">
                                {sp.logo}
                             </div>
                             <div>
@@ -118,21 +118,21 @@ const Sponsorships = () => {
                       </td>
                       <td className="p-3 md:p-6 text-center">
                          <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[6px] md:text-[9px] font-black uppercase tracking-widest border ${
-                           sp.status === 'Active' ? 'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20' : 'bg-[#FFD600]/10 text-[#FFD600] border-[#FFD600]/20'
+                           sp.status === 'Active' ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' : 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20'
                          }`}>
                             {sp.status.split(' ')[0]}
                          </span>
                       </td>
                        <td className="p-3 md:p-6 pr-6 md:pr-10 text-right">
                           <div className="flex items-center justify-end gap-1 relative">
-                            <button className={`p-1.5 rounded-lg md:rounded-xl bg-white/5 text-white/20 hover:text-[#1EE7FF] transition-all`}>
+                            <button className={`p-1.5 rounded-lg md:rounded-xl bg-white/5 text-white/20 hover:text-[#eb483f] transition-all`}>
                                <ExternalLink size={10} className="md:w-[18px] md:h-[18px]" />
                             </button>
                             <button 
                               onClick={() => setActiveMenu(activeMenu === sp.id ? null : sp.id)}
                               className={`p-1.5 rounded-lg md:rounded-xl transition-all border ${
                                 activeMenu === sp.id
-                                  ? 'bg-[#1EE7FF] border-[#1EE7FF] text-[#0A1F44]'
+                                  ? 'bg-[#eb483f] border-[#eb483f] text-[#0A1F44]'
                                   : isDark 
                                     ? 'bg-white/5 border-white/5 text-white/20 hover:text-white' 
                                     : 'bg-black/5 border-black/10 text-black/20 hover:text-black shadow-sm'
@@ -155,9 +155,9 @@ const Sponsorships = () => {
                                   >
                                     <div className="space-y-0.5 text-left">
                                       {[
-                                        { label: 'View', icon: Eye, color: '#1EE7FF' },
-                                        { label: 'Renew', icon: RefreshCw, color: '#22FF88' },
-                                        { label: 'Lead', icon: FileText, color: '#FFD600' },
+                                        { label: 'View', icon: Eye, color: '#eb483f' },
+                                        { label: 'Renew', icon: RefreshCw, color: '#eb483f' },
+                                        { label: 'Lead', icon: FileText, color: '#eb483f' },
                                         { label: 'Setup', icon: Settings, color: '#A855F7' },
                                         { label: 'Drop', icon: Trash2, color: '#FF4B4B' },
                                       ].map((opt, i) => (
@@ -208,7 +208,7 @@ const Sponsorships = () => {
               <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <Briefcase className="text-[#1EE7FF] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Onboard
+                    <Briefcase className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Onboard
                   </h3>
                   <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">New partnership deal</p>
                 </div>
@@ -220,33 +220,33 @@ const Sponsorships = () => {
                 <div className="group">
                   <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Brand Name</label>
                   <div className="relative">
-                    <Building size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#1EE7FF] group-focus-within:opacity-100 transition-all md:w-[14px] md:h-[14px]" />
-                    <input type="text" placeholder="e.g. Li-Ning" className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`} />
+                    <Building size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all md:w-[14px] md:h-[14px]" />
+                    <input type="text" placeholder="e.g. Li-Ning" className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 md:gap-4">
                   <div>
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Type</label>
-                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`}>
+                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                       <option>Title</option>
                       <option>Gear</option>
                     </select>
                   </div>
                   <div>
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Value (₹)</label>
-                    <input type="text" placeholder="5L" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`} />
+                    <input type="text" placeholder="5L" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                   </div>
                 </div>
                 <div className="group">
                   <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Contact Email</label>
                   <div className="relative">
-                    <Mail size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#1EE7FF] group-focus-within:opacity-100 transition-all md:w-[14px] md:h-[14px]" />
-                    <input type="email" placeholder="partner@brand.com" className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#1EE7FF]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#1EE7FF] text-[#0A1F44]'}`} />
+                    <Mail size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all md:w-[14px] md:h-[14px]" />
+                    <input type="email" placeholder="partner@brand.com" className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                   </div>
                 </div>
                 <button
                   onClick={() => setShowNewPartnerModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#1EE7FF] text-[#0A1F44] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#1EE7FF]/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
                 >
                   Confirm <ArrowRight size={14} className="md:w-[16px] md:h-[16px]" />
                 </button>
@@ -267,3 +267,5 @@ const ArrowUpRight = ({ size, ...props }) => (
 );
 
 export default Sponsorships;
+
+

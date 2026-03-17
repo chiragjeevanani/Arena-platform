@@ -36,10 +36,10 @@ const SlotSchedule = () => {
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case 'Booked': return isDark ? 'bg-[#1EE7FF]/10 text-[#1EE7FF] border-[#1EE7FF]/20' : 'bg-[#0284c7]/10 text-[#0284c7] border-[#0284c7]/20';
+      case 'Booked': return isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' : 'bg-[#0284c7]/10 text-[#0284c7] border-[#0284c7]/20';
       case 'Maintenance': return isDark ? 'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20' : 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20';
-      case 'Conflict': return isDark ? 'bg-[#FFD600]/10 text-[#FFD600] border-[#FFD600] animate-pulse' : 'bg-[#d97706]/10 text-[#d97706] border-[#d97706] animate-pulse';
-      default: return isDark ? 'bg-[#22FF88]/10 text-[#22FF88] border-[#22FF88]/20 hover:bg-[#22FF88]/20' : 'bg-[#059669]/5 text-[#059669] border-[#059669]/10 hover:bg-[#059669]/10';
+      case 'Conflict': return isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f] animate-pulse' : 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f] animate-pulse';
+      default: return isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20 hover:bg-[#eb483f]/20' : 'bg-[#eb483f]/5 text-[#eb483f] border-[#eb483f]/10 hover:bg-[#eb483f]/10';
     }
   };
 
@@ -48,14 +48,14 @@ const SlotSchedule = () => {
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
           <h2 className={`text-lg md:text-2xl font-black font-display tracking-wide flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <CalendarClock className="text-[#FFD600] w-[18px] h-[18px] md:w-5 md:h-5" /> Queue
+            <CalendarClock className="text-[#eb483f] w-[18px] h-[18px] md:w-5 md:h-5" /> Queue
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Slot intelligence.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <button
             onClick={() => setShowBlockModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
           >
             <Plus size={12} className="md:w-[14px] md:h-[14px]" /> Block
           </button>
@@ -70,7 +70,7 @@ const SlotSchedule = () => {
         <div className="flex items-center justify-between gap-3 md:gap-6">
           {/* Facility Selector */}
           <div className="flex items-center gap-2 md:gap-4">
-            <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center shrink-0 ${isDark ? 'bg-white/5 text-[#22FF88]' : 'bg-[#22FF88]/10 text-[#059669]'}`}>
+            <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center shrink-0 ${isDark ? 'bg-white/5 text-[#eb483f]' : 'bg-[#eb483f]/10 text-[#eb483f]'}`}>
               <MapPin size={14} className="md:w-[22px] md:h-[22px]" />
             </div>
             <div>
@@ -92,7 +92,7 @@ const SlotSchedule = () => {
             </button>
             <div className="text-center min-w-[70px] md:min-w-[140px]">
               <p className={`text-[10px] md:text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{format(selectedDate, 'MMM dd')}</p>
-              <p className="text-[7px] md:text-[10px] font-black text-[#FFD600] uppercase tracking-widest leading-none">Sync</p>
+              <p className="text-[7px] md:text-[10px] font-black text-[#eb483f] uppercase tracking-widest leading-none">Sync</p>
             </div>
             <button onClick={() => setSelectedDate(addDays(selectedDate, 1))} className={`p-1 rounded-md md:p-1.5 md:rounded-lg transition-colors ${isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-[#0A1F44]/5'}`}>
               <ChevronRight size={14} className="md:w-[24px] md:h-[24px]" />
@@ -103,16 +103,16 @@ const SlotSchedule = () => {
         {/* Row 2: Status Legend */}
         <div className="flex items-center gap-2 md:gap-4 mt-3 md:mt-4">
           <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg md:rounded-xl border border-white/5 bg-white/2">
-            <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-[#22FF88]" />
+            <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-[#eb483f]" />
             <span className="text-[7px] md:text-[9px] font-black text-white/20 uppercase tracking-widest">Open</span>
           </div>
           <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg md:rounded-xl border border-white/5 bg-white/2">
             <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-[#FF4B4B]" />
             <span className="text-[7px] md:text-[9px] font-black text-white/20 uppercase tracking-widest">Block</span>
           </div>
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg md:rounded-xl border border-[#FFD600]/20 bg-[#FFD600]/10">
-            <AlertTriangle size={8} className="md:w-[12px] md:h-[12px] text-[#FFD600]" />
-            <span className="text-[7px] md:text-[9px] font-black text-[#FFD600]/60 uppercase tracking-widest">Issues</span>
+          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg md:rounded-xl border border-[#eb483f]/20 bg-[#eb483f]/10">
+            <AlertTriangle size={8} className="md:w-[12px] md:h-[12px] text-[#eb483f]" />
+            <span className="text-[7px] md:text-[9px] font-black text-[#eb483f]/60 uppercase tracking-widest">Issues</span>
           </div>
         </div>
       </div>
@@ -135,7 +135,7 @@ const SlotSchedule = () => {
                 {arenaCourts.map(court => (
                    <div key={court.id} className="flex-1 text-center py-1.5 md:py-2 rounded-lg md:rounded-2xl bg-white/5 border border-white/5">
                     <p className={`text-[9px] md:text-[11px] font-black tracking-widest uppercase ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{court.name.split(' ')[0]}</p>
-                    <p className="text-[6px] md:text-[8px] font-black text-[#22FF88] uppercase tracking-tighter opacity-40 leading-none">{court.type.split(' ')[0]}</p>
+                    <p className="text-[6px] md:text-[8px] font-black text-[#eb483f] uppercase tracking-tighter opacity-40 leading-none">{court.type.split(' ')[0]}</p>
                   </div>
                 ))}
               </div>
@@ -147,7 +147,7 @@ const SlotSchedule = () => {
                  <div key={time} className="flex items-center group min-h-[50px] md:min-h-[90px]">
                   <div className={`w-20 md:w-32 shrink-0 px-4 md:px-8 flex flex-col justify-center border-r transition-colors ${isDark ? 'border-white/5 bg-white/[0.01] group-hover:bg-white/5' : 'border-[#0A1F44]/5 bg-white group-hover:bg-[#0A1F44]/2'}`}>
                     <span className={`text-xs md:text-base font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{time}</span>
-                    <span className="text-[6px] md:text-[8px] font-black text-[#22FF88] uppercase tracking-widest opacity-20 md:opacity-40">Peak</span>
+                    <span className="text-[6px] md:text-[8px] font-black text-[#eb483f] uppercase tracking-widest opacity-20 md:opacity-40">Peak</span>
                   </div>
                   <div className="flex-1 flex gap-2 md:gap-5 p-2 md:p-4 pr-4 md:pr-6">
                     {arenaCourts.map(court => {
@@ -160,7 +160,7 @@ const SlotSchedule = () => {
                         >
                           <div className="flex justify-between items-center w-full">
                             <span className="text-[6px] md:text-[10px] font-black uppercase tracking-widest">{status.split(' ')[0]}</span>
-                            {status === 'Conflict' && <AlertTriangle size={8} className="md:w-[14px] md:h-[14px] text-[#FFD600]" />}
+                            {status === 'Conflict' && <AlertTriangle size={8} className="md:w-[14px] md:h-[14px] text-[#eb483f]" />}
                           </div>
                           
                           <AnimatePresence>
@@ -171,7 +171,7 @@ const SlotSchedule = () => {
                                 </p>
                                 {status === 'Booked' && (
                                   <div className="flex items-center gap-1 md:gap-1.5">
-                                    <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#22FF88] opacity-50" />
+                                    <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#eb483f] opacity-50" />
                                     <span className="text-[6px] md:text-[8px] font-bold opacity-30 uppercase">ID</span>
                                   </div>
                                 )}
@@ -213,7 +213,7 @@ const SlotSchedule = () => {
             <div className="p-5 border-b border-inherit flex items-center justify-between">
                 <div>
                   <h3 className="text-lg md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <CalendarClock className="text-[#FFD600] w-[18px] h-[18px] md:w-6 md:h-6" /> Block
+                    <CalendarClock className="text-[#eb483f] w-[18px] h-[18px] md:w-6 md:h-6" /> Block
                   </h3>
                   <p className="text-[9px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Reserve maintenance</p>
                 </div>
@@ -225,7 +225,7 @@ const SlotSchedule = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Court</label>
-                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`}>
+                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                       {MOCK_DB.courts.filter(c => c.arenaId === selectedArenaId).map(c => (
                         <option key={c.id} value={c.id} className="bg-[#0A1F44] text-white">{c.name.split(' ')[1]}</option>
                       ))}
@@ -233,7 +233,7 @@ const SlotSchedule = () => {
                   </div>
                   <div>
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Mode</label>
-                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`}>
+                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                       <option className="bg-[#0A1F44] text-white">Ops</option>
                       <option className="bg-[#0A1F44] text-white">VIP</option>
                     </select>
@@ -242,20 +242,20 @@ const SlotSchedule = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Start</label>
-                    <input type="time" defaultValue="09:00" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`} />
+                    <input type="time" defaultValue="09:00" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                   </div>
                   <div>
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">End</label>
-                    <input type="time" defaultValue="11:00" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`} />
+                    <input type="time" defaultValue="11:00" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                   </div>
                 </div>
                 <div>
                   <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1 block">Reason</label>
-                  <textarea rows={2} placeholder="Brief note..." className={`w-full py-3 px-4 rounded-xl border text-[11px] font-bold outline-none resize-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#FFD600]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#FFD600] text-[#0A1F44]'}`} />
+                  <textarea rows={2} placeholder="Brief note..." className={`w-full py-3 px-4 rounded-xl border text-[11px] font-bold outline-none resize-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
                 </div>
                 <button
                   onClick={() => setShowBlockModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#FFD600] text-[#0A1F44] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#FFD600]/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
                 >
                   Block <AlertTriangle size={14} className="md:w-[16px] md:h-[16px]" />
                 </button>
@@ -269,3 +269,5 @@ const SlotSchedule = () => {
 };
 
 export default SlotSchedule;
+
+

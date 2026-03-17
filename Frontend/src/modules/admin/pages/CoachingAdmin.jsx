@@ -25,7 +25,7 @@ const CoachingAdmin = () => {
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <GraduationCap className="text-[#FFD600] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Academy
+            <GraduationCap className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Academy
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Programs hub.</p>
         </div>
@@ -35,7 +35,7 @@ const CoachingAdmin = () => {
           </button>
           <button 
             onClick={() => setShowNewBatchModal(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
           >
             <Plus size={14} /> New
           </button>
@@ -45,13 +45,13 @@ const CoachingAdmin = () => {
       <div className={`flex gap-1 p-1 rounded-lg md:rounded-2xl w-fit border ${isDark ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/10'}`}>
         <button
           onClick={() => setView('batches')}
-          className={`px-4 md:px-8 py-1.5 md:py-2.5 rounded-md md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${view === 'batches' ? 'bg-[#22FF88] text-[#0A1F44]' : isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}
+          className={`px-4 md:px-8 py-1.5 md:py-2.5 rounded-md md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${view === 'batches' ? 'bg-[#eb483f] text-[#0A1F44]' : isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}
         >
           Units
         </button>
         <button
           onClick={() => setView('coaches')}
-          className={`px-4 md:px-8 py-1.5 md:py-2.5 rounded-md md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${view === 'coaches' ? 'bg-[#22FF88] text-[#0A1F44]' : isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}
+          className={`px-4 md:px-8 py-1.5 md:py-2.5 rounded-md md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${view === 'coaches' ? 'bg-[#eb483f] text-[#0A1F44]' : isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}
         >
           Staff
         </button>
@@ -65,19 +65,19 @@ const CoachingAdmin = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className={`p-3 md:p-6 rounded-xl md:rounded-3xl border group transition-all ${isDark ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#22FF88]/30' : 'bg-white border-[#0A1F44]/10'}`}
+              className={`p-3 md:p-6 rounded-xl md:rounded-3xl border group transition-all ${isDark ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#eb483f]/30' : 'bg-white border-[#0A1F44]/10'}`}
             >
               <div className="flex justify-between items-start mb-2 md:mb-4">
-                <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center border ${isDark ? 'bg-white/5 border-white/10 text-[#FFD600]' : 'bg-[#FFD600]/10 border-[#FFD600]/20 text-[#d97706]'}`}>
+                <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center border ${isDark ? 'bg-white/5 border-white/10 text-[#eb483f]' : 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]'}`}>
                   <Zap size={12} className="md:w-[20px] md:h-[20px]" />
                 </div>
-                <span className={`px-1.5 py-0.5 rounded text-[7px] md:text-[9px] font-black uppercase tracking-widest ${batch.enrolled >= batch.capacity ? 'bg-[#FF4B4B]/10 text-[#FF4B4B]/60' : 'bg-[#22FF88]/10 text-[#22FF88]/60'}`}>
+                <span className={`px-1.5 py-0.5 rounded text-[7px] md:text-[9px] font-black uppercase tracking-widest ${batch.enrolled >= batch.capacity ? 'bg-[#FF4B4B]/10 text-[#FF4B4B]/60' : 'bg-[#eb483f]/10 text-[#eb483f]/60'}`}>
                   {batch.enrolled}/{batch.capacity} Load
                 </span>
               </div>
               <h3 className={`text-sm md:text-xl font-black font-display tracking-tight mb-0.5 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{batch.name}</h3>
               <p className={`text-[8px] md:text-xs font-black uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-1.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>
-                <Users size={10} className="text-[#1EE7FF] opacity-60" /> {batch.coach.split(' ')[0]}
+                <Users size={10} className="text-[#eb483f] opacity-60" /> {batch.coach.split(' ')[0]}
               </p>
               
               <div className="space-y-1.5 md:space-y-3 mb-4 md:mb-6">
@@ -87,7 +87,7 @@ const CoachingAdmin = () => {
                 </div>
                 <div className="flex justify-between items-center text-[8px] md:text-xs">
                    <span className={`font-black uppercase tracking-widest ${isDark ? 'text-white/10' : 'text-[#0A1F44]/20'}`}>Slot</span>
-                  <span className="text-[#FFD600] font-black">{batch.time}</span>
+                  <span className="text-[#eb483f] font-black">{batch.time}</span>
                 </div>
               </div>
 
@@ -95,7 +95,7 @@ const CoachingAdmin = () => {
                 <button className={`flex-1 py-1.5 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${isDark ? 'bg-white/5 text-white/40 hover:text-white' : 'bg-black/5 text-black/40 hover:text-black'}`}>
                   Roster
                 </button>
-                <button className={`w-9 md:w-12 h-8 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all ${isDark ? 'bg-[#1EE7FF]/10 text-[#1EE7FF] border border-[#1EE7FF]/20' : 'bg-[#0284c7]/5 text-[#0284c7] border border-[#0284c7]/10'}`}>
+                <button className={`w-9 md:w-12 h-8 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all ${isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20' : 'bg-[#0284c7]/5 text-[#0284c7] border border-[#0284c7]/10'}`}>
                   <Video size={14} className="md:w-[18px] md:h-[18px]" />
                 </button>
               </div>
@@ -118,13 +118,13 @@ const CoachingAdmin = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className={`text-[10px] md:text-base font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{coach.name}</h3>
-                  <span className="px-1.5 py-0.5 rounded bg-[#FFD600]/10 text-[#FFD600] text-[7px] font-black uppercase flex items-center gap-0.5">
-                    <Star size={6} fill="#FFD600" /> {coach.rating}
+                  <span className="px-1.5 py-0.5 rounded bg-[#eb483f]/10 text-[#eb483f] text-[7px] font-black uppercase flex items-center gap-0.5">
+                    <Star size={6} fill="#eb483f" /> {coach.rating}
                   </span>
                 </div>
                  <p className={`text-[7px] md:text-xs font-black uppercase tracking-widest mt-0.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>{coach.role} • {coach.specialty}</p>
                 <div className="mt-1 flex items-center gap-4">
-                   <div className="flex items-center gap-1 text-[8px] font-black text-[#1EE7FF] opacity-60">
+                   <div className="flex items-center gap-1 text-[8px] font-black text-[#eb483f] opacity-60">
                      <Users size={10} /> {coach.students} LOAD
                    </div>
                 </div>
@@ -157,7 +157,7 @@ const CoachingAdmin = () => {
               <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <Zap className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Create Batch
+                    <Zap className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Create Batch
                   </h3>
                   <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Initialize academy program</p>
                 </div>
@@ -174,11 +174,11 @@ const CoachingAdmin = () => {
                   <div className="group">
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Name</label>
                     <div className="relative">
-                      <Zap size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#22FF88] group-focus-within:opacity-100 transition-all" />
+                      <Zap size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all" />
                       <input 
                         type="text" 
                         placeholder="e.g. Elite Performance"
-                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
                       />
                     </div>
                   </div>
@@ -186,7 +186,7 @@ const CoachingAdmin = () => {
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div className="group">
                       <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Coach</label>
-                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}>
+                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
                         <option>Vikram</option>
                         <option>Anjali</option>
                         <option>Siddharth</option>
@@ -197,7 +197,7 @@ const CoachingAdmin = () => {
                       <input 
                         type="number" 
                         defaultValue="15"
-                        className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#22FF88]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#22FF88] text-[#0A1F44]'}`}
+                        className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
                       />
                     </div>
                   </div>
@@ -206,7 +206,7 @@ const CoachingAdmin = () => {
                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Frequency</label>
                     <div className="flex gap-1.5 md:gap-2">
                        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
-                         <button key={idx} className={`w-7 h-7 md:w-8 md:h-8 rounded-lg text-[9px] md:text-[10px] font-black transition-all ${idx < 5 ? 'bg-[#22FF88]/20 text-[#22FF88] border border-[#22FF88]/30' : 'bg-white/5 text-white/20 border border-white/5'}`}>
+                         <button key={idx} className={`w-7 h-7 md:w-8 md:h-8 rounded-lg text-[9px] md:text-[10px] font-black transition-all ${idx < 5 ? 'bg-[#eb483f]/20 text-[#eb483f] border border-[#eb483f]/30' : 'bg-white/5 text-white/20 border border-white/5'}`}>
                            {day}
                          </button>
                        ))}
@@ -215,19 +215,19 @@ const CoachingAdmin = () => {
                 </div>
  
                 <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center gap-3 md:gap-4 ${isDark ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5'}`}>
-                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-[#1EE7FF]/10 flex items-center justify-center text-[#1EE7FF]">
+                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
                       <Clock size={16} className="md:w-[18px] md:h-[18px]" />
                    </div>
                    <div className="flex-1">
                       <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest leading-none">Slot</p>
                       <p className="text-[11px] md:text-xs font-bold mt-1 opacity-40 italic">06:00 AM - 08:30 AM</p>
                    </div>
-                   <button className="text-[9px] md:text-[10px] font-black uppercase text-[#1EE7FF] hover:underline">Edit</button>
+                   <button className="text-[9px] md:text-[10px] font-black uppercase text-[#eb483f] hover:underline">Edit</button>
                 </div>
  
                 <button 
                   onClick={() => setShowNewBatchModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-[1.5rem] bg-[#22FF88] text-[#0A1F44] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#22FF88]/20 flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-xl md:rounded-[1.5rem] bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
                 >
                   Deploy Batch <Plus size={14} className="md:w-[16px] md:h-[16px]" />
                 </button>
@@ -241,3 +241,5 @@ const CoachingAdmin = () => {
 };
 
 export default CoachingAdmin;
+
+

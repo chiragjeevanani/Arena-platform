@@ -94,13 +94,13 @@ const RoleManagement = () => {
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
         <div>
           <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Shield className="text-[#22FF88] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> RBAC
+            <Shield className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> RBAC
           </h2>
           <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Access hub.</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#22FF88]/20"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
         >
           <Plus size={14} /> Assign
         </button>
@@ -116,12 +116,12 @@ const RoleManagement = () => {
               onClick={() => setSelectedRole(role)}
               className={`text-left p-2.5 md:p-4 min-w-[110px] md:min-w-0 rounded-lg md:rounded-2xl transition-all border group relative overflow-hidden flex-shrink-0 ${
                 selectedRole.id === role.id 
-                  ? 'bg-gradient-to-r from-[#22FF88]/10 to-transparent border-[#22FF88]/30 border-l-4 border-l-[#22FF88]' 
+                  ? 'bg-gradient-to-r from-[#eb483f]/10 to-transparent border-[#eb483f]/30 border-l-4 border-l-[#eb483f]' 
                   : `${isDark ? 'bg-white/5 border-transparent' : 'bg-[#0A1F44]/2 border-transparent'} border-l-4 border-l-transparent`
               }`}
             >
               <div className="flex justify-between items-start">
-                <h3 className={`font-black tracking-tight text-[10px] md:text-sm ${selectedRole.id === role.id ? 'text-[#22FF88]' : isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
+                <h3 className={`font-black tracking-tight text-[10px] md:text-sm ${selectedRole.id === role.id ? 'text-[#eb483f]' : isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
                   {role.name.split(' ')[0]}
                 </h3>
                 {role.isSystem && (
@@ -129,7 +129,7 @@ const RoleManagement = () => {
                 )}
               </div>
               <p className={`text-[7px] font-bold text-white/10 mt-1 uppercase tracking-widest truncate ${selectedRole.id === role.id && 'text-white/30'}`}>{role.description.split(' ')[0]}</p>
-              <div className={`text-[7px] md:text-[8px] uppercase font-black mt-2 md:mt-3 tracking-widest flex items-center gap-1.5 ${selectedRole.id === role.id ? 'text-[#1EE7FF]' : 'text-white/10'}`}>
+              <div className={`text-[7px] md:text-[8px] uppercase font-black mt-2 md:mt-3 tracking-widest flex items-center gap-1.5 ${selectedRole.id === role.id ? 'text-[#eb483f]' : 'text-white/10'}`}>
                 <Users size={8} /> {role.users}
               </div>
             </button>
@@ -141,7 +141,7 @@ const RoleManagement = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6 mb-4 md:mb-10">
             <div>
               <h3 className={`font-black font-display uppercase tracking-widest text-[9px] md:text-sm flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                Matrix: <span className="text-[#22FF88] italic">{selectedRole.name}</span>
+                Matrix: <span className="text-[#eb483f] italic">{selectedRole.name}</span>
               </h3>
               <p className="text-[8px] md:text-xs text-white/20 mt-0.5 font-bold italic">{selectedRole.description}</p>
             </div>
@@ -165,7 +165,7 @@ const RoleManagement = () => {
             <div className="overflow-x-auto scrollbar-hide">
               <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
-                  <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] border-b ${isDark ? 'text-white/20 border-white/5 bg-white/5' : 'text-[#0A1F44]/20 border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
+                  <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] border-b ${isDark ? 'text-white/40 border-white/5 bg-white/5' : 'text-[#eb483f] border-[#eb483f]/10 bg-[#eb483f]/2'}`}>
                     <th className="p-3 md:p-8">Module</th>
                     <th className="p-3 md:p-8 text-center uppercase">Root</th>
                     <th className="p-3 md:p-8 text-center uppercase">Add</th>
@@ -178,7 +178,7 @@ const RoleManagement = () => {
                     <tr key={module} className="group hover:bg-white/[0.02] transition-colors">
                       <td className={`p-3 md:p-8`}>
                         <div className="flex items-center gap-2 md:gap-3">
-                          <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-[#22FF88]/20' : 'bg-[#22FF88]/40'}`} />
+                          <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-[#eb483f]/20' : 'bg-[#eb483f]/40'}`} />
                           <span className={`text-[10px] md:text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{module}</span>
                         </div>
                       </td>
@@ -194,7 +194,7 @@ const RoleManagement = () => {
                               className={`transition-all ${isSuper ? 'opacity-40 cursor-not-allowed' : 'hover:scale-110'}`}
                             >
                               {hasAccess ? (
-                                <CheckSquare size={14} className="md:w-[22px] md:h-[22px] text-[#22FF88] inline-block" />
+                                <CheckSquare size={14} className="md:w-[22px] md:h-[22px] text-[#eb483f] inline-block" />
                               ) : (
                                 <Square size={14} className={`md:w-[22px] md:h-[22px] ${isDark ? 'text-white/5' : 'text-[#0A1F44]/5'} inline-block`} />
                               )}
@@ -210,7 +210,7 @@ const RoleManagement = () => {
           </div>
           
           <div className={`mt-4 md:mt-8 p-3 md:p-6 rounded-lg md:rounded-2xl flex items-center gap-3 md:gap-4 border ${isDark ? 'bg-white/5 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
-            <Info size={12} className="text-[#1EE7FF] shrink-0 opacity-40" />
+            <Info size={12} className="text-[#eb483f] shrink-0 opacity-40" />
             <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>
               Changes are applied instantly to the network.
             </p>
@@ -246,7 +246,7 @@ const RoleManagement = () => {
                 </button>
 
                 <div className="mb-6 md:mb-10">
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-[#22FF88]/10 flex items-center justify-center text-[#22FF88] mb-4 md:mb-6">
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f] mb-4 md:mb-6">
                     <Shield size={24} className="md:w-[32px] md:h-[32px]" />
                   </div>
                   <h3 className={`text-xl md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>New Role</h3>
@@ -263,8 +263,8 @@ const RoleManagement = () => {
                       placeholder="e.g. Moderator"
                       className={`w-full py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl text-[11px] md:text-sm font-black outline-none border transition-all ${
                         isDark 
-                          ? 'bg-white/5 border-white/10 focus:border-[#22FF88] text-white placeholder:text-white/10' 
-                          : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 focus:border-[#22FF88] text-[#0A1F44] placeholder:text-[#0A1F44]/30'
+                          ? 'bg-white/5 border-white/10 focus:border-[#eb483f] text-white placeholder:text-white/10' 
+                          : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 focus:border-[#eb483f] text-[#0A1F44] placeholder:text-[#0A1F44]/30'
                       }`}
                     />
                   </div>
@@ -278,8 +278,8 @@ const RoleManagement = () => {
                       placeholder="Purpose"
                       className={`w-full py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl text-[11px] md:text-sm font-black outline-none border transition-all resize-none ${
                         isDark 
-                          ? 'bg-white/5 border-white/10 focus:border-[#22FF88] text-white placeholder:text-white/10' 
-                          : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 focus:border-[#22FF88] text-[#0A1F44] placeholder:text-[#0A1F44]/30'
+                          ? 'bg-white/5 border-white/10 focus:border-[#eb483f] text-white placeholder:text-white/10' 
+                          : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 focus:border-[#eb483f] text-[#0A1F44] placeholder:text-[#0A1F44]/30'
                       }`}
                     />
                   </div>
@@ -290,7 +290,7 @@ const RoleManagement = () => {
                       disabled={!newRole.name.trim()}
                       className={`w-full py-4 md:py-5 rounded-lg md:rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] shadow-2xl ${
                         newRole.name.trim() 
-                          ? 'bg-[#22FF88] text-[#0A1F44] hover:bg-white hover:scale-[1.02] shadow-[#22FF88]/20' 
+                          ? 'bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-[1.02] shadow-[#eb483f]/20' 
                           : isDark ? 'bg-white/5 text-white/5 cursor-not-allowed border border-white/5' : 'bg-black/5 text-black/10 cursor-not-allowed border border-black/5'
                       }`}
                     >
@@ -308,3 +308,5 @@ const RoleManagement = () => {
 };
 
 export default RoleManagement;
+
+

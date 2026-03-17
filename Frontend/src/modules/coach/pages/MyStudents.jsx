@@ -19,27 +19,27 @@ const MyStudents = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/5">
         <div>
           <h2 className={`text-xl md:text-2xl font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'} font-display tracking-wide flex items-center gap-2 md:gap-3`}>
-            <Users className="text-[#FFD600]" size={20} /> My Students
+            <Users className="text-[#eb483f]" size={20} /> My Students
           </h2>
-          <p className="text-[11px] md:text-sm text-white/40 mt-0.5 md:mt-1 font-medium italic">Manage batch progress.</p>
+          <p className={`text-[11px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/60' : 'text-[#0A1F44]/60'}`}>Manage mentee progress.</p>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <div className="w-full sm:flex-1 relative group">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#FFD600] transition-colors" />
+          <Search size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/40 group-focus-within:text-[#eb483f]' : 'text-[#0A1F44]/40 group-focus-within:text-[#eb483f]'}`} />
           <input
             type="text"
             placeholder="Search mentee..."
             className={`w-full py-2 md:py-2.5 pl-10 md:pl-11 pr-4 rounded-xl text-xs md:text-sm font-medium transition-all outline-none border ${
               isDark 
-                ? 'bg-[#0A1F44]/50 border-white/5 focus:border-[#FFD600]/50 text-white' 
-                : 'bg-white border-[#0A1F44]/10 focus:border-[#FFD600] text-[#0A1F44]'
+                ? 'bg-[#0A1F44]/50 border-white/5 focus:border-[#eb483f]/50 text-white' 
+                : 'bg-white border-[#0A1F44]/10 focus:border-[#eb483f] text-[#0A1F44]'
             }`}
           />
         </div>
         <button className={`w-full sm:w-auto px-4 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-[10px] md:text-sm font-black md:font-bold transition-all uppercase sm:normal-case tracking-widest sm:tracking-normal ${
-          isDark ? 'bg-[#0A1F44]/50 border-white/5 text-white/60 hover:text-white' : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/60 hover:text-[#0A1F44]'
+          isDark ? 'bg-[#0A1F44]/50 border-white/5 text-white/60 hover:text-white' : 'bg-white border-[#0A1F44]/10 text-[#0A1F44]/60 hover:text-[#eb483f] hover:border-[#eb483f]'
         }`}>
           <Filter size={14} className="md:w-[18px] md:h-[18px]" /> Filters
         </button>
@@ -54,37 +54,37 @@ const MyStudents = () => {
             transition={{ delay: idx * 0.05 }}
             className={`p-4 md:p-6 rounded-2xl md:rounded-[2rem] border group transition-all duration-300 hover:shadow-2xl ${
               isDark 
-                ? 'bg-[#0A1F44]/50 border-white/10 hover:border-[#FFD600]/30 hover:shadow-[#FFD600]/5' 
-                : 'bg-white border-[#0A1F44]/5 shadow-lg shadow-blue-500/5 hover:border-[#FFD600]'
+                ? 'bg-[#0A1F44]/50 border-white/10 hover:border-[#eb483f]/30 hover:shadow-[#eb483f]/5' 
+                : 'bg-white border-[#0A1F44]/5 shadow-lg shadow-blue-500/5 hover:border-[#eb483f]'
             }`}
           >
             <div className="flex justify-between items-start mb-3 md:mb-4">
                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#FFD600]/20 to-[#FF4B4B]/20 border border-[#FFD600]/30 flex items-center justify-center text-[#FFD600] font-black text-base md:text-lg">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#eb483f]/20 to-[#FF4B4B]/20 border border-[#eb483f]/30 flex items-center justify-center text-[#eb483f] font-black text-base md:text-lg">
                     {student.name.charAt(0)}
                   </div>
                   <div>
                     <h3 className={`font-black font-display tracking-tight text-base md:text-lg ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{student.name}</h3>
-                    <p className="text-[9px] font-bold text-[#FFD600] uppercase tracking-widest leading-none">{student.id}</p>
+                    <p className="text-[9px] font-bold text-[#eb483f] uppercase tracking-widest leading-none">{student.id}</p>
                   </div>
                </div>
-               <button className="text-white/20 hover:text-white">
+               <button className={`transition-colors ${isDark ? 'text-white/20 hover:text-white' : 'text-[#0A1F44]/20 hover:text-[#0A1F44]'}`}>
                   <MoreHorizontal size={16} className="md:w-[20px] md:h-[20px]" />
                </button>
             </div>
 
             <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
                <div className="flex justify-between text-[11px] md:text-xs font-bold">
-                  <span className="text-white/30 uppercase tracking-[0.1em] md:tracking-widest">Active Batch</span>
-                  <span className={isDark ? 'text-white/70' : 'text-[#0A1F44]/70'}>{student.batch}</span>
+                  <span className={`${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'} uppercase tracking-[0.1em] md:tracking-widest`}>Active Batch</span>
+                  <span className={isDark ? 'text-white/80' : 'text-[#0A1F44]/80'}>{student.batch}</span>
                </div>
                <div className="flex justify-between text-[11px] md:text-xs font-bold">
-                  <span className="text-white/30 uppercase tracking-[0.1em] md:tracking-widest">Skill Level</span>
+                  <span className={`${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'} uppercase tracking-[0.1em] md:tracking-widest`}>Skill Level</span>
                   <span className="text-[#1EE7FF]">{student.level}</span>
                </div>
                <div className="flex justify-between text-[11px] md:text-xs font-bold">
-                  <span className="text-white/30 uppercase tracking-[0.1em] md:tracking-widest">Attendance</span>
-                  <span className="text-[#22FF88]">{student.attendance}</span>
+                  <span className={`${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'} uppercase tracking-[0.1em] md:tracking-widest`}>Attendance</span>
+                  <span className="text-[#eb483f]">{student.attendance}</span>
                </div>
             </div>
 
@@ -92,13 +92,13 @@ const MyStudents = () => {
                <div className="flex flex-col">
                   <span className="text-[8px] md:text-[10px] font-black text-white/30 uppercase tracking-[0.1em] md:tracking-[0.2em]">Rating</span>
                   <div className="flex items-center gap-1 mt-0.5 md:mt-1">
-                     <Star size={12} className="md:w-[14px] md:h-[14px] text-[#FFD600] fill-[#FFD600]" />
+                     <Star size={12} className="md:w-[14px] md:h-[14px] text-[#eb483f] fill-[#eb483f]" />
                      <span className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{student.rating}</span>
                   </div>
                </div>
                <div className="text-right">
                   <span className="text-[8px] md:text-[10px] font-black text-white/30 uppercase tracking-[0.1em] md:tracking-[0.2em]">Status</span>
-                  <p className={`text-[9px] md:text-[10px] font-black uppercase mt-0.5 md:mt-1 ${student.status === 'Active' ? 'text-[#22FF88]' : 'text-[#FF4B4B]'}`}>{student.status}</p>
+                  <p className={`text-[9px] md:text-[10px] font-black uppercase mt-0.5 md:mt-1 ${student.status === 'Active' ? 'text-[#eb483f]' : 'text-[#FF4B4B]'}`}>{student.status}</p>
                </div>
             </div>
 
@@ -108,7 +108,7 @@ const MyStudents = () => {
                }`}>
                   <MessageSquare size={12} className="md:w-[14px] md:h-[14px]" /> Remarks
                </button>
-               <button className="py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#FFD600] text-[#0A1F44] flex items-center justify-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-[#FFD600]/20">
+               <button className="py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-white flex items-center justify-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest hover:bg-[#0A1F44] hover:text-white transition-all shadow-lg shadow-[#eb483f]/20">
                   <GraduationCap size={12} className="md:w-[14px] md:h-[14px]" /> Profile
                </button>
             </div>
