@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Receipt } from 'lucide-react';
+import { ArrowLeft, Receipt, GraduationCap } from 'lucide-react';
 import { USER_BOOKINGS } from '../../../data/mockData';
 import { motion, AnimatePresence } from 'framer-motion';
 import BookingTimelineCard from '../components/BookingTimeline';
