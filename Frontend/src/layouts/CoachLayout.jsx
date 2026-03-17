@@ -4,6 +4,7 @@ import { Calendar, Users, ClipboardCheck, MessageSquare, LogOut, Search, Bell, M
 import { useTheme } from '../modules/user/context/ThemeContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import Logo from '../assets/Logo (3).png';
 
 const MENU_ITEMS = [
   { path: '/coach', icon: Calendar, label: 'Schedule' },
@@ -32,9 +33,9 @@ const CoachLayout = () => {
       <aside className={`hidden md:flex flex-col w-64 h-full backdrop-blur-3xl border-r relative z-20 transition-colors duration-500 ${
         isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white/80 border-[#0A1F44]/10'
       }`}>
-        <div className={`h-20 flex items-center px-6 border-b shrink-0 transition-colors duration-500 ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
-          <div className={`font-bold font-display tracking-wide text-xl ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-             COACH<span className="text-[#eb483f]">PORTAL</span>
+        <div className={`h-24 flex items-center justify-center px-6 border-b shrink-0 transition-colors duration-500 ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
+          <div className="shrink-0 w-20 h-20 flex items-center justify-center scale-125">
+            <img src={Logo} alt="AMM Sports" className="w-full h-full object-contain" />
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -102,9 +103,9 @@ const CoachLayout = () => {
             }`}
           >
              {/* Same content as desktop sidebar */}
-             <div className={`h-20 flex items-center px-6 border-b shrink-0 transition-colors duration-500 ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
-               <div className={`font-bold font-display tracking-wide text-xl ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                 COACH<span className="text-[#eb483f]">PORTAL</span>
+             <div className={`h-24 flex items-center justify-center px-6 border-b shrink-0 transition-colors duration-500 ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
+               <div className="shrink-0 w-20 h-20 flex items-center justify-center scale-125">
+                 <img src={Logo} alt="AMM Sports" className="w-full h-full object-contain" />
                </div>
              </div>
              <nav className="flex-1 overflow-y-auto p-4 space-y-2">

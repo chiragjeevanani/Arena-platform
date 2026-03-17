@@ -10,7 +10,7 @@ import {
 import { ShuttlecockIcon } from '../../user/components/BadmintonIcons';
 import { useTheme } from '../../user/context/ThemeContext';
 import { useAuth } from '../../user/context/AuthContext';
-import Logo from '../../../assets/Logo.png';
+import Logo from '../../../assets/Logo (3).png';
 
 const SIDEBAR_STRUCTURE = [
   {
@@ -84,13 +84,11 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       <div className="absolute inset-0 court-lines opacity-10 pointer-events-none -z-10" />
 
       {/* Header */}
-      <div className={`h-20 flex items-center justify-between px-6 border-b shrink-0 ${
+      <div className={`h-24 flex items-center justify-center px-6 border-b shrink-0 transition-all duration-300 ${
         isDark ? 'border-[#eb483f]/10' : 'border-[#eb483f]/10'
       }`}>
-        <div className="flex items-center justify-center w-full">
-          <div className="shrink-0 w-14 h-14 flex items-center justify-center scale-110">
-            <img src={Logo} alt="AMM Sports" className="w-full h-full object-contain" />
-          </div>
+        <div className={`shrink-0 flex items-center justify-center transition-all duration-300 ${isCollapsed ? 'w-10 h-10' : 'w-20 h-20 scale-125'}`}>
+          <img src={Logo} alt="AMM Sports" className="w-full h-full object-contain" />
         </div>
       </div>
 
