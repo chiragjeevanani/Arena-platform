@@ -35,11 +35,14 @@ const SIDEBAR_STRUCTURE = [
 const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
   const { user } = useAuth();
 
-  const filteredStructure = SIDEBAR_STRUCTURE.filter(section => 
-    section.roles.includes(user?.role)
+  const userRole = user?.role;
+
+  // Defensive: if userRole is missing (e.g. auth not hydrated on production), show all items
+  const filteredStructure = SIDEBAR_STRUCTURE.filter(section =>
+    !userRole || section.roles.includes(userRole)
   ).map(section => ({
     ...section,
-    items: section.items.filter(item => !item.roles || item.roles.includes(user?.role))
+    items: section.items.filter(item => !item.roles || !userRole || item.roles.includes(userRole))
   })).filter(section => section.items.length > 0);
 
   return (

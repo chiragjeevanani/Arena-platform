@@ -9,18 +9,24 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const DEFAULT_USER = {
+    name: 'Muhammad Haroos',
+    role: 'SUPER_ADMIN',
+    assignedArena: 'all',
+    avatar: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop'
+  };
+
   // Mock user for SaaS behavior
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
     try {
-      return savedUser ? JSON.parse(savedUser) : {
-        name: 'Muhammad Haroos',
-        role: 'SUPER_ADMIN', 
-        assignedArena: 'all', 
-        avatar: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop'
-      };
+      const savedUser = localStorage.getItem('user');
+      const parsed = savedUser ? JSON.parse(savedUser) : null;
+      // Validate that the saved user has the minimum required fields
+      if (parsed && parsed.role) return parsed;
+      return DEFAULT_USER;
     } catch (e) {
-      return null;
+      // Production: if localStorage is unavailable or corrupted, use default
+      return DEFAULT_USER;
     }
   });
 
