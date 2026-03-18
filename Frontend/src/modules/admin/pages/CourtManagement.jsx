@@ -2,256 +2,249 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, Plus, Search, Filter, Settings2, Trash2, Edit2, CheckCircle2, 
-  XCircle, X, ArrowRight, DollarSign, Users, MoreVertical, Eye, FileText, Activity
+  XCircle, X, ArrowRight, MoreVertical, Eye, FileText, Activity
 } from 'lucide-react';
-import { useTheme } from '../../user/context/ThemeContext';
-import { COURTS, ARENAS } from '../../../data/mockData';
+import { MOCK_DB } from '../../../data/mockDatabase';
 
 const CourtManagement = () => {
-  const { isDark } = useTheme();
-  const [selectedArena, setSelectedArena] = useState(ARENAS[0].id);
+  const [selectedArenaId, setSelectedArenaId] = useState(MOCK_DB.arenas[0].id);
   const [showAddCourtModal, setShowAddCourtModal] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter courts by arena
-  const filteredCourts = COURTS.filter(court => court.arenaId === selectedArena);
+  // Use MOCK_DB instead of mockData
+  const filteredCourts = MOCK_DB.courts.filter(court => {
+    const matchesArena = court.arenaId === selectedArenaId;
+    const matchesSearch = court.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesArena && matchesSearch;
+  });
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
-        <div>
-          <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Target className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Units
-          </h2>
-          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Facility hub.</p>
-        </div>
-        <button
-          onClick={() => setShowAddCourtModal(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
-        >
-          <Plus size={14} /> Add
-        </button>
-      </div>
-
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 md:gap-3">
-        <div className="flex-1 min-w-[150px] relative group">
-          <Search size={12} className={`absolute left-3 md:left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/30 group-focus-within:text-[#eb483f]' : 'text-[#0A1F44]/30'}`} />
-          <input
-            type="text"
-            placeholder="Query..."
-            className={`w-full py-2 md:py-2.5 pl-8 md:pl-11 pr-4 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold transition-all outline-none border ${
-              isDark 
-                ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20' 
-                : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-[#0A1F44] shadow-sm'
-            }`}
-          />
-        </div>
+    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#1a2b3c]">
+      <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
         
-        <select
-          value={selectedArena}
-          onChange={(e) => setSelectedArena(Number(e.target.value))}
-          className={`px-2.5 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[10px] md:text-sm font-black transition-all outline-none border cursor-pointer uppercase tracking-widest ${
-            isDark 
-              ? 'bg-white/5 border-white/10 text-white focus:border-[#eb483f]/50' 
-              : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-[#0A1F44] shadow-sm'
-          }`}
-        >
-          {ARENAS.map(arena => (
-            <option key={arena.id} value={arena.id}>{arena.name.split(' ')[0]}</option>
-          ))}
-        </select>
-
-        <button className={`p-2 rounded-lg md:rounded-xl border transition-all ${
-          isDark 
-            ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' 
-            : 'bg-[#0A1F44]/2 border-[#0A1F44]/10 text-[#0A1F44]/40 hover:text-[#0A1F44]'
-        }`}>
-          <Filter size={12} className="md:w-[18px] md:h-[18px]" />
-        </button>
-      </div>
-
-      {/* Courts Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-        {filteredCourts.map((court, idx) => (
-          <motion.div
-            key={court.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.05 }}
-            className={`group rounded-xl md:rounded-3xl p-3 md:p-5 border transition-all duration-300 relative overflow-hidden ${
-              isDark 
-                ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#eb483f]/30' 
-                : 'bg-white border-[#0A1F44]/10 hover:shadow-lg'
-            }`}
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
+              <Target className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Unit Portfolio
+            </h2>
+            <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Manage individual courts, surfaces, and unit-level operational status.</p>
+          </div>
+          <button
+            onClick={() => setShowAddCourtModal(true)}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
           >
-            {/* Status Indicator */}
-            <div className="flex justify-between items-start mb-3 md:mb-4">
-              <div className={`px-2 py-0.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest flex items-center gap-1 ${
-                court.status === 'Active' 
-                  ? 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20' 
-                  : 'bg-[#FF4B4B]/10 text-[#FF4B4B] border border-[#FF4B4B]/20'
-              }`}>
-                {court.status === 'Active' ? <CheckCircle2 size={8} /> : <XCircle size={8} />}
-                {court.status === 'Active' ? 'Operational' : 'Halt'}
-              </div>
-              <div className="flex gap-2 relative">
-                <button 
-                  onClick={() => setActiveMenu(activeMenu === court.id ? null : court.id)}
-                  className={`p-1.5 rounded-lg transition-all border ${
-                    activeMenu === court.id
-                      ? 'bg-[#eb483f] border-[#eb483f] text-[#0A1F44]'
-                      : isDark 
-                        ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' 
-                        : 'bg-black/5 border-black/10 text-[#0A1F44]/40 hover:text-black'
-                  }`}
-                >
-                  <MoreVertical size={12} />
-                </button>
+            <Plus size={16} strokeWidth={3} /> Commission Unit
+          </button>
+        </div>
 
-                <AnimatePresence>
-                  {activeMenu === court.id && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                        className={`absolute right-0 top-full mt-1.5 w-48 p-1.5 rounded-xl border z-20 shadow-2xl backdrop-blur-xl ${
-                          isDark ? 'bg-[#0A1F44]/90 border-white/10' : 'bg-white/90 border-[#0A1F44]/10'
-                        }`}
-                      >
-                         <div className="space-y-0.5 text-left">
-                          {[
-                            { label: 'Edit', icon: Edit2, color: '#eb483f' },
-                            { label: 'Setup', icon: Settings2, color: '#eb483f' },
-                            { label: 'Log', icon: FileText, color: '#eb483f' },
-                            { label: 'Stats', icon: Activity, color: '#A855F7' },
-                            { label: 'Halt', icon: Trash2, color: '#FF4B4B' },
-                          ].map((opt, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setActiveMenu(null)}
-                              className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${
-                                isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-[#0A1F44]/5 text-[#0A1F44]/60 hover:text-[#0A1F0A]'
-                              }`}
-                            >
-                              <div className={`p-1 rounded-md border transition-colors`} style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}20`, color: opt.color }}>
-                                <opt.icon size={10} />
-                              </div>
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
+        {/* Toolbar */}
+        <div className="flex flex-col md:flex-row items-center gap-3">
+          <div className="flex-1 w-full relative group">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#eb483f] transition-colors" />
+            <input
+              type="text"
+              placeholder="Search units by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full py-3.5 pl-12 pr-4 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-[#1a2b3c] focus:outline-none focus:border-[#eb483f] transition-all shadow-sm"
+            />
+          </div>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <select
+                value={selectedArenaId}
+                onChange={(e) => setSelectedArenaId(e.target.value)}
+                className="w-full py-3.5 px-4 pr-10 rounded-xl border border-slate-200 bg-white text-[11px] font-black uppercase tracking-widest text-[#1a2b3c] appearance-none outline-none focus:border-[#eb483f] transition-all shadow-sm"
+              >
+                {MOCK_DB.arenas.map(arena => (
+                  <option key={arena.id} value={arena.id}>{arena.name}</option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                <Target size={14} strokeWidth={2.5} />
               </div>
             </div>
 
-            <div className="space-y-0.5 md:space-y-1 mb-2 md:mb-4">
-              <h3 className={`text-sm md:text-xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                {court.name}
-              </h3>
-              <p className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>
-                {court.type} Surface
-              </p>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-2 mb-3 md:mb-4">
-              <div className={`p-1.5 md:p-3 rounded-lg border ${isDark ? 'bg-white/5 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
-                <p className={`text-[6px] md:text-[9px] font-black uppercase tracking-widest mb-0.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>Rate</p>
-                <p className={`text-[10px] md:text-sm font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>₹{court.baseRate}</p>
-              </div>
-              <div className={`p-1.5 md:p-3 rounded-lg border ${isDark ? 'bg-white/5 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
-                <p className={`text-[6px] md:text-[9px] font-black uppercase tracking-widest mb-0.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>Pax</p>
-                <p className={`text-[10px] md:text-sm font-black ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{court.capacity || 4}</p>
-              </div>
-            </div>
-
-            {/* Amenities icons */}
-            <div className="flex gap-1 mb-3 md:mb-6">
-              {['AC', 'LED', 'CCTV'].map(tag => (
-                <span key={tag} className={`px-1 py-0.5 rounded text-[6px] font-black uppercase tracking-widest border transition-colors ${
-                  isDark ? 'bg-white/5 border-white/10 text-white/20 hover:text-[#eb483f]' : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 text-[#0A1F44]/30'
-                }`}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <button className={`w-full py-2 rounded-lg md:rounded-xl text-[8px] md:text-xs font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-2 ${
-              isDark 
-                ? 'bg-white/5 border-white/10 text-white hover:bg-[#eb483f] hover:text-[#0A1F44]' 
-                : 'bg-white border-[#0A1F44]/10 text-[#0A1F44] hover:bg-[#0A1F44] hover:text-white'
-            }`}>
-              <Settings2 size={10} /> Queue
+            <button className="p-3.5 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-[#eb483f] hover:bg-slate-50 transition-all shadow-sm">
+              <Filter size={18} strokeWidth={2.5} />
             </button>
-          </motion.div>
-        ))}
+          </div>
+        </div>
+
+        {/* Courts Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {filteredCourts.map((court, idx) => (
+            <motion.div
+              key={court.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="group rounded-2xl bg-white p-5 border border-slate-100 shadow-sm transition-all duration-300 relative overflow-hidden flex flex-col hover:border-[#eb483f]/40 hover:shadow-md"
+            >
+              {/* Status Header */}
+              <div className="flex justify-between items-start mb-5">
+                <div className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border ${
+                  court.status === 'Active' 
+                    ? 'bg-[#eb483f]/5 text-[#eb483f] border-[#eb483f]/20' 
+                    : 'bg-red-50 text-red-500 border-red-100'
+                }`}>
+                  {court.status === 'Active' ? <CheckCircle2 size={12} strokeWidth={2.5} /> : <XCircle size={12} strokeWidth={2.5} />}
+                  {court.status === 'Active' ? 'Operational' : 'Halted'}
+                </div>
+                <div className="relative">
+                  <button 
+                    onClick={() => setActiveMenu(activeMenu === court.id ? null : court.id)}
+                    className={`p-2 rounded-xl transition-all border shadow-sm ${
+                      activeMenu === court.id
+                        ? 'bg-[#eb483f] border-[#eb483f] text-white'
+                        : 'bg-slate-50 border-slate-100 text-slate-400 hover:text-[#1a2b3c] hover:bg-white'
+                    }`}
+                  >
+                    <MoreVertical size={16} strokeWidth={2.5} />
+                  </button>
+
+                  <AnimatePresence>
+                    {activeMenu === court.id && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                          className={`absolute right-0 top-full mt-2 w-48 p-2 rounded-2xl border border-slate-200 bg-white z-20 shadow-xl`}
+                        >
+                           <div className="space-y-1">
+                            {[
+                              { label: 'Edit Metrics', icon: Edit2, color: '#eb483f' },
+                              { label: 'Sync Calendar', icon: Settings2, color: '#eb483f' },
+                              { label: 'Access Logs', icon: FileText, color: '#eb483f' },
+                              { label: 'Performance', icon: Activity, color: '#eb483f' },
+                              { label: 'Decommission', icon: Trash2, color: '#ef4444' },
+                            ].map((opt, i) => (
+                              <button
+                                key={i}
+                                onClick={() => setActiveMenu(null)}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-all font-sans"
+                              >
+                                <div className="p-1.5 rounded-lg border transition-colors" style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}30`, color: opt.color }}>
+                                  <opt.icon size={12} strokeWidth={2.5} />
+                                </div>
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Title Area */}
+              <div className="mb-6">
+                <h3 className="text-xl font-black font-display tracking-tight text-[#1a2b3c]">
+                  {court.name}
+                </h3>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] mt-1 italic">
+                  Premium {court.type} Surface
+                </p>
+              </div>
+
+              {/* Stats Box */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
+                  <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Base Rate</p>
+                  <p className="text-[13px] font-display font-black text-[#1a2b3c]">₹{court.baseRate}<span className="text-[9px] font-bold text-slate-400">/hr</span></p>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
+                  <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Occupancy</p>
+                  <p className="text-[13px] font-display font-black text-[#1a2b3c]">4 <span className="text-[9px] font-bold text-slate-400">pax</span></p>
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div className="flex flex-wrap gap-1.5 mb-6">
+                {['AC Facility', 'LED Panels', 'Pro Mat'].map(tag => (
+                  <span key={tag} className="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white border border-slate-100 text-slate-400 group-hover:text-[#eb483f] group-hover:border-[#eb483f]/20 transition-all">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-auto">
+                <button className="w-full py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-200 bg-white text-[#1a2b3c] hover:bg-[#1a2b3c] hover:text-white hover:border-[#1a2b3c] flex items-center justify-center gap-2 shadow-sm">
+                  <Activity size={14} strokeWidth={2.5} /> Manage Queue
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       {/* Add Court Modal */}
       <AnimatePresence>
         {showAddCourtModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAddCourtModal(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAddCourtModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className={`relative w-full max-w-lg rounded-3xl md:rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
             >
-              <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
+              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <Target className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Register Court
+                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
+                    <Target className="text-[#eb483f]" size={24} strokeWidth={3} /> Commissioning Hub
                   </h3>
-                  <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Add facility unit</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Register new operational unit</p>
                 </div>
                 <button
                   onClick={() => setShowAddCourtModal(false)}
-                  className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-300 bg-white border border-slate-200 shadow-sm shadow-slate-100"
                 >
-                  <X size={18} className="md:w-[20px] md:h-[20px]" />
+                  <X size={20} strokeWidth={2.5} />
                 </button>
-              </div>              <div className="p-6 md:p-8 space-y-4 md:space-y-5">
+              </div>
+
+              <div className="p-6 md:p-8 space-y-6">
                 <div className="group">
-                  <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Name</label>
-                  <input type="text" placeholder="e.g. Court 7" className={`w-full py-3 md:py-4 px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Asset Identity</label>
+                  <input type="text" placeholder="e.g. Center Court - 01" className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c] shadow-inner" />
                 </div>
-                <div className="grid grid-cols-2 gap-3 md:gap-4">
-                  <div className="group">
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Surface</label>
-                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
-                      <option>Synthetic</option>
-                      <option>Wooden</option>
-                      <option>PU Surface</option>
-                      <option>Mat</option>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Surface Architecture</label>
+                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner">
+                      <option>Synthetic Pro</option>
+                      <option>Premium Wooden</option>
+                      <option>Hybrid Mat</option>
+                      <option>Hard Court</option>
                     </select>
                   </div>
-                  <div className="group">
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Pax</label>
-                    <input type="number" defaultValue="4" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Pax Threshold</label>
+                    <input type="number" defaultValue="4" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner" />
                   </div>
                 </div>
+
                 <div className="group">
-                  <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Rate (₹/hr)</label>
-                  <input type="number" defaultValue="800" className={`w-full py-3 md:py-4 px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Standard Hourly Rate (₹)</label>
+                  <div className="relative">
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                    <input type="number" defaultValue="800" className="w-full py-4 pl-12 pr-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner" />
+                  </div>
                 </div>
+
                 <button
                   onClick={() => setShowAddCourtModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-[1.5rem] bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[11px] font-black uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
-                  Deploy Unit <ArrowRight size={14} className="md:w-[16px] md:h-[16px]" />
+                  Confirm Deployment <ArrowRight size={18} strokeWidth={3} />
                 </button>
               </div>
             </motion.div>
@@ -263,5 +256,3 @@ const CourtManagement = () => {
 };
 
 export default CourtManagement;
-
-

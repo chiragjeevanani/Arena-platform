@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin } from 'lucide-react';
-import { useTheme } from '../../user/context/ThemeContext';
 
 const COACHES = [
   { id: 1, name: 'Vikram Singh', role: 'Head Coach', specialty: 'Elite Training', students: 48, rating: 4.9, image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=150&auto=format&fit=crop' },
@@ -16,197 +15,219 @@ const BATCHES = [
 ];
 
 const CoachingAdmin = () => {
-  const { isDark } = useTheme();
   const [view, setView] = useState('batches'); // batches | coaches
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
+    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans">
+      <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 md:pb-6 border-b border-slate-200">
         <div>
-          <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <GraduationCap className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Academy
+          <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
+            <GraduationCap className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> 
+            Academy Programs
           </h2>
-          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Programs hub.</p>
+          <p className="text-[10px] md:text-sm mt-0.5 md:mt-1 font-bold text-slate-500">
+            Manage batches, schedules, and coaching staff.
+          </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <button className={`p-2 rounded-lg md:rounded-xl border transition-all ${isDark ? 'bg-white/5 border-white/5 text-white/40' : 'bg-white border-black/10 text-black/40 shadow-sm'}`}>
-            <Mail size={12} className="md:w-[18px] md:h-[18px]" />
+          <button className="p-2 md:p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:text-[#eb483f] text-slate-400 transition-all shadow-sm">
+            <Mail size={16} strokeWidth={2.5} className="md:w-[20px] md:h-[20px]" />
           </button>
           <button 
             onClick={() => setShowNewBatchModal(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 md:px-6 py-2 md:py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-[11px] md:text-[13px] font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
           >
-            <Plus size={14} /> New
+            <Plus size={16} strokeWidth={3} /> New Program
           </button>
         </div>
       </div>
 
-      <div className={`flex gap-1 p-1 rounded-lg md:rounded-2xl w-fit border ${isDark ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/10'}`}>
+      {/* Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide w-full md:w-auto mb-4 border-b border-slate-100">
         <button
           onClick={() => setView('batches')}
-          className={`px-4 md:px-8 py-1.5 md:py-2.5 rounded-md md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${view === 'batches' ? 'bg-[#eb483f] text-[#0A1F44]' : isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}
+          className={`whitespace-nowrap px-6 py-2.5 rounded-t-lg text-[13px] font-bold transition-all border-b-2 ${
+            view === 'batches' 
+              ? 'border-[#eb483f] text-[#eb483f] bg-[#eb483f]/5' 
+              : 'border-transparent text-slate-500 hover:text-[#1a2b3c] hover:bg-slate-50'
+          }`}
         >
-          Units
+          Active Units
         </button>
         <button
           onClick={() => setView('coaches')}
-          className={`px-4 md:px-8 py-1.5 md:py-2.5 rounded-md md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${view === 'coaches' ? 'bg-[#eb483f] text-[#0A1F44]' : isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}
+          className={`whitespace-nowrap px-6 py-2.5 rounded-t-lg text-[13px] font-bold transition-all border-b-2 ${
+            view === 'coaches' 
+              ? 'border-[#eb483f] text-[#eb483f] bg-[#eb483f]/5' 
+              : 'border-transparent text-slate-500 hover:text-[#1a2b3c] hover:bg-slate-50'
+          }`}
         >
-          Staff
+          Coaching Staff
         </button>
       </div>
 
+      {/* Content */}
+      <div className="pt-2">
       {view === 'batches' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch content-start">
           {BATCHES.map((batch, idx) => (
             <motion.div
+              layout
               key={batch.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className={`p-3 md:p-6 rounded-xl md:rounded-3xl border group transition-all ${isDark ? 'bg-[#0A1F44]/50 border-white/5 hover:border-[#eb483f]/30' : 'bg-white border-[#0A1F44]/10'}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              className="p-4 md:p-5 rounded-xl bg-white border border-slate-100 shadow-sm hover:border-[#eb483f]/50 hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group overflow-hidden"
             >
-              <div className="flex justify-between items-start mb-2 md:mb-4">
-                <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center border ${isDark ? 'bg-white/5 border-white/10 text-[#eb483f]' : 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]'}`}>
-                  <Zap size={12} className="md:w-[20px] md:h-[20px]" />
+                <div>
+                  <div className="flex justify-between items-start mb-3">
+                     <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#eb483f]/5 border border-[#eb483f]/10 text-[#eb483f] group-hover:scale-105 transition-transform">
+                        <Zap size={14} strokeWidth={2.5} />
+                     </div>
+                     <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${batch.enrolled >= batch.capacity ? 'bg-red-50 border border-red-100 text-red-600' : 'bg-slate-50 border border-slate-100 text-slate-500'}`}>
+                        {batch.enrolled}/{batch.capacity} Load
+                     </span>
+                  </div>
+                  <h3 className="font-extrabold text-[#1a2b3c] text-[15px] leading-tight mb-0.5 group-hover:text-[#eb483f] transition-colors">{batch.name}</h3>
+                  <p className="text-[11px] font-bold uppercase tracking-widest mb-4 flex items-center gap-1.5 text-slate-400">
+                    <Users size={12} className="text-[#eb483f]" /> {batch.coach}
+                  </p>
                 </div>
-                <span className={`px-1.5 py-0.5 rounded text-[7px] md:text-[9px] font-black uppercase tracking-widest ${batch.enrolled >= batch.capacity ? 'bg-[#FF4B4B]/10 text-[#FF4B4B]/60' : 'bg-[#eb483f]/10 text-[#eb483f]/60'}`}>
-                  {batch.enrolled}/{batch.capacity} Load
-                </span>
-              </div>
-              <h3 className={`text-sm md:text-xl font-black font-display tracking-tight mb-0.5 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{batch.name}</h3>
-              <p className={`text-[8px] md:text-xs font-black uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-1.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>
-                <Users size={10} className="text-[#eb483f] opacity-60" /> {batch.coach.split(' ')[0]}
-              </p>
-              
-              <div className="space-y-1.5 md:space-y-3 mb-4 md:mb-6">
-                <div className="flex justify-between items-center text-[8px] md:text-xs">
-                   <span className={`font-black uppercase tracking-widest ${isDark ? 'text-white/10' : 'text-[#0A1F44]/20'}`}>Mode</span>
-                  <span className={`font-black ${isDark ? 'text-white/40' : 'text-[#0A1F44]/60'}`}>{batch.frequency}</span>
-                </div>
-                <div className="flex justify-between items-center text-[8px] md:text-xs">
-                   <span className={`font-black uppercase tracking-widest ${isDark ? 'text-white/10' : 'text-[#0A1F44]/20'}`}>Slot</span>
-                  <span className="text-[#eb483f] font-black">{batch.time}</span>
-                </div>
-              </div>
+                
+                <div className="w-full h-[1px] bg-slate-100 mb-3" />
 
-              <div className="flex gap-2">
-                <button className={`flex-1 py-1.5 md:py-2.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${isDark ? 'bg-white/5 text-white/40 hover:text-white' : 'bg-black/5 text-black/40 hover:text-black'}`}>
-                  Roster
-                </button>
-                <button className={`w-9 md:w-12 h-8 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all ${isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20' : 'bg-[#0284c7]/5 text-[#0284c7] border border-[#0284c7]/10'}`}>
-                  <Video size={14} className="md:w-[18px] md:h-[18px]" />
-                </button>
-              </div>
+                <div className="space-y-2 mb-4 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                  <div className="flex justify-between items-center text-[11px]">
+                     <span className="font-bold text-slate-400 uppercase tracking-widest">Mode</span>
+                     <span className="font-black text-[#1a2b3c]">{batch.frequency}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px]">
+                     <span className="font-bold text-slate-400 uppercase tracking-widest">Slot</span>
+                     <span className="font-black text-[#eb483f]">{batch.time}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mt-auto pt-2">
+                  <button className="flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all bg-[#1a2b3c] border border-[#1a2b3c] text-white hover:bg-white hover:text-[#1a2b3c] shadow-sm">
+                    Roster
+                  </button>
+                  <button className="w-12 h-[44px] rounded-xl flex items-center justify-center transition-all bg-sky-50 text-sky-600 border border-sky-100 hover:bg-sky-600 hover:text-white hover:border-sky-600 shadow-sm">
+                    <Video size={16} strokeWidth={2.5} />
+                  </button>
+                </div>
             </motion.div>
           ))}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 content-start items-stretch">
           {COACHES.map((coach, idx) => (
             <motion.div
+              layout
               key={coach.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className={`p-2 md:p-4 rounded-xl md:rounded-3xl border flex items-center gap-3 group transition-all ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10'}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              className="p-4 md:p-5 rounded-xl border border-slate-100 shadow-sm bg-white hover:border-[#eb483f]/60 hover:shadow-md flex items-center gap-4 transition-all group overflow-hidden"
             >
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-2xl overflow-hidden border border-white/5">
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden border border-slate-100 shadow-sm group-hover:scale-105 transition-transform shrink-0">
                 <img src={coach.image} className="w-full h-full object-cover" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className={`text-[10px] md:text-base font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{coach.name}</h3>
-                  <span className="px-1.5 py-0.5 rounded bg-[#eb483f]/10 text-[#eb483f] text-[7px] font-black uppercase flex items-center gap-0.5">
-                    <Star size={6} fill="#eb483f" /> {coach.rating}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <h3 className="text-[14px] md:text-[15px] font-extrabold tracking-tight text-[#1a2b3c] truncate pr-2">{coach.name}</h3>
+                  <span className="px-1.5 py-0.5 rounded-md bg-[#eb483f]/10 border border-[#eb483f]/10 text-[#eb483f] text-[9px] font-bold uppercase flex items-center gap-0.5 shrink-0">
+                    <Star size={10} fill="#eb483f" /> {coach.rating}
                   </span>
                 </div>
-                 <p className={`text-[7px] md:text-xs font-black uppercase tracking-widest mt-0.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/40'}`}>{coach.role} • {coach.specialty}</p>
-                <div className="mt-1 flex items-center gap-4">
-                   <div className="flex items-center gap-1 text-[8px] font-black text-[#eb483f] opacity-60">
-                     <Users size={10} /> {coach.students} LOAD
+                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate tracking-tight">{coach.role} • {coach.specialty}</p>
+                 <div className="mt-2.5 flex items-center justify-between">
+                   <div className="flex items-center gap-1.5 text-[10px] font-black text-[#eb483f] uppercase tracking-widest">
+                     <Users size={12} strokeWidth={3} /> {coach.students} LOAD
                    </div>
-                </div>
+                 </div>
               </div>
-              <button className={`p-2.5 rounded-lg transition-all ${isDark ? 'bg-white/5 text-white/20 hover:text-white' : 'bg-black/5 text-black/20 hover:text-black'}`}>
-                <ChevronRight size={14} />
+              <button className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center transition-all bg-slate-50 text-slate-400 border border-slate-200 hover:bg-[#eb483f] hover:border-[#eb483f] hover:text-white group-hover:shadow-sm">
+                <ChevronRight size={18} strokeWidth={2.5} />
               </button>
             </motion.div>
           ))}
         </div>
       )}
+      </div>
 
       {/* New Batch Modal */}
       <AnimatePresence>
         {showNewBatchModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowNewBatchModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className={`relative w-full max-w-lg rounded-3xl md:rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-lg rounded-3xl border-2 border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
             >
-              <div className="p-6 md:p-8 border-b border-inherit flex items-center justify-between">
+              <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between bg-white rounded-t-3xl">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <Zap className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> Create Batch
+                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2">
+                    <Zap className="text-[#eb483f]" size={22} strokeWidth={3} /> Create Unit
                   </h3>
-                  <p className="text-[10px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Initialize academy program</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Initialize academy program</p>
                 </div>
                 <button 
                   onClick={() => setShowNewBatchModal(false)}
-                  className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-400 hover:text-slate-600 bg-white border border-slate-200 shadow-sm"
                 >
-                  <X size={18} className="md:w-[20px] md:h-[20px]" />
+                  <X size={20} strokeWidth={2.5} />
                 </button>
               </div>
 
-              <div className="p-6 md:p-8 space-y-4 md:space-y-6">
-                <div className="space-y-3 md:space-y-4">
+              <div className="p-5 md:p-6 space-y-5">
+                <div className="space-y-4">
                   <div className="group">
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Name</label>
                     <div className="relative">
-                      <Zap size={12} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all" />
+                      <Zap size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#eb483f] transition-all" strokeWidth={2.5} />
                       <input 
                         type="text" 
                         placeholder="e.g. Elite Performance"
-                        className={`w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
+                        className="w-full py-3 md:py-4 pl-11 pr-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] placeholder:text-slate-400"
                       />
                     </div>
                   </div>
  
-                  <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="group">
-                      <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Coach</label>
-                      <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Coach</label>
+                      <select className="w-full py-3 md:py-4 px-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
                         <option>Vikram</option>
                         <option>Anjali</option>
                         <option>Siddharth</option>
                       </select>
                     </div>
                     <div className="group">
-                      <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Cap</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Cap</label>
                       <input 
                         type="number" 
                         defaultValue="15"
-                        className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}
+                        className="w-full py-3 md:py-4 px-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]"
                       />
                     </div>
                   </div>
  
                   <div className="group">
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Frequency</label>
-                    <div className="flex gap-1.5 md:gap-2">
-                       {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
-                         <button key={idx} className={`w-7 h-7 md:w-8 md:h-8 rounded-lg text-[9px] md:text-[10px] font-black transition-all ${idx < 5 ? 'bg-[#eb483f]/20 text-[#eb483f] border border-[#eb483f]/30' : 'bg-white/5 text-white/20 border border-white/5'}`}>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Frequency</label>
+                    <div className="flex gap-2">
+                       {['M', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day, idx) => (
+                         <button key={idx} className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all border-2 ${idx < 5 ? 'bg-[#eb483f]/5 text-[#eb483f] border-[#eb483f]/20' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
                            {day}
                          </button>
                        ))}
@@ -214,32 +235,31 @@ const CoachingAdmin = () => {
                   </div>
                 </div>
  
-                <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center gap-3 md:gap-4 ${isDark ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5'}`}>
-                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
-                      <Clock size={16} className="md:w-[18px] md:h-[18px]" />
+                <div className="p-4 rounded-xl border-2 border-slate-100 bg-slate-50 flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center justify-center text-[#eb483f]">
+                      <Clock size={18} strokeWidth={2.5} />
                    </div>
                    <div className="flex-1">
-                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest leading-none">Slot</p>
-                      <p className="text-[11px] md:text-xs font-bold mt-1 opacity-40 italic">06:00 AM - 08:30 AM</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Time Slot</p>
+                      <p className="text-[13px] font-extrabold text-[#1a2b3c]">06:00 AM - 08:30 AM</p>
                    </div>
-                   <button className="text-[9px] md:text-[10px] font-black uppercase text-[#eb483f] hover:underline">Edit</button>
+                   <button className="px-3 py-1.5 rounded-md bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest text-[#eb483f] shadow-sm hover:border-[#eb483f] transition-colors">Edit</button>
                 </div>
  
                 <button 
                   onClick={() => setShowNewBatchModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-[1.5rem] bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mt-4"
                 >
-                  Deploy Batch <Plus size={14} className="md:w-[16px] md:h-[16px]" />
+                  Deploy Batch <Plus size={16} strokeWidth={3} />
                 </button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };
 
 export default CoachingAdmin;
-
-

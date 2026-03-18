@@ -1,6 +1,7 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 /**
@@ -9,6 +10,7 @@ import { useTheme } from '../context/ThemeContext';
 const BookingTimelineCard = ({ booking, index = 0 }) => {
   const [countdown, setCountdown] = useState('');
   const { isDark } = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simple countdown â€” generates a mock time for demo
@@ -127,7 +129,9 @@ const BookingTimelineCard = ({ booking, index = 0 }) => {
                 </span>
              </div>
            )}
-           <button className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all active:scale-95 ml-auto ${
+           <button 
+             onClick={() => navigate(`/bookings/${booking.id || new Date().getTime()}`, { state: { booking } })}
+             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all active:scale-95 ml-auto ${
              isDark 
                ? 'bg-[#eb483f] text-[#eb483f] shadow-[0_8px_20px_-5px_rgba(235, 72, 63,0.3)]' 
                : 'bg-[#0F172A] text-white shadow-[0_8px_20px_-5px_rgba(15,23,42,0.3)]'

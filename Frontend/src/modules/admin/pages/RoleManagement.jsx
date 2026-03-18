@@ -1,37 +1,29 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Plus, Edit2, Trash2, CheckSquare, Square, X, Info, Settings, Users } from 'lucide-react';
-import { useTheme } from '../../user/context/ThemeContext';
 
 const INITIAL_ROLES = [
-  { id: 1, name: 'Super Admin', users: 2, description: 'Full system access', isSystem: true },
-  { id: 2, name: 'Arena Admin', users: 15, description: 'Manage specific arenas', isSystem: false },
-  { id: 3, name: 'Reception Staff', users: 45, description: 'Handle bookings & POS', isSystem: false },
-  { id: 4, name: 'Accountant', users: 3, description: 'Financial reports only', isSystem: false }
+  { id: 1, name: 'Super Admin', users: 2, description: 'Full system engineering access', isSystem: true },
+  { id: 2, name: 'Arena Admin', users: 15, description: 'Regional facility operations', isSystem: false },
+  { id: 3, name: 'Receptionist', users: 45, description: 'Customer check-ins & POS', isSystem: false },
+  { id: 4, name: 'Analyst', users: 3, description: 'Financial audit & reporting', isSystem: false }
 ];
 
-const MODULES = ['Users', 'Arenas', 'Courts', 'Slots', 'Bookings', 'Coaching', 'Events', 'Inventory', 'Retail POS', 'Reports'];
+const MODULES = ['Identity', 'Arenas', 'Inventory', 'Finance', 'Schedules', 'Bookings', 'Coaching', 'Retail POS'];
 
 const RoleManagement = () => {
-  const { isDark } = useTheme();
   const [roles, setRoles] = useState(INITIAL_ROLES);
   const [selectedRole, setSelectedRole] = useState(roles[0]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newRole, setNewRole] = useState({ name: '', description: '' });
 
-  // Permissions state: roleId -> module -> {view, create, edit, delete}
   const [permissions, setPermissions] = useState(() => {
     const initial = {};
     INITIAL_ROLES.forEach(role => {
       initial[role.id] = {};
       MODULES.forEach(module => {
         const isSuper = role.id === 1;
-        initial[role.id][module] = {
-          view: isSuper,
-          create: isSuper,
-          edit: isSuper,
-          delete: isSuper
-        };
+        initial[role.id][module] = { view: isSuper, create: isSuper, edit: isSuper, delete: isSuper };
       });
     });
     return initial;
@@ -39,43 +31,25 @@ const RoleManagement = () => {
 
   const handleCreateRole = () => {
     if (!newRole.name.trim()) return;
-
     const id = Math.max(...roles.map(r => r.id)) + 1;
-    const roleToAdd = {
-      id,
-      name: newRole.name,
-      description: newRole.description || 'Custom defined role',
-      users: 0,
-      isSystem: false
-    };
-
+    const roleToAdd = { id, name: newRole.name, description: newRole.description || 'Custom role', users: 0, isSystem: false };
     setRoles([...roles, roleToAdd]);
-    
-    // Initialize permissions for new role
     setPermissions(prev => ({
       ...prev,
-      [id]: MODULES.reduce((acc, mod) => ({
-        ...acc,
-        [mod]: { view: false, create: false, edit: false, delete: false }
-      }), {})
+      [id]: MODULES.reduce((acc, mod) => ({ ...acc, [mod]: { view: false, create: false, edit: false, delete: false } }), {})
     }));
-
     setIsModalOpen(false);
     setNewRole({ name: '', description: '' });
     setSelectedRole(roleToAdd);
   };
 
   const togglePermission = (roleId, module, action) => {
-    if (roleId === 1) return; // Super Admin immutable
-
+    if (roleId === 1) return;
     setPermissions(prev => ({
       ...prev,
       [roleId]: {
         ...prev[roleId],
-        [module]: {
-          ...prev[roleId][module],
-          [action]: !prev[roleId][module][action]
-        }
+        [module]: { ...prev[roleId][module], [action]: !prev[roleId][module][action] }
       }
     }));
   };
@@ -84,136 +58,149 @@ const RoleManagement = () => {
     if (id === 1) return;
     const updatedRoles = roles.filter(r => r.id !== id);
     setRoles(updatedRoles);
-    if (selectedRole.id === id) {
-      setSelectedRole(updatedRoles[0]);
-    }
+    if (selectedRole.id === id) setSelectedRole(updatedRoles[0]);
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
-        <div>
-          <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <Shield className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" /> RBAC
-          </h2>
-          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Access hub.</p>
-        </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
-        >
-          <Plus size={14} /> Assign
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-        {/* Roles List */}
-        <div className={`rounded-xl md:rounded-3xl p-1.5 md:p-4 flex h-auto lg:h-fit lg:flex-col gap-1.5 border overflow-x-auto lg:overflow-visible sticky top-24 scrollbar-hide ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
-          <p className={`hidden lg:block text-[10px] font-black uppercase tracking-widest px-4 mb-2 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>Identity</p>
-          {roles.map((role) => (
-            <button
-              key={role.id}
-              onClick={() => setSelectedRole(role)}
-              className={`text-left p-2.5 md:p-4 min-w-[110px] md:min-w-0 rounded-lg md:rounded-2xl transition-all border group relative overflow-hidden flex-shrink-0 ${
-                selectedRole.id === role.id 
-                  ? 'bg-gradient-to-r from-[#eb483f]/10 to-transparent border-[#eb483f]/30 border-l-4 border-l-[#eb483f]' 
-                  : `${isDark ? 'bg-white/5 border-transparent' : 'bg-[#0A1F44]/2 border-transparent'} border-l-4 border-l-transparent`
-              }`}
-            >
-              <div className="flex justify-between items-start">
-                <h3 className={`font-black tracking-tight text-[10px] md:text-sm ${selectedRole.id === role.id ? 'text-[#eb483f]' : isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                  {role.name.split(' ')[0]}
-                </h3>
-                {role.isSystem && (
-                  <Settings size={10} className="opacity-20 md:w-[12px] md:h-[12px]" />
-                )}
-              </div>
-              <p className={`text-[7px] font-bold text-white/10 mt-1 uppercase tracking-widest truncate ${selectedRole.id === role.id && 'text-white/30'}`}>{role.description.split(' ')[0]}</p>
-              <div className={`text-[7px] md:text-[8px] uppercase font-black mt-2 md:mt-3 tracking-widest flex items-center gap-1.5 ${selectedRole.id === role.id ? 'text-[#eb483f]' : 'text-white/10'}`}>
-                <Users size={8} /> {role.users}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Permission Matrix */}
-        <div className={`lg:col-span-3 rounded-xl md:rounded-[2.5rem] border p-3 md:p-10 ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'}`}>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6 mb-4 md:mb-10">
-            <div>
-              <h3 className={`font-black font-display uppercase tracking-widest text-[9px] md:text-sm flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-                Matrix: <span className="text-[#eb483f] italic">{selectedRole.name}</span>
-              </h3>
-              <p className="text-[8px] md:text-xs text-white/20 mt-0.5 font-bold italic">{selectedRole.description}</p>
-            </div>
-            
-            <div className="flex gap-2 w-full md:w-auto">
-              <button className={`flex-1 md:flex-none px-3 py-1.5 rounded-lg md:rounded-xl border text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all ${isDark ? 'border-white/5 text-white/20 hover:text-white' : 'border-[#0A1F44]/10 text-[#0A1F0B]/40 hover:text-[#0A1F0B]'}`}>
-                <Edit2 size={10} /> Name
-              </button>
-              {!selectedRole.isSystem && (
-                <button 
-                  onClick={() => handleDeleteRole(selectedRole.id)}
-                  className={`flex-1 md:flex-none px-3 py-1.5 rounded-lg md:rounded-xl border text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all ${isDark ? 'border-[#FF4B4B]/30 text-[#FF4B4B]' : 'border-[#FF4B4B]/20 text-[#FF4B4B]'}`}
-                >
-                  <Trash2 size={10} /> Purge
-                </button>
-              )}
-            </div>
+    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#1a2b3c]">
+      <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
+        
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200">
+          <div>
+            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
+              <Shield className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Authorization Hub
+            </h2>
+            <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Define RBAC (Role-Based Access Control) and security boundaries.</p>
           </div>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
+          >
+            <Plus size={16} strokeWidth={3} /> Define Role
+          </button>
+        </div>
 
-          <div className={`overflow-hidden rounded-xl md:rounded-[2rem] border ${isDark ? 'border-white/5 bg-black/20' : 'border-[#0A1F44]/10 bg-[#0A1F44]/2 shadow-inner'}`}>
-            <div className="overflow-x-auto scrollbar-hide">
-              <table className="w-full text-left border-collapse min-w-[500px]">
-                <thead>
-                  <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] border-b ${isDark ? 'text-white/40 border-white/5 bg-white/5' : 'text-[#eb483f] border-[#eb483f]/10 bg-[#eb483f]/2'}`}>
-                    <th className="p-3 md:p-8">Module</th>
-                    <th className="p-3 md:p-8 text-center uppercase">Root</th>
-                    <th className="p-3 md:p-8 text-center uppercase">Add</th>
-                    <th className="p-3 md:p-8 text-center uppercase">Mod</th>
-                    <th className="p-3 md:p-8 text-center uppercase">Drop</th>
-                  </tr>
-                </thead>
-                <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-[#0A1F44]/5'}`}>
-                  {MODULES.map((module) => (
-                    <tr key={module} className="group hover:bg-white/[0.02] transition-colors">
-                      <td className={`p-3 md:p-8`}>
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-[#eb483f]/20' : 'bg-[#eb483f]/40'}`} />
-                          <span className={`text-[10px] md:text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{module}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Roles Navigation */}
+          <div className="lg:col-span-1 space-y-4">
+             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sticky top-24 overflow-hidden group hover:border-[#eb483f]/40 transition-all">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] mb-4 px-1 flex items-center gap-2">
+                   <Settings size={12} strokeWidth={2.5} /> Roles Directory
+                </p>
+                <div className="space-y-2 flex lg:flex-col overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide">
+                  {roles.map((role) => (
+                    <button
+                      key={role.id}
+                      onClick={() => setSelectedRole(role)}
+                      className={`text-left p-4 rounded-xl transition-all border w-full flex-shrink-0 lg:flex-shrink-1 min-w-[160px] lg:min-w-0 flex flex-col justify-between h-24 lg:h-auto ${
+                        selectedRole.id === role.id 
+                          ? 'bg-slate-50 border-[#eb483f] shadow-sm' 
+                          : 'bg-transparent border-transparent hover:bg-slate-50 text-slate-400'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className={`font-black text-[13px] tracking-tight ${selectedRole.id === role.id ? 'text-[#1a2b3c]' : 'text-slate-500'}`}>
+                            {role.name}
+                          </h3>
+                          <p className={`text-[10px] font-bold mt-0.5 uppercase tracking-widest leading-none ${selectedRole.id === role.id ? 'text-[#eb483f]' : 'text-slate-300'}`}>
+                             {role.users} Members
+                          </p>
                         </div>
-                      </td>
-                      {['view', 'create', 'edit', 'delete'].map((action) => {
-                        const isSuper = selectedRole.id === 1;
-                        const hasAccess = permissions[selectedRole.id]?.[module]?.[action];
-                        return (
-                          <td key={action} className="p-3 md:p-8 text-center">
-                            <motion.button 
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => togglePermission(selectedRole.id, module, action)}
-                              disabled={isSuper} 
-                              className={`transition-all ${isSuper ? 'opacity-40 cursor-not-allowed' : 'hover:scale-110'}`}
-                            >
-                              {hasAccess ? (
-                                <CheckSquare size={14} className="md:w-[22px] md:h-[22px] text-[#eb483f] inline-block" />
-                              ) : (
-                                <Square size={14} className={`md:w-[22px] md:h-[22px] ${isDark ? 'text-white/5' : 'text-[#0A1F44]/5'} inline-block`} />
-                              )}
-                            </motion.button>
-                          </td>
-                        );
-                      })}
-                    </tr>
+                        {role.isSystem && (
+                          <Shield size={14} className="text-[#eb483f] opacity-30" strokeWidth={2.5} />
+                        )}
+                      </div>
+                    </button>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+             </div>
           </div>
-          
-          <div className={`mt-4 md:mt-8 p-3 md:p-6 rounded-lg md:rounded-2xl flex items-center gap-3 md:gap-4 border ${isDark ? 'bg-white/5 border-white/5' : 'bg-[#0A1F44]/5 border-[#0A1F44]/5'}`}>
-            <Info size={12} className="text-[#eb483f] shrink-0 opacity-40" />
-            <p className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>
-              Changes are applied instantly to the network.
-            </p>
+
+          {/* Matrix Area */}
+          <div className="lg:col-span-3 space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-10 transition-all hover:border-[#eb483f]/40">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div>
+                  <h3 className="text-xl font-black font-display tracking-tight text-[#1a2b3c]">
+                    Permission Matrix: <span className="text-[#eb483f] font-sans">{selectedRole.name}</span>
+                  </h3>
+                  <p className="text-sm font-bold text-slate-500 mt-1 italic">{selectedRole.description}</p>
+                </div>
+                
+                <div className="flex gap-2 w-full md:w-auto">
+                  <button className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 hover:text-[#1a2b3c] transition-all flex items-center justify-center gap-2">
+                    <Edit2 size={14} strokeWidth={2.5} /> Rename
+                  </button>
+                  {!selectedRole.isSystem && (
+                    <button 
+                      onClick={() => handleDeleteRole(selectedRole.id)}
+                      className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-red-100 bg-red-50 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                    >
+                      <Trash2 size={14} strokeWidth={2.5} /> Purge Role
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50">
+                <div className="overflow-x-auto scrollbar-hide">
+                  <table className="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="text-[10px] font-black uppercase tracking-widest border-b border-slate-100 text-[#1a2b3c] bg-slate-50">
+                        <th className="px-8 py-6">Operational Module</th>
+                        <th className="px-8 py-6 text-center">Root</th>
+                        <th className="px-8 py-6 text-center">Create</th>
+                        <th className="px-8 py-6 text-center">Modify</th>
+                        <th className="px-8 py-6 text-center">Drop</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {MODULES.map((module) => (
+                        <tr key={module} className="group hover:bg-white transition-colors">
+                          <td className="px-8 py-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-2 h-2 rounded-full bg-[#eb483f]/40 group-hover:bg-[#eb483f] transition-all" />
+                              <span className="text-sm font-black text-[#1a2b3c] tracking-tight">{module} Management</span>
+                            </div>
+                          </td>
+                          {['view', 'create', 'edit', 'delete'].map((action) => {
+                            const isSuper = selectedRole.id === 1;
+                            const hasAccess = permissions[selectedRole.id]?.[module]?.[action];
+                            return (
+                              <td key={action} className="px-8 py-6 text-center">
+                                <motion.button 
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => togglePermission(selectedRole.id, module, action)}
+                                  disabled={isSuper} 
+                                  className={`transition-all ${isSuper ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110 active:opacity-60'}`}
+                                >
+                                  {hasAccess ? (
+                                    <CheckSquare size={22} className="text-[#eb483f] inline-block" strokeWidth={2.5} />
+                                  ) : (
+                                    <Square size={22} className="text-slate-200 inline-block" strokeWidth={2} />
+                                  )}
+                                </motion.button>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div className="mt-8 p-5 rounded-2xl flex items-center gap-4 bg-slate-50 border border-slate-100">
+                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#eb483f] group">
+                  <Info size={18} strokeWidth={2.5} />
+                </div>
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  Global Policy Enforcement: <span className="text-[#1a2b3c]">Authorization updates propagate across all network instances instantly.</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -221,83 +208,82 @@ const RoleManagement = () => {
       {/* New Role Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-[#08142B]/90 backdrop-blur-xl"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
             
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className={`relative w-full max-w-lg rounded-3xl md:rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[90vh] ${isDark ? 'bg-[#0A1F44] border-white/10' : 'bg-white border-[#0A1F44]/10 shadow-[0_30px_100px_rgba(0,0,0,0.2)]'}`}
+              className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
             >
-              {/* Internal Scrollable Container */}
-              <div className="overflow-y-auto p-6 md:p-10 custom-scrollbar">
+              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
+                    <Shield className="text-[#eb483f]" size={24} strokeWidth={3} /> Role Initialization
+                  </h3>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Define new authority parameters</p>
+                </div>
                 <button 
                   onClick={() => setIsModalOpen(false)}
-                  className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors z-10"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-300 bg-white border border-slate-200 shadow-sm"
                 >
-                  <X size={20} className="md:w-[24px] md:h-[24px]" />
+                  <X size={20} strokeWidth={2.5} />
                 </button>
+              </div>
 
-                <div className="mb-6 md:mb-10">
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f] mb-4 md:mb-6">
-                    <Shield size={24} className="md:w-[32px] md:h-[32px]" />
-                  </div>
-                  <h3 className={`text-xl md:text-3xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>New Role</h3>
-                  <p className={`text-[11px] md:text-sm mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Define access boundaries.</p>
-                </div>
-
-                <div className="space-y-6">
+              <div className="p-6 md:p-8 space-y-6">
+                <div className="space-y-4">
                   <div>
-                    <label className={`block text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] mb-2 md:mb-3 ml-1 ${isDark ? 'text-white/30' : 'text-[#0A1F44]/50'}`}>Identity</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Role Designation</label>
                     <input
                       type="text"
                       value={newRole.name}
                       onChange={(e) => setNewRole({...newRole, name: e.target.value})}
-                      placeholder="e.g. Moderator"
-                      className={`w-full py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl text-[11px] md:text-sm font-black outline-none border transition-all ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10 focus:border-[#eb483f] text-white placeholder:text-white/10' 
-                          : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 focus:border-[#eb483f] text-[#0A1F44] placeholder:text-[#0A1F44]/30'
-                      }`}
+                      placeholder="e.g. Content Moderator"
+                      className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c]"
                     />
                   </div>
 
                   <div>
-                    <label className={`block text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] mb-2 md:mb-3 ml-1 ${isDark ? 'text-white/30' : 'text-[#0A1F44]/50'}`}>Briefing</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Operational Mandate</label>
                     <textarea
                       rows={3}
                       value={newRole.description}
                       onChange={(e) => setNewRole({...newRole, description: e.target.value})}
-                      placeholder="Purpose"
-                      className={`w-full py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl text-[11px] md:text-sm font-black outline-none border transition-all resize-none ${
-                        isDark 
-                          ? 'bg-white/5 border-white/10 focus:border-[#eb483f] text-white placeholder:text-white/10' 
-                          : 'bg-[#0A1F44]/5 border-[#0A1F44]/10 focus:border-[#eb483f] text-[#0A1F44] placeholder:text-[#0A1F44]/30'
-                      }`}
+                      placeholder="Briefly describe the responsibilities of this role..."
+                      className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c] resize-none"
                     />
                   </div>
 
-                  <div className="pt-2 md:pt-4 pb-2">
-                    <button
-                      onClick={handleCreateRole}
-                      disabled={!newRole.name.trim()}
-                      className={`w-full py-4 md:py-5 rounded-lg md:rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] shadow-2xl ${
-                        newRole.name.trim() 
-                          ? 'bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-[1.02] shadow-[#eb483f]/20' 
-                          : isDark ? 'bg-white/5 text-white/5 cursor-not-allowed border border-white/5' : 'bg-black/5 text-black/10 cursor-not-allowed border border-black/5'
-                      }`}
-                    >
-                      Establish
-                    </button>
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#eb483f] shadow-sm">
+                       <Users size={18} strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Assignment Scope</p>
+                       <p className="text-[11px] font-bold text-slate-500 mt-1 leading-snug">New roles start with zero permissions by default for safety.</p>
+                    </div>
                   </div>
                 </div>
+
+                <button
+                  onClick={handleCreateRole}
+                  disabled={!newRole.name.trim()}
+                  className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 transition-all font-black text-[13px] uppercase tracking-widest shadow-lg ${
+                    newRole.name.trim() 
+                      ? 'bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-[#eb483f]/30 hover:-translate-y-0.5' 
+                      : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed shadow-none'
+                  }`}
+                >
+                  Establish Privilege Level <ArrowRight size={18} strokeWidth={3} />
+                </button>
               </div>
             </motion.div>
           </div>
@@ -308,5 +294,3 @@ const RoleManagement = () => {
 };
 
 export default RoleManagement;
-
-

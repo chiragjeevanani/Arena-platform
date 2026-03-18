@@ -18,6 +18,7 @@ import SlotSelection from './modules/user/pages/SlotSelection';
 import BookingSummary from './modules/user/pages/BookingSummary';
 import Payment from './modules/user/pages/Payment';
 import BookingSuccess from './modules/user/pages/BookingSuccess';
+import BookingDetails from './modules/user/pages/BookingDetails';
 import Dashboard from './modules/user/pages/Dashboard';
 import Coaching from './modules/user/pages/Coaching';
 import Profile from './modules/user/pages/Profile';
@@ -90,6 +91,7 @@ function App() {
         <Route path="/coaching-summary" element={<CoachingSummary />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/booking-success" element={<BookingSuccess />} />
+        <Route path="/bookings/:id" element={<BookingDetails />} />
 
         {/* Unified Admin Login */}
         <Route path="/admin/login" element={<AdminLogin />} />

@@ -1,240 +1,314 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ArrowUpRight, Users, CalendarDays, DollarSign,
-  TrendingUp, MapPin, Download, RefreshCw, Layers
+import { 
+  PoundSterling, CalendarDays,
+  ChevronLeft, ChevronRight,
+  Receipt, WalletCards, Users
 } from 'lucide-react';
-import RevenueChart from '../components/RevenueChart';
-import UtilizationHeatmap from '../components/UtilizationHeatmap';
-import Skeleton from '../../../components/Skeleton';
-
-import { useTheme } from '../../user/context/ThemeContext';
-import { useAuth } from '../../user/context/AuthContext';
-import { MOCK_DB, getDashStats } from '../../../data/mockDatabase';
 
 const AdminDashboard = () => {
-  const { isDark } = useTheme();
-  const { user } = useAuth();
-
-  // Scoping logic: ARENA_ADMIN only sees their assigned arena
-  const isArenaAdmin = user?.role === 'ARENA_ADMIN';
-  const initialArena = isArenaAdmin ? user.assignedArena : 'all';
-
-  const [selectedArena, setSelectedArena] = useState(initialArena);
   const [isLoading, setIsLoading] = useState(false);
+  const [calendarView, setCalendarView] = useState('Week');
 
-  // Simulate data fetch delay
   useEffect(() => {
     setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 800);
+    const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
-  }, [selectedArena]);
+  }, []);
 
-  const currentStats = getDashStats(selectedArena);
-
-  const stats = [
-    { label: 'Total Revenue', value: `₹${currentStats.totalRevenue.toLocaleString()}`, icon: DollarSign, trend: '+12.5%', isUp: true },
-    { label: 'Bookings', value: currentStats.bookingCount, icon: CalendarDays, trend: '+5.2%', isUp: true },
-    { label: 'Active Players', value: '3,200', icon: Users, trend: '+18.1%', isUp: true },
-    { label: 'Inventory Alerts', value: currentStats.lowStockCount, icon: Layers, trend: 'Low Stock', isUp: currentStats.lowStockCount === 0 },
+  // MOCK DATA specifically for UI display to match the reference image exactly
+  const scheduleBookings = [
+    { name: 'John Smith', time: '6:00 PM - 7:00 PM', bgColor: '#eb483f', textColor: '#ffffff', colStart: 3, rowStart: 3, rowSpan: 2 }, // Wed 6pm
+    { name: 'Rynn Scott', time: '5:00 PM - 6:00 PM', bgColor: '#ff6b6b', textColor: '#ffffff', colStart: 2, rowStart: 2, rowSpan: 2 }, // Tue 5pm
+    { name: 'Emily Brown', time: '7:00 PM - 8:00 PM', bgColor: '#ff6b6b', textColor: '#ffffff', colStart: 3, rowStart: 4, rowSpan: 2 }, // Wed 7pm
+    { name: 'Mark Davis', time: '4:00 PM - 5:00 PM', bgColor: '#E88E3E', textColor: '#ffffff', colStart: 4, rowStart: 1, rowSpan: 2 }, // Thu 4pm
+    { name: 'Emma Clark', time: '8:00 PM - 9:00 PM', bgColor: '#98B84B', textColor: '#ffffff', colStart: 5, rowStart: 5, rowSpan: 2 }, // Fri 8pm
   ];
 
-  const filteredBookings = selectedArena === 'all'
-    ? MOCK_DB.bookings
-    : MOCK_DB.bookings.filter(b => b.arenaId === selectedArena);
+  const recentBookings = [
+    { date: '24 Apr', court: 'Court 1', time: '6:00 PM - 7:00', player: 'John Smith', status: 'Confirmed', statusBg: '#eb483f', statusText: '#ffffff' },
+    { date: '24 Apr', court: 'Court 4', time: '6:00 PM - 7:00', player: 'Mark Davis', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
+    { date: '24 Apr', court: 'Court 1', time: '7:00 PM - 8:00', player: 'Emily Brown', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
+    { date: '26 Apr', court: 'Court 3', time: '6:30 PM - 7:30', player: 'Ryan Wilson', status: 'Pending', statusBg: '#E88E3E', statusText: '#ffffff' },
+  ];
+
+  const paymentList = [
+    { player: 'Mark Davis', amount: '₹1500', method: 'Card', status: 'Completed', statusBg: '#76A87A', statusText: '#ffffff' },
+    { player: 'Emily Brown', amount: '₹2000', method: 'Cash', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
+    { player: 'Ryan Wilson', amount: '₹1200', method: 'Online', status: 'Pending', statusBg: '#E88E3E', statusText: '#ffffff' },
+  ];
+
+  const playersList = [
+    { name: 'John Smith', phone: '07123 436789', lastVisit: '22 Apr 2024' },
+    { name: 'Emily Brown', phone: '07954 371987', lastVisit: '20 Apr 2024' },
+    { name: 'Ryan Wilson', phone: '07367 930123', lastVisit: '18 Apr 2024' },
+  ];
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3">
-        <div>
-          <h2 className={`text-xl md:text-2xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Ops Center</h2>
-          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-[#eb483f]/60' : 'text-[#eb483f]/60'}`}>Analytics live.</p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <select
-            value={selectedArena}
-            onChange={(e) => setSelectedArena(e.target.value)}
-            disabled={isLoading || isArenaAdmin}
-            className={`flex-1 sm:flex-none px-3 py-2 rounded-lg md:rounded-xl border transition-all text-[9px] md:text-[10px] font-black uppercase tracking-widest outline-none ${isDark ? 'border-white/10 bg-white/5 text-white' : 'border-[#0A1F44]/10 bg-white text-[#0A1F44] shadow-sm'
-              } ${isLoading || isArenaAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {!isArenaAdmin && <option value="all">Network</option>}
-            {MOCK_DB.arenas
-              .filter(a => !isArenaAdmin || a.id === user.assignedArena)
-              .map(a => (
-                <option key={a.id} value={a.id}>{a.name.split(' ')[0]}</option>
-              ))}
-          </select>
-          <button
-            onClick={() => setSelectedArena('all')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg md:rounded-xl border transition-all text-[9px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'border-white/10 bg-white/5 text-white' : 'border-[#eb483f]/10 bg-white text-[#eb483f] shadow-sm'
-              }`}>
-            <RefreshCw size={12} className={`text-[#eb483f] ${isLoading ? 'animate-spin' : ''}`} />
-            Sync
-          </button>
-        </div>
-      </div>
+    <div className="bg-[#F4F7F6] min-h-full p-4 md:p-6 lg:p-8 font-sans">
 
-      {/* Primary Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {stats.map((stat, idx) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className={`group relative border transition-all duration-300 ${isDark
-                ? 'bg-[#1a1d24]/50 border-white/5 rounded-xl md:rounded-[2rem] p-3 md:p-6 hover:border-[#eb483f]/30'
-                : 'bg-white border-[#eb483f]/10 rounded-xl md:rounded-[2rem] p-3 md:p-6 shadow-sm hover:border-[#eb483f]'
-              }`}
-          >
-            {isLoading ? <div className="h-16 md:h-20 bg-white/5 animate-pulse rounded-lg" /> : (
-              <>
-                <div className="flex justify-between items-start mb-2 md:mb-6">
-                  <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center transition-all ${isDark
-                      ? 'bg-white/5 text-white/40 group-hover:text-[#eb483f]'
-                      : 'bg-[#0A1F44]/5 text-[#0A1F44]/40 group-hover:text-[#eb483f]'
-                    }`}>
-                    <stat.icon size={14} className="md:w-[20px] md:h-[20px]" />
-                  </div>
-                  <div className={`flex items-center gap-0.5 text-[6px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-tighter border ${stat.isUp
-                      ? 'text-[#eb483f] bg-[#eb483f]/5 border-[#eb483f]/20'
-                      : 'text-[#FF4B4B] bg-[#FF4B4B]/5 border-[#FF4B4B]/20'
-                    }`}>
-                    {stat.trend.split('%')[0]}% {stat.isUp && <ArrowUpRight size={8} />}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className={`text-[6px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 ${isDark ? 'text-white/20' : 'text-[#0A1F44]/30'}`}>{stat.label.split(' ')[0]}</h4>
-                  <p className={`text-sm md:text-2xl font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{stat.value}</p>
-                </div>
-              </>
-            )}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Main Charts Area */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`xl:col-span-2 rounded-xl md:rounded-[2.5rem] border p-4 md:p-8 ${isDark ? 'bg-[#1a1d24]/50 border-white/5' : 'bg-white border-[#eb483f]/10 shadow-sm'
-            }`}
-        >
-          {isLoading ? <div className="h-48 md:h-72 bg-white/5 animate-pulse rounded-2xl" /> : (
-            <>
-              <div className="flex justify-between items-center mb-4 md:mb-10">
-                <h3 className={`font-black font-display uppercase tracking-widest text-[9px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Revenue velocity</h3>
-                <span className="text-[7px] md:text-[10px] font-black text-[#eb483f] border border-[#eb483f]/20 px-2 py-1 rounded-lg uppercase">Live</span>
+      {/* Main Grid Layout to match reference image */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6 max-w-[1600px] mx-auto">
+        
+        {/* Left Column (Main Content) */}
+        <div className="xl:col-span-8 flex flex-col gap-5 lg:gap-6">
+          
+          {/* Bookings Overview Schedule Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#eb483f]/40">
+            <div className="p-3 md:p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h2 className="text-xl font-bold text-[#1a2b3c]">Bookings Overview</h2>
+              <div className="flex items-center bg-white border border-slate-200 rounded-lg p-1">
+                <button 
+                  onClick={() => setCalendarView('Week')}
+                  className={`px-6 py-1.5 text-[15px] font-medium rounded-md transition-colors ${calendarView === 'Week' ? 'text-[#243B53] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:bg-slate-50'}`}
+                >Week</button>
+                <button 
+                  onClick={() => setCalendarView('Month')}
+                  className={`px-6 py-1.5 text-[15px] font-medium rounded-md transition-colors ${calendarView === 'Month' ? 'text-[#eb483f] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:bg-slate-50'}`}
+                >Month</button>
               </div>
-              <div className="h-40 md:h-72">
-                <RevenueChart />
-              </div>
-            </>
-          )}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`rounded-xl md:rounded-[2.5rem] border p-4 md:p-8 flex flex-col ${isDark ? 'bg-[#1a1d24]/50 border-white/5' : 'bg-white border-[#eb483f]/10 shadow-sm'
-            }`}
-        >
-          {isLoading ? <div className="h-48 md:h-72 bg-white/5 animate-pulse rounded-2xl" /> : (
-            <>
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className={`font-black font-display uppercase tracking-widest text-[9px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Load</h3>
-                  <p className="text-[7px] md:text-[10px] font-bold text-[#eb483f] uppercase tracking-widest mt-0.5">Arena avg</p>
-                </div>
-                <div className="w-8 h-8 rounded-lg bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
-                  <MapPin size={16} />
-                </div>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <span className="text-3xl md:text-5xl font-black font-display text-[#eb483f] mb-1">{currentStats.occupancy}%</span>
-                <p className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-white/20 uppercase">Utilization</p>
-                <div className="mt-4 md:mt-8 w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${currentStats.occupancy}%` }}
-                    className="h-full bg-gradient-to-r from-[#eb483f] to-[#eb483f]/60"
-                  />
-                </div>
-              </div>
-            </>
-          )}
-        </motion.div>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`rounded-xl md:rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#1a1d24]/50 border-white/5' : 'bg-white border-[#eb483f]/10 shadow-sm'
-          }`}
-      >
-        <div className={`px-4 md:px-8 py-3 md:py-6 border-b flex justify-between items-center ${isDark ? 'border-white/5' : 'border-[#eb483f]/5'}`}>
-          <h3 className={`font-black font-display uppercase tracking-widest text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>Booking Queue</h3>
-        </div>
-        <div className="overflow-x-auto scrollbar-hide">
-          {isLoading ? (
-            <div className="p-4 space-y-3">
-              <div className="h-10 bg-white/5 animate-pulse rounded-lg" />
-              <div className="h-10 bg-white/5 animate-pulse rounded-lg" />
             </div>
-          ) : (
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className={`text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] border-b ${isDark ? 'text-white/40 border-white/5 bg-white/5' : 'text-[#eb483f] border-[#eb483f]/10 bg-[#eb483f]/2'}`}>
-                  <th className="p-3 md:p-6">ID</th>
-                  <th className="p-3 md:p-6">Client</th>
-                  <th className="p-3 md:p-6">Venue</th>
-                  <th className="p-3 md:p-6">Value</th>
-                  <th className="p-3 md:p-6 text-center">State</th>
-                </tr>
-              </thead>
-              <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-[#eb483f]/5'}`}>
-                {filteredBookings.map((bk) => {
-                  const arena = MOCK_DB.arenas.find(a => a.id === bk.arenaId);
-                  return (
-                    <tr key={bk.id} className="group hover:bg-white/[0.02] transition-colors">
-                      <td className={`p-3 md:p-6 text-[8px] md:text-[10px] font-black font-mono ${isDark ? 'text-[#eb483f]/80' : 'text-[#eb483f]'}`}>#{bk.id}</td>
-                      <td className="p-3 md:p-6">
-                        <p className={`font-black tracking-tight text-[10px] md:text-sm ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{bk.customerName.split(' ')[0]}</p>
-                        <p className="text-[6px] md:text-[8px] font-bold text-[#eb483f] uppercase tracking-widest opacity-60">Verified</p>
-                      </td>
-                      <td className={`p-3 md:p-6 text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-[#eb483f]/80' : 'text-[#eb483f]'}`}>{arena?.name.split(' ')[0]}</td>
-                      <td className="p-3 md:p-6 text-[10px] md:text-sm font-black text-[#eb483f] font-display">₹{bk.amount}</td>
-                      <td className="p-3 md:p-6">
-                        <div className="flex items-center justify-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest border ${bk.status === 'Confirmed'
-                              ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20'
-                              : 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20'
-                            }`}>
-                            {bk.status === 'Confirmed' ? 'Live' : bk.status}
-                          </span>
+
+            <div className="p-3 md:p-4 pb-6">
+              {calendarView === 'Week' ? (
+                <>
+                  {/* Calendar Navigation */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-6 w-full max-w-2xl mx-auto">
+                      <button className="text-slate-400 hover:text-slate-600"><ChevronLeft size={16} /></button>
+                      <div className="flex-1 grid grid-cols-5 text-center text-sm font-medium text-slate-500">
+                        <div><span className="text-[#1a2b3c] font-bold">Mon</span> 22</div>
+                        <div><span className="text-[#eb483f] bg-[#eb483f]/10 px-2 py-0.5 rounded font-bold">Tue 23</span></div>
+                        <div>Wed 24</div>
+                        <div>Thu 25</div>
+                        <div>Fri 26</div>
+                      </div>
+                      <button className="text-slate-400 hover:text-slate-600"><ChevronRight size={16} /></button>
+                    </div>
+                  </div>
+
+                  {/* Weekly Calendar Grid */}
+                  <div className="border border-slate-100 rounded-lg overflow-hidden relative min-w-[700px] bg-slate-50/30">
+                    {/* Horizontal grid lines (Time Slots on Y-axis) */}
+                    <div className="grid grid-rows-6 divide-y divide-slate-100 border-b border-slate-100 h-[400px]">
+                      {['04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM'].map((time, idx) => (
+                        <div key={idx} className="flex flex-col justify-start pt-2 px-4 text-xs font-bold text-slate-500 border-r border-slate-100 bg-white shadow-[1px_0_0_0_rgba(0,0,0,0.02)]">
+                          {time}
                         </div>
+                      ))}
+                    </div>
+                    
+                    {/* Vertical grid lines (Days) overlayed */}
+                    <div className="absolute inset-y-0 left-[84px] right-0 grid grid-cols-5 divide-x divide-slate-100 pointer-events-none">
+                      <div className="bg-transparent" />
+                      <div className="bg-[#eb483f]/[0.02]" /> {/* Subtle active day highlight for Tue 23 */}
+                      <div className="bg-transparent" />
+                      <div className="bg-transparent" />
+                      <div className="bg-transparent" />
+                    </div>
+
+                    {/* Booking Blocks overlay */}
+                    <div className="absolute inset-y-0 left-[84px] right-0 grid grid-cols-5 grid-rows-12 p-3 gap-x-3 gap-y-1">
+                      {scheduleBookings.map((bk, i) => (
+                        <div 
+                          key={i} 
+                          className="rounded-lg p-2.5 shadow-sm font-bold flex flex-col justify-center border border-black/5 hover:scale-[1.02] transition-transform cursor-pointer"
+                          style={{ 
+                            backgroundColor: bk.bgColor,
+                            color: bk.textColor,
+                            gridColumnStart: bk.colStart, 
+                            gridRowStart: (bk.rowStart * 2) - 1, 
+                            gridRowEnd: `span ${bk.rowSpan * 2}` 
+                          }}
+                        >
+                          <p className="text-xs font-semibold leading-tight truncate">{bk.name}</p>
+                          <p className="text-[10px] opacity-90 truncate leading-tight mt-1">{bk.time}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <button className="text-slate-400 hover:text-slate-600 font-bold flex items-center gap-1 text-sm"><ChevronLeft size={16} /> Mar</button>
+                    <h3 className="text-[#1a2b3c] font-bold text-lg">April 2026</h3>
+                    <button className="text-slate-400 hover:text-slate-600 font-bold flex items-center gap-1 text-sm">May <ChevronRight size={16} /></button>
+                  </div>
+                  <div className="border border-slate-100 rounded-lg overflow-hidden relative min-w-[700px] bg-white">
+                    <div className="grid grid-cols-7 border-b border-slate-100 bg-[#F8F9FA]">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
+                        <div key={i} className="text-center py-3 text-xs font-bold text-slate-500 border-r border-slate-100 last:border-r-0">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 min-h-[400px]">
+                      {Array.from({ length: 35 }).map((_, i) => {
+                        const dayNumber = i - 2; // Offset for April 2026 starts on Wed
+                        const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
+                        const hasEvent = [5, 12, 18, 23, 24].includes(dayNumber);
+                        const isToday = dayNumber === 23;
+                        
+                        return (
+                          <div key={i} className={`border-r border-b border-slate-100 last:border-r-0 p-2 min-h-[100px] ${isCurrentMonth ? 'bg-white' : 'bg-slate-50 text-slate-400'}`}>
+                            {isCurrentMonth && (
+                              <div className="flex flex-col h-full">
+                                <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold mb-1 ${isToday ? 'bg-[#eb483f] text-white shadow-md' : 'text-[#1a2b3c]'}`}>
+                                  {dayNumber}
+                                </span>
+                                {hasEvent && (
+                                  <div className="mt-auto px-2 py-1.5 bg-[#eb483f]/10 text-[#eb483f] rounded-md text-[10px] font-bold truncate border border-[#eb483f]/20">
+                                    {dayNumber % 3 + 1} Bookings
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Bookings Table Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#eb483f]/40">
+            <div className="p-3 md:p-4 border-b border-slate-100 flex items-center gap-2">
+              <CalendarDays className="text-[#eb483f]" size={20} />
+              <h3 className="text-lg font-bold text-[#1a2b3c]">Recent Bookings</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-[#F8F9FA] text-[#1a2b3c] font-semibold border-b border-slate-100">
+                  <tr>
+                    <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4">Court</th>
+                    <th className="px-6 py-4 flex items-center gap-1">Time <ChevronRight size={12} className="rotate-90"/></th>
+                    <th className="px-6 py-4">Player Name</th>
+                    <th className="px-6 py-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {recentBookings.map((bk, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 text-slate-600 font-medium">{bk.date}</td>
+                      <td className="px-6 py-4 text-slate-700">{bk.court}</td>
+                      <td className="px-6 py-4 text-slate-700">{bk.time}</td>
+                      <td className="px-6 py-4 font-semibold text-[#1a2b3c]">{bk.player}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-3 py-1 text-xs font-semibold rounded" style={{ backgroundColor: bk.statusBg, color: bk.statusText }}>
+                          {bk.status}
+                        </span>
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
-      </motion.div>
-      {!isLoading && filteredBookings.length === 0 && (
-        <div className="p-12 text-center text-white/20 font-black uppercase tracking-widest text-xs">
-          No active bookings for this scope
+
+        {/* Right Column (Sidebar Content) */}
+        <div className="xl:col-span-4 flex flex-col gap-5 lg:gap-6">
+          
+          {/* Stats Cards container */}
+          <div className="bg-[#F4F7F6] ring-1 ring-slate-200/50 rounded-xl overflow-hidden shadow-sm flex flex-col gap-[2px] transition-all hover:ring-[#eb483f]/40">
+            {/* Pending Payments stat */}
+            <div className="bg-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f] shrink-0">
+                  <div className="text-lg font-bold">₹</div>
+                </div>
+                <div>
+                  <p className="text-[#1a2b3c] font-bold text-sm mb-0.5">Pending Payments</p>
+                  <p className="text-xs text-slate-500 font-medium">₹3,250.00</p>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-[#113F47] tracking-tight">₹500.00</p>
+            </div>
+
+            {/* Upcoming Bookings stat */}
+            <div className="bg-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f] shrink-0">
+                  <CalendarDays size={20} />
+                </div>
+                <div>
+                  <p className="text-[#1a2b3c] font-bold text-sm mb-0.5">Upcoming Bookings</p>
+                  <p className="text-xs text-slate-500 font-medium">₹2,750.00</p>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-[#113F47]">8</p>
+            </div>
+          </div>
+
+          {/* Payments Side Table */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#eb483f]/40">
+            <div className="p-4 flex items-center gap-2 border-b border-slate-100">
+              <Receipt className="text-[#eb483f]" size={18} />
+              <h3 className="text-lg font-extrabold text-[#1a2b3c]">Payments</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-[#0A1F44] text-white font-medium">
+                  <tr>
+                    <th className="px-4 py-3">Player</th>
+                    <th className="px-4 py-3">Amount</th>
+                    <th className="px-4 py-3">Payment M</th>
+                    <th className="px-4 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 text-[13px]">
+                  {paymentList.map((pay, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3.5 font-bold text-[#1a2b3c]">{pay.player}</td>
+                      <td className="px-4 py-3.5 font-bold text-slate-700">{pay.amount}</td>
+                      <td className="px-4 py-3.5 text-slate-600">{pay.method}</td>
+                      <td className="px-4 py-3.5">
+                        <span className="px-2 py-0.5 text-[11px] font-semibold rounded" style={{ backgroundColor: pay.statusBg, color: pay.statusText }}>
+                          {pay.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Player Management Side Table */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mt-auto transition-all hover:border-[#eb483f]/40">
+            <div className="p-4 flex items-center gap-2 border-b border-slate-100">
+              <Users className="text-[#eb483f]" size={18} />
+              <h3 className="text-lg font-extrabold text-[#1a2b3c]">Player Management</h3>
+            </div>
+            <div className="flex bg-[#F8F9FA] px-4 py-3 border-b border-slate-100 text-[#1a2b3c] font-bold text-xs justify-between">
+              <div className="w-[40%]">Player Name</div>
+              <div className="w-[30%]">Phone</div>
+              <div className="w-[30%] text-right">Last Visit</div>
+            </div>
+            <div className="divide-y divide-slate-50 text-[13px]">
+              {playersList.map((player, idx) => (
+                <div key={idx} className="flex px-4 py-3.5 items-center justify-between hover:bg-slate-50 transition-colors">
+                  <div className="font-bold text-[#1a2b3c] w-[40%] truncate pr-2">
+                    {player.name}
+                    <span className="block text-[10px] font-normal text-slate-500 mt-0.5 truncate">{player.name.replace(' ', '.').toLowerCase()}@email.com</span>
+                  </div>
+                  <div className="text-slate-600 w-[30%] truncate pr-2">{player.phone}</div>
+                  <div className="text-slate-600 w-[30%] text-right truncate">{player.lastVisit}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
-      )}
+      </div>
+
     </div>
   );
 };
 
 export default AdminDashboard;
-
-

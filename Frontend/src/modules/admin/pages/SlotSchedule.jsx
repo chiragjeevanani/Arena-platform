@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarClock, ChevronLeft, ChevronRight, Clock, MapPin, Filter, MoreVertical, Plus, AlertTriangle, X } from 'lucide-react';
-import { useTheme } from '../../user/context/ThemeContext';
+import { CalendarClock, ChevronLeft, ChevronRight, Clock, MapPin, Plus, AlertTriangle, X, MoreVertical } from 'lucide-react';
 import { MOCK_DB } from '../../../data/mockDatabase';
 import { format, addDays, startOfToday } from 'date-fns';
 
 const SlotSchedule = () => {
-  const { isDark } = useTheme();
   const [selectedArenaId, setSelectedArenaId] = useState(MOCK_DB.arenas[0].id);
   const [selectedDate, setSelectedDate] = useState(startOfToday());
   const [showBlockModal, setShowBlockModal] = useState(false);
@@ -19,245 +17,232 @@ const SlotSchedule = () => {
     "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"
   ];
 
-  // Helper to get status from MOCK_DB
   const getSlotStatus = (courtId, time) => {
     const booking = MOCK_DB.bookings.find(b => b.courtId === courtId && b.time === time);
     if (booking) return { status: 'Booked', data: booking };
     
-    const inventoryConflict = MOCK_DB.inventory.some(i => i.arenaId === selectedArenaId && i.stock < i.minStock && i.name.includes('Shuttlecock'));
-    
-    // Demo logic for conflict patterns
     const hour = parseInt(time.split(':')[0]);
-    if (hour === 12 && courtId === 'court-1') return { status: 'Maintenance', data: { reason: 'Surface Cleaning' } };
-    if (hour === 18 && courtId === 'court-1') return { status: 'Conflict', data: { reason: 'Overlapping Event' } };
+    if (hour === 12 && courtId === 'court-1') return { status: 'Maintenance', data: { reason: 'Clean' } };
+    if (hour === 18 && courtId === 'court-1') return { status: 'Alert', data: { reason: 'Conflict' } };
     
     return { status: 'Available', data: null };
   };
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case 'Booked': return isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' : 'bg-[#0284c7]/10 text-[#0284c7] border-[#0284c7]/20';
-      case 'Maintenance': return isDark ? 'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20' : 'bg-[#dc2626]/10 text-[#dc2626] border-[#dc2626]/20';
-      case 'Conflict': return isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f] animate-pulse' : 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f] animate-pulse';
-      default: return isDark ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20 hover:bg-[#eb483f]/20' : 'bg-[#eb483f]/5 text-[#eb483f] border-[#eb483f]/10 hover:bg-[#eb483f]/10';
+      case 'Booked': return 'bg-slate-50 border-slate-200 text-[#1a2b3c] hover:bg-slate-100';
+      case 'Maintenance': return 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100/50';
+      case 'Alert': return 'bg-red-50 border-[#eb483f]/30 text-[#eb483f] animate-pulse';
+      default: return 'bg-white border-dashed border-slate-200 text-slate-300 hover:border-[#eb483f]/40 hover:bg-slate-50/50';
     }
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b ${isDark ? 'border-white/5' : 'border-[#0A1F44]/10'}`}>
-        <div>
-          <h2 className={`text-lg md:text-2xl font-black font-display tracking-wide flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>
-            <CalendarClock className="text-[#eb483f] w-[18px] h-[18px] md:w-5 md:h-5" /> Queue
-          </h2>
-          <p className={`text-[10px] md:text-sm mt-0.5 md:mt-1 font-medium italic ${isDark ? 'text-white/40' : 'text-[#0A1F44]/40'}`}>Slot intelligence.</p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#1a2b3c]">
+      <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
+        
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
+              <CalendarClock className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Inventory Queue
+            </h2>
+            <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Real-time slot intelligence and facility occupancy matrix.</p>
+          </div>
           <button
             onClick={() => setShowBlockModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-[#eb483f] text-[#0A1F44] hover:bg-white hover:scale-105 transition-all text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg md:shadow-xl shadow-[#eb483f]/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
           >
-            <Plus size={12} className="md:w-[14px] md:h-[14px]" /> Block
+            <Plus size={16} strokeWidth={3} /> Reserve Maintenance
           </button>
         </div>
-      </div>
 
-      {/* Scheduler Control Bar */}
-      <div className={`p-3 md:p-6 rounded-xl md:rounded-[2rem] border ${
-        isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-sm'
-      }`}>
-        {/* Row 1: Facility + Date (always side by side) */}
-        <div className="flex items-center justify-between gap-3 md:gap-6">
-          {/* Facility Selector */}
-          <div className="flex items-center gap-2 md:gap-4">
-            <div className={`w-7 h-7 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center shrink-0 ${isDark ? 'bg-white/5 text-[#eb483f]' : 'bg-[#eb483f]/10 text-[#eb483f]'}`}>
-              <MapPin size={14} className="md:w-[22px] md:h-[22px]" />
-            </div>
-            <div>
-              <p className="text-[6px] md:text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-0.5 md:mb-1">Facility</p>
-              <select
-                value={selectedArenaId}
-                onChange={(e) => setSelectedArenaId(e.target.value)}
-                className={`bg-transparent text-[10px] md:text-sm font-black outline-none cursor-pointer ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}
-              >
-                {MOCK_DB.arenas.map(a => <option key={a.id} value={a.id} className="bg-[#0A1F44] text-white">{a.name.split(' ')[0]}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Date Navigator */}
-          <div className={`flex items-center gap-2 md:gap-6 bg-white/5 px-3 md:px-6 py-1.5 md:py-3 rounded-lg md:rounded-2xl border border-white/5`}>
-            <button onClick={() => setSelectedDate(addDays(selectedDate, -1))} className={`p-1 rounded-md md:p-1.5 md:rounded-lg transition-colors ${isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-[#0A1F44]/5'}`}>
-              <ChevronLeft size={14} className="md:w-[24px] md:h-[24px]" />
-            </button>
-            <div className="text-center min-w-[70px] md:min-w-[140px]">
-              <p className={`text-[10px] md:text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{format(selectedDate, 'MMM dd')}</p>
-              <p className="text-[7px] md:text-[10px] font-black text-[#eb483f] uppercase tracking-widest leading-none">Sync</p>
-            </div>
-            <button onClick={() => setSelectedDate(addDays(selectedDate, 1))} className={`p-1 rounded-md md:p-1.5 md:rounded-lg transition-colors ${isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-[#0A1F44]/5'}`}>
-              <ChevronRight size={14} className="md:w-[24px] md:h-[24px]" />
-            </button>
-          </div>
-        </div>
-
-        {/* Row 2: Status Legend */}
-        <div className="flex items-center gap-2 md:gap-4 mt-3 md:mt-4">
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg md:rounded-xl border border-white/5 bg-white/2">
-            <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-[#eb483f]" />
-            <span className="text-[7px] md:text-[9px] font-black text-white/20 uppercase tracking-widest">Open</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg md:rounded-xl border border-white/5 bg-white/2">
-            <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-[#FF4B4B]" />
-            <span className="text-[7px] md:text-[9px] font-black text-white/20 uppercase tracking-widest">Block</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg md:rounded-xl border border-[#eb483f]/20 bg-[#eb483f]/10">
-            <AlertTriangle size={8} className="md:w-[12px] md:h-[12px] text-[#eb483f]" />
-            <span className="text-[7px] md:text-[9px] font-black text-[#eb483f]/60 uppercase tracking-widest">Issues</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Grid Canvas */}
-      <div className={`rounded-2xl md:rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44]/50 border-white/5' : 'bg-white border-[#0A1F44]/10 shadow-lg'}`}>
-        {/* Mobile scroll hint */}
-        <div className="md:hidden flex items-center justify-center gap-1.5 py-2 border-b border-white/5">
-          <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">← Scroll to see all courts →</span>
-        </div>
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="min-w-[600px] md:min-w-[800px]">
-            {/* Legend Row */}
-            <div className={`px-2 md:px-4 py-3 md:py-6 border-b flex items-center ${isDark ? 'border-white/5 bg-white/5' : 'border-[#0A1F44]/10 bg-[#0A1F44]/2'}`}>
-              <div className="w-20 md:w-32 shrink-0 flex items-center gap-2 md:gap-3 pl-2 md:pl-4">
-                <Clock size={12} className="md:w-[16px] md:h-[16px] opacity-20" />
-                <span className="text-[8px] md:text-[10px] font-black text-white/20 uppercase tracking-widest">Slots</span>
+        {/* Scheduler Control Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+           {/* Facility Selector Card */}
+           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:border-[#eb483f]/40">
+              <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#eb483f] shadow-sm">
+                <MapPin size={22} strokeWidth={2.5} />
               </div>
-              <div className="flex-1 flex gap-2 md:gap-5 pr-4 md:pr-6">
-                {arenaCourts.map(court => (
-                   <div key={court.id} className="flex-1 text-center py-1.5 md:py-2 rounded-lg md:rounded-2xl bg-white/5 border border-white/5">
-                    <p className={`text-[9px] md:text-[11px] font-black tracking-widest uppercase ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{court.name.split(' ')[0]}</p>
-                    <p className="text-[6px] md:text-[8px] font-black text-[#eb483f] uppercase tracking-tighter opacity-40 leading-none">{court.type.split(' ')[0]}</p>
+              <div className="flex-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Arena Hub</p>
+                <select
+                  value={selectedArenaId}
+                  onChange={(e) => setSelectedArenaId(e.target.value)}
+                  className="w-full bg-transparent text-sm font-black text-[#1a2b3c] outline-none cursor-pointer appearance-none"
+                >
+                  {MOCK_DB.arenas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+              </div>
+           </div>
+
+           {/* Date Navigator Card */}
+           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-[#eb483f]/40">
+              <button onClick={() => setSelectedDate(addDays(selectedDate, -1))} className="p-2 rounded-xl hover:bg-slate-50 text-slate-400 transition-all border border-transparent hover:border-slate-100">
+                <ChevronLeft size={20} strokeWidth={2.5} />
+              </button>
+              <div className="text-center group cursor-pointer">
+                <p className="text-sm font-black text-[#1a2b3c] tracking-tight">{format(selectedDate, 'MMMM dd, yyyy')}</p>
+                <p className="text-[10px] font-black text-[#eb483f] uppercase tracking-[0.2em] leading-none mt-1 group-hover:tracking-[0.3em] transition-all">Live Sync</p>
+              </div>
+              <button onClick={() => setSelectedDate(addDays(selectedDate, 1))} className="p-2 rounded-xl hover:bg-slate-50 text-slate-400 transition-all border border-transparent hover:border-slate-100">
+                <ChevronRight size={20} strokeWidth={2.5} />
+              </button>
+           </div>
+
+           {/* Legend Card */}
+           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-around gap-2 md:col-span-2 lg:col-span-1 border-dashed">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#eb483f]" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-400" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Blocked</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#1a2b3c]/10" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Open</span>
+              </div>
+           </div>
+        </div>
+
+        {/* Grid Container */}
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:border-[#eb483f]/40">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="min-w-[900px]">
+              {/* Sticky Court Header */}
+              <div className="flex items-center sticky top-0 z-10 bg-slate-50/90 backdrop-blur-md border-b border-slate-100">
+                <div className="w-28 md:w-36 shrink-0 py-6 px-4 border-r border-slate-100 flex items-center justify-center">
+                  <Clock size={18} className="text-slate-300" strokeWidth={2.5} />
+                </div>
+                <div className="flex-1 flex divide-x divide-slate-100">
+                  {arenaCourts.map(court => (
+                    <div key={court.id} className="flex-1 py-6 text-center group">
+                      <p className="text-[11px] font-black text-[#1a2b3c] uppercase tracking-widest group-hover:text-[#eb483f] transition-colors">{court.name}</p>
+                      <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase italic leading-none">{court.type}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Time Matrix */}
+              <div className="divide-y divide-slate-50">
+                {timeSlots.map(time => (
+                  <div key={time} className="flex items-stretch group min-h-[100px]">
+                    {/* Time Column */}
+                    <div className="w-28 md:w-36 shrink-0 flex flex-col items-center justify-center border-r border-slate-100 bg-slate-50/30 group-hover:bg-slate-50 transition-colors">
+                      <span className="text-lg font-black font-display text-[#1a2b3c]">{time}</span>
+                      <span className="text-[9px] font-black text-[#eb483f] uppercase tracking-widest opacity-30 mt-1">Peak PR</span>
+                    </div>
+
+                    {/* Court Slots Column */}
+                    <div className="flex-1 flex divide-x divide-slate-50 p-3 gap-3">
+                      {arenaCourts.map(court => {
+                        const { status, data } = getSlotStatus(court.id, time);
+                        return (
+                          <motion.div
+                            key={court.id}
+                            whileHover={{ scale: 0.98 }}
+                            className={`flex-1 rounded-2xl border-2 p-4 transition-all relative overflow-hidden flex flex-col justify-between ${getStatusStyle(status)} group/slot shadow-sm`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{status}</span>
+                              {status === 'Alert' && <AlertTriangle size={14} className="text-[#eb483f]" strokeWidth={2.5} />}
+                            </div>
+
+                            {status !== 'Available' ? (
+                              <div className="space-y-1">
+                                <p className="text-xs font-black truncate text-[#1a2b3c]">
+                                  {status === 'Booked' ? data.customerName : data.reason}
+                                </p>
+                                <div className="flex items-center gap-1.5 opacity-40">
+                                   <div className="w-1 h-1 rounded-full bg-[#1a2b3c]" />
+                                   <p className="text-[9px] font-black uppercase tracking-tighter">Verified Entry</p>
+                                </div>
+                              </div>
+                            ) : (
+                               <div className="flex flex-col items-center justify-center h-full opacity-0 group-hover/slot:opacity-100 transition-all">
+                                  <Plus size={16} className="text-[#eb483f]" strokeWidth={3} />
+                                  <span className="text-[8px] font-black text-[#eb483f] uppercase tracking-widest mt-1">Reserve</span>
+                               </div>
+                            )}
+
+                            <div className="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 group-hover/slot:opacity-20 transition-all">
+                               <MoreVertical size={14} />
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Matrix Body */}
-            <div className="divide-y divide-white/5">
-              {timeSlots.map(time => (
-                 <div key={time} className="flex items-center group min-h-[50px] md:min-h-[90px]">
-                  <div className={`w-20 md:w-32 shrink-0 px-4 md:px-8 flex flex-col justify-center border-r transition-colors ${isDark ? 'border-white/5 bg-white/[0.01] group-hover:bg-white/5' : 'border-[#0A1F44]/5 bg-white group-hover:bg-[#0A1F44]/2'}`}>
-                    <span className={`text-xs md:text-base font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-[#0A1F44]'}`}>{time}</span>
-                    <span className="text-[6px] md:text-[8px] font-black text-[#eb483f] uppercase tracking-widest opacity-20 md:opacity-40">Peak</span>
-                  </div>
-                  <div className="flex-1 flex gap-2 md:gap-5 p-2 md:p-4 pr-4 md:pr-6">
-                    {arenaCourts.map(court => {
-                      const { status, data } = getSlotStatus(court.id, time);
-                      return (
-                        <motion.div
-                          key={court.id}
-                          whileHover={{ scale: 0.98, translateY: -1 }}
-                          className={`flex-1 rounded-lg md:rounded-2xl border md:border-2 p-1.5 md:p-4 cursor-pointer transition-all flex flex-col justify-center items-start gap-0.5 relative overflow-hidden group/slot ${getStatusStyle(status)}`}
-                        >
-                          <div className="flex justify-between items-center w-full">
-                            <span className="text-[6px] md:text-[10px] font-black uppercase tracking-widest">{status.split(' ')[0]}</span>
-                            {status === 'Conflict' && <AlertTriangle size={8} className="md:w-[14px] md:h-[14px] text-[#eb483f]" />}
-                          </div>
-                          
-                          <AnimatePresence>
-                            {status !== 'Available' && (
-                              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-0.5 md:mt-2 space-y-0.5 md:space-y-1">
-                                <p className="text-[7px] md:text-[9px] font-black opacity-60 uppercase tracking-tighter truncate max-w-full">
-                                  {status === 'Booked' ? data.customerName.split(' ')[0] : data.reason.split(' ')[0]}
-                                </p>
-                                {status === 'Booked' && (
-                                  <div className="flex items-center gap-1 md:gap-1.5">
-                                    <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#eb483f] opacity-50" />
-                                    <span className="text-[6px] md:text-[8px] font-bold opacity-30 uppercase">ID</span>
-                                  </div>
-                                )}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          <div className="absolute bottom-1 right-1 opacity-0 group-hover/slot:opacity-20 transition-opacity">
-                             <MoreVertical size={10} />
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Instant Block Modal */}
+      {/* Block Modal */}
       <AnimatePresence>
         {showBlockModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowBlockModal(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowBlockModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className={`relative w-full max-w-lg rounded-3xl md:rounded-[2.5rem] border overflow-hidden ${isDark ? 'bg-[#0A1F44] border-white/10 text-white' : 'bg-white border-black/10 text-[#0A1F44]'} shadow-2xl shadow-black/50`}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
             >
-            <div className="p-5 border-b border-inherit flex items-center justify-between">
+              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
-                  <h3 className="text-lg md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3">
-                    <CalendarClock className="text-[#eb483f] w-[18px] h-[18px] md:w-6 md:h-6" /> Block
+                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
+                    <CalendarClock className="text-[#eb483f]" size={24} strokeWidth={3} /> Block Protocol
                   </h3>
-                  <p className="text-[9px] md:text-xs font-bold opacity-30 uppercase tracking-widest mt-0.5 md:mt-1">Reserve maintenance</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Initialize temporary facility closure</p>
                 </div>
-                <button onClick={() => setShowBlockModal(false)} className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-colors ${isDark ? 'hover:bg-white/5 text-white/40 hover:text-white' : 'hover:bg-black/5 text-black/40 hover:text-black'}`}>
-                  <X size={16} className="md:w-[20px] md:h-[20px]" />
-                </button>
+                <button onClick={() => setShowBlockModal(false)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-300 bg-white border border-slate-200 shadow-sm"><X size={20} strokeWidth={2.5} /></button>
               </div>
-              <div className="p-5 md:p-8 space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+
+              <div className="p-6 md:p-8 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Court</label>
-                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
-                      {MOCK_DB.courts.filter(c => c.arenaId === selectedArenaId).map(c => (
-                        <option key={c.id} value={c.id} className="bg-[#0A1F44] text-white">{c.name.split(' ')[1]}</option>
-                      ))}
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Target Court</label>
+                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner">
+                      {arenaCourts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Mode</label>
-                    <select className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none appearance-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`}>
-                      <option className="bg-[#0A1F44] text-white">Ops</option>
-                      <option className="bg-[#0A1F44] text-white">VIP</option>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Protocol Type</label>
+                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner">
+                      <option>Maintenance</option>
+                      <option>Privilege Block</option>
+                      <option>Tournament</option>
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">Start</label>
-                    <input type="time" defaultValue="09:00" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Window Start</label>
+                    <input type="time" defaultValue="09:00" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
                   </div>
                   <div>
-                    <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1.5 md:mb-2 block">End</label>
-                    <input type="time" defaultValue="11:00" className={`w-full py-3 md:py-4 px-3 md:px-4 rounded-xl md:rounded-2xl border text-[11px] md:text-xs font-bold outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Window End</label>
+                    <input type="time" defaultValue="11:00" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
                   </div>
                 </div>
+
                 <div>
-                  <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-30 mb-1 block">Reason</label>
-                  <textarea rows={2} placeholder="Brief note..." className={`w-full py-3 px-4 rounded-xl border text-[11px] font-bold outline-none resize-none transition-all ${isDark ? 'bg-white/5 border-white/5 focus:border-[#eb483f]/50 text-white' : 'bg-black/5 border-black/5 focus:border-[#eb483f] text-[#0A1F44]'}`} />
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Verification Note</label>
+                   <textarea placeholder="e.g. Surface polishing and light fixture repair..." rows={2} className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] resize-none" />
                 </div>
+
                 <button
                   onClick={() => setShowBlockModal(false)}
-                  className="w-full py-4 md:py-5 rounded-xl md:rounded-2xl bg-[#eb483f] text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-white hover:text-[#eb483f] hover:scale-[1.01] transition-all shadow-xl md:shadow-2xl shadow-[#eb483f]/40 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
-                  Block <AlertTriangle size={14} className="md:w-[16px] md:h-[16px]" />
+                  Confirm Blockage <AlertTriangle size={18} strokeWidth={3} />
                 </button>
               </div>
             </motion.div>
@@ -269,5 +254,3 @@ const SlotSchedule = () => {
 };
 
 export default SlotSchedule;
-
-
