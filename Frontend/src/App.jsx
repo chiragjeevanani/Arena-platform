@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import UserLayout from './layouts/UserLayout';
 import AdminLayout from './layouts/AdminLayout';
 import CoachLayout from './layouts/CoachLayout';
+import ArenaLayout from './layouts/ArenaLayout';
 
 // Auth Pages
 import Login from './modules/user/pages/Login';
@@ -29,6 +30,7 @@ import Events from './modules/user/pages/Events';
 import EventDetail from './modules/user/pages/EventDetail';
 import Privacy from './modules/user/pages/Privacy';
 import Help from './modules/user/pages/Help';
+import Terms from './modules/user/pages/Terms';
 import CoachingSummary from './modules/user/pages/CoachingSummary';
 
 // Admin Pages
@@ -54,6 +56,19 @@ import CoachDashboard from './modules/coach/pages/CoachDashboard';
 import MyStudents from './modules/coach/pages/MyStudents';
 import AttendanceRecords from './modules/coach/pages/AttendanceRecords';
 import StudentRemarks from './modules/coach/pages/StudentRemarks';
+import ScheduleCalendar from './modules/coach/pages/ScheduleCalendar';
+import ProgressTracker from './modules/coach/pages/ProgressTracker';
+
+// Admin Extra Pages
+import PricingManagement from './modules/admin/pages/PricingManagement';
+import EventBanners from './modules/admin/pages/EventBanners';
+import BookingSelectorMgmt from './modules/admin/pages/BookingSelectorMgmt';
+import ArenaManagementPanel from './modules/admin/pages/ArenaManagementPanel';
+
+// Arena Panel (Standalone)
+import ArenaLogin from './modules/arena/pages/ArenaLogin';
+import ArenaDashboard from './modules/arena/pages/ArenaDashboard';
+import { ArenaDetailsPage, CourtMgmtPage, SlotConfigPage, PricingRulesPage, AvailabilityPage } from './modules/arena/pages/index.jsx';
 
 // Components
 import ScrollToTop from './components/ScrollToTop';
@@ -83,6 +98,7 @@ function App() {
           <Route path="profile/notifications" element={<Notifications />} />
           <Route path="profile/privacy" element={<Privacy />} />
           <Route path="profile/help" element={<Help />} />
+          <Route path="terms" element={<Terms />} />
         </Route>
 
         {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
@@ -111,19 +127,36 @@ function App() {
           <Route path="inventory" element={<Inventory />} />
           <Route path="pos" element={<RetailPOS />} />
           <Route path="reports" element={<FinancialReports />} />
+          <Route path="pricing" element={<PricingManagement />} />
+          <Route path="user/events" element={<EventBanners />} />
+          <Route path="user/booking" element={<BookingSelectorMgmt />} />
           <Route path="settings" element={<AccountSettings />} />
+          <Route path="arena-panel" element={<ArenaManagementPanel />} />
         </Route>
 
         {/* Coach Routes */}
         <Route path="/coach" element={<CoachLayout />}>
           <Route index element={<CoachDashboard />} />
+          <Route path="schedule" element={<ScheduleCalendar />} />
           <Route path="students" element={<MyStudents />} />
           <Route path="attendance" element={<AttendanceRecords />} />
           <Route path="remarks" element={<StudentRemarks />} />
+          <Route path="progress" element={<ProgressTracker />} />
         </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
+
+        {/* === ARENA PANEL (Standalone) === */}
+        <Route path="/arena/login" element={<ArenaLogin />} />
+        <Route path="/arena" element={<ArenaLayout />}>
+          <Route index element={<ArenaDashboard />} />
+          <Route path="details" element={<ArenaDetailsPage />} />
+          <Route path="courts" element={<CourtMgmtPage />} />
+          <Route path="slots" element={<SlotConfigPage />} />
+          <Route path="pricing" element={<PricingRulesPage />} />
+          <Route path="availability" element={<AvailabilityPage />} />
+        </Route>
       </Routes>
     </Router>
   );

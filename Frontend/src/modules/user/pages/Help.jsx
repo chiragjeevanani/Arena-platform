@@ -43,31 +43,7 @@ const Help = () => {
           </div>
 
           <div className="px-5 md:px-10 py-6 md:py-8 space-y-5 md:space-y-8 relative z-10">
-            {/* Support Options */}
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
-              <div className={`p-5 md:p-6 rounded-2xl md:rounded-2xl border-[2.5px] flex flex-col items-center text-center transition-all duration-300 group ${
-                isDark ? 'bg-white/5 border-white/10 hover:border-[#eb483f]/40' : 'bg-white border-[#eb483f]/20 shadow-[0_10px_30px_-5px_rgba(235,72,63,0.1)] hover:border-[#eb483f] hover:scale-105'
-              }`}>
-                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center mb-3 md:mb-4 transition-transform duration-500 group-hover:scale-110 ${
-                  'bg-blue-50 text-blue-600'
-                }`}>
-                  <MessageCircle size={24} className="md:w-[28px] md:h-[28px]" />
-                </div>
-                <h3 className={`font-black text-[12px] md:text-[13px] uppercase tracking-wider ${'text-[#0F172A]'}`}>Live Chat</h3>
-                <p className={`text-[9px] md:text-[10px] font-bold mt-1 ${'text-slate-400'}`}>Available 24/7</p>
-              </div>
-              <div className={`p-5 md:p-6 rounded-2xl md:rounded-2xl border-[2.5px] flex flex-col items-center text-center transition-all duration-300 group ${
-                isDark ? 'bg-white/5 border-white/10 hover:border-emerald-500/40' : 'bg-white border-[#eb483f]/20 shadow-[0_10px_30px_-5px_rgba(235,72,63,0.1)] hover:border-[#eb483f] hover:scale-105'
-              }`}>
-                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center mb-3 md:mb-4 transition-transform duration-500 group-hover:scale-110 ${
-                  'bg-emerald-50 text-emerald-600'
-                }`}>
-                  <Mail size={24} className="md:w-[28px] md:h-[28px]" />
-                </div>
-                <h3 className={`font-black text-[12px] md:text-[13px] uppercase tracking-wider ${'text-[#0F172A]'}`}>Email Us</h3>
-                <p className={`text-[9px] md:text-[10px] font-bold mt-1 ${'text-slate-400'}`}>Response in 2h</p>
-              </div>
-            </div>
+
 
             {/* Contact Info */}
             <div className={`p-6 md:p-8 rounded-3xl md:rounded-2xl border-[2.5px] transition-all duration-300 ${

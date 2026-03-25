@@ -3,8 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import { Email, Lock, Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import Lottie from 'lottie-react';
 import { useAuth } from '../context/AuthContext';
-import loginVideo from '../../../assets/lotties/Kids Playing Badminton.mp4';
+import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -43,22 +44,19 @@ const Login = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full md:max-w-[440px] bg-transparent md:bg-white md:p-10 md:rounded-none rounded-[40px] md:shadow-[0_20px_60px_rgba(235,72,63,0.08)] md:border md:border-slate-100"
+        className="relative z-10 w-full md:max-w-[320px] bg-transparent md:bg-white md:p-8 md:rounded-3xl rounded-[40px] md:shadow-[0_20px_60px_rgba(235,72,63,0.08)] md:border md:border-slate-100"
       >
-        <div className="space-y-8">
+        <div className="space-y-6">
         <div className="text-center">
-          <div className="w-full max-w-[200px] aspect-square mx-auto rounded-[32px] overflow-hidden shadow-2xl shadow-[#eb483f]/15 mb-4 bg-white/50 border border-white/40 backdrop-blur-md">
-            <video 
-              src={loginVideo} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              className="w-full h-full object-cover"
+          <div className="w-full max-w-[140px] aspect-square mx-auto mb-2 overflow-hidden pointer-events-none mix-blend-multiply bg-transparent">
+            <Lottie 
+              animationData={badmintonLottie} 
+              loop={true} 
+              className="w-full h-full"
             />
           </div>
-          <h1 className="mt-6 text-3xl font-black text-[#0F172A] tracking-tight" style={{ fontFamily: "'Montserrat', 'Outfit', sans-serif" }}>Welcome Back</h1>
-          <p className="text-slate-500 mt-2 font-medium">Login to book your favorite court</p>
+          <h1 className="mt-2 text-2xl font-black text-[#0F172A] tracking-tight" style={{ fontFamily: "'Montserrat', 'Outfit', sans-serif" }}>Welcome Back</h1>
+          <p className="text-slate-500 mt-1 text-xs font-medium">Login to book your favorite court</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,7 +74,7 @@ const Login = () => {
               // Trigger validation when user clicks away from the field
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (email && !emailRegex.test(email)) {
-                setEmailError('Please enter a valid email address (e.g., name@example.com)');
+                setEmailError('Please enter a valid email address');
               }
             }}
             error={!!emailError}
@@ -89,13 +87,16 @@ const Login = () => {
               ),
             }}
             sx={{ 
-              mb: 2, 
+              mb: 1,
               '& .MuiOutlinedInput-root': { 
-                borderRadius: '14px',
+                borderRadius: '12px',
                 backgroundColor: 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(10px)',
                 '&.Mui-focused fieldset': { borderColor: '#eb483f', borderWidth: '2px' },
-                '&.Mui-error fieldset': { borderColor: '#d32f2f' }
+                '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+              },
+              '& .MuiOutlinedInput-input': {
+                paddingY: '8px', // More compact height
               },
               '& .MuiInputLabel-root.Mui-focused': { color: '#eb483f' },
               '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
@@ -116,26 +117,30 @@ const Login = () => {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} size="small" className="hover:text-[#eb483f]/80">
-                    {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                  <IconButton onClick={() => setShowPassword(!showPassword)} size="small">
+                    {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
             sx={{ 
-              mt: 2, 
+              mt: 1,
               '& .MuiOutlinedInput-root': { 
-                borderRadius: '14px',
+                borderRadius: '12px',
                 backgroundColor: 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(10px)',
-                '&.Mui-focused fieldset': { borderColor: '#eb483f', borderWidth: '2px' }
+                '&.Mui-focused fieldset': { borderColor: '#eb483f', borderWidth: '2px' },
+                '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+              },
+              '& .MuiOutlinedInput-input': {
+                paddingY: '8px', // More compact height
               },
               '& .MuiInputLabel-root.Mui-focused': { color: '#eb483f' }
             }}
           />
 
           <div className="text-right">
-            <button type="button" className="text-[#eb483f] font-bold text-sm tracking-wide hover:underline transition-all">Forgot Password?</button>
+            <button type="button" className="text-[#eb483f] font-bold text-xs tracking-wide hover:underline transition-all">Forgot Password?</button>
           </div>
 
           <Button
@@ -143,13 +148,13 @@ const Login = () => {
             type="submit"
             variant="contained"
             size="large"
-            className="bg-[#eb483f] hover:bg-[#eb483f]/90 py-3.5 shadow-xl shadow-[#eb483f]/30 active:scale-95 transition-all"
+            className="bg-[#eb483f] hover:bg-[#eb483f]/90 py-3 shadow-xl shadow-[#eb483f]/30 active:scale-95 transition-all"
             sx={{
-              borderRadius: '16px',
+              borderRadius: '14px',
               textTransform: 'none',
-              fontSize: '1.05rem',
+              fontSize: '1rem',
               fontWeight: 'bold',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.02em',
               backgroundColor: '#eb483f'
             }}
           >
@@ -158,7 +163,7 @@ const Login = () => {
         </form>
 
         <div className="text-center">
-          <p className="text-slate-500">
+          <p className="text-sm text-slate-500">
             Don't have an account? {' '}
             <Link to="/signup" className="text-[#eb483f] font-bold underline">Sign Up</Link>
           </p>

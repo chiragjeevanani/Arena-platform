@@ -14,7 +14,7 @@ const ArenaListing = () => {
   const { toggleTheme } = useTheme();
   const isDark = false; // Forced for removal of dark mode
 
-  const categories = ['All', 'Badminton', 'Football', 'Squash', 'Tennis'];
+  const categories = ['All', 'Badminton', 'Table Tennis'];
 
   const filteredArenas = ARENAS.filter(a => {
     const matchesSearch = a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -27,37 +27,37 @@ const ArenaListing = () => {
     <div className="min-h-screen pb-28">
       {/* Header â€” Hidden on Desktop */}
       <div className="md:hidden">
-        <div className={`px-6 pt-5 pb-5 sticky top-0 z-50 backdrop-blur-xl border-b ${'bg-[#eb483f] border-white/10 rounded-b-[30px] shadow-[0_10px_30px_rgba(10,31,68,0.15)]'}`}>
-          <div className="flex items-center gap-4 mb-4">
+        <div className={`px-4 pt-3 pb-3 sticky top-0 z-50 bg-[#eb483f] border-b border-white/10 rounded-b-3xl shadow-[0_8px_20px_rgba(235,72,63,0.15)]`}>
+          <div className="flex items-center gap-2 mb-2">
             <button
               onClick={() => navigate(-1)}
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${'bg-white/10 border-white/20 text-white shadow-sm'}`}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center border active:scale-95 transition-all bg-white/10 border-white/20 text-white shadow-sm`}
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={16} />
             </button>
-            <h1 className={`text-lg font-bold font-display ${'text-white'}`}>Choose an Arena</h1>
+            <h1 className={`text-base font-bold font-display text-white tracking-tight`}>Choose an Arena</h1>
           </div>
 
           {/* Search */}
           <div className="max-w-md mx-auto w-full relative group">
-            <Search size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/25 group-focus-within:text-[#eb483f]' : 'text-white/40 group-focus-within:text-[#eb483f]'}`} />
+            <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors text-white/50 group-focus-within:text-white`} />
             <input
               type="text"
               placeholder="Search arenas nearby..."
-              className={`w-full border rounded-2xl py-3 pl-11 pr-4 text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#eb483f]/20 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#eb483f] backdrop-blur-md`}
+              className={`w-full border rounded-xl py-1.5 pl-8 pr-3 text-xs font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/20 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white shadow-sm`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
           {/* Categories */}
-          <div className="flex gap-2 overflow-x-auto pb-1 mt-4 scrollbar-hide no-scrollbar">
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5 mt-2 scrollbar-hide no-scrollbar">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 ${selectedCategory === cat
-                  ? 'bg-white text-[#eb483f] shadow-lg scale-105'
+                className={`px-3 py-1 rounded-md text-[10px] uppercase tracking-wide font-bold whitespace-nowrap transition-all duration-300 ${selectedCategory === cat
+                  ? 'bg-white text-[#eb483f] shadow-sm'
                   : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'
                   }`}
               >
@@ -65,8 +65,6 @@ const ArenaListing = () => {
               </button>
             ))}
           </div>
-          {/* Desktop Navigation */}
-          <DesktopNavbar />
         </div>
       </div>
 

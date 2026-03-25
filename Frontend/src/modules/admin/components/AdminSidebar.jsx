@@ -5,7 +5,8 @@ import {
   LayoutDashboard, Users, Shield, MapPin, 
   Target, CalendarClock, Receipt, Trophy,
   Star, Package, CreditCard, PieChart,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, DollarSign,
+  Building2, Clock, CalendarX2
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -25,11 +26,20 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
       { path: '/admin/pos', icon: CreditCard, label: 'POS' },
       { path: '/admin/coaching', icon: Users, label: 'Classes' },
+      { path: '/admin/pricing', icon: DollarSign, label: 'Pricing' },
       { path: '/admin/reports', icon: PieChart, label: 'Reports' },
       { path: '/admin/users', icon: Shield, label: 'Customers' },
       { path: '/admin/settings', icon: Star, label: 'Setting' },
     ]
-  }
+  },
+  {
+    group: "User App",
+    roles: ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'],
+    items: [
+      { path: '/admin/user/events', icon: Trophy, label: 'Event Banners' },
+      { path: '/admin/user/booking', icon: Target, label: 'Booking Selection' },
+    ]
+  },
 ];
 
 const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
@@ -73,47 +83,90 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-32 space-y-2 scrollbar-hide shrink-0 relative z-20">
         {filteredStructure.map((section, idx) => (
           <div key={section.group} className="space-y-1">
-            {idx > 0 && <div className="h-4" />}
+            {/* Section Divider */}
+            {idx > 0 && <div className="mx-6 my-3 h-[1.5px] bg-[#D9E2EC] opacity-80" />}
+            
+            {/* Group Label */}
+            {!isCollapsed && section.group !== 'Overview' && section.group !== 'User App' && (
+              <div className="px-7 py-1.5 pt-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#eb483f]">
+                  {section.group}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-1.5 px-3">
-              {section.items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === '/admin'}
-                  onClick={() => onMobileClose?.()}
-                  className={({ isActive }) =>
-                    `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
-                      isActive 
-                        ? `bg-[#eb483f] text-white shadow-md shadow-[#eb483f]/30 font-bold` 
-                        : `text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold`
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <item.icon
-                        size={18}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className={`shrink-0 transition-all duration-300 ${
-                          isActive ? 'text-white' : 'text-[#627D98] group-hover:text-[#eb483f]'
-                        }`}
-                      />
-                      <AnimatePresence mode="popLayout">
-                        {!isCollapsed && (
-                          <motion.span
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            className="whitespace-nowrap tracking-wide text-[13px]"
-                          >
-                            {item.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  )}
-                </NavLink>
-              ))}
+              {section.group === 'User App' ? (
+                <div className="group/userapp relative">
+                  {/* Parent Item */}
+                  <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold cursor-pointer transition-all duration-300">
+                    <Trophy size={18} className="text-[#627D98] group-hover/userapp:text-[#eb483f]" />
+                    {!isCollapsed && <span className="text-[13px] flex-1">User App</span>}
+                    {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/userapp:rotate-90 transition-transform" />}
+                  </div>
+
+                  {/* Hover Sub-items */}
+                  <div className="hidden group-hover/userapp:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {section.items.map((item) => (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => onMobileClose?.()}
+                        className={({ isActive }) =>
+                          `flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
+                            isActive 
+                              ? `text-[#eb483f] font-bold` 
+                              : `text-[#486581] hover:text-[#eb483f] font-medium`
+                          }`
+                        }
+                      >
+                        <item.icon size={14} className="shrink-0" />
+                        {!isCollapsed && <span className="text-[12px]">{item.label}</span>}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                section.items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.path === '/admin'}
+                    onClick={() => onMobileClose?.()}
+                    className={({ isActive }) =>
+                      `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
+                        isActive 
+                          ? `bg-[#eb483f] text-white shadow-md shadow-[#eb483f]/30 font-bold` 
+                          : `text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold`
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <item.icon
+                          size={18}
+                          strokeWidth={isActive ? 2.5 : 2}
+                          className={`shrink-0 transition-all duration-300 ${
+                            isActive ? 'text-white' : 'text-[#627D98] group-hover:text-[#eb483f]'
+                          }`}
+                        />
+                        <AnimatePresence mode="popLayout">
+                          {!isCollapsed && (
+                            <motion.span
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -10 }}
+                              className="whitespace-nowrap tracking-wide text-[13px]"
+                            >
+                              {item.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    )}
+                  </NavLink>
+                ))
+              )}
             </div>
           </div>
         ))}

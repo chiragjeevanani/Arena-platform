@@ -116,7 +116,7 @@ const BookingSuccess = () => {
         </div>
       )}
 
-      <div className="max-w-3xl mx-auto w-full px-6 space-y-6 md:space-y-8 relative z-10 pb-16">
+      <div className="max-w-3xl mx-auto w-full px-6 space-y-6 md:space-y-8 relative z-10 pb-28 lg:pb-16">
         {/* Success Icon Section */}
         <div className="text-center space-y-3">
           <div className="relative inline-block">
@@ -281,15 +281,15 @@ const BookingSuccess = () => {
       </div>
 
       {/* Dashboard Sticky Footer - Mobile/Tablet Only */}
-      <div className={`fixed bottom-0 left-0 right-0 p-4 z-[60] lg:hidden border-t backdrop-blur-xl transition-all rounded-t-[28px] ${isDark ? 'bg-[#0f1115]/90 border-white/10 shadow-[0_-15px_50px_rgba(0,0,0,0.5)]' : 'bg-white/90 border-[#eb483f]/10 shadow-[0_-15px_50px_rgba(235,72,63,0.08)]'
+      <div className={`fixed bottom-0 left-0 right-0 p-3 z-[60] lg:hidden border-t backdrop-blur-xl transition-all rounded-t-3xl ${isDark ? 'bg-[#0f1115]/90 border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]' : 'bg-white/95 border-[#eb483f]/10 shadow-[0_-5px_30px_rgba(235,72,63,0.05)]'
         }`}>
         <ShuttleButton
           variant="primary"
           size="md"
           fullWidth
-          icon={<Home size={18} />}
+          icon={<Home size={16} />}
           onClick={() => navigate('/home')}
-          className="shadow-2xl shadow-[#eb483f]/30 !rounded-[20px] active:scale-95 transition-all py-3.5 text-sm"
+          className="shadow-md shadow-[#eb483f]/20 !rounded-2xl active:scale-95 transition-all py-3 text-xs"
         >
           Back to Dashboard
         </ShuttleButton>

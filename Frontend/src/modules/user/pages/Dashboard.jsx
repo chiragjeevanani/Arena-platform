@@ -43,22 +43,21 @@ const Dashboard = () => {
       {/* Header - Premium Dark Style */}
       {/* Header - Desktop Hidden Logo/Nav Row */}
       <div className="md:hidden">
-        <div className={`px-6 pt-6 pb-4 backdrop-blur-2xl border-b border-white/10 bg-[#eb483f] rounded-b-[40px] shadow-[0_15px_40px_rgba(235, 72, 63, 0.25)]`}>
-          <div className="max-w-5xl mx-auto flex justify-between items-center mb-6">
-            <div className="flex items-center gap-4">
+        <div className={`px-4 pt-4 pb-4 bg-[#eb483f] rounded-b-3xl shadow-[0_10px_30px_rgba(235,72,63,0.15)] border-b border-white/10`}>
+          <div className="max-w-5xl mx-auto flex justify-between items-center mb-0">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
-                className="w-10 h-10 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-lg active:scale-95 transition-all"
+                className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-sm active:scale-95 transition-all"
               >
                 <ArrowLeft size={18} />
               </button>
-              <h1 className="text-xl font-bold font-display text-white tracking-tight">My Bookings</h1>
+              <h1 className="text-lg font-bold font-display text-white tracking-tight">My Bookings</h1>
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-[#eb483f]/10 border border-[#eb483f]/20 flex items-center justify-center text-[#eb483f]">
-              <Receipt size={20} />
+            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-sm">
+              <Receipt size={18} />
             </div>
           </div>
-          <DesktopNavbar />
         </div>
       </div>
 

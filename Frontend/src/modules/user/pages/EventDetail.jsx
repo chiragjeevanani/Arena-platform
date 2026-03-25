@@ -4,10 +4,56 @@ import { ArrowLeft, CalendarDays, Clock, MapPin, Tag, Share2, Heart } from 'luci
 import Event1 from '../../../assets/Events/Events1 .jpeg';
 import Event2 from '../../../assets/Events/Events2.jpeg';
 import Event3 from '../../../assets/Events/Events3.jpeg';
+import BadmintonBanner from '../../../assets/Events/Badminton1.jpg';
+import TableTennisBanner from '../../../assets/Events/Tabletennis1.jpg';
 
 const eventsData = [
   {
     id: 1,
+    title: 'Pro Badminton Coaching',
+    subtitle: 'Intensive Training & League Prep',
+    image: BadmintonBanner,
+    date: 'Ongoing Registrations',
+    time: '4:00 PM – 9:00 PM',
+    location: 'AMM Sports Arena, Main Courts',
+    price: '45 OMR / Month',
+    category: 'Badminton',
+    description:
+      'Step up your game with our professional Badminton Coaching program. Ideal for passionate athletes looking to improve their agility, power, and precise shot-making. Our expert coaches guide you through personalized drills and strategic formations.',
+    highlights: [
+      'Advanced footwork and court coverage techniques',
+      'Smash power and defensive clear drills',
+      'One-on-one personalized coaching feedback',
+      'Weekly automated match-ups with peer groups',
+      'Complete fitness assessment and diet plan',
+    ],
+    contact: '+968 9178 3155',
+    badge: 'BADMINTON PRO',
+  },
+  {
+    id: 2,
+    title: 'Table Tennis Championship',
+    subtitle: 'Competitive Leagues & Open Play',
+    image: TableTennisBanner,
+    date: 'Weekends (Fri - Sat)',
+    time: '10:00 AM – 6:00 PM',
+    location: 'AMM Sports Arena, TT Hall',
+    price: '20 OMR / Entry',
+    category: 'Table Tennis',
+    description:
+      'Join our high-paced Table Tennis Championship series. Compete against top local talent across multiple brackets. Whether you play penhold or shakehand, aggressive looping or careful chopping, test your skills in our professionally timed and reffed environment.',
+    highlights: [
+      'Professionally formatted double-elimination brackets',
+      'Cash prizes and medals for top 3 finishers',
+      'State-of-the-art ITTF approved tables',
+      'Live broadcasting on local screens',
+      'Post-tournament networking and casual play',
+    ],
+    contact: '+968 7623 6687',
+    badge: 'CHAMPIONSHIP',
+  },
+  {
+    id: 3,
     title: 'Spring Camp 2025',
     subtitle: 'Badminton Training Camp for Beginners & Advanced',
     image: Event1,
@@ -15,7 +61,7 @@ const eventsData = [
     time: '8:00 AM – 12:00 PM',
     location: 'AMM Sports Arena, Main Hall',
     price: '35 OMR',
-    category: 'Badminton',
+    category: 'General',
     description:
       'Join our Spring Camp for an intensive badminton training experience. Whether you are a beginner or an advanced player, our coaches will work with you to sharpen your skills. The camp covers stroke correction, technical training, tactical training, match practice, fitness & conditioning, and mental training. Sibling discount is available.',
     highlights: [
@@ -31,7 +77,7 @@ const eventsData = [
     badge: 'MARCH 15TH – 30TH',
   },
   {
-    id: 2,
+    id: 4,
     title: 'Winter Camp 2024',
     subtitle: 'Exclusive Badminton Training — Intermediate & Beginner',
     image: Event2,
@@ -39,7 +85,7 @@ const eventsData = [
     time: '8:00 AM – 12:30 PM',
     location: 'AMM Sports Arena, Indoor Courts',
     price: '35–40 OMR',
-    category: 'Badminton',
+    category: 'General',
     description:
       'Our Winter Camp offers two exclusive batches tailored to different skill levels. Batch 01 is for intermediate players (8:00 AM – 10:00 AM) at 35 OMR, while Batch 02 is for beginners (10:30 AM – 12:30 PM) at 40 OMR. Separate Beginner & Intermediate batches ensure focused training.',
     highlights: [
@@ -56,7 +102,7 @@ const eventsData = [
     badge: 'DEC 18TH – JAN 3RD',
   },
   {
-    id: 3,
+    id: 5,
     title: 'New Year Racket Fest — Season 1',
     subtitle: 'Celebrate the New Year with an Epic Badminton Festival',
     image: Event3,
@@ -64,7 +110,7 @@ const eventsData = [
     time: 'TBA',
     location: 'AMM Sports Arena',
     price: 'TBA',
-    category: 'Badminton',
+    category: 'General',
     description:
       'Welcome the New Year with AMM Sports Arena\'s Racket Fest Season 1! A fun-filled badminton event open to all levels. Stay tuned for match schedules, prizes, and special guest appearances. This is your chance to celebrate the sport you love with the community.',
     highlights: [

@@ -1,4 +1,4 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, FileText, Bell, Smartphone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
@@ -88,11 +88,11 @@ const Privacy = () => {
             {/* Quick Action Item Links */}
             <div className="space-y-2 md:space-y-3">
               {[
-                { icon: FileText, title: 'Terms of Service', color: 'text-blue-500' },
-                { icon: Smartphone, title: 'App Permissions', color: 'text-emerald-500' }
+                { icon: FileText, title: 'Terms & Conditions', color: 'text-blue-500', path: '/terms' }
               ].map((item, i) => (
                 <button 
                   key={i}
+                  onClick={() => navigate(item.path)}
                   className={`w-full p-4 md:p-5 rounded-2xl md:rounded-3xl flex items-center justify-between border transition-all hover:scale-[1.02] ${
                     isDark ? 'bg-white/5 border-white/5 hover:bg-white/10 shadow-lg' : 'bg-white border-blue-50 shadow-sm hover:shadow-md'
                   }`}

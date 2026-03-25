@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import BadmintonBanner from '../../../assets/Events/Badminton.png';
-import TableTennisBanner from '../../../assets/Events/TableTennis.png';
+import BadmintonBanner from '../../../assets/Events/Badminton1.jpg';
+import TableTennisBanner from '../../../assets/Events/Tabletennis1.jpg';
 import Event1 from '../../../assets/Events/Events1 .jpeg';
 import Event2 from '../../../assets/Events/Events2.jpeg';
 import Event3 from '../../../assets/Events/Events3.jpeg';
@@ -52,21 +52,21 @@ const Events = () => {
 
       {/* Mobile-Only Red Header */}
       <div className="md:hidden">
-        <div className={`px-6 pt-6 pb-8 backdrop-blur-2xl border-b border-white/10 bg-[#eb483f] rounded-b-[40px] shadow-[0_15px_40px_rgba(235, 72, 63, 0.25)]`}>
-          <div className="max-w-5xl mx-auto flex items-center gap-4">
+        <div className={`px-4 pt-4 pb-4 backdrop-blur-2xl border-b border-white/10 bg-[#eb483f] rounded-b-3xl shadow-[0_10px_30px_rgba(235,72,63,0.15)]`}>
+          <div className="max-w-5xl mx-auto flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="w-10 h-10 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-lg active:scale-95 transition-all"
+              className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-sm active:scale-95 transition-all"
             >
               <ArrowLeft size={18} />
             </button>
-            <h1 className="text-xl font-bold font-display text-white tracking-tight uppercase">Our Events</h1>
+            <h1 className="text-lg font-bold font-display text-white tracking-tight uppercase">Our Events</h1>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 pt-10 md:pt-16 pb-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 pt-5 md:pt-16 pb-20 relative z-10">
         <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 items-center gap-6 mb-10 md:mb-12">
           {/* 1. Left: Title & Back Button */}
           <div className="flex items-center gap-4">
@@ -104,7 +104,7 @@ const Events = () => {
         </div>
 
         {/* Mobile Filter Tags Row - Visible only on mobile since desktop one is hidden */}
-        <div className="flex md:hidden flex-row items-center justify-center gap-2 mb-8">
+        <div className="flex md:hidden flex-row items-center justify-center gap-2 mb-5">
           {['All', 'Badminton', 'Table Tennis'].map((tag) => (
             <button 
               key={tag} 
@@ -126,6 +126,7 @@ const Events = () => {
             {filteredBanners.map((banner) => (
               <motion.div
                 key={banner.id}
+                onClick={() => navigate(`/events/${banner.id}`)}
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
