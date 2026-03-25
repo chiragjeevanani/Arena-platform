@@ -104,7 +104,7 @@ const AvailabilityControl = () => {
               className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 transition-all">
               <ChevronLeft size={18} strokeWidth={2.5} />
             </button>
-            <h3 className="font-black text-[#1a2b3c] text-sm">{format(currentMonth, 'MMMM yyyy')}</h3>
+            <h3 className="font-semibold text-[#1a2b3c] text-sm uppercase tracking-wider">{format(currentMonth, 'MMMM yyyy')}</h3>
             <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
               className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 transition-all">
               <ChevronRight size={18} strokeWidth={2.5} />
@@ -114,7 +114,7 @@ const AvailabilityControl = () => {
           {/* Day Headers */}
           <div className="grid grid-cols-7 mb-2">
             {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
-              <div key={d} className="text-center text-[9px] font-black uppercase tracking-widest text-slate-400 py-1">{d}</div>
+              <div key={d} className="text-center text-[9px] font-bold uppercase tracking-widest text-slate-400 py-1">{d}</div>
             ))}
           </div>
 
@@ -129,10 +129,10 @@ const AvailabilityControl = () => {
               const hasBlocks = getDayBlocks(day) > 0;
               return (
                 <button key={day.toISOString()} onClick={() => setSelectedDate(day)}
-                  className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-[12px] font-black transition-all ${
-                    isSelected ? 'bg-[#eb483f] text-white shadow-md shadow-[#eb483f]/30' :
-                    isToday ? 'bg-[#eb483f]/10 text-[#eb483f]' :
-                    'hover:bg-slate-100 text-[#1a2b3c]'
+                  className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-[11px] font-bold transition-all duration-300 active:scale-95 ${
+                    isSelected ? 'bg-[#eb483f] text-white shadow-lg shadow-[#eb483f]/40 scale-105 z-10' :
+                    isToday ? 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20' :
+                    'hover:bg-slate-50 text-[#1a2b3c]'
                   }`}>
                   {format(day, 'd')}
                   {hasBlocks && (
@@ -152,8 +152,8 @@ const AvailabilityControl = () => {
               { color: 'bg-gray-400', label: 'Blocked' },
             ].map(l => (
               <div key={l.label} className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${l.color}`} />
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{l.label}</span>
+                <div className={`w-2 h-2 rounded-full ${l.color}`} />
+                <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">{l.label}</span>
               </div>
             ))}
           </div>
@@ -163,15 +163,15 @@ const AvailabilityControl = () => {
         <div className="xl:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h3 className="font-black text-[#1a2b3c] flex items-center gap-2">
+              <h3 className="font-bold text-[#1a2b3c] flex items-center gap-2 uppercase tracking-wide text-xs">
                 <CalendarDays size={16} className="text-[#eb483f]" />
                 {format(selectedDate, 'EEEE, MMM dd yyyy')}
               </h3>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">Slot availability by court</p>
+              <p className="text-[9px] font-medium text-slate-400 mt-0.5 uppercase tracking-wider">Slot availability by court</p>
             </div>
             <button onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#eb483f] text-white text-[10px] font-black uppercase tracking-widest hover:shadow-md transition-all">
-              <Plus size={14} strokeWidth={3} /> Block Slot
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#eb483f] text-white text-[9px] font-semibold uppercase tracking-widest hover:shadow-md transition-all">
+              <Plus size={14} strokeWidth={2.5} /> Block Slot
             </button>
           </div>
 
@@ -184,7 +184,7 @@ const AvailabilityControl = () => {
                 </div>
                 {COURTS.map(c => (
                   <div key={c.id} className="flex-1 py-4 text-center">
-                    <p className="text-[11px] font-black text-[#1a2b3c] uppercase tracking-widest">{c.name}</p>
+                    <p className="text-[10px] font-bold text-[#1a2b3c] uppercase tracking-widest">{c.name}</p>
                   </div>
                 ))}
               </div>

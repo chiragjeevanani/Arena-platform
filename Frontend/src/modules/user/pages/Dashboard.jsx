@@ -54,9 +54,6 @@ const Dashboard = () => {
               </button>
               <h1 className="text-lg font-bold font-display text-white tracking-tight">My Bookings</h1>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-sm">
-              <Receipt size={18} />
-            </div>
           </div>
         </div>
       </div>

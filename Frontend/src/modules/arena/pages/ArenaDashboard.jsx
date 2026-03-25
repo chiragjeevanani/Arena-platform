@@ -30,11 +30,11 @@ const ArenaDashboard = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6 min-h-full">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 min-h-full max-w-[1100px] ml-0">
       {/* Welcome Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-black text-[#1a2b3c]">Good Evening 👋</h1>
-        <p className="text-slate-500 font-medium mt-1">Here's your arena overview for today — Mar 24</p>
+        <h1 className="text-2xl md:text-3xl font-oswald font-bold text-[#1a2b3c] uppercase tracking-tight">Good Evening 👋</h1>
+        <p className="text-slate-500 font-semibold mt-1">Here's your arena overview for today — Mar 24</p>
       </div>
 
       {/* Stats Grid */}
@@ -50,9 +50,9 @@ const ArenaDashboard = () => {
               style={{ backgroundColor: `${stat.color}10` }}>
               <stat.icon size={17} style={{ color: stat.color }} strokeWidth={2.5} />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">{stat.label}</p>
-            <p className="text-2xl font-black text-[#1a2b3c]">{stat.value}</p>
-            <p className="text-[9px] font-bold text-slate-400 mt-1">{stat.sub}</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">{stat.label}</p>
+            <p className="text-2xl font-oswald font-bold text-[#1a2b3c]">{stat.value}</p>
+            <p className="text-[9px] font-semibold text-slate-400 mt-1">{stat.sub}</p>
             <ArrowUpRight size={14} className="absolute top-4 right-4 text-slate-200 group-hover:text-[#eb483f] transition-colors" />
           </motion.button>
         ))}
@@ -65,11 +65,11 @@ const ArenaDashboard = () => {
         <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h2 className="font-black text-[#1a2b3c]">Court Status</h2>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">Real-time court availability</p>
+              <h2 className="font-oswald font-bold text-[#1a2b3c] uppercase tracking-wide">Court Status</h2>
+              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Real-time court availability</p>
             </div>
             <button onClick={() => navigate('/arena/courts')}
-              className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] hover:underline flex items-center gap-1">
+              className="text-[10px] font-bold uppercase tracking-widest text-[#eb483f] hover:underline flex items-center gap-1">
               Manage <ArrowUpRight size={12} />
             </button>
           </div>
@@ -81,8 +81,8 @@ const ArenaDashboard = () => {
                     <Target size={18} className="text-slate-400" />
                   </div>
                   <div>
-                    <p className="font-black text-[#1a2b3c] text-[13px]">{c.name}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.type}</p>
+                    <p className="font-bold text-[#1a2b3c] text-[13px]">{c.name}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{c.type}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -101,8 +101,8 @@ const ArenaDashboard = () => {
         {/* Recent Activity */}
         <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h2 className="font-black text-[#1a2b3c]">Recent Activity</h2>
-            <p className="text-[10px] font-bold text-slate-400 mt-0.5">Latest actions in your arena</p>
+            <h2 className="font-oswald font-bold text-[#1a2b3c] uppercase tracking-wide">Recent Activity</h2>
+            <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Latest actions in your arena</p>
           </div>
           <div className="divide-y divide-slate-50">
             {RECENT_ACTIVITY.map((a, i) => (

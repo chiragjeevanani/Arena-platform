@@ -76,8 +76,8 @@ const SlotConfig = () => {
               <s.icon size={22} style={{ color: s.color }} strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{s.label}</p>
-              <p className="text-3xl font-black text-[#1a2b3c] leading-none">{s.value}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">{s.label}</p>
+              <p className="text-2xl font-bold text-[#1a2b3c] leading-none">{s.value}</p>
             </div>
           </div>
         ))}
@@ -98,10 +98,10 @@ const SlotConfig = () => {
                   : 'border-transparent text-slate-500 hover:text-[#1a2b3c] hover:bg-slate-100/50'
               }`}>
               <div className="flex items-center gap-2 relative z-10">
-                <t.icon size={18} strokeWidth={activeTab === t.key ? 2.5 : console.log} /> 
-                <span className="text-sm font-black tracking-wide">{t.label}</span>
+                <t.icon size={18} strokeWidth={activeTab === t.key ? 2.5 : 2} /> 
+                <span className="text-sm font-semibold tracking-wide">{t.label}</span>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-black relative z-10 hidden sm:inline-block ${
+              <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold relative z-10 hidden sm:inline-block ${
                 activeTab === t.key ? 'bg-red-50 text-[#eb483f]' : 'bg-slate-200 text-slate-600'
               }`}>
                 {slots[t.key].length} Slots
@@ -119,15 +119,15 @@ const SlotConfig = () => {
           
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-black text-[#1a2b3c]">
+              <h2 className="text-md font-bold text-[#1a2b3c]">
                 {activeTab === 'weekday' ? 'Monday - Friday' : 'Saturday & Sunday'}
               </h2>
-              <p className="text-xs font-bold text-slate-400 mt-0.5">Manage available time slots and durations</p>
+              <p className="text-xs font-medium text-slate-400 mt-0.5">Manage available time slots and durations</p>
             </div>
             
             <button onClick={() => setShowModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#eb483f] text-white text-[12px] font-black uppercase tracking-widest flex items-center gap-2 hover:shadow-lg hover:shadow-[#eb483f]/30 hover:-translate-y-0.5 transition-all">
-              <Plus size={16} strokeWidth={3} /> Add Slot
+              className="px-5 py-2.5 rounded-xl bg-[#eb483f] text-white text-[11px] font-semibold uppercase tracking-widest flex items-center gap-2 hover:shadow-lg hover:shadow-[#eb483f]/30 hover:-translate-y-0.5 transition-all">
+              <Plus size={16} strokeWidth={2.5} /> Add Slot
             </button>
           </div>
 

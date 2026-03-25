@@ -68,7 +68,7 @@ import ArenaManagementPanel from './modules/admin/pages/ArenaManagementPanel';
 // Arena Panel (Standalone)
 import ArenaLogin from './modules/arena/pages/ArenaLogin';
 import ArenaDashboard from './modules/arena/pages/ArenaDashboard';
-import { ArenaDetailsPage, CourtMgmtPage, SlotConfigPage, PricingRulesPage, AvailabilityPage } from './modules/arena/pages/index.jsx';
+import { ArenaDetailsPage, CourtMgmtPage, SlotConfigPage, PricingRulesPage, AvailabilityPage, AccountSettingsPage } from './modules/arena/pages/index.jsx';
 
 // Components
 import ScrollToTop from './components/ScrollToTop';
@@ -156,6 +156,7 @@ function App() {
           <Route path="slots" element={<SlotConfigPage />} />
           <Route path="pricing" element={<PricingRulesPage />} />
           <Route path="availability" element={<AvailabilityPage />} />
+          <Route path="account-settings" element={<AccountSettingsPage />} />
         </Route>
       </Routes>
     </Router>

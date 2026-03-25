@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ARENA â€” Premium Badminton Booking Design System
@@ -16,6 +16,8 @@
   /* Font Stack */
   --font-primary: 'Outfit', system-ui, -apple-system, sans-serif;
   --font-display: 'Space Grotesk', 'Outfit', system-ui, sans-serif;
+  --font-oswald: 'Oswald', sans-serif;
+  --font-nunito: 'Nunito', sans-serif;
 }
 
 @theme {
@@ -29,6 +31,8 @@
   --color-glass: rgba(235, 72, 63, 0.6);
   --color-glass-light: rgba(255, 255, 255, 0.08);
   --color-glass-border: rgba(255, 255, 255, 0.12);
+  --font-oswald: 'Oswald', sans-serif;
+  --font-nunito: 'Nunito', sans-serif;
 }
 
 /* â•â•â•â•â•â•â• Base Resets â•â•â•â•â•â•â• */

@@ -4,14 +4,15 @@ import CourtMgmt from '../../admin/pages/ArenaPanel/CourtMgmt';
 import SlotConfig from '../../admin/pages/ArenaPanel/SlotConfig';
 import PricingRules from '../../admin/pages/ArenaPanel/PricingRules';
 import AvailabilityControl from '../../admin/pages/ArenaPanel/AvailabilityControl';
+import AccountSettings from './AccountSettings';
 
 // Helper: wraps a light-theme page inside the dark arena layout content area
 const PageShell = ({ title, subtitle, component: Component, color = '#eb483f' }) => (
   <div className="min-h-full bg-transparent">
     {/* Page Header Bar */}
     <div className="px-4 py-4 md:px-8 bg-transparent">
-      <h2 className="text-2xl font-black text-[#1a2b3c]">{title}</h2>
-      <p className="text-[12px] text-slate-500 font-bold mt-1">{subtitle}</p>
+      <h2 className="text-2xl font-bold text-[#1a2b3c]">{title}</h2>
+      <p className="text-[12px] text-slate-500 font-semibold mt-1">{subtitle}</p>
     </div>
     {/* Light content area */}
     <div className="p-4 md:p-6 lg:p-8">
@@ -63,4 +64,8 @@ export const AvailabilityPage = () => (
     component={AvailabilityControl}
     color="#0ea5e9"
   />
+);
+
+export const AccountSettingsPage = () => (
+  <AccountSettings />
 );

@@ -18,7 +18,7 @@ const AMENITY_OPTIONS = [
 
 const initialArena = {
   id: 'arena-1',
-  name: 'Phoenix Sports Arena',
+  name: 'AMM Sports Arena',
   address: '12, MG Road, Indiranagar',
   city: 'Bangalore',
   contact: '+91 98765 43210',
@@ -217,12 +217,12 @@ const ArenaDetails = () => {
         <AnimatePresence mode="wait">
           <motion.button key={saved ? 'saved' : 'save'} whileTap={{ scale: 0.98 }}
             onClick={handleSave}
-            className={`w-full py-4 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+            className={`w-fit mx-auto px-12 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
               saved
                 ? 'bg-green-500 border-green-500 text-white'
                 : 'bg-[#eb483f] border-[#eb483f] text-white hover:shadow-lg hover:shadow-[#eb483f]/30 hover:-translate-y-0.5'
             }`}>
-            {saved ? <><Check size={18} strokeWidth={3} /> Changes Saved</> : 'Save Arena Details'}
+            {saved ? <><Check size={16} strokeWidth={3} /> Changes Saved</> : 'Save Arena Details'}
           </motion.button>
         </AnimatePresence>
       </div>

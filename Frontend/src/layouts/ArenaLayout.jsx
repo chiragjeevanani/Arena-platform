@@ -54,7 +54,7 @@ const ArenaLayout = () => {
           isCollapsed={isCollapsed}
           onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
         />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto scrollbar-hide relative">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto scrollbar-hide relative font-nunito">
           <Outlet />
         </main>
       </div>
