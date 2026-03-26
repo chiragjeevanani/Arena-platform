@@ -79,7 +79,7 @@ const Payment = () => {
               <div className="relative z-10">
                 <p className={`text-xs font-semibold mb-1 ${isDark ? 'text-white/40' : 'text-white/80'}`}>Total Payable</p>
                 <h2 className={`text-3xl md:text-4xl font-bold tracking-tight text-white`}>
-                  ₹{amount.toFixed(2)}
+                  OMR {amount.toFixed(3)}
                 </h2>
 
                 <div className="mt-3 flex items-center justify-center gap-4">
@@ -187,7 +187,7 @@ const Payment = () => {
                 disabled={isProcessing}
                 onClick={handlePay}
               >
-                {isProcessing ? 'Finalizing Secure Flow...' : `Complete Payment of ₹${amount.toFixed(2)}`}
+                {isProcessing ? 'Finalizing Secure Flow...' : `Complete Payment of OMR ${amount.toFixed(3)}`}
               </ShuttleButton>
             </div>
           </div>
@@ -205,7 +205,7 @@ const Payment = () => {
           disabled={isProcessing}
           onClick={handlePay}
         >
-          {isProcessing ? 'Verifying Transaction...' : `Pay ₹${amount.toFixed(2)}`}
+          {isProcessing ? 'Verifying Transaction...' : `Pay OMR ${amount.toFixed(3)}`}
         </ShuttleButton>
       </div>
 

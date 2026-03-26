@@ -27,7 +27,7 @@ const ArenaDetails = () => {
   };
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${'bg-white'}`}>
+    <div className={`min-h-screen pb-48 relative overflow-hidden ${'bg-white'}`}>
       {/* Background Decorative Glows */}
       <div className={`absolute top-[400px] -right-24 w-64 h-64 rounded-full blur-[100px] pointer-events-none bg-[#eb483f]/[0.04]`} />
       <div className={`absolute top-[800px] -left-24 w-64 h-64 rounded-full blur-[100px] pointer-events-none bg-[#eb483f]/[0.03]`} />
@@ -145,13 +145,13 @@ const ArenaDetails = () => {
       </div>
 
       {/* Booking Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] md:max-w-[450px] md:mx-auto">
+      <div className="fixed bottom-[68px] md:bottom-0 left-0 right-0 z-[110] md:max-w-[450px] md:mx-auto">
         <div className={`h-[1px] ${'bg-slate-100'}`} />
         <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t ${'bg-white/95 border-slate-50 shadow-[0_-10px_30px_rgba(235,72,63,0.04)]'}`}>
           <div>
             <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/60'}`}>Starting from</p>
             <div className="flex items-baseline gap-1">
-              <span className={`text-2xl font-bold font-display ${'text-[#eb483f]'}`}>₹{arena.pricePerHour}</span>
+              <span className={`text-2xl font-bold font-display ${'text-[#eb483f]'}`}>OMR {Number(arena.pricePerHour).toFixed(3)}</span>
               <span className={`text-xs ${'text-[#eb483f]/40'}`}>/ hr</span>
             </div>
           </div>

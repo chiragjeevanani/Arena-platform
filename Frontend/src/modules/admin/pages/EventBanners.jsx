@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Trash2, Edit3, Image as ImageIcon, 
-  ExternalLink, CheckCircle2, X, Eye, EyeOff, LayoutPanelTop
+  ExternalLink, CheckCircle2, X, Eye, EyeOff, LayoutPanelTop,
+  Upload, Cloud
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
@@ -20,10 +21,22 @@ const EventBanners = () => {
   const [editingBanner, setEditingBanner] = useState(null);
   const [form, setForm] = useState({ title: '', imageUrl: '', link: '' });
   const [toast, setToast] = useState(null);
+  const fileInputRef = useRef(null);
 
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(prev => ({ ...prev, imageUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleToggle = (id) => {
@@ -65,7 +78,7 @@ const EventBanners = () => {
   const filtered = banners.filter(b => b.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto relative">
+    <div className="space-y-4 max-w-[1400px] mx-auto relative px-4 py-4">
       {/* Toast */}
       <AnimatePresence>
         {toast && (
@@ -73,10 +86,12 @@ const EventBanners = () => {
             initial={{ opacity: 0, y: 50 }} 
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] bg-[#1a2b3c] text-white px-5 py-2.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-2.5 min-w-[280px]"
+            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-2.5 rounded-xl shadow-2xl border flex items-center gap-2.5 min-w-[280px] ${
+              isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-[#eb483f]/20 text-[#1a2b3c]'
+            }`}
           >
             <CheckCircle2 size={16} className="text-[#eb483f]" />
-            <span className="text-[11px] font-bold uppercase tracking-widest">{toast}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">{toast}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -84,14 +99,12 @@ const EventBanners = () => {
       {/* Header */}
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
         <div>
-          <h2 className={`text-xl font-semibold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
-            <LayoutPanelTop className="text-[#eb483f]" size={22} /> Event Banners
-          </h2>
-          <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-            Manage the promotional banners displayed in the "Our Events" section of the mobile app.
-          </p>
+           <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#eb483f] mb-1">
+              <LayoutPanelTop size={11} /> Site Manager
+           </div>
+           <h1 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>Event Banners</h1>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#eb483f] text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-[#eb483f]/20 hover:bg-[#1a2b3c] transition-all">
+        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#eb483f] text-white text-[10px] font-semibold uppercase tracking-widest shadow-md shadow-[#eb483f]/10 hover:brightness-110 transition-all">
           <Plus size={16} /> Add Banner
         </button>
       </div>
@@ -110,7 +123,7 @@ const EventBanners = () => {
           />
         </div>
         <div className={`px-4 py-2 rounded-xl border text-[10px] font-semibold tracking-wide ${isDark ? 'border-white/5 text-white/40 bg-white/5' : 'border-slate-100 text-slate-400 bg-slate-50'}`}>
-          Total Banners: <span className={isDark ? 'text-white' : 'text-[#1a2b3c]'}>{banners.length}</span>
+          Total: <span className={isDark ? 'text-white' : 'text-[#1a2b3c]'}>{banners.length}</span>
         </div>
       </div>
 
@@ -159,7 +172,7 @@ const EventBanners = () => {
               {/* Info */}
               <div className="p-4">
                 <div className="flex justify-between items-start gap-4 mb-2">
-                  <h3 className={`text-sm font-bold tracking-tight leading-tight transition-colors ${!banner.active ? 'text-slate-400' : isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
+                  <h3 className={`text-sm font-semibold tracking-tight leading-tight transition-colors ${!banner.active ? 'text-slate-400' : isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
                     {banner.title}
                   </h3>
                   <button onClick={() => handleToggle(banner.id)}>
@@ -195,18 +208,26 @@ const EventBanners = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[120] rounded-2xl border shadow-2xl overflow-hidden ${
+              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-[120] rounded-3xl border shadow-2xl overflow-hidden ${
                 isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'
               }`}
             >
-              <div className="p-5">
-                <div className="flex justify-between items-center mb-5">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+              
+              <div className="p-8">
+                <div className="flex justify-between items-center mb-8">
                   <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 rounded-xl bg-[#eb483f]/10 flex items-center justify-center">
                       <ImageIcon size={18} className="text-[#eb483f]" />
                     </div>
                     <h3 className={`font-bold text-sm uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
-                      {editingBanner ? 'Edit Banner' : 'Add New Banner'}
+                      {editingBanner ? 'Edit Banner Details' : 'Add New Banner'}
                     </h3>
                   </div>
                   <button onClick={() => setShowModal(false)} className={`p-1.5 rounded-lg ${isDark ? 'hover:bg-white/5 text-white/30' : 'hover:bg-slate-100 text-slate-400'}`}>
@@ -214,38 +235,55 @@ const EventBanners = () => {
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#eb483f] block mb-1.5">Banner Title</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#eb483f] block mb-1.5 ml-1">Banner Title</label>
                     <input 
                       value={form.title}
                       onChange={e => setForm({ ...form, title: e.target.value })}
                       placeholder="e.g. Monthly Championship"
-                      className={`w-full px-4 py-2.5 rounded-xl text-xs border outline-none transition-all font-semibold ${
+                      className={`w-full px-4 py-3 rounded-xl text-xs border outline-none transition-all font-semibold ${
                         isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-200 focus:border-[#eb483f]'
                       }`}
                     />
                   </div>
 
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#eb483f] block mb-1.5">Image URL</label>
-                    <input 
-                      value={form.imageUrl}
-                      onChange={e => setForm({ ...form, imageUrl: e.target.value })}
-                      placeholder="https://images.unsplash.com/..."
-                      className={`w-full px-4 py-2.5 rounded-xl text-xs border outline-none transition-all font-semibold ${
-                        isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-200 focus:border-[#eb483f]'
-                      }`}
-                    />
+                     <div className="flex justify-between items-end mb-1.5 px-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#6366f1]">Promotion Artwork</label>
+                        <button 
+                           onClick={() => fileInputRef.current?.click()}
+                           className={`bg-slate-100 px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 ${isDark ? 'bg-white/5 text-white border-white/10 hover:bg-white/10' : 'bg-slate-100 hover:bg-white border border-slate-200 text-slate-700'}`}
+                        >
+                           <Upload size={10} /> Gallery
+                        </button>
+                     </div>
+                     
+                     <div className="relative group">
+                        <input 
+                           type="text" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})}
+                           placeholder="Enter image URL or pick from gallery"
+                           className={`w-full pl-10 pr-4 py-3 rounded-xl text-xs border outline-none transition-all font-semibold ${
+                             isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-200 focus:border-[#eb483f]'
+                           }`}
+                        />
+                        <Cloud size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                        
+                        {form.imageUrl && (
+                           <div className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-slate-100 overflow-hidden bg-white">
+                              <img src={form.imageUrl} className="w-full h-full object-cover" />
+                           </div>
+                        )}
+                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#eb483f] block mb-1.5">Target Link (Path)</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5 ml-1">Target Link (Path)</label>
                     <input 
                       value={form.link}
                       onChange={e => setForm({ ...form, link: e.target.value })}
                       placeholder="/events/123 or /coaching"
-                      className={`w-full px-4 py-2.5 rounded-xl text-xs border outline-none transition-all font-semibold ${
+                      className={`w-full px-4 py-3 rounded-xl text-xs border outline-none transition-all font-semibold ${
                         isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-200 focus:border-[#eb483f]'
                       }`}
                     />
@@ -253,13 +291,13 @@ const EventBanners = () => {
                 </div>
 
                 <div className="flex gap-3 mt-8">
-                  <button onClick={() => setShowModal(false)} className={`flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${isDark ? 'border-white/10 text-white/40 hover:bg-white/5' : 'border-slate-200 text-slate-400 hover:bg-slate-50'}`}>Cancel</button>
+                  <button onClick={() => setShowModal(false)} className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${isDark ? 'border-white/10 text-white/40 hover:bg-white/5' : 'border-slate-200 text-slate-400 hover:bg-slate-50'}`}>Cancel</button>
                   <button 
                     onClick={saveBanner}
                     disabled={!form.title || !form.imageUrl}
-                    className="flex-1 py-2.5 rounded-xl bg-[#eb483f] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#1a2b3c] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#eb483f]/20"
+                    className="flex-1 py-3 rounded-xl bg-[#eb483f] text-white text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#eb483f]/20"
                   >
-                    {editingBanner ? 'Update Banner' : 'Create Banner'}
+                    {editingBanner ? 'Update Banner' : 'Publish Banner'}
                   </button>
                 </div>
               </div>

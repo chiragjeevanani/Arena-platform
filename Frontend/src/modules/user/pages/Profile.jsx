@@ -143,8 +143,8 @@ const Profile = () => {
                   <p className="text-[9px] uppercase tracking-wider font-bold">Balance</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-white/80 text-sm font-bold">₹</span>
-                  <span className="text-white text-2xl md:text-3xl font-black tracking-tight">1,450</span>
+                  <span className="text-white/80 text-sm font-bold">OMR </span>
+                  <span className="text-white text-2xl md:text-3xl font-black tracking-tight">1.450</span>
                 </div>
               </div>
 

@@ -51,7 +51,7 @@ const Wallet = () => {
               <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em]">Balance</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-white font-display flex items-baseline gap-1.5 tracking-tight">
-              <span className="text-xl md:text-2xl font-bold opacity-80 text-blue-300">₹</span>1,450
+              <span className="text-xl md:text-2xl font-bold opacity-80 text-blue-300">OMR </span>1.450
             </h2>
           </div>
 
@@ -97,11 +97,9 @@ const Wallet = () => {
                     <Clock size={10} /> {tx.date}
                   </p>
                 </div>
-                <div className="text-right ml-3 md:ml-4">
                   <p className={`font-black text-sm tracking-tight ${tx.type === 'received' ? 'text-emerald-500' : 'text-slate-800 dark:text-white'}`}>
-                    {tx.type === 'received' ? '+' : '-'}₹{Math.abs(tx.amount)}
+                    {tx.type === 'received' ? '+' : '-'}OMR {Math.abs(tx.amount/1000).toFixed(3)}
                   </p>
-                </div>
               </motion.div>
             ))}
           </div>

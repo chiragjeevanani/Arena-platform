@@ -104,7 +104,7 @@ const CoachCard = ({ batch, index = 0 }) => {
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400 mb-0.5">Monthly Fee</p>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-lg font-black font-display text-[#0F172A] leading-none">₹{batch.fees}</span>
+              <span className="text-lg font-black font-display text-[#0F172A] leading-none">OMR {Number(batch.fees).toFixed(3)}</span>
               <span className="text-[8px] font-bold text-slate-400 uppercase">/ Mo</span>
             </div>
           </div>

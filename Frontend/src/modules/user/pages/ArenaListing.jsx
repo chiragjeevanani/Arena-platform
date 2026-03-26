@@ -105,7 +105,7 @@ const ArenaListing = () => {
               <div className="flex justify-between items-start">
                 <h3 className={`text-lg font-bold font-display ${'text-[#eb483f]'}`}>{arena.name}</h3>
                 <div className="text-right">
-                  <p className="text-[#eb483f] font-bold text-lg font-display">₹{arena.pricePerHour}</p>
+                  <p className="text-[#eb483f] font-bold text-lg font-display">OMR {Number(arena.pricePerHour).toFixed(3)}</p>
                   <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/40'}`}>per hour</p>
                 </div>
               </div>

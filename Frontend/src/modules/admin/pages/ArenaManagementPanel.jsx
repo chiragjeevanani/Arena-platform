@@ -12,6 +12,19 @@ import CourtMgmt from './ArenaPanel/CourtMgmt';
 import SlotConfig from './ArenaPanel/SlotConfig';
 import PricingRules from './ArenaPanel/PricingRules';
 import AvailabilityControl from './ArenaPanel/AvailabilityControl';
+import WalkInBooking from './ArenaPanel/WalkInBooking';
+import ArenaAnalytics from './ArenaPanel/ArenaAnalytics';
+import StaffManagement from './ArenaPanel/StaffManagement';
+import ArenaIncome from './ArenaPanel/ArenaIncome';
+import GuestSystem from './ArenaPanel/GuestSystem';
+import Broadcaster from './ArenaPanel/Broadcaster';
+import PolicySettings from './ArenaPanel/PolicySettings';
+import MaintenanceScheduler from './ArenaPanel/MaintenanceScheduler';
+
+import { 
+  Users, BarChart3, ShoppingCart, Wallet, UserCheck, 
+  Megaphone, ShieldCheck, PenTool 
+} from 'lucide-react';
 
 const TABS = [
   {
@@ -28,6 +41,70 @@ const TABS = [
     shortLabel: 'Courts',
     icon: Target,
     description: 'Add, edit & manage courts',
+    color: '#6366f1',
+  },
+  {
+    id: 'walkin',
+    label: 'Walk-in Terminal',
+    shortLabel: 'Walk-in',
+    icon: ShoppingCart,
+    description: 'Book for customers on-site',
+    color: '#22c55e',
+  },
+  {
+    id: 'analytics',
+    label: 'Court Analytics',
+    shortLabel: 'Analytics',
+    icon: BarChart3,
+    description: 'Revenue & occupancy per court',
+    color: '#f59e0b',
+  },
+  {
+    id: 'income',
+    label: 'Income Reports',
+    shortLabel: 'Income',
+    icon: Wallet,
+    description: 'Earnings & payout records',
+    color: '#1a2b3c',
+  },
+  {
+    id: 'guest',
+    label: 'Guest System',
+    shortLabel: 'Guest',
+    icon: UserCheck,
+    description: 'Visitor check-in & tracking',
+    color: '#6366f1',
+  },
+  {
+    id: 'staff',
+    label: 'Staff Management',
+    shortLabel: 'Staff',
+    icon: Users,
+    description: 'Manage roles & permissions',
+    color: '#eb483f',
+  },
+  {
+    id: 'notices',
+    label: 'Broadcaster',
+    shortLabel: 'Notice',
+    icon: Megaphone,
+    description: 'Send alerts to players',
+    color: '#f59e0b',
+  },
+  {
+    id: 'maintenance',
+    label: 'Maintenance',
+    shortLabel: 'Maint.',
+    icon: PenTool,
+    description: 'Schedule court repairs',
+    color: '#22c55e',
+  },
+  {
+    id: 'policies',
+    label: 'Policies',
+    shortLabel: 'Policy',
+    icon: ShieldCheck,
+    description: 'Refund & cancellation rules',
     color: '#6366f1',
   },
   {
@@ -58,10 +135,10 @@ const TABS = [
 
 // Quick summary stats — in production these come from API
 const SUMMARY_STATS = [
-  { label: 'Total Courts', value: '4', icon: Target, color: '#eb483f' },
-  { label: 'Active Slots', value: '12', icon: Clock, color: '#6366f1' },
-  { label: 'Base Rate', value: '₹400', icon: DollarSign, color: '#22c55e' },
-  { label: 'Blocked Today', value: '2', icon: CalendarX2, color: '#f59e0b' },
+  { label: 'Total Courts', value: '5', icon: Target, color: '#eb483f' },
+  { label: 'Active Slots', value: '10', icon: Clock, color: '#6366f1' },
+  { label: 'Base Rate', value: 'OMR 4.500', icon: DollarSign, color: '#22c55e' },
+  { label: 'Blocked Today', value: '1', icon: CalendarX2, color: '#f59e0b' },
 ];
 
 const ArenaManagementPanel = () => {
@@ -76,6 +153,14 @@ const ArenaManagementPanel = () => {
       case 'slots': return <SlotConfig />;
       case 'pricing': return <PricingRules />;
       case 'availability': return <AvailabilityControl />;
+      case 'walkin': return <WalkInBooking />;
+      case 'analytics': return <ArenaAnalytics />;
+      case 'staff': return <StaffManagement />;
+      case 'income': return <ArenaIncome />;
+      case 'guest': return <GuestSystem />;
+      case 'notices': return <Broadcaster />;
+      case 'policies': return <PolicySettings />;
+      case 'maintenance': return <MaintenanceScheduler />;
       default: return null;
     }
   };
@@ -110,7 +195,7 @@ const ArenaManagementPanel = () => {
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Active Arena</p>
-              <p className="font-black text-[#1a2b3c] text-sm">Phoenix Sports Arena</p>
+              <p className="font-black text-[#1a2b3c] text-sm">Amm Sports arena</p>
               <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1 mt-0.5">
                 <Phone size={9} className="text-[#eb483f]" /> +91 98765 43210
               </p>

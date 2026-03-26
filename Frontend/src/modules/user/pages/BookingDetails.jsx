@@ -194,16 +194,16 @@ const BookingDetails = () => {
                   <div className="space-y-3">
                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                         <span>Base Rate</span>
-                        <span className="text-slate-900 font-black">₹{baseRate.toFixed(2)}</span>
+                        <span className="text-slate-900 font-black">OMR {baseRate.toFixed(3)}</span>
                      </div>
                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        <span>Taxes</span >
-                        <span className="text-slate-900 font-black">₹{taxAmount.toFixed(2)}</span>
+                        <span>Tax Amount</span >
+                        <span className="text-slate-900 font-black">OMR {taxAmount.toFixed(3)}</span>
                      </div>
                      
                      <div className="pt-3 mt-3 border-t border-slate-100 flex justify-between items-end">
                         <p className="text-[9px] font-black uppercase tracking-[0.15em] text-[#eb483f]">Total Paid</p>
-                        <span className="text-2xl font-black font-display text-slate-900">₹{priceParsed.toFixed(2)}</span>
+                        <span className="text-2xl font-black font-display text-slate-900">OMR {priceParsed.toFixed(3)}</span>
                      </div>
                   </div>
 

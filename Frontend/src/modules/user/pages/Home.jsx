@@ -13,15 +13,7 @@ import ArenaCard from '../components/ArenaCard';
 import EventCard from '../components/EventCard';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
-import Card1 from '../../../assets/Cards/Card1.jpg';
-import Card2 from '../../../assets/Cards/Card2.jpg';
-import Card3 from '../../../assets/Cards/Card3.jpg';
-import Card4 from '../../../assets/Cards/Card4.jpg';
-import BadmintonCard from '../../../assets/Category/BadmintonCard.png';
-import TennisCard from '../../../assets/Category/TennisCard.png';
-import Event1 from '../../../assets/Events/Events1 .jpeg';
-import Event2 from '../../../assets/Events/Events2.jpeg';
-import Event3 from '../../../assets/Events/Events3.jpeg';
+import { HOME_CONFIG } from '../../../data/frontendConfig';
 
 const UserHome = () => {
   const navigate = useNavigate();
@@ -31,41 +23,9 @@ const UserHome = () => {
   const lightRef2 = useRef(null);
   const { isDark, toggleTheme } = useTheme();
 
-  const promos = [
-    {
-      title: "Join Tournament",
-      subtitle: "30% off for new players",
-      buttonText: "Join Match",
-      image: Card1,
-    },
-    {
-      title: "Book Weekend Slots in Advance",
-      subtitle: "Premium Courts Available",
-      buttonText: "Book Now",
-      image: Card2,
-    },
-    {
-      title: "Join Professional Coaching",
-      subtitle: "Learn from the best",
-      buttonText: "Learn More",
-      image: Card3,
-    }
-  ];
-
-  const upcomingEvents = [
-    {
-      id: 1,
-      image: Event1,
-    },
-    {
-      id: 2,
-      image: Event2,
-    },
-    {
-      id: 3,
-      image: Event3,
-    }
-  ];
+  const promos = HOME_CONFIG.heroBanners;
+  const upcomingEvents = HOME_CONFIG.events;
+  const categories = HOME_CONFIG.categories;
 
   // Stadium light streak animation
   useEffect(() => {
@@ -179,14 +139,7 @@ const UserHome = () => {
               What do you want to book?
             </motion.h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto px-4 md:px-0">
-              {[
-                {
-                  title: 'Badminton', image: BadmintonCard, delay: 0,
-                },
-                {
-                  title: 'Table Tennis', image: TennisCard, delay: 0.1,
-                }
-              ].map((sport, i) => (
+              {categories.map((sport, i) => (
                 <motion.div
                   key={sport.title}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -260,7 +213,7 @@ const UserHome = () => {
                       <div>
                         <p className={`text-[10px] uppercase font-black tracking-widest mb-1 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Book a slot</p>
                         <p className={`font-black font-display text-2xl leading-none ${isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'}`}>
-                          ₹{ARENAS[0].pricePerHour} <span className={`text-xs font-bold ${isDark ? 'text-white/30' : 'text-slate-400'}`}>/hr</span>
+                          OMR {Number(ARENAS[0].pricePerHour).toFixed(3)} <span className={`text-xs font-bold ${isDark ? 'text-white/30' : 'text-slate-400'}`}>/hr</span>
                         </p>
                       </div>
                       

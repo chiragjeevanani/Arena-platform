@@ -3,15 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, Zap, Calendar, Clock, ToggleLeft, ToggleRight, ArrowRight, TrendingUp, Tag } from 'lucide-react';
 
 const initialPricing = {
-  basePrice: 400,
+  basePrice: 4.000,
   weekendEnabled: true,
-  weekendPrice: 550,
+  weekendPrice: 5.500,
   peakEnabled: true,
-  peakPrice: 650,
+  peakPrice: 6.500,
   peakStart: '17:00',
   peakEnd: '20:00',
   customOverride: false,
-  customPrice: 300,
+  customPrice: 3.000,
 };
 
 const PricingRules = () => {
@@ -68,10 +68,10 @@ const PricingRules = () => {
             </div>
           </div>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-lg">₹</span>
-            <input type="number" value={pricing.basePrice}
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-sm">OMR</span>
+            <input type="number" step="0.001" value={pricing.basePrice}
               onChange={e => setPricing(p => ({ ...p, basePrice: Number(e.target.value) }))}
-              className={`${inputCls} pl-10 text-xl font-black`} />
+              className={`${inputCls} pl-14 text-xl font-black`} />
           </div>
           <p className="text-[10px] text-slate-400 font-bold mt-2">Per hour · Applies to all courts</p>
         </div>
@@ -96,10 +96,10 @@ const PricingRules = () => {
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden">
                 <div className="relative mt-2">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-lg">₹</span>
-                  <input type="number" value={pricing.weekendPrice}
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-sm">OMR</span>
+                  <input type="number" step="0.001" value={pricing.weekendPrice}
                     onChange={e => setPricing(p => ({ ...p, weekendPrice: Number(e.target.value) }))}
-                    className={`${inputCls} pl-10 text-xl font-black`} />
+                    className={`${inputCls} pl-14 text-xl font-black`} />
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-purple-600">
                   <TrendingUp size={12} />
@@ -132,10 +132,10 @@ const PricingRules = () => {
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden space-y-4">
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-lg">₹</span>
-                  <input type="number" value={pricing.peakPrice}
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-sm">OMR</span>
+                  <input type="number" step="0.001" value={pricing.peakPrice}
                     onChange={e => setPricing(p => ({ ...p, peakPrice: Number(e.target.value) }))}
-                    className={`${inputCls} pl-10 text-xl font-black`} />
+                    className={`${inputCls} pl-14 text-xl font-black`} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -205,7 +205,7 @@ const PricingRules = () => {
             className="rounded-2xl p-5 text-center border"
             style={{ backgroundColor: `${preview.color}10`, borderColor: `${preview.color}30` }}>
             <p className="text-[9px] font-black uppercase tracking-widest mb-2" style={{ color: preview.color }}>{preview.label}</p>
-            <p className="text-5xl font-black" style={{ color: preview.color }}>₹{preview.price}</p>
+            <p className="text-4xl font-black" style={{ color: preview.color }}>OMR {preview.price.toFixed(3)}</p>
             <p className="text-[10px] text-slate-400 font-bold mt-2">per hour</p>
           </motion.div>
 
@@ -225,7 +225,7 @@ const PricingRules = () => {
                   <span className="text-slate-600">{r.label}</span>
                   {!r.active && <span className="text-[8px] bg-slate-200 text-slate-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest">OFF</span>}
                 </div>
-                <span className="font-black" style={{ color: r.color }}>₹{r.value}</span>
+                <span className="font-black" style={{ color: r.color }}>OMR {r.value.toFixed(3)}</span>
               </div>
             ))}
           </div>

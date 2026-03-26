@@ -62,8 +62,12 @@ import ProgressTracker from './modules/coach/pages/ProgressTracker';
 // Admin Extra Pages
 import PricingManagement from './modules/admin/pages/PricingManagement';
 import EventBanners from './modules/admin/pages/EventBanners';
-import BookingSelectorMgmt from './modules/admin/pages/BookingSelectorMgmt';
 import ArenaManagementPanel from './modules/admin/pages/ArenaManagementPanel';
+import FrontendHeroMgmt from './modules/admin/pages/FrontendHeroMgmt';
+import FrontendCategoryMgmt from './modules/admin/pages/FrontendCategoryMgmt';
+import ArenaListAdmin from './modules/admin/pages/ArenaListAdmin';
+import ArenaDetailsAdmin from './modules/admin/pages/ArenaDetailsAdmin';
+import CourtSlotsAdmin from './modules/admin/pages/CourtSlotsAdmin';
 
 // Arena Panel (Standalone)
 import ArenaLogin from './modules/arena/pages/ArenaLogin';
@@ -128,8 +132,12 @@ function App() {
           <Route path="pos" element={<RetailPOS />} />
           <Route path="reports" element={<FinancialReports />} />
           <Route path="pricing" element={<PricingManagement />} />
+          <Route path="user/hero" element={<FrontendHeroMgmt />} />
           <Route path="user/events" element={<EventBanners />} />
-          <Route path="user/booking" element={<BookingSelectorMgmt />} />
+          <Route path="user/booking" element={<FrontendCategoryMgmt />} />
+          <Route path="arena/details" element={<ArenaListAdmin />} />
+          <Route path="arena/details/:id" element={<ArenaDetailsAdmin />} />
+          <Route path="arena/slots/:arenaId/:courtId" element={<CourtSlotsAdmin />} />
           <Route path="settings" element={<AccountSettings />} />
           <Route path="arena-panel" element={<ArenaManagementPanel />} />
         </Route>

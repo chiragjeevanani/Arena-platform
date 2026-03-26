@@ -219,11 +219,11 @@ const BookingSummary = () => {
                      <div className="space-y-5">
                         <div className="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-widest">
                            <span>Base Reservation</span>
-                           <span className="text-slate-900 font-black">₹{total.toFixed(2)}</span>
+                           <span className="text-slate-900 font-black">OMR {total.toFixed(3)}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-widest">
-                           <span>Taxes & GST (18%)</span>
-                           <span className="text-slate-900 font-black">₹{tax.toFixed(2)}</span>
+                           <span>Tax Reconciliation</span>
+                           <span className="text-slate-900 font-black">OMR {tax.toFixed(3)}</span>
                         </div>
                         
                         {/* Total Amount Focus */}
@@ -232,8 +232,7 @@ const BookingSummary = () => {
                               <div className="space-y-1">
                                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#eb483f]">Total Payable Amount</p>
                                  <div className="flex items-baseline gap-1">
-                                    <span className="text-5xl font-black font-display text-slate-950 tracking-tighter">₹{(total+tax).toFixed(2)}</span>
-                                    <span className="text-[10px] font-black text-slate-300 uppercase italic">Inr</span>
+                                    <span className="text-5xl font-black font-display text-slate-950 tracking-tighter">OMR {(total+tax).toFixed(3)}</span>
                                  </div>
                               </div>
                               <div className="hidden xl:block bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest mb-2 border border-emerald-100 shadow-sm">
@@ -306,20 +305,20 @@ const BookingSummary = () => {
               <div className="h-px bg-slate-100" />
 
               <div className="space-y-4">
-                 <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
                     <span>Base Rate</span>
-                    <span className="text-slate-900">₹{total.toFixed(2)}</span>
+                    <span className="text-slate-900">OMR {total.toFixed(3)}</span>
                  </div>
                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    <span>GST (18%)</span>
-                    <span className="text-slate-900">₹{tax.toFixed(2)}</span>
+                    <span>Tax Reconciliation</span>
+                    <span className="text-slate-900">OMR {tax.toFixed(3)}</span>
                  </div>
               </div>
 
-              <div className="bg-[#eb483f]/5 p-5 rounded-[24px] border border-[#eb483f]/10 flex justify-between items-end">
+                  <div className="bg-[#eb483f]/5 p-5 rounded-[24px] border border-[#eb483f]/10 flex justify-between items-end">
                  <div className="space-y-0.5">
                     <p className="text-[9px] font-black uppercase tracking-widest text-[#eb483f]">Total Amount</p>
-                    <span className="text-3xl font-black font-display text-[#eb483f]">₹{(total+tax).toFixed(2)}</span>
+                    <span className="text-3xl font-black font-display text-[#eb483f]">OMR {(total+tax).toFixed(3)}</span>
                  </div>
                  <div className="px-3 py-1.5 rounded-full bg-white border border-[#eb483f]/10 text-[9px] font-black uppercase tracking-widest text-[#eb483f] flex items-center gap-1.5 shadow-sm">
                     <div className="w-1 h-1 rounded-full bg-current animate-pulse" />

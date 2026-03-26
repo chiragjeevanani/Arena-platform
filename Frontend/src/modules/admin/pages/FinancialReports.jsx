@@ -40,10 +40,10 @@ const FinancialReports = () => {
         {/* Primary Metrics Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Gross Revenue', value: '₹1.24 Cr', change: '+24.5%', icon: DollarSign, color: '#eb483f' },
-            { label: 'OPEX / Costs', value: '₹22.40 L', change: '-2.1%', icon: Wallet, color: '#ff6b6b' },
-            { label: 'Net Profit', value: '₹1.02 Cr', change: '+28.2%', icon: BarChart3, color: '#eb483f' },
-            { label: 'Total Assets', value: '₹8.40 Cr', change: '+5.0%', icon: TrendingUp, color: '#eb483f' },
+            { label: 'Gross Revenue', value: 'OMR 12,400.000', change: '+24.5%', icon: DollarSign, color: '#eb483f' },
+            { label: 'OPEX / Costs', value: 'OMR 2,240.000', change: '-2.1%', icon: Wallet, color: '#ff6b6b' },
+            { label: 'Net Profit', value: 'OMR 10,200.000', change: '+28.2%', icon: BarChart3, color: '#eb483f' },
+            { label: 'Total Assets', value: 'OMR 84,000.000', change: '+5.0%', icon: TrendingUp, color: '#eb483f' },
           ].map((stat, idx) => (
             <div key={idx} className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 md:p-5 flex flex-col justify-between transition-all hover:border-[#eb483f]/50 hover:shadow-md group">
               <div className="flex justify-between items-start mb-4">
@@ -121,9 +121,9 @@ const FinancialReports = () => {
                 <h3 className="font-extrabold text-[#1a2b3c] text-[15px] uppercase tracking-widest mb-6">Tax Reconciliation</h3>
                 <div className="space-y-6">
                    {[
-                     { label: 'GST Collected', value: '₹14.40 L', percent: 78, color: '#eb483f' },
-                     { label: 'ITC Available', value: '₹4.12 L', percent: 45, color: '#eb483f' },
-                     { label: 'TDS Reserves', value: '₹56.1 K', percent: 25, color: '#eb483f' },
+                     { label: 'Tax Collected', value: 'OMR 1,440.000', percent: 78, color: '#eb483f' },
+                    { label: 'Credits Available', value: 'OMR 412.000', percent: 45, color: '#eb483f' },
+                    { label: 'Reserves', value: 'OMR 56.100', percent: 25, color: '#eb483f' },
                    ].map((item, idx) => (
                      <div key={idx}>
                         <div className="flex justify-between items-center mb-2">
@@ -187,7 +187,7 @@ const FinancialReports = () => {
                    </div>
                    <div className="text-right">
                       <p className="text-sm font-black tracking-tight" style={{ color: tx.color }}>
-                        {tx.mode === 'Debit' ? '-' : '+'}₹{tx.amount}
+                        {tx.mode === 'Debit' ? '-' : '+'}OMR {tx.amount.includes('.') ? Number(tx.amount.replace(/,/g, '')).toFixed(3) : Number(tx.amount.replace(/,/g, '')).toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                       </p>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{tx.date}</p>
                    </div>

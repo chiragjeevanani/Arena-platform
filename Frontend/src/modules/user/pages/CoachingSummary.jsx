@@ -65,7 +65,7 @@ const CoachingSummary = () => {
           <div className="hidden md:flex items-center gap-4">
             <div className="text-right">
               <p className="text-[8px] font-black text-white/60 uppercase tracking-widest">Total Payable</p>
-              <p className="text-xl font-black text-white font-display">₹{Math.round(finalPayable)}</p>
+              <p className="text-xl font-black text-white font-display">OMR {finalPayable.toFixed(3)}</p>
             </div>
             <button
               className="bg-white text-[#eb483f] px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-black/10 active:scale-95 transition-all"
@@ -210,18 +210,18 @@ const CoachingSummary = () => {
                   <div className="space-y-2.5">
                     <div className="flex justify-between items-center group">
                       <span className="text-[10px] font-bold text-slate-500 transition-colors">Monthly Coaching Fee</span>
-                      <span className="text-xs font-black text-[#0F172A]">₹{monthlyFee.toFixed(2)}</span>
+                      <span className="text-xs font-black text-[#0F172A]">OMR {monthlyFee.toFixed(3)}</span>
                     </div>
                     <div className="flex justify-between items-center group">
                       <span className="text-[10px] font-bold text-slate-500 transition-colors">Registration (One-time)</span>
-                      <span className="text-xs font-black text-[#0F172A]">₹{regFee.toFixed(2)}</span>
+                      <span className="text-xs font-black text-[#0F172A]">OMR {regFee.toFixed(3)}</span>
                     </div>
                     <div className="flex justify-between items-center group">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-slate-500">GST (Taxes)</span>
+                        <span className="text-[10px] font-bold text-slate-500">Tax Reconciliation</span>
                         <span className="text-[8px] bg-slate-100 px-1 py-0.5 rounded text-slate-400 font-black">18%</span>
                       </div>
-                      <span className="text-xs font-black text-[#0F172A]">₹{gst.toFixed(2)}</span>
+                      <span className="text-xs font-black text-[#0F172A]">OMR {gst.toFixed(3)}</span>
                     </div>
                   </div>
 
@@ -236,7 +236,7 @@ const CoachingSummary = () => {
                     <div className="relative z-10">
                       <p className="text-[8px] font-black uppercase tracking-[0.3em] mb-1 text-white/40">Total Amount</p>
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-black font-display tracking-tight text-white">₹{Math.round(finalPayable)}</span>
+                        <span className="text-2xl font-black font-display tracking-tight text-white">OMR {finalPayable.toFixed(3)}</span>
                         <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest">W/ Taxes</span>
                       </div>
                     </div>
@@ -277,7 +277,7 @@ const CoachingSummary = () => {
             className="w-full bg-[#eb483f] text-white py-3.5 rounded-[20px] font-black text-xs uppercase tracking-[0.15em] shadow-lg shadow-[#eb483f]/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
             onClick={() => navigate('/payment', { state: { amount: finalPayable, batch } })}
           >
-            Pay ₹{Math.round(finalPayable)} Now
+            Pay OMR {finalPayable.toFixed(3)} Now
             <ArrowForwardIcon style={{ fontSize: 18 }} />
           </button>
         </div>

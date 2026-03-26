@@ -238,9 +238,10 @@ const UserManagement = () => {
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Role</label>
                       <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
-                        <option>ARENA_ADMIN</option>
-                        <option>STAFF</option>
-                        <option>COACH</option>
+                        <option value="SUPER_ADMIN">Admin</option>
+                        <option value="ARENA_ADMIN">Arena Manager</option>
+                        <option value="COACH">Coach</option>
+                        <option value="CUSTOMER">Customer</option>
                       </select>
                     </div>
                     <div className="group">
@@ -312,17 +313,23 @@ const UserManagement = () => {
                 <section>
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 block">Authorization Level</label>
                   <div className="grid grid-cols-1 gap-2">
-                    {['All', 'SUPER_ADMIN', 'ARENA_ADMIN', 'STAFF', 'COACH'].map(role => (
+                    {[
+                      { label: 'All', value: 'All' },
+                      { label: 'Admin', value: 'SUPER_ADMIN' },
+                      { label: 'Arena Manager', value: 'ARENA_ADMIN' },
+                      { label: 'Coach', value: 'COACH' },
+                      { label: 'Customer', value: 'CUSTOMER' },
+                    ].map(role => (
                       <button
-                        key={role}
-                        onClick={() => setRoleFilter(role)}
+                        key={role.value}
+                        onClick={() => setRoleFilter(role.value)}
                         className={`w-full py-4 px-5 rounded-xl border text-[11px] font-black uppercase tracking-widest text-left transition-all ${
-                          roleFilter === role 
+                          roleFilter === role.value 
                             ? 'bg-[#eb483f]/5 border-[#eb483f] text-[#eb483f] shadow-sm' 
                             : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
                         }`}
                       >
-                        {role.replace('_', ' ')}
+                        {role.label}
                       </button>
                     ))}
                   </div>

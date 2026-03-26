@@ -44,6 +44,8 @@ export const MOCK_DB = {
     { id: 'USR-002', name: 'Alia Bhatt', role: 'ARENA_ADMIN', arenaId: 'arena-1', email: 'elite@arena.com', status: 'Active' },
     { id: 'USR-003', name: 'Raj Kumar', role: 'ARENA_ADMIN', arenaId: 'arena-2', email: 'prosmash@arena.com', status: 'Active' },
     { id: 'USR-004', name: 'Neha Sharma', role: 'RECEPTIONIST', arenaId: 'arena-1', email: 'hsr_reception@arena.com', status: 'Active' },
+    { id: 'USR-005', name: 'Amit Shah', role: 'CUSTOMER', arenaId: 'arena-1', email: 'amit@gmail.com', status: 'Active' },
+    { id: 'USR-006', name: 'Priya Rai', role: 'CUSTOMER', arenaId: 'arena-2', email: 'priya@outlook.com', status: 'Active' },
   ]
 };
 

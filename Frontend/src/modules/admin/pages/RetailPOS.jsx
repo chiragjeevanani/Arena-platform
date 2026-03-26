@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, Search, ShoppingCart, User, Plus, Minus, Trash2, CheckCircle2, Ticket, Receipt, ChevronRight } from 'lucide-react';
 
 const ITEMS = [
-  { id: 1, name: 'Yonex Mavis 350 (Y)', price: 120, category: 'Equipment' },
-  { id: 2, name: 'Grip Wrap (Blue)', price: 45, category: 'Accessories' },
-  { id: 3, name: 'Gatorade Blue (500ml)', price: 60, category: 'Drinks' },
-  { id: 4, name: 'Stringing Service', price: 350, category: 'Services' },
-  { id: 5, name: 'RedBull (250ml)', price: 125, category: 'Drinks' },
-  { id: 6, name: 'Shuttlecock Box (10x)', price: 1100, category: 'Equipment' },
+  { id: 1, name: 'Yonex Mavis 350 (Y)', price: 1.200, category: 'Equipment' },
+  { id: 2, name: 'Grip Wrap (Blue)', price: 0.450, category: 'Accessories' },
+  { id: 3, name: 'Gatorade Blue (500ml)', price: 0.600, category: 'Drinks' },
+  { id: 4, name: 'Stringing Service', price: 3.500, category: 'Services' },
+  { id: 5, name: 'RedBull (250ml)', price: 1.250, category: 'Drinks' },
+  { id: 6, name: 'Shuttlecock Box (10x)', price: 11.000, category: 'Equipment' },
 ];
 
 const RetailPOS = () => {
@@ -32,7 +32,7 @@ const RetailPOS = () => {
   const removeFromCart = (id) => setCart(cart.filter(i => i.id !== id));
 
   const subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-  const tax = Math.round(subtotal * 0.18);
+  const tax = subtotal * 0.18;
   const total = subtotal + tax;
 
   const filteredItems = ITEMS.filter(item => {
@@ -119,7 +119,7 @@ const RetailPOS = () => {
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex flex-col">
                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Price</span>
-                     <span className="text-base font-black text-[#1a2b3c] leading-none mt-0.5">₹{item.price}</span>
+                     <span className="text-base font-black text-[#1a2b3c] leading-none mt-0.5">OMR {item.price.toFixed(3)}</span>
                   </div>
                   <div className="w-7 h-7 rounded-lg bg-[#eb483f]/5 border border-[#eb483f]/10 flex items-center justify-center text-[#eb483f] group-hover:bg-[#eb483f] group-hover:text-white group-hover:border-[#eb483f] transition-all shadow-sm hover:scale-105 active:scale-95">
                     <Plus size={14} strokeWidth={3} />
@@ -179,7 +179,7 @@ const RetailPOS = () => {
                 >
                   <div className="flex-1 min-w-0 pr-2">
                     <p className="text-[13px] font-bold text-[#1a2b3c] truncate leading-tight">{item.name}</p>
-                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">₹{item.price.toFixed(0)} / each</p>
+                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">OMR {item.price.toFixed(3)} / each</p>
                   </div>
                   
                   <div className="flex items-center gap-2 px-1 py-0.5 rounded-lg bg-white border border-slate-200 shadow-sm">
@@ -193,7 +193,7 @@ const RetailPOS = () => {
                   </div>
                   
                   <div className="text-right min-w-[50px] font-black text-[13px] text-[#1a2b3c]">
-                    ₹{(item.price * item.qty).toLocaleString()}
+                    OMR {(item.price * item.qty).toFixed(3)}
                   </div>
                 </motion.div>
               ))}
@@ -212,15 +212,15 @@ const RetailPOS = () => {
             <div className="space-y-1.5">
                <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
                   <span>Subtotal</span>
-                  <span className="text-[#1a2b3c]">₹{subtotal.toFixed(0)}</span>
+                  <span className="text-[#1a2b3c]">OMR {subtotal.toFixed(3)}</span>
                </div>
                <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-500 pb-2 border-b border-slate-200">
-                  <span>GST (18%)</span>
-                  <span className="text-[#1a2b3c]">₹{tax}</span>
+                  <span>Tax Reconciliation (18%)</span>
+                  <span className="text-[#1a2b3c]">OMR {tax.toFixed(3)}</span>
                </div>
                <div className="flex justify-between items-baseline pt-1">
                   <span className="text-[11px] font-black uppercase tracking-widest text-[#eb483f]">Total Due</span>
-                  <p className="text-2xl font-black text-[#1a2b3c]">₹{total.toLocaleString()}</p>
+                  <p className="text-2xl font-black text-[#1a2b3c]">OMR {total.toFixed(3)}</p>
                </div>
             </div>
 

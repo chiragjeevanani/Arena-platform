@@ -6,7 +6,7 @@ import {
   Target, CalendarClock, Receipt, Trophy,
   Star, Package, CreditCard, PieChart,
   ChevronLeft, ChevronRight, DollarSign,
-  Building2, Clock, CalendarX2
+  Building2, Clock, CalendarX2, Layout
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -23,21 +23,16 @@ const SIDEBAR_STRUCTURE = [
     group: "Operations",
     roles: ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'],
     items: [
+      { path: '/admin/user/hero', icon: Package, label: 'Hero Banners', isSiteMgmt: true },
+      { path: '/admin/user/booking', icon: Target, label: 'Service Categories', isSiteMgmt: true },
+      { path: '/admin/user/events', icon: Trophy, label: 'Event Banners', isSiteMgmt: true },
+      { path: '/admin/arena/details', icon: Building2, label: 'Arena Details', isArenaMgmt: true },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
-      { path: '/admin/pos', icon: CreditCard, label: 'POS' },
       { path: '/admin/coaching', icon: Users, label: 'Classes' },
       { path: '/admin/pricing', icon: DollarSign, label: 'Pricing' },
       { path: '/admin/reports', icon: PieChart, label: 'Reports' },
       { path: '/admin/users', icon: Shield, label: 'Customers' },
       { path: '/admin/settings', icon: Star, label: 'Setting' },
-    ]
-  },
-  {
-    group: "User App",
-    roles: ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'],
-    items: [
-      { path: '/admin/user/events', icon: Trophy, label: 'Event Banners' },
-      { path: '/admin/user/booking', icon: Target, label: 'Booking Selection' },
     ]
   },
 ];
@@ -87,86 +82,129 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
             {idx > 0 && <div className="mx-6 my-3 h-[1.5px] bg-[#D9E2EC] opacity-80" />}
             
             {/* Group Label */}
-            {!isCollapsed && section.group !== 'Overview' && section.group !== 'User App' && (
-              <div className="px-7 py-1.5 pt-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-[#eb483f]">
+            {!isCollapsed && section.group !== 'Overview' && (
+              <div className="px-7 py-2.5 pt-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#eb483f]">
                   {section.group}
                 </p>
               </div>
             )}
 
-            <div className="space-y-1.5 px-3">
-              {section.group === 'User App' ? (
-                <div className="group/userapp relative">
-                  {/* Parent Item */}
-                  <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold cursor-pointer transition-all duration-300">
-                    <Trophy size={18} className="text-[#627D98] group-hover/userapp:text-[#eb483f]" />
-                    {!isCollapsed && <span className="text-[13px] flex-1">User App</span>}
-                    {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/userapp:rotate-90 transition-transform" />}
-                  </div>
+            <div className="space-y-1 px-3">
+              {/* Special Handling for Site Mgmt inside any group (mostly Operations) */}
+              {(() => {
+                const siteMgmtItems = section.items.filter(i => i.isSiteMgmt);
+                const arenaMgmtItems = section.items.filter(i => i.isArenaMgmt);
+                const otherItems = section.items.filter(i => !i.isSiteMgmt && !i.isArenaMgmt);
+                
+                return (
+                  <>
+                    {siteMgmtItems.length > 0 && (
+                      <div className="group/sitemanager relative mb-1.5">
+                        {/* Site Mgmt Item */}
+                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold cursor-pointer transition-all duration-300">
+                          <Layout size={18} className="text-[#627D98] group-hover/sitemanager:text-[#eb483f]" />
+                          {!isCollapsed && <span className="text-[13px] flex-1">Home Page Mgmt</span>}
+                          {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/sitemanager:rotate-90 transition-transform" />}
+                        </div>
 
-                  {/* Hover Sub-items */}
-                  <div className="hidden group-hover/userapp:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {section.items.map((item) => (
+                        {/* Hover Sub-items */}
+                        <div className="hidden group-hover/sitemanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1 animate-in fade-in slide-in-from-left-2 transition-all duration-300">
+                          {siteMgmtItems.map((item) => (
+                            <NavLink
+                              key={item.path}
+                              to={item.path}
+                              onClick={() => onMobileClose?.()}
+                              className={({ isActive }) =>
+                                `flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
+                                  isActive 
+                                    ? `text-[#eb483f] font-bold` 
+                                    : `text-[#486581] hover:text-[#eb483f] font-medium`
+                                }`
+                              }
+                            >
+                              <item.icon size={14} className="shrink-0" />
+                              {!isCollapsed && <span className="text-[12px]">{item.label}</span>}
+                            </NavLink>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {arenaMgmtItems.length > 0 && (
+                      <div className="group/arenamanager relative mb-1.5">
+                        {/* Arena Mgmt Item */}
+                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold cursor-pointer transition-all duration-300">
+                          <Building2 size={18} className="text-[#627D98] group-hover/arenamanager:text-[#eb483f]" />
+                          {!isCollapsed && <span className="text-[13px] flex-1">Arena Management</span>}
+                          {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/arenamanager:rotate-90 transition-transform" />}
+                        </div>
+
+                        {/* Hover Sub-items */}
+                        <div className="hidden group-hover/arenamanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1 animate-in fade-in slide-in-from-left-2 transition-all duration-300">
+                          {arenaMgmtItems.map((item) => (
+                            <NavLink
+                              key={item.path}
+                              to={item.path}
+                              onClick={() => onMobileClose?.()}
+                              className={({ isActive }) =>
+                                `flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
+                                  isActive 
+                                    ? `text-[#eb483f] font-bold` 
+                                    : `text-[#486581] hover:text-[#eb483f] font-medium`
+                                }`
+                              }
+                            >
+                              <item.icon size={14} className="shrink-0" />
+                              {!isCollapsed && <span className="text-[12px]">{item.label}</span>}
+                            </NavLink>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {otherItems.map((item) => (
                       <NavLink
                         key={item.path}
                         to={item.path}
+                        end={item.path === '/admin'}
                         onClick={() => onMobileClose?.()}
                         className={({ isActive }) =>
-                          `flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
+                          `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
                             isActive 
-                              ? `text-[#eb483f] font-bold` 
-                              : `text-[#486581] hover:text-[#eb483f] font-medium`
+                              ? `bg-[#eb483f] text-white shadow-md shadow-[#eb483f]/30 font-bold` 
+                              : `text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold`
                           }`
                         }
                       >
-                        <item.icon size={14} className="shrink-0" />
-                        {!isCollapsed && <span className="text-[12px]">{item.label}</span>}
+                        {({ isActive }) => (
+                          <>
+                            <item.icon
+                              size={18}
+                              strokeWidth={isActive ? 2.5 : 2}
+                              className={`shrink-0 transition-all duration-300 ${
+                                isActive ? 'text-white' : 'text-[#627D98] group-hover:text-[#eb483f]'
+                              }`}
+                            />
+                            <AnimatePresence mode="popLayout">
+                              {!isCollapsed && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -10 }}
+                                  className="whitespace-nowrap tracking-wide text-[13px]"
+                                >
+                                  {item.label}
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </>
+                        )}
                       </NavLink>
                     ))}
-                  </div>
-                </div>
-              ) : (
-                section.items.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.path === '/admin'}
-                    onClick={() => onMobileClose?.()}
-                    className={({ isActive }) =>
-                      `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
-                        isActive 
-                          ? `bg-[#eb483f] text-white shadow-md shadow-[#eb483f]/30 font-bold` 
-                          : `text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold`
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <item.icon
-                          size={18}
-                          strokeWidth={isActive ? 2.5 : 2}
-                          className={`shrink-0 transition-all duration-300 ${
-                            isActive ? 'text-white' : 'text-[#627D98] group-hover:text-[#eb483f]'
-                          }`}
-                        />
-                        <AnimatePresence mode="popLayout">
-                          {!isCollapsed && (
-                            <motion.span
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: -10 }}
-                              className="whitespace-nowrap tracking-wide text-[13px]"
-                            >
-                              {item.label}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
-                      </>
-                    )}
-                  </NavLink>
-                ))
-              )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         ))}

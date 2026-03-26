@@ -182,20 +182,20 @@ const SlotSelection = () => {
                    <div className="space-y-4 mb-8">
                      <div className="flex justify-between items-center text-sm">
                        <span className="text-slate-500 font-bold tracking-tight">Court Fee</span>
-                       <span className="text-slate-900 font-black">₹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}</span>
+                       <span className="text-slate-900 font-black">OMR {Number(selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0).toFixed(3)}</span>
                      </div>
                      <div className="flex justify-between items-center text-sm">
                        <span className="text-slate-500 font-bold tracking-tight">Taxes & Fees</span>
-                       <span className="text-slate-900 font-black">₹0</span>
+                       <span className="text-slate-900 font-black">OMR 0.000</span>
                      </div>
                      <div className="h-[1px] bg-slate-100 w-full my-2" />
                      <div className="flex justify-between items-end">
                        <span className="text-[10px] font-black uppercase tracking-widest text-[#eb483f]/40">Total Amount</span>
                        <div className="flex items-baseline gap-1">
                           <span className="text-3xl font-black font-display text-[#eb483f]">
-                            ₹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}
+                            OMR {Number(selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0).toFixed(3)}
                           </span>
-                          <span className="text-[10px] font-black text-[#eb483f]/40 uppercase tracking-widest">INR</span>
+                          <span className="text-[10px] font-black text-[#eb483f]/40 uppercase tracking-widest">OMR</span>
                        </div>
                      </div>
                    </div>
@@ -237,9 +237,8 @@ const SlotSelection = () => {
             <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ${'text-[#eb483f]/40'}`}>Total Amount</p>
             <div className="flex items-baseline gap-1">
               <span className={`text-3xl font-black font-display tracking-tight ${'text-[#eb483f]'}`}>
-                ₹{selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0}
+                OMR {Number(selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0).toFixed(3)}
               </span>
-              <span className={`text-[10px] font-bold ${'text-[#eb483f]/30'}`}>INR</span>
             </div>
           </div>
 

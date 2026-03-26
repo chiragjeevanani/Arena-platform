@@ -226,7 +226,7 @@ const BookingSuccess = () => {
               <div className="flex items-center justify-between pt-2">
                 <div>
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Grand Total Paid</p>
-                  <p className={`text-2xl md:text-3xl font-black font-display leading-none ${isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'}`}>₹{amount.toFixed(2)}</p>
+                  <p className={`text-2xl md:text-3xl font-black font-display leading-none ${isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'}`}>OMR {amount.toFixed(3)}</p>
                 </div>
                 <div className={`px-3 py-1.5 rounded-[12px] font-black text-[8px] md:text-[9px] uppercase tracking-widest border transition-all ${isDark
                     ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]'
