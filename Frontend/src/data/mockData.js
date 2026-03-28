@@ -72,6 +72,33 @@ export const USER_BOOKINGS = [
     date: "2024-03-20",
     slot: "07:00 PM - 08:00 PM",
     status: "Upcoming",
-    price: 4.5
+    price: 4.500,
+    receiptUrl: "#receipt-court-1"
+  },
+  {
+    id: "AC-9921",
+    type: "Coaching",
+    arenaName: "Amm Sports Academy",
+    arenaImage: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=400&auto=format&fit=crop",
+    coachName: "Vikram Singh",
+    plan: "Monthly Pro Training",
+    date: "2024-03-15",
+    slot: "06:00 AM - 08:00 AM",
+    status: "Active",
+    price: 45.000,
+    receiptUrl: "#receipt-1"
+  },
+  {
+    id: "AC-9922",
+    type: "Coaching",
+    arenaName: "Elite Smash Center",
+    arenaImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=400&auto=format&fit=crop",
+    coachName: "Anjali Sharma",
+    plan: "Quarterly Advance",
+    date: "2024-03-10",
+    slot: "04:00 PM - 06:00 PM",
+    status: "Active",
+    price: 120.000,
+    receiptUrl: "#receipt-2"
   }
 ];

@@ -215,20 +215,12 @@ const MyStudents = () => {
                  </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                 <Link 
-                   to="/coach/remarks"
-                   className={`py-1.5 rounded-lg border flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider transition-all ${
-                     isDark ? 'bg-white/5 border-white/10 text-white/60 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-[#eb483f] hover:text-[#eb483f]'
-                   }`}
-                 >
-                    <MessageSquare size={12} /> Remarks
-                 </Link>
+              <div className="grid grid-cols-1 gap-2">
                  <button 
                   onClick={() => setSelectedStudent(student)}
                   className="py-1.5 rounded-lg bg-[#eb483f] text-white flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider hover:bg-[#1a2b3c] transition-all"
                  >
-                    <GraduationCap size={12} /> Profile
+                    <GraduationCap size={12} /> View Student Profile
                  </button>
               </div>
             </div>

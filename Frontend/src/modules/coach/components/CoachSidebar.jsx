@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Calendar, Users, ClipboardCheck, MessageSquare,
+  Calendar, Users, ClipboardCheck,
   ChevronLeft, ChevronRight, CalendarDays, TrendingUp, LayoutDashboard
 } from 'lucide-react';
 import Logo from '../../../assets/Logo (3).png';
@@ -16,7 +16,6 @@ const SIDEBAR_STRUCTURE = [
       { path: '/coach/schedule', icon: CalendarDays, label: 'Calendar' },
       { path: '/coach/students', icon: Users, label: 'Students' },
       { path: '/coach/attendance', icon: ClipboardCheck, label: 'Attendance' },
-      { path: '/coach/remarks', icon: MessageSquare, label: 'Remarks' },
       { path: '/coach/progress', icon: TrendingUp, label: 'Progress' },
     ]
   }

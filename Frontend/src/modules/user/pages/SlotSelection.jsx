@@ -80,14 +80,6 @@ const SlotSelection = () => {
               </div>
             </div>
 
-            {/* Court Visualizer */}
-            <div className="bg-white/50 backdrop-blur-sm rounded-[32px] p-2 md:p-6 border border-white">
-              <CourtVisualizer
-                courts={arenaCourts}
-                selectedCourt={selectedCourt}
-                onCourtSelect={setSelectedCourt}
-              />
-            </div>
 
             {/* Date Selection */}
             <div className="bg-white rounded-[32px] p-6 border border-blue-50/50 shadow-sm">
@@ -210,9 +202,9 @@ const SlotSelection = () => {
                          slot: SLOTS.find(s => s.id === selectedSlot)
                        }
                      })}
-                     className={`w-full py-5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all duration-500 flex items-center justify-center gap-2 ${
+                     className={`w-full py-3.5 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all duration-500 flex items-center justify-center gap-2 ${
                        selectedSlot 
-                        ? 'bg-[#eb483f] text-white shadow-[0_15px_30px_rgba(235,72,63,0.3)] hover:shadow-[0_20px_40px_rgba(235,72,63,0.4)] hover:-translate-y-1 active:scale-95' 
+                        ? 'bg-[#eb483f] text-white shadow-[0_12px_25px_rgba(235,72,63,0.3)] hover:shadow-[0_16px_35px_rgba(235,72,63,0.4)] hover:-translate-y-1 active:scale-95' 
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-50'
                      }`}
                    >
@@ -231,12 +223,12 @@ const SlotSelection = () => {
       {/* Booking Bar (Mobile Only) */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
         <div className={`h-[1px] ${'bg-slate-100'}`} />
-        <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t transition-all duration-300 ${'bg-white border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
+        <div className={`backdrop-blur-xl py-2.5 px-6 flex items-center justify-between border-t transition-all duration-300 ${'bg-white border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
           }`}>
           <div className="flex flex-col">
-            <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ${'text-[#eb483f]/40'}`}>Total Amount</p>
+            <p className={`text-[8px] font-black uppercase tracking-[0.2em] mb-0 ${'text-[#eb483f]/40'}`}>Total Amount</p>
             <div className="flex items-baseline gap-1">
-              <span className={`text-3xl font-black font-display tracking-tight ${'text-[#eb483f]'}`}>
+              <span className={`text-2xl font-black font-display tracking-tight ${'text-[#eb483f]'}`}>
                 OMR {Number(selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0).toFixed(3)}
               </span>
             </div>
@@ -244,8 +236,8 @@ const SlotSelection = () => {
 
           <ShuttleButton
             variant="primary"
-            size="lg"
-            className={`!rounded-2xl px-8 !bg-[#eb483f] !text-white transform transition-all duration-300 ${!selectedSlot ? 'opacity-50 grayscale' : 'hover:scale-105 active:scale-95 shadow-[0_8px_25px_rgba(235,72,63,0.3)]'}`}
+            size="sm"
+            className={`!rounded-xl px-7 !bg-[#eb483f] !text-white transform transition-all duration-300 ${!selectedSlot ? 'opacity-50 grayscale' : 'hover:scale-105 active:scale-95 shadow-[0_8px_25px_rgba(235,72,63,0.3)]'}`}
             disabled={!selectedSlot}
             onClick={() => navigate('/booking-summary', {
               state: {

@@ -32,9 +32,9 @@ const AdminDashboard = () => {
   ];
 
   const paymentList = [
-    { player: 'Mark Davis', amount: '₹1500', method: 'Card', status: 'Completed', statusBg: '#76A87A', statusText: '#ffffff' },
-    { player: 'Emily Brown', amount: '₹2000', method: 'Cash', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
-    { player: 'Ryan Wilson', amount: '₹1200', method: 'Online', status: 'Pending', statusBg: '#E88E3E', statusText: '#ffffff' },
+    { player: 'Mark Davis', amount: 'OMR 1.500', method: 'Card', status: 'Completed', statusBg: '#76A87A', statusText: '#ffffff' },
+    { player: 'Emily Brown', amount: 'OMR 2.000', method: 'Cash', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
+    { player: 'Ryan Wilson', amount: 'OMR 1.200', method: 'Online', status: 'Pending', statusBg: '#E88E3E', statusText: '#ffffff' },
   ];
 
   const playersList = [
@@ -220,14 +220,14 @@ const AdminDashboard = () => {
             <div className="bg-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f] shrink-0">
-                  <div className="text-lg font-bold">₹</div>
+                  <div className="text-xs font-black">OMR</div>
                 </div>
                 <div>
                   <p className="text-[#1a2b3c] font-bold text-sm mb-0.5">Pending Payments</p>
-                  <p className="text-xs text-slate-500 font-medium">₹3,250.00</p>
+                  <p className="text-xs text-slate-500 font-medium">OMR 3.250</p>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#113F47] tracking-tight">₹500.00</p>
+              <p className="text-2xl font-bold text-[#113F47] tracking-tight">OMR 0.500</p>
             </div>
 
             {/* Upcoming Bookings stat */}
@@ -238,7 +238,7 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <p className="text-[#1a2b3c] font-bold text-sm mb-0.5">Upcoming Bookings</p>
-                  <p className="text-xs text-slate-500 font-medium">₹2,750.00</p>
+                  <p className="text-xs text-slate-500 font-medium">OMR 2.750 est.</p>
                 </div>
               </div>
               <p className="text-2xl font-bold text-[#113F47]">8</p>

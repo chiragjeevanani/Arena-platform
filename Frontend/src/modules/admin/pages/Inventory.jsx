@@ -21,7 +21,7 @@ const Inventory = () => {
 
   const filteredData = inventoryData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'All'; 
+    const matchesCategory = categoryFilter === 'All' || (item.category && item.category.toLowerCase() === categoryFilter.toLowerCase());
     return matchesSearch && matchesCategory;
   });
 

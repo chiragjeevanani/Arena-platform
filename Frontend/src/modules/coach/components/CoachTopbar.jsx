@@ -13,7 +13,7 @@ const CoachTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    navigate('/coach/login');
   };
 
   return (

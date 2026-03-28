@@ -14,8 +14,7 @@ const AdminLogin = () => {
   
   const FIXED_CREDENTIALS = {
     SUPER_ADMIN: { email: 'superadmin@arena.com', password: 'password123' },
-    ARENA_ADMIN: { email: 'manager@elitehub.com', password: 'password123' },
-    RECEPTIONIST: { email: 'reception@arena.com', password: 'password123' }
+    ARENA_ADMIN: { email: 'manager@elitehub.com', password: 'password123' }
   };
 
   const [formData, setFormData] = useState({
@@ -43,14 +42,18 @@ const AdminLogin = () => {
         role: formData.role,
         assignedArena: formData.role === 'ARENA_ADMIN' ? 'arena-1' : 'all' 
       });
-      navigate('/admin');
+      // Role-specific navigation
+      if (formData.role === 'ARENA_ADMIN') {
+        navigate('/arena');
+      } else {
+        navigate('/admin');
+      }
     }, 1200);
   };
 
   const roles = [
-    { id: 'SUPER_ADMIN', label: 'Super', desc: 'Full Access' },
-    { id: 'ARENA_ADMIN', label: 'Admin', desc: 'Regional' },
-    { id: 'RECEPTIONIST', label: 'Desk', desc: 'Daily Ops' },
+    { id: 'ARENA_ADMIN', label: 'Arena Manager', desc: 'Regional' },
+    { id: 'SUPER_ADMIN', label: 'Admin', desc: 'Central' },
   ];
 
   return (
@@ -62,30 +65,30 @@ const AdminLogin = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[1000px] bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl flex flex-col lg:flex-row overflow-hidden relative z-10"
+        className="w-full max-w-[850px] bg-white rounded-[2rem] border border-slate-100 shadow-2xl flex flex-col lg:flex-row overflow-hidden relative z-10"
       >
         {/* Left Section: Branding & Visuals */}
-        <div className="hidden lg:flex flex-col flex-1 bg-[#1a2b3c] p-12 relative overflow-hidden text-white">
+        <div className="hidden lg:flex flex-col flex-1 bg-[#1a2b3c] p-10 relative overflow-hidden text-white">
           {/* Subtle Grid Pattern Overlay */}
           <div className="absolute inset-0 opacity-10 pointer-events-none" 
                style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
           
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-16">
-              <div className="w-12 h-12 rounded-2xl bg-[#eb483f] flex items-center justify-center shadow-lg shadow-[#eb483f]/20">
-                <ShuttlecockIcon size={28} className="text-white" />
+            <div className="flex items-center gap-3 mb-10">
+              <div className="w-10 h-10 rounded-2xl bg-[#eb483f] flex items-center justify-center shadow-lg shadow-[#eb483f]/20">
+                <ShuttlecockIcon size={24} className="text-white" />
               </div>
-              <span className="font-black font-display tracking-tight text-2xl uppercase">Arena<span className="text-[#eb483f]">Central</span></span>
+              <span className="font-black font-display tracking-tight text-xl uppercase">Arena<span className="text-[#eb483f]">Central</span></span>
             </div>
 
-            <div className="space-y-6 mt-12">
-              <h1 className="text-5xl font-black font-display leading-tight tracking-tight">
+            <div className="space-y-4 mt-6">
+              <h1 className="text-4xl font-black font-display leading-tight tracking-tight">
                 Empowering <br />
                 <span className="text-[#eb483f]">Modern Sports</span> <br />
                 Infrastructure.
               </h1>
-              <p className="text-slate-400 text-lg font-bold leading-relaxed max-w-sm">
-                The authoritative command center for stadium operations, athlete management, and financial reconciliation.
+              <p className="text-slate-400 text-sm font-bold leading-relaxed max-w-[280px]">
+                The authoritative command center for stadium operations and athlete management.
               </p>
             </div>
           </div>
@@ -105,16 +108,16 @@ const AdminLogin = () => {
         </div>
 
         {/* Right Section: Form */}
-        <div className="w-full lg:w-[450px] p-8 lg:p-14 flex flex-col justify-center bg-white">
-          <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-black font-display text-[#1a2b3c] tracking-tight">Staff Authentication</h2>
-            <p className="text-sm font-bold text-slate-400 mt-2">Initialize your administrative session terminal.</p>
+        <div className="w-full lg:w-[360px] p-8 lg:p-10 flex flex-col justify-center bg-white border-l border-slate-50">
+          <div className="mb-6 text-center lg:text-left">
+            <h2 className="text-2xl font-black font-display text-[#1a2b3c] tracking-tight">Staff Authentication</h2>
+            <p className="text-xs font-bold text-slate-400 mt-1.5">Initialize your administrative session terminal.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
               {/* Role Selection */}
-              <div className="flex p-1.5 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
+              <div className="flex p-1 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
                 {roles.map((r) => (
                   <button
                     key={r.id}
@@ -132,14 +135,14 @@ const AdminLogin = () => {
               </div>
 
               <div className="group relative">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1 transition-colors group-focus-within:text-[#eb483f]">Access Identifier</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1 transition-colors group-focus-within:text-[#eb483f]">Access Identifier</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#eb483f] transition-all" size={18} />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#eb483f] transition-all" size={16} />
                   <input
                     type="email"
                     required
                     placeholder="Enter official email"
-                    className="w-full py-4 pl-12 pr-4 rounded-2xl bg-slate-50 border border-slate-100 text-sm font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] focus:bg-white transition-all shadow-inner focus:shadow-none"
+                    className="w-full py-3.5 pl-10 pr-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] focus:bg-white transition-all shadow-inner focus:shadow-none"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -147,14 +150,14 @@ const AdminLogin = () => {
               </div>
 
               <div className="group relative">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1 transition-colors group-focus-within:text-[#eb483f]">Passkey Token</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1 transition-colors group-focus-within:text-[#eb483f]">Passkey Token</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#eb483f] transition-all" size={18} />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#eb483f] transition-all" size={16} />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="Enter passkey"
-                    className="w-full py-4 pl-12 pr-12 rounded-2xl bg-slate-50 border border-slate-100 text-sm font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] focus:bg-white transition-all shadow-inner focus:shadow-none"
+                    className="w-full py-3.5 pl-10 pr-12 rounded-2xl bg-slate-50 border border-slate-100 text-xs font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] focus:bg-white transition-all shadow-inner focus:shadow-none"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
@@ -163,7 +166,7 @@ const AdminLogin = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#eb483f] transition-colors"
                   >
-                    {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
+                    {showPassword ? <EyeOff size={16} strokeWidth={2.5} /> : <Eye size={16} strokeWidth={2.5} />}
                   </button>
                 </div>
               </div>
@@ -180,7 +183,7 @@ const AdminLogin = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-4 rounded-2xl bg-[#eb483f] text-white font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-[#eb483f]/20 hover:shadow-[#eb483f]/40 ${
+              className={`w-full py-3.5 rounded-2xl bg-[#eb483f] text-white font-black text-[11px] uppercase tracking-[0.25em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-[#eb483f]/20 hover:shadow-[#eb483f]/40 ${
                 isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'
               }`}
             >
@@ -202,9 +205,9 @@ const AdminLogin = () => {
             </motion.div>
           )}
 
-          <div className="mt-12 text-center border-t border-slate-50 pt-8">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-200 flex items-center justify-center gap-2">
-              <Shield size={14} strokeWidth={2.5} /> Military-Grade Session Guard
+          <div className="mt-8 text-center border-t border-slate-50 pt-6">
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-200 flex items-center justify-center gap-2">
+              <Shield size={12} strokeWidth={2.5} /> Military-Grade Session Guard
             </p>
           </div>
         </div>

@@ -54,8 +54,9 @@ import Placeholder from './modules/admin/pages/Placeholder';
 // Coach Pages
 import CoachDashboard from './modules/coach/pages/CoachDashboard';
 import MyStudents from './modules/coach/pages/MyStudents';
+import CoachLogin from './modules/coach/pages/CoachLogin';
+import CoachSignup from './modules/coach/pages/CoachSignup';
 import AttendanceRecords from './modules/coach/pages/AttendanceRecords';
-import StudentRemarks from './modules/coach/pages/StudentRemarks';
 import ScheduleCalendar from './modules/coach/pages/ScheduleCalendar';
 import ProgressTracker from './modules/coach/pages/ProgressTracker';
 
@@ -148,9 +149,11 @@ function App() {
           <Route path="schedule" element={<ScheduleCalendar />} />
           <Route path="students" element={<MyStudents />} />
           <Route path="attendance" element={<AttendanceRecords />} />
-          <Route path="remarks" element={<StudentRemarks />} />
           <Route path="progress" element={<ProgressTracker />} />
         </Route>
+
+        <Route path="/coach/login" element={<CoachLogin />} />
+        <Route path="/coach/signup" element={<CoachSignup />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

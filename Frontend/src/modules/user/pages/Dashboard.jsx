@@ -1,11 +1,133 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Receipt, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Receipt, GraduationCap, Download, Calendar, ShieldCheck, X, MapPin, Clock, Printer, CheckCircle2 } from 'lucide-react';
 import { USER_BOOKINGS } from '../../../data/mockData';
 import { motion, AnimatePresence } from 'framer-motion';
 import BookingTimelineCard from '../components/BookingTimeline';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
+
+// Full Receipt Modal
+const ReceiptModal = ({ receipt, onClose }) => (
+  <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
+    <motion.div initial={{ scale: 0.93, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.93, opacity: 0, y: 20 }} className="relative w-full max-w-sm bg-white rounded-[28px] shadow-2xl overflow-hidden border border-slate-100">
+      {/* Header */}
+      <div className="bg-[#1a2b3c] px-6 py-5 text-white">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-[#eb483f] flex items-center justify-center"><Receipt size={16} strokeWidth={2.5} /></div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">{receipt.type === 'Coaching' ? 'Academy Fee Receipt' : 'Court Booking Receipt'}</span>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"><X size={16} /></button>
+        </div>
+        <h3 className="text-xl font-black tracking-tight">{receipt.arenaName}</h3>
+        <p className="text-[10px] text-white/50 font-bold mt-1 uppercase tracking-widest">Transaction #{receipt.id}</p>
+      </div>
+
+      {/* Body */}
+      <div className="p-6 space-y-3">
+        {[
+          { label: 'Booking ID', value: `#${receipt.id}`, icon: CheckCircle2 },
+          { label: 'Date', value: receipt.date, icon: Calendar },
+          { label: 'Time Slot', value: receipt.slot, icon: Clock },
+          receipt.courtName && { label: 'Court', value: receipt.courtName, icon: MapPin },
+          receipt.coachName && { label: 'Coach', value: receipt.coachName, icon: GraduationCap },
+          receipt.plan && { label: 'Plan', value: receipt.plan, icon: Receipt },
+        ].filter(Boolean).map((row, i) => (
+          <div key={i} className="flex items-center justify-between py-2 border-b border-dashed border-slate-100 last:border-0">
+            <div className="flex items-center gap-2 text-slate-500">
+              <row.icon size={13} className="text-[#eb483f]" strokeWidth={2.5} />
+              <span className="text-[10px] font-black uppercase tracking-widest">{row.label}</span>
+            </div>
+            <span className="text-[12px] font-black text-[#1a2b3c]">{row.value}</span>
+          </div>
+        ))}
+
+        {/* Total */}
+        <div className="mt-2 p-4 rounded-2xl bg-[#eb483f]/5 border border-[#eb483f]/10 flex items-center justify-between">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total Paid</p>
+            <p className="text-2xl font-black text-[#1a2b3c] mt-0.5">OMR {Number(receipt.price).toFixed(3)}</p>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Paid</span>
+          </div>
+        </div>
+
+        {/* Print Button */}
+        <button
+          onClick={() => window.print()}
+          className="w-full py-3.5 rounded-2xl bg-[#1a2b3c] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#eb483f] transition-all active:scale-95"
+        >
+          <Printer size={16} strokeWidth={2.5} /> Print Receipt
+        </button>
+      </div>
+    </motion.div>
+  </div>
+);
+
+const ReceiptItem = ({ receipt }) => {
+  const [showModal, setShowModal] = useState(false);
+  return (
+    <>
+      <AnimatePresence>{showModal && <ReceiptModal receipt={receipt} onClose={() => setShowModal(false)} />}</AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white border border-slate-100 rounded-[28px] p-5 shadow-sm hover:shadow-md transition-all group overflow-hidden relative"
+      >
+        <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:rotate-12 transition-transform pointer-events-none">
+           <Receipt size={80} strokeWidth={1} />
+        </div>
+
+        <div className="flex justify-between items-start relative z-10">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${receipt.type === 'Coaching' ? 'bg-[#eb483f]/5 text-[#eb483f]' : 'bg-indigo-50 text-indigo-600'}`}>
+               <Receipt size={22} strokeWidth={2.5} />
+            </div>
+            <div>
+               <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${receipt.type === 'Coaching' ? 'text-[#eb483f]' : 'text-indigo-500'}`}>
+                  {receipt.type === 'Coaching' ? 'Academy Fee Receipt' : 'Court Booking Receipt'}
+               </p>
+               <h4 className="text-[15px] font-black text-[#1a2b3c]">{receipt.arenaName}</h4>
+            </div>
+          </div>
+          <div className="text-right">
+             <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Receipt ID</p>
+             <span className="text-[11px] font-black text-[#1a2b3c] bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">#{receipt.id}</span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-slate-50 pt-5">
+           <div className="flex items-center gap-2">
+              <Calendar size={14} className="text-slate-300" />
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{receipt.date}</span>
+           </div>
+           <div className="flex items-center gap-2">
+              <ShieldCheck size={14} className="text-emerald-500" />
+              <span className="text-[11px] font-black text-emerald-600 uppercase tracking-widest">Paid</span>
+           </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between">
+           <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Total Amount</p>
+              <p className="text-lg font-black text-[#1a2b3c]">OMR {Number(receipt.price).toFixed(3)}</p>
+           </div>
+           <button
+             onClick={() => setShowModal(true)}
+             className="w-10 h-10 rounded-2xl bg-[#1a2b3c] text-white flex items-center justify-center hover:bg-[#eb483f] hover:-translate-y-1 transition-all shadow-lg shadow-[#1a2b3c]/20"
+           >
+              <Download size={18} strokeWidth={2.5} />
+           </button>
+        </div>
+      </motion.div>
+    </>
+  );
+};
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -155,22 +277,32 @@ const Dashboard = () => {
 
           {activeTab === 'payments' && (
             <motion.div
-              key="empty"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="max-w-5xl mx-auto text-center py-24 px-10"
+              key="payments"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
             >
-              <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative bg-white border-blue-100 shadow-[0_10px_30px_rgba(235, 72, 63, 0.05)]`}>
-                {/* Glossy Reflection */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                <Receipt size={40} className={`opacity-20 text-[#eb483f]`} />
-              </div>
-              <div>
-                <h3 className={`text-xl font-black font-display tracking-tight ${'text-[#0F172A]'}`}>No receipts found</h3>
-                <p className={`text-xs mt-3 font-bold leading-relaxed opacity-30 ${'text-[#0F172A]'}`}>
-                  Your payment receipts will appear here once processed.
-                </p>
-              </div>
+              {allBookings.filter(b => b.receiptUrl).length > 0 ? (
+                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {allBookings.filter(b => b.receiptUrl).map((receipt) => (
+                    <ReceiptItem key={receipt.id} receipt={receipt} />
+                  ))}
+                </div>
+              ) : (
+                <div className="max-w-5xl mx-auto text-center py-24 px-10">
+                  <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative bg-white border-blue-100 shadow-[0_10px_30px_rgba(235, 72, 63, 0.05)]`}>
+                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                    <Receipt size={40} className={`opacity-20 text-[#eb483f]`} />
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-black font-display tracking-tight ${'text-[#0F172A]'}`}>No receipts found</h3>
+                    <p className={`text-xs mt-3 font-bold leading-relaxed opacity-30 ${'text-[#0F172A]'}`}>
+                      Your booking and academy receipts will appear here once processed.
+                    </p>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

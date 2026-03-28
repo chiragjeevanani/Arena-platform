@@ -8,11 +8,10 @@ import {
 import { useTheme } from '../../user/context/ThemeContext';
 
 const INITIAL_RULES = [
-  { id: 1, name: 'Base Price – Weekdays', type: 'base', applies: 'All Courts', time: 'Mon–Fri, 06:00–22:00', price: 400, active: true },
-  { id: 2, name: 'Weekend Surge', type: 'weekend', applies: 'All Courts', time: 'Sat–Sun, All Day', price: 550, active: true },
-  { id: 3, name: 'Peak Hour – Evening', type: 'peak', applies: 'Court 1, Court 2', time: 'Mon–Fri, 17:00–20:00', price: 650, active: true },
-  { id: 4, name: 'Off-Peak Morning', type: 'offpeak', applies: 'All Courts', time: 'Mon–Fri, 06:00–09:00', price: 300, active: false },
-  { id: 5, name: 'Court 3 Override', type: 'override', applies: 'Court 3', time: 'Always', price: 350, active: true },
+  { id: 1, name: 'Base Price – Weekdays', type: 'base', applies: 'All Courts', time: 'Mon–Fri, 06:00–22:00', price: 4.00, active: true },
+  { id: 2, name: 'Weekend Surge', type: 'weekend', applies: 'All Courts', time: 'Sat–Sun, All Day', price: 5.50, active: true },
+  { id: 3, name: 'Peak Hour – Evening', type: 'peak', applies: 'All Courts', time: 'Mon–Fri, 17:00–20:00', price: 6.50, active: true },
+  { id: 4, name: 'Off-Peak Morning', type: 'offpeak', applies: 'All Courts', time: 'Mon–Fri, 06:00–09:00', price: 3.00, active: false },
 ];
 
 const TYPE_META = {
@@ -20,10 +19,9 @@ const TYPE_META = {
   weekend: { label: 'Weekend', color: '#6366f1', icon: Calendar },
   peak: { label: 'Peak Hour', color: '#eb483f', icon: Zap },
   offpeak: { label: 'Off-Peak', color: '#22c55e', icon: Moon },
-  override: { label: 'Override', color: '#f59e0b', icon: SunMedium },
 };
 
-const COURTS = ['All Courts', 'Court 1', 'Court 2', 'Court 3'];
+const COURTS = ['All Courts'];
 
 const emptyRule = { name: '', type: 'base', applies: 'All Courts', time: '', price: '' };
 
@@ -167,12 +165,13 @@ const PricingManagement = () => {
 
                   {/* Price */}
                   <div>
-                    <label className="text-[8px] font-semibold uppercase tracking-widest text-[#eb483f] block mb-1">Price (₹/hr)</label>
+                    <label className="text-[8px] font-semibold uppercase tracking-widest text-[#eb483f] block mb-1">Price (OMR/hr)</label>
                     <input
                       type="number"
+                      step="0.001"
                       value={form.price}
                       onChange={e => setForm({ ...form, price: e.target.value })}
-                      placeholder="500"
+                      placeholder="5.000"
                       className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
                         isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#eb483f]' : 'bg-slate-50 border-slate-300 text-[#1a2b3c] focus:border-[#eb483f]'
                       }`}
@@ -180,19 +179,6 @@ const PricingManagement = () => {
                   </div>
                 </div>
 
-                {/* Court */}
-                <div>
-                  <label className="text-[8px] font-semibold uppercase tracking-widest text-[#eb483f] block mb-1">Applies To</label>
-                  <select
-                    value={form.applies}
-                    onChange={e => setForm({ ...form, applies: e.target.value })}
-                    className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
-                      isDark ? 'bg-white/5 border-white/20 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-300 text-[#1a2b3c] focus:border-[#eb483f]'
-                    }`}
-                  >
-                    {COURTS.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
 
                 {/* Time Range */}
                 <div>
@@ -230,7 +216,7 @@ const PricingManagement = () => {
             <DollarSign className="text-[#eb483f]" size={22} /> Pricing Management
           </h2>
           <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-            Configure dynamic pricing rules for base, peak, weekend, and per-court overrides.
+            Configure dynamic pricing rules for base, peak, weekend, and holiday schedules. These rules apply to all courts.
           </p>
         </div>
         <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#eb483f] text-white text-[10px] font-bold uppercase tracking-widest shadow-md hover:bg-[#1a2b3c] transition-all">
@@ -243,7 +229,7 @@ const PricingManagement = () => {
         {[
           { label: 'Total Rules', value: rules.length, color: '#1a2b3c' },
           { label: 'Active Rules', value: rules.filter(r => r.active).length, color: '#22c55e' },
-          { label: 'Avg Active Price', value: `₹${activePriceAvg}`, color: '#eb483f' },
+          { label: 'Avg Active Price', value: `OMR ${activePriceAvg}`, color: '#eb483f' },
           { label: 'Inactive Rules', value: rules.filter(r => !r.active).length, color: '#f59e0b' },
         ].map((s, i) => (
           <div key={i} className={`p-3.5 rounded-xl border shadow-sm ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-white border-slate-100'}`}>
@@ -261,7 +247,7 @@ const PricingManagement = () => {
             className={`w-full pl-9 pr-4 py-1.5 rounded-lg text-[11px] border outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-[#eb483f]' : 'bg-white border-slate-200 text-[#1a2b3c] focus:border-[#eb483f]'}`} />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
-          {['all', 'active', 'inactive', 'peak', 'weekend', 'base', 'override'].map(f => (
+          {['all', 'active', 'inactive', 'peak', 'weekend', 'base'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest border transition-all ${
                 filter === f ? 'bg-[#eb483f] text-white border-[#eb483f]' : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-white border-slate-200 text-slate-500 hover:border-[#eb483f]'
@@ -279,7 +265,6 @@ const PricingManagement = () => {
               <tr className={`text-[8px] font-semibold uppercase tracking-widest border-b ${isDark ? 'text-white/30 border-white/5 bg-white/5' : 'text-slate-400 border-slate-100 bg-slate-50'}`}>
                 <th className="px-5 py-3">Rule Name</th>
                 <th className="px-5 py-3">Type</th>
-                <th className="px-5 py-3">Applies To</th>
                 <th className="px-5 py-3">Time / Window</th>
                 <th className="px-5 py-3 text-center">Price / Hr</th>
                 <th className="px-5 py-3 text-center">Status</th>
@@ -297,7 +282,7 @@ const PricingManagement = () => {
                     transition={{ delay: idx * 0.04 }}
                     className={`group transition-colors ${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50/80'} ${!rule.active ? 'opacity-50' : ''}`}
                   >
-                    <td className="px-5 py-3">
+                    <td className="px-5 py-3 whitespace-nowrap">
                       <p className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{rule.name}</p>
                     </td>
                     <td className="px-5 py-3">
@@ -308,15 +293,12 @@ const PricingManagement = () => {
                       </span>
                     </td>
                     <td className="px-5 py-3">
-                      <p className={`text-[11px] font-bold ${isDark ? 'text-white/60' : 'text-slate-600'}`}>{rule.applies}</p>
-                    </td>
-                    <td className="px-5 py-3">
                       <p className={`text-[10px] font-bold flex items-center gap-1 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
                         <Clock size={10} className="text-[#eb483f]" /> {rule.time || '—'}
                       </p>
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <span className="text-sm font-bold" style={{ color: meta.color }}>₹{rule.price}</span>
+                      <span className="text-sm font-bold" style={{ color: meta.color }}>OMR {rule.price.toFixed(3)}</span>
                     </td>
                     <td className="px-5 py-3 text-center">
                       <button onClick={() => toggleRule(rule.id)} className="transition-transform hover:scale-105">

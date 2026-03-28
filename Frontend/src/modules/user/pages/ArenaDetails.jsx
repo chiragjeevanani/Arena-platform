@@ -44,9 +44,6 @@ const ArenaDetails = () => {
           >
             <ArrowLeft size={18} className="text-white" />
           </button>
-          <button className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center active:scale-95 transition-all shadow-lg">
-            <Heart size={18} className="text-white" />
-          </button>
         </div>
 
         {/* Bottom Info Card */}
@@ -147,7 +144,7 @@ const ArenaDetails = () => {
       {/* Booking Bar */}
       <div className="fixed bottom-[68px] md:bottom-0 left-0 right-0 z-[110] md:max-w-[450px] md:mx-auto">
         <div className={`h-[1px] ${'bg-slate-100'}`} />
-        <div className={`backdrop-blur-xl p-5 flex items-center justify-between border-t ${'bg-white/95 border-slate-50 shadow-[0_-10px_30px_rgba(235,72,63,0.04)]'}`}>
+        <div className={`backdrop-blur-xl p-4 flex items-center justify-between border-t ${'bg-white/95 border-slate-50 shadow-[0_-10px_30px_rgba(235,72,63,0.04)]'}`}>
           <div>
             <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/60'}`}>Starting from</p>
             <div className="flex items-baseline gap-1">
@@ -157,8 +154,8 @@ const ArenaDetails = () => {
           </div>
           <ShuttleButton
             variant="primary"
-            size="lg"
-            className="!bg-[#eb483f] !text-white hover:!bg-[#eb483f]/90 hover:shadow-[#eb483f]/20"
+            size="md"
+            className="!bg-[#eb483f] !text-white hover:!bg-[#eb483f]/90 hover:shadow-[#eb483f]/20 px-8"
             onClick={() => {
               localStorage.setItem("selectedArena", JSON.stringify({
                 ...arena,

@@ -162,11 +162,16 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="text-center">
-          <p className="text-sm text-slate-500">
+        <div className="text-center space-y-3 pt-2">
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
             Don't have an account? {' '}
-            <Link to="/signup" className="text-[#eb483f] font-bold underline">Sign Up</Link>
+            <Link to="/signup" className="text-[#eb483f] font-black underline underline-offset-4">Sign Up</Link>
           </p>
+          <div className="pt-4 border-t border-slate-50">
+            <Link to="/coach/login" className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] hover:text-[#eb483f] transition-all">
+              Staff & Coach Portal
+            </Link>
+          </div>
         </div>
       </div>
       </motion.div>

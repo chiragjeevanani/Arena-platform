@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Users, Shield, MapPin, 
   Target, CalendarClock, Receipt, Trophy,
-  Star, Package, CreditCard, PieChart,
+  Settings, Package, CreditCard, PieChart,
   ChevronLeft, ChevronRight, DollarSign,
   Building2, Clock, CalendarX2, Layout
 } from 'lucide-react';
@@ -29,10 +29,11 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/arena/details', icon: Building2, label: 'Arena Details', isArenaMgmt: true },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
       { path: '/admin/coaching', icon: Users, label: 'Classes' },
+      { path: '/admin/inventory', icon: Package, label: 'Inventory' },
       { path: '/admin/pricing', icon: DollarSign, label: 'Pricing' },
       { path: '/admin/reports', icon: PieChart, label: 'Reports' },
       { path: '/admin/users', icon: Shield, label: 'Customers' },
-      { path: '/admin/settings', icon: Star, label: 'Setting' },
+      { path: '/admin/settings', icon: Settings, label: 'Settings' },
     ]
   },
 ];
