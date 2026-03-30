@@ -1,191 +1,207 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Plus, Search, Filter, Calendar, Target, Medal, X, Zap, ArrowRight, ShieldCheck, Share2 } from 'lucide-react';
+import { 
+  Trophy, Plus, Search, Filter, Calendar, Target, Medal, X, 
+  Zap, ArrowRight, ShieldCheck, Share2, Users, Activity,
+  Settings2, BarChart3, ChevronRight, Hash, Eye, Edit3, MoreHorizontal
+} from 'lucide-react';
 
 const EVENTS = [
-  { id: 1, title: 'Summer Smash 2026', type: 'Open Tournament', date: 'March 25-27', venue: 'Olympic Smash Arena', status: 'Registration Open', prize: '₹50,000', participants: 128 },
-  { id: 2, title: 'Junior Championship', type: 'U-17 Boys/Girls', date: 'April 05', venue: 'Olympic Smash Arena', status: 'Drafting', prize: 'Trophies & Gears', participants: 0 },
-  { id: 3, title: 'Corporate League', type: 'Teams of 4', date: 'Ongoing', venue: 'Badminton Hub Delta', status: 'Live', prize: 'Corporate Trophy', participants: 16 },
+  { id: 1, title: 'Summer Smash 2026', type: 'Open Tournament', date: 'Mar 25-27', venue: 'Olympic Arena', status: 'Registration', prize: '₹50,000', participants: 128 },
+  { id: 2, title: 'Junior Championship', type: 'U-17 Boys/Girls', date: 'Apr 05', venue: 'Olympic Arena', status: 'Drafting', prize: 'Trophies', participants: 0 },
+  { id: 3, title: 'Corporate League', type: 'Teams of 4', date: 'Ongoing', venue: 'Delta Hub', status: 'Live', prize: 'Shield', participants: 16 },
+  { id: 4, title: 'Weekend Blitz', type: 'Solo Knockout', date: 'Apr 12', venue: 'Olympic Arena', status: 'Upcoming', prize: '₹12,000', participants: 64 },
 ];
 
 const EventsAdmin = () => {
   const [showNewEventModal, setShowNewEventModal] = useState(false);
 
   return (
-    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#1a2b3c]">
-      <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-6">
+    <div className="font-sans text-[#1a2b3c] max-w-[1600px] mx-auto border-t border-slate-100 tracking-tight bg-[#F9FAFB]">
+      <div className="mx-auto space-y-3 py-3 px-1 md:px-0">
         
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+        {/* Header (Hyper-Compact & Classy) */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 pb-3 border-b border-slate-200/60 bg-white p-4 shadow-sm rounded-sm">
           <div>
-            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
-              <Trophy className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Tournament Command
-            </h2>
-            <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Orchestrate leagues, championships, and high-performance competitive events.</p>
+            <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[0.3em] text-[#eb483f] mb-1">
+               <div className="w-3 h-[1.5px] bg-[#eb483f]" />
+               <Activity size={10} /> Tournament Ops
+            </div>
+            <h2 className="text-xl md:text-2xl font-semibold text-[#0A1121] tracking-tight leading-none bg-gradient-to-r from-[#0A1121] to-[#243B53] bg-clip-text">Event Management</h2>
+            <p className="text-[9px] font-medium text-slate-600 uppercase tracking-widest mt-2 flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-slate-400" /> Administrative overview for leagues and championships
+            </p>
           </div>
           <button 
             onClick={() => setShowNewEventModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-sm bg-[#0A1121] text-white hover:bg-black transition-all text-[9px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-black/5 active:translate-y-0.5"
           >
-            <Plus size={16} strokeWidth={3} /> Draft Tournament
+            <Plus size={12} strokeWidth={3} /> Draft New Event
           </button>
         </div>
 
-        {/* Featured Metric / Spotlight */}
-        <div className="p-6 md:p-10 rounded-3xl bg-white border border-slate-100 shadow-sm relative overflow-hidden transition-all hover:border-[#eb483f]/40 hover:shadow-md group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#eb483f]/5 blur-[80px] -z-10 group-hover:bg-[#eb483f]/10 transition-all duration-500" />
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-[2rem] flex items-center justify-center border-2 border-[#eb483f]/20 bg-red-50 text-[#eb483f] shadow-sm shadow-[#eb483f]/10 transition-transform group-hover:scale-110">
-                <Medal size={32} strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#eb483f] mb-1">Global Participant Registry</p>
-                <h3 className="text-3xl md:text-5xl font-black font-display tracking-tight text-[#1a2b3c]">3,412 <span className="text-sm font-black text-slate-300 uppercase ml-2 tracking-widest">Elite Athletes</span></h3>
-              </div>
-            </div>
-            <div className="flex gap-4 w-full lg:w-auto">
-              <div className="flex-1 lg:min-w-[120px] p-4 rounded-2xl border border-slate-100 bg-slate-50/50 shadow-inner group/stat">
-                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover/stat:text-[#eb483f] transition-colors">Waitlist</p>
-                 <p className="text-2xl font-black font-display text-[#1a2b3c]">12</p>
-              </div>
-              <div className="flex-1 lg:min-w-[120px] p-4 rounded-2xl border border-[#eb483f]/10 bg-red-50 shadow-inner group/stat">
-                 <p className="text-[9px] font-black text-[#eb483f]/60 uppercase tracking-widest mb-1">Asset Value</p>
-                 <p className="text-2xl font-black font-display text-[#eb483f]">12.4L</p>
-              </div>
-            </div>
-          </div>
+        {/* Key Metrics (Classy Miniature Cards) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+           {[
+             { label: 'Live Events', value: '03', icon: Trophy },
+             { label: 'Athletes', value: '3.4K+', icon: Users },
+             { label: 'Approvals', value: '12', icon: ShieldCheck },
+             { label: 'Revenue', value: '1.2L', icon: BarChart3 }
+           ].map((stat, i) => (
+             <div key={i} className="bg-white border border-slate-200 p-2.5 rounded-sm flex items-center justify-between transition-all hover:bg-slate-50">
+                <div>
+                   <p className="text-[7.5px] font-bold text-slate-600 uppercase tracking-[0.25em] mb-0.5">{stat.label}</p>
+                   <p className="text-lg font-bold text-[#0A1121]">{stat.value}</p>
+                </div>
+                <div className="w-7 h-7 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+                   <stat.icon size={12} strokeWidth={2.5} />
+                </div>
+             </div>
+           ))}
         </div>
 
-        {/* Toolbar */}
-        <div className="flex items-center gap-3">
+        {/* Toolbar (Sharp Compact) */}
+        <div className="flex items-center gap-2 bg-white p-2 border border-slate-200 rounded-sm">
           <div className="flex-1 relative group">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#eb483f] transition-colors" />
+            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-[#eb483f]" />
             <input
               type="text"
-              placeholder="Query live or archived tournaments..."
-              className="w-full py-3.5 pl-12 pr-4 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] transition-all shadow-sm"
+              placeholder="Search across framework..."
+              className="w-full h-8 pl-9 pr-3 bg-transparent outline-none text-[10px] font-semibold text-[#0A1121] placeholder:text-slate-500 uppercase tracking-[0.1em]"
             />
           </div>
-          <button className="p-3.5 rounded-xl border border-slate-100 bg-white text-slate-400 hover:text-[#eb483f] hover:bg-slate-50 transition-all shadow-sm">
-            <Filter size={18} strokeWidth={2.5} />
+          <div className="h-5 w-px bg-slate-100" />
+          <button className="flex items-center gap-1.5 px-3 py-1 text-[8.5px] font-bold uppercase tracking-widest text-slate-600 hover:text-[#0A1121] transition-colors">
+            <Filter size={11} /> Filter
           </button>
         </div>
 
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 gap-4">
+        {/* Events Data List (Classy High-Density Grid) */}
+        <div className="space-y-1.5 pb-8">
           {EVENTS.map((item, idx) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="p-6 md:p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm transition-all duration-300 relative group hover:border-[#eb483f]/40 hover:shadow-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: idx * 0.02 }}
+              className="bg-white border border-slate-200 p-2.5 rounded-sm transition-all group flex flex-col md:flex-row items-start md:items-center gap-4 hover:border-slate-400 hover:shadow-sm"
             >
-              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                <div className="flex-1 space-y-3">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
-                      item.status === 'Live' ? 'bg-[#eb483f] text-white border-[#eb483f]' :
-                      item.status === 'Drafting' ? 'bg-slate-50 text-slate-400 border-slate-100' :
-                      'bg-red-50 text-[#eb483f] border-[#eb483f]/20'
+              {/* Reference ID */}
+              <div className="md:w-24 shrink-0">
+                 <div className="flex items-center gap-1 text-[7.5px] font-bold text-[#eb483f] uppercase tracking-widest mb-0.5">
+                    <Hash size={10} strokeWidth={3} /> {item.id.toString().padStart(4, '0')}
+                 </div>
+                 <span className="text-[8.5px] font-bold text-slate-600 uppercase tracking-widest line-clamp-1">{item.type}</span>
+              </div>
+
+              {/* Tournament Title */}
+              <div className="flex-1 min-w-0 pr-4 border-r border-slate-100">
+                <h3 className="text-[12px] font-bold text-[#0A1121] uppercase tracking-wide truncate group-hover:text-[#eb483f] transition-colors">
+                  {item.title}
+                </h3>
+                <div className="flex items-center gap-4 mt-1">
+                   <div className="flex items-center gap-1.5 text-[8.5px] font-bold uppercase tracking-widest text-slate-600">
+                     <Calendar size={10} className="text-slate-500" /> {item.date}
+                   </div>
+                   <div className="flex items-center gap-1.5 text-[8.5px] font-bold uppercase tracking-widest text-slate-600">
+                     <Target size={10} className="text-slate-500" /> {item.venue}
+                   </div>
+                </div>
+              </div>
+
+              {/* Summary Stats */}
+              <div className="flex items-center gap-8 w-full md:w-auto shrink-0 pt-2 md:pt-0">
+                 <div className="hidden xl:block min-w-[70px]">
+                    <p className="text-[7.5px] font-bold text-slate-600 uppercase tracking-widest mb-0.5">Athletes</p>
+                    <p className="text-[13px] font-bold text-[#0A1121]">{item.participants} <span className="text-[8px] font-black text-slate-400">/ 256</span></p>
+                 </div>
+
+                 <div className="min-w-[70px]">
+                    <p className="text-[7.5px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Status</p>
+                    <span className={`px-2 py-0.5 rounded-sm text-[7.5px] font-bold uppercase tracking-widest border ${
+                      item.status === 'Live' ? 'bg-[#eb483f]/5 text-[#eb483f] border-[#eb483f]/20' :
+                      item.status === 'Drafting' ? 'bg-slate-50 text-slate-500 border-slate-200' :
+                      'bg-slate-900 text-white border-slate-900'
                     }`}>
                       {item.status}
                     </span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">REF-ID: {item.id.toString().padStart(4, '0')}</span>
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight text-[#1a2b3c] group-hover:text-[#eb483f] transition-colors">{item.title}</h3>
-                  <div className="flex flex-wrap items-center gap-6">
-                     <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                       <Calendar size={14} className="text-[#eb483f]" strokeWidth={2.5} /> {item.date}
-                     </div>
-                     <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                       <Target size={14} className="text-[#eb483f]" strokeWidth={2.5} /> {item.venue}
-                     </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-8 w-full lg:w-auto shrink-0 border-t lg:border-t-0 lg:border-l border-slate-100 pt-6 lg:pt-0 lg:pl-10">
-                   <div className="text-left md:text-center">
-                      <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1 leading-none">Registered</p>
-                      <p className="text-2xl font-black font-display text-[#1a2b3c]">{item.participants}</p>
-                   </div>
-                   <div className="flex items-center gap-3 ml-auto">
-                      <button className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-[#eb483f] hover:bg-white transition-all shadow-sm">
-                         <Share2 size={18} strokeWidth={2.5} />
-                      </button>
-                      <button className="px-6 py-3 rounded-xl bg-[#1a2b3c] text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#eb483f] transition-all shadow-lg hover:shadow-[#eb483f]/20 group/btn">
-                         Manage Bracket <ArrowRight size={16} strokeWidth={3} className="group-hover/btn:translate-x-1 transition-transform" />
-                      </button>
-                   </div>
-                </div>
+                 </div>
+
+                 {/* Actions */}
+                 <div className="flex items-center gap-2 ml-auto">
+                    <button className="w-8 h-8 flex items-center justify-center rounded-sm border border-slate-100 text-slate-500 hover:text-[#0A1121] hover:bg-slate-50 transition-all">
+                       <Eye size={12} />
+                    </button>
+                    <button className="px-5 py-2 rounded-sm bg-[#F5F7FA] border border-slate-200 text-[#0A1121] text-[8.5px] font-bold uppercase tracking-widest hover:bg-[#0A1121] hover:text-white transition-all shadow-sm">
+                       Configure
+                    </button>
+                    <button className="w-8 h-8 flex items-center justify-center rounded-sm text-slate-500 hover:text-[#0A1121] transition-colors px-1">
+                       <MoreHorizontal size={14} />
+                    </button>
+                 </div>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* New tournament Modal */}
+      {/* New Event Modal (Sharp & Classy) */}
       <AnimatePresence>
         {showNewEventModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowNewEventModal(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowNewEventModal(false)} className="absolute inset-0 bg-[#0A1121]/80 backdrop-blur-sm" />
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="relative w-full max-w-sm rounded-sm border border-white/5 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
             >
-              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#0A1121]">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
-                    <Trophy className="text-[#eb483f]" size={24} strokeWidth={3} /> Event Framework
-                  </h3>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Initialize competitive operation</p>
+                  <h3 className="text-lg font-bold tracking-tight uppercase leading-none">Draft Framework</h3>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-2">Internal Operation Descriptor</p>
                 </div>
-                <button onClick={() => setShowNewEventModal(false)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-300 bg-white border border-slate-200 shadow-sm"><X size={20} strokeWidth={2.5} /></button>
+                <button onClick={() => setShowNewEventModal(false)} className="bg-slate-50 p-2 rounded-sm text-slate-500 hover:text-[#0A1121] transition-colors border border-slate-200"><X size={14} /></button>
               </div>
 
-              <div className="p-6 md:p-8 space-y-6">
-                <div className="group">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Tournament Designation</label>
-                  <input type="text" placeholder="e.g. Master Series Open 2026" className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c]" />
+              <div className="p-6 space-y-5 bg-[#F9FAFB]/30">
+                <div className="space-y-1.5">
+                  <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block ml-0.5">Title Descriptor</label>
+                  <input type="text" placeholder="Designate nomenclature..." className="w-full h-8 px-3 rounded-sm border border-slate-200 bg-white text-[10px] font-bold outline-none focus:border-slate-500 uppercase tracking-widest" />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Prize Allocation</label>
-                    <div className="relative">
-                      <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-[#eb483f] text-xs">₹</span>
-                      <input type="text" placeholder="50,000" className="w-full py-4 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
-                    </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block ml-0.5">Allocation (₹)</label>
+                    <input type="text" placeholder="50,000" className="w-full h-8 px-3 rounded-sm border border-slate-200 bg-white text-[10px] font-bold outline-none focus:border-slate-500" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Base Venue</label>
-                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
-                      <option>Olympic Main Arena</option>
-                      <option>Smash Delta Hub</option>
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block ml-0.5">Locus Node</label>
+                    <select className="w-full h-8 px-2 rounded-sm border border-slate-200 bg-white text-[10px] font-bold outline-none appearance-none cursor-pointer uppercase tracking-widest pr-4">
+                      <option>Olympic Arena</option>
+                      <option>Delta Hub</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl border-2 border-dashed border-red-100 bg-red-50 flex items-center gap-4 group/box">
-                   <Zap className="text-[#eb483f] group-hover:scale-120 transition-transform" size={24} strokeWidth={2.5} />
-                   <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-[#eb483f]">Instant Sync</p>
-                      <p className="text-[11px] font-bold text-red-900/40 mt-0.5 leading-snug">Tournament will be visible on the public user app instantly after publishing.</p>
+                <div className="p-3 border border-slate-200 bg-white flex items-center gap-3 rounded-sm shadow-sm group">
+                   <div className="w-7 h-7 rounded-sm bg-[#eb483f]/5 flex items-center justify-center text-[#eb483f]">
+                      <Zap size={14} fill="currentColor" />
                    </div>
-                   <div className="w-10 h-6 bg-[#eb483f] rounded-full relative shadow-lg shadow-[#eb483f]/20">
-                      <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                   </div>
+                   <p className="text-[8.5px] font-bold text-slate-600 leading-snug">
+                     <span className="text-[#0A1121] font-black block mb-0.5 uppercase tracking-widest">Public Deployment</span>
+                     Instantly propagate framework to client applications.
+                   </p>
                 </div>
 
-                <button 
-                  onClick={() => setShowNewEventModal(false)}
-                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[11px] font-black uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-                >
-                  Deploy Tournament Bracket <ArrowRight size={18} strokeWidth={3} />
-                </button>
+                <div className="pt-2">
+                  <button 
+                    onClick={() => setShowNewEventModal(false)}
+                    className="w-full h-10 rounded-sm bg-[#0A1121] text-white text-[9px] font-bold uppercase tracking-[0.25em] hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    Deploy Operation <ArrowRight size={14} />
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

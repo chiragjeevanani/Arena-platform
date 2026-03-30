@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, MapPin, ChevronRight, X, AlertTriangle, RefreshCw, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, ChevronRight, X, AlertTriangle, RefreshCw, CheckCircle, Star } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
@@ -46,6 +46,18 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
 
   const isCancelled = booking.status === 'Cancelled';
 
+  // Detect if this booking's slot is a Prime slot (5 PM onwards)
+  const isPrimeSlot = (() => {
+    if (!booking.slot) return false;
+    const timeStr = booking.slot.split(' - ')[0]; // e.g. "07:00 PM"
+    const [time, period] = timeStr.trim().split(' ');
+    if (period === 'PM') {
+      const hour = parseInt(time.split(':')[0]);
+      return hour >= 5; // 5 PM and later = Prime
+    }
+    return false;
+  })();
+
   return (
     <>
       <motion.div
@@ -73,14 +85,11 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent" />
-              {isCancelled ? (
-                <div className="absolute top-3 left-0 bg-red-500/80 backdrop-blur-md text-[8px] font-black uppercase tracking-widest text-white px-2 py-0.5 rounded-r-lg z-10">Cancelled</div>
-              ) : booking.status === 'Completed' ? (
-                <div className="absolute top-3 left-0 bg-slate-500/80 backdrop-blur-md text-[8px] font-black uppercase tracking-widest text-white px-2 py-0.5 rounded-r-lg z-10">Past</div>
-              ) : (
-                <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#eb483f] text-[#eb483f] text-[8px] font-black uppercase tracking-widest shadow-lg z-10">
-                  <div className="w-1 h-1 rounded-full bg-current animate-pulse" />
-                  Live
+              {/* Prime badge on image corner */}
+              {isPrimeSlot && !isCancelled && (
+                <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-amber-500/90 backdrop-blur-sm z-10">
+                  <Star size={8} fill="white" className="text-white" />
+                  <span className="text-[7px] font-black uppercase tracking-widest text-white">Prime</span>
                 </div>
               )}
             </div>
@@ -89,7 +98,16 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
             <div className="flex-1 p-4 flex flex-col justify-between">
               <div className="space-y-1">
                 <div className="flex justify-between items-start gap-2">
-                  <h4 className="font-black text-[14px] leading-tight tracking-tight line-clamp-2 text-[#0F172A]">{booking.arenaName}</h4>
+                  <div className="flex flex-col gap-0.5">
+                    <h4 className="font-black text-[14px] leading-tight tracking-tight line-clamp-1 text-[#0F172A]">{booking.arenaName}</h4>
+                    {/* Prime slot highlight */}
+                    {isPrimeSlot && !isCancelled && (
+                      <div className="flex items-center gap-1">
+                        <Star size={9} fill="#f59e0b" className="text-amber-500" />
+                        <span className="text-[8px] font-black uppercase tracking-widest text-amber-600">Prime Slot</span>
+                      </div>
+                    )}
+                  </div>
                   <div className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest border shrink-0 ${
                     isCancelled ? 'bg-red-50 border-red-100 text-red-500' :
                     booking.status === 'Upcoming' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400'

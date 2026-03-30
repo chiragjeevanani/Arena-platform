@@ -32,6 +32,7 @@ import Privacy from './modules/user/pages/Privacy';
 import Help from './modules/user/pages/Help';
 import Terms from './modules/user/pages/Terms';
 import CoachingSummary from './modules/user/pages/CoachingSummary';
+import MembershipPlans from './modules/user/pages/MembershipPlans';
 
 // Admin Pages
 import AdminDashboard from './modules/admin/pages/Dashboard';
@@ -73,7 +74,11 @@ import CourtSlotsAdmin from './modules/admin/pages/CourtSlotsAdmin';
 // Arena Panel (Standalone)
 import ArenaLogin from './modules/arena/pages/ArenaLogin';
 import ArenaDashboard from './modules/arena/pages/ArenaDashboard';
-import { ArenaDetailsPage, CourtMgmtPage, SlotConfigPage, PricingRulesPage, AvailabilityPage, AccountSettingsPage } from './modules/arena/pages/index.jsx';
+import { 
+  ArenaDetailsPage, CourtMgmtPage, SlotConfigPage, 
+  PricingRulesPage, AvailabilityPage, AccountSettingsPage,
+  InventoryPage, EventsAdminPage, RetailPOSPage 
+} from './modules/arena/pages/index.jsx';
 
 // Components
 import ScrollToTop from './components/ScrollToTop';
@@ -110,6 +115,7 @@ function App() {
         <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
         <Route path="/booking-summary" element={<BookingSummary />} />
         <Route path="/coaching-summary" element={<CoachingSummary />} />
+        <Route path="/membership" element={<MembershipPlans />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/booking-success" element={<BookingSuccess />} />
         <Route path="/bookings/:id" element={<BookingDetails />} />
@@ -167,6 +173,9 @@ function App() {
           <Route path="slots" element={<SlotConfigPage />} />
           <Route path="pricing" element={<PricingRulesPage />} />
           <Route path="availability" element={<AvailabilityPage />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="events" element={<EventsAdminPage />} />
+          <Route path="retail" element={<RetailPOSPage />} />
           <Route path="account-settings" element={<AccountSettingsPage />} />
         </Route>
       </Routes>

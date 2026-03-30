@@ -38,7 +38,9 @@ const Header = () => {
     { path: '/book/1/1', label: 'Book' },
     { path: '/bookings', label: 'Bookings' },
     { path: '/coaching', label: 'Coaching' },
+    { path: '/membership', label: 'Membership' },
   ];
+
 
   return (
     <header className={`relative px-6 pt-2 pb-2 md:pt-3 md:pb-3 overflow-hidden transition-all duration-500 z-[100] ${

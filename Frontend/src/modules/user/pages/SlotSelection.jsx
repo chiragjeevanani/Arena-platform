@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, Star, CalendarDays } from 'lucide-react';
 import { ARENAS, COURTS, SLOTS } from '../../../data/mockData';
 import { motion } from 'framer-motion';
 import CourtSlot from '../components/CourtSlot';
 import CourtVisualizer from '../components/CourtVisualizer';
 import ShuttleButton from '../components/ShuttleButton';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
+import PriceBreakdownCard from '../components/PriceBreakdownCard';
 
 import { useTheme } from '../context/ThemeContext';
 
@@ -24,6 +25,14 @@ const SlotSelection = () => {
   const [selectedDate, setSelectedDate] = useState(7);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedCourt, setSelectedCourt] = useState(storedArena?.selectedCourt?.id || parseInt(courtId));
+  const [slotFilter, setSlotFilter] = useState('all'); // 'all' | 'prime' | 'nonPrime'
+  const isMember = true; // TODO: replace with auth context — true = logged-in member
+
+  const filteredSlots = SLOTS.filter(slot => {
+    if (slotFilter === 'prime') return slot.type === 'prime';
+    if (slotFilter === 'nonPrime') return slot.type === 'nonPrime';
+    return true;
+  });
 
   const days = [
     { day: 'Sun', date: 1 }, { day: 'Mon', date: 2 }, { day: 'Tue', date: 3 }, { day: 'Wed', date: 4 },
@@ -118,24 +127,59 @@ const SlotSelection = () => {
           {/* Right Column: Slots & Inline Summary */}
           <div className="lg:col-span-5 space-y-6">
             <div className={`px-6 py-8 md:py-8 md:px-8 rounded-[36px] border transition-all duration-500 bg-white border-blue-50 shadow-[0_12px_40px_rgba(10,31,68,0.05)]`}>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#eb483f]/60">Available Slots</h3>
-                
-                {/* Color Guide Desktop Inline */}
-                <div className="hidden xl:flex items-center gap-4">
-                   <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-400">
-                     <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                     Booked
-                   </div>
-                   <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-400">
-                     <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f]" />
-                     Selected
-                   </div>
+              {/* Header + Filter */}
+              <div className="mb-5 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#eb483f]/60">Available Slots</h3>
+                  <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-400">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200" /> Booked
+                  </div>
                 </div>
+
+                {/* Slot Type Filter */}
+                <div className="flex gap-2">
+                  {[
+                    { key: 'all', label: 'All Slots', icon: null },
+                    { key: 'prime', label: 'Prime', icon: Star },
+                    { key: 'nonPrime', label: 'Standard', icon: CalendarDays },
+                  ].map(f => (
+                    <button key={f.key} onClick={() => setSlotFilter(f.key)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                        slotFilter === f.key
+                          ? f.key === 'prime'
+                            ? 'bg-amber-500 border-amber-500 text-white shadow-md'
+                            : f.key === 'nonPrime'
+                              ? 'bg-[#069d4b] border-[#069d4b] text-white shadow-md'
+                              : 'bg-[#eb483f] border-[#eb483f] text-white shadow-md'
+                          : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'
+                      }`}>
+                      {f.icon && <f.icon size={9} fill={slotFilter === f.key && f.key === 'prime' ? 'currentColor' : 'none'} />}
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Type explanation */}
+                {slotFilter !== 'all' && (
+                  <div className={`flex items-center gap-2 p-2.5 rounded-xl border text-[8.5px] font-bold ${
+                    slotFilter === 'prime'
+                      ? 'bg-amber-50 border-amber-100 text-amber-700'
+                      : 'bg-green-50 border-green-100 text-green-700'
+                  }`}>
+                    {slotFilter === 'prime'
+                      ? <><Star size={10} fill="currentColor" className="text-amber-500 shrink-0" /> Prime slots are high-demand evening hours. Higher base rate applies.</>  
+                      : <><CalendarDays size={10} className="text-green-500 shrink-0" /> Standard slots are off-peak hours with a lower base rate.</>  
+                    }
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 gap-3">
-                {SLOTS.map(slot => (
+                {filteredSlots.length === 0 ? (
+                  <div className="col-span-2 text-center py-10 text-slate-400">
+                    <p className="text-[10px] font-black uppercase tracking-widest">No slots in this category</p>
+                  </div>
+                ) : filteredSlots.map(slot => (
                   <CourtSlot
                     key={slot.id}
                     slot={slot}
@@ -163,58 +207,44 @@ const SlotSelection = () => {
             </div>
 
             {/* Desktop Only Summary Card */}
-            <div className="hidden lg:block sticky top-24">
-               <div className="rounded-[32px] p-8 bg-white border border-[#eb483f]/10 shadow-[0_20px_50px_rgba(235,72,63,0.08)] relative overflow-hidden">
-                 {/* Decorative background circle */}
-                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#eb483f]/5 rounded-full blur-3xl pointer-events-none" />
-                 
-                 <div className="relative z-10">
-                   <h4 className="text-[11px] font-black uppercase tracking-widest text-[#eb483f] mb-6">Selection Summary</h4>
-                   
-                   <div className="space-y-4 mb-8">
-                     <div className="flex justify-between items-center text-sm">
-                       <span className="text-slate-500 font-bold tracking-tight">Court Fee</span>
-                       <span className="text-slate-900 font-black">OMR {Number(selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0).toFixed(3)}</span>
-                     </div>
-                     <div className="flex justify-between items-center text-sm">
-                       <span className="text-slate-500 font-bold tracking-tight">Taxes & Fees</span>
-                       <span className="text-slate-900 font-black">OMR 0.000</span>
-                     </div>
-                     <div className="h-[1px] bg-slate-100 w-full my-2" />
-                     <div className="flex justify-between items-end">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-[#eb483f]/40">Total Amount</span>
-                       <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-black font-display text-[#eb483f]">
-                            OMR {Number(selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0).toFixed(3)}
-                          </span>
-                          <span className="text-[10px] font-black text-[#eb483f]/40 uppercase tracking-widest">OMR</span>
-                       </div>
-                     </div>
-                   </div>
+            <div className="hidden lg:block sticky top-24 space-y-4">
+              {/* Price Breakdown Card */}
+              {selectedSlot ? (
+                <PriceBreakdownCard
+                  slot={SLOTS.find(s => s.id === selectedSlot)}
+                  isMember={isMember}
+                  adminOverride={null}
+                />
+              ) : (
+                <div className="rounded-[24px] p-8 bg-white border border-slate-100 shadow-sm text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                    <Star size={20} className="text-slate-200" />
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">Select a slot to see price breakdown</p>
+                </div>
+              )}
 
-                   <button
-                     disabled={!selectedSlot}
-                     onClick={() => navigate('/booking-summary', {
-                       state: {
-                         arena,
-                         court: currentCourt,
-                         date: `March ${selectedDate}, 2026`,
-                         slot: SLOTS.find(s => s.id === selectedSlot)
-                       }
-                     })}
-                     className={`w-full py-3.5 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all duration-500 flex items-center justify-center gap-2 ${
-                       selectedSlot 
-                        ? 'bg-[#eb483f] text-white shadow-[0_12px_25px_rgba(235,72,63,0.3)] hover:shadow-[0_16px_35px_rgba(235,72,63,0.4)] hover:-translate-y-1 active:scale-95' 
-                        : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-50'
-                     }`}
-                   >
-                     Review Order
-                   </button>
-                   {!selectedSlot && (
-                     <p className="text-[9px] text-center mt-4 text-slate-400 font-bold italic uppercase tracking-wider">Please select a time slot to proceed</p>
-                   )}
-                 </div>
-               </div>
+              <button
+                disabled={!selectedSlot}
+                onClick={() => navigate('/booking-summary', {
+                  state: {
+                    arena,
+                    court: currentCourt,
+                    date: `March ${selectedDate}, 2026`,
+                    slot: SLOTS.find(s => s.id === selectedSlot)
+                  }
+                })}
+                className={`w-full py-3.5 rounded-xl font-black uppercase tracking-widest text-[11px] transition-all duration-500 flex items-center justify-center gap-2 ${
+                  selectedSlot
+                   ? 'bg-[#eb483f] text-white shadow-[0_12px_25px_rgba(235,72,63,0.3)] hover:shadow-[0_16px_35px_rgba(235,72,63,0.4)] hover:-translate-y-1 active:scale-95'
+                   : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-50'
+                }`}
+              >
+                Review Order
+              </button>
+              {!selectedSlot && (
+                <p className="text-[9px] text-center text-slate-400 font-bold italic uppercase tracking-wider">Please select a time slot to proceed</p>
+              )}
             </div>
           </div>
         </div>
@@ -225,14 +255,12 @@ const SlotSelection = () => {
         <div className={`h-[1px] ${'bg-slate-100'}`} />
         <div className={`backdrop-blur-xl py-2.5 px-6 flex items-center justify-between border-t transition-all duration-300 ${'bg-white border-blue-50 shadow-[0_-15px_50px_rgba(10,31,68,0.08)]'
           }`}>
-          <div className="flex flex-col">
-            <p className={`text-[8px] font-black uppercase tracking-[0.2em] mb-0 ${'text-[#eb483f]/40'}`}>Total Amount</p>
-            <div className="flex items-baseline gap-1">
-              <span className={`text-2xl font-black font-display tracking-tight ${'text-[#eb483f]'}`}>
-                OMR {Number(selectedSlot ? SLOTS.find(s => s.id === selectedSlot)?.price : 0).toFixed(3)}
-              </span>
-            </div>
-          </div>
+          <PriceBreakdownCard
+            slot={SLOTS.find(s => s.id === selectedSlot) || null}
+            isMember={isMember}
+            adminOverride={null}
+            compact
+          />
 
           <ShuttleButton
             variant="primary"

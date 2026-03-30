@@ -6,7 +6,7 @@ import {
   Target, CalendarClock, Receipt, Trophy,
   Settings, Package, CreditCard, PieChart,
   ChevronLeft, ChevronRight, DollarSign,
-  Building2, Clock, CalendarX2, Layout
+  Building2, Clock, CalendarX2, Layout, Briefcase
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -28,9 +28,10 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/user/events', icon: Trophy, label: 'Event Banners', isSiteMgmt: true },
       { path: '/admin/arena/details', icon: Building2, label: 'Arena Details', isArenaMgmt: true },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
-      { path: '/admin/coaching', icon: Users, label: 'Classes' },
+      { path: '/admin/coaching', icon: Users, label: 'Coaching' },
       { path: '/admin/inventory', icon: Package, label: 'Inventory' },
       { path: '/admin/pricing', icon: DollarSign, label: 'Pricing' },
+      { path: '/admin/sponsorships', icon: Briefcase, label: 'Sponsorships' },
       { path: '/admin/reports', icon: PieChart, label: 'Reports' },
       { path: '/admin/users', icon: Shield, label: 'Customers' },
       { path: '/admin/settings', icon: Settings, label: 'Settings' },

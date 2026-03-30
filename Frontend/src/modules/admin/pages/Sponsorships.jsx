@@ -1,271 +1,561 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Target, Plus, Search, Filter, Briefcase, Calendar, 
+  Plus, Search, Filter, Briefcase, Calendar, 
   TrendingUp, MoreVertical, ExternalLink, X, ArrowRight, Mail, Building,
-  Eye, RefreshCw, FileText, Settings, Trash2 
+  Eye, RefreshCw, FileText, Settings, Trash2, CheckCircle2, AlertCircle,
+  Link as LinkIcon, BarChart3, PieChart, Users, DollarSign, Clock, Download,
+  LayoutGrid, List, ChevronRight, Hash
 } from 'lucide-react';
 
-const SPONSORS = [
-  { id: 1, name: 'Yonex India', category: 'Title Sponsor', contact: 'Rohan Mehta', status: 'Active', contractEnd: '2026-12-30', value: '₹12.5L', logo: 'Y' },
-  { id: 2, name: 'RedBull', category: 'Beverage Partner', contact: 'Sarah J.', status: 'Active', contractEnd: '2027-01-15', value: '₹8.0L', logo: 'RB' },
-  { id: 3, name: 'Decathlon', category: 'Gear Sponsor', contact: 'Amit K.', status: 'Renewal Pending', contractEnd: '2026-03-30', value: '₹5.5L', logo: 'D' },
+const EVENTS_DATA = [
+  { id: 1, title: 'Summer Smash 2026', type: 'Open Tournament' },
+  { id: 2, title: 'Junior Championship', type: 'U-17 Boys/Girls' },
+  { id: 3, title: 'Corporate League', type: 'Teams of 4' },
+];
+
+const INITIAL_SPONSORS = [
+  { 
+    id: 1, 
+    name: 'Yonex India', 
+    type: 'Title Sponsor', 
+    contact: 'rohan@yonex.in', 
+    phone: '+91 98765 43210',
+    status: 'Active', 
+    startDate: '2025-01-01',
+    contractEnd: '2026-12-30', 
+    equity: 1250000, 
+    logo: 'Y',
+    color: '#eb483f'
+  },
+  { 
+    id: 2, 
+    name: 'RedBull', 
+    type: 'Partner Sponsor', 
+    contact: 'sarah@redbull.com', 
+    phone: '+91 91234 56789',
+    status: 'Active', 
+    startDate: '2025-06-01',
+    contractEnd: '2027-01-15', 
+    equity: 800000, 
+    logo: 'RB',
+    color: '#1a2b3c'
+  },
+  { 
+    id: 3, 
+    name: 'Decathlon', 
+    type: 'Event Sponsor', 
+    contact: 'amit@decathlon.in', 
+    phone: '+91 88888 77777',
+    status: 'Expired', 
+    startDate: '2024-03-01',
+    contractEnd: '2026-03-25', 
+    equity: 550000, 
+    logo: 'D',
+    color: '#0078D4'
+  },
+  { 
+    id: 4, 
+    name: 'Monster Energy', 
+    type: 'Banner Sponsor', 
+    contact: 'jake@monster.com', 
+    phone: '+91 77777 66666',
+    status: 'Active', 
+    startDate: '2025-08-01',
+    contractEnd: '2026-05-15', 
+    equity: 350000, 
+    logo: 'M',
+    color: '#6e9e10'
+  },
+];
+
+const INITIAL_MAPPINGS = [
+  { id: 101, eventId: 1, sponsorId: 1, type: 'Official Gear' },
+  { id: 102, eventId: 1, sponsorId: 2, type: 'Refreshment' },
+  { id: 103, eventId: 3, sponsorId: 3, type: 'Kit Partner' },
 ];
 
 const Sponsorships = () => {
-  const [showNewPartnerModal, setShowNewPartnerModal] = useState(false);
-  const [activeMenu, setActiveMenu] = useState(null);
+  const [activeTab, setActiveTab] = useState('directory'); // directory | mapping | reports
+  const [sponsors, setSponsors] = useState(INITIAL_SPONSORS);
+  const [mappings, setMappings] = useState(INITIAL_MAPPINGS);
+  const [showModal, setShowModal] = useState(false);
+  const [editingSponsor, setEditingSponsor] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('All');
+  const [toast, setToast] = useState(null);
+
+  // Stats
+  const totalEquity = sponsors.reduce((acc, sp) => acc + sp.equity, 0);
+  const activeSponsors = sponsors.filter(sp => sp.status === 'Active').length;
+  const expiredSponsors = sponsors.filter(sp => sp.status === 'Expired').length;
+  const expiringSoon = sponsors.filter(sp => {
+    const diff = new Date(sp.contractEnd) - new Date();
+    const days = diff / (1000 * 60 * 60 * 24);
+    return sp.status === 'Active' && days > 0 && days < 45;
+  }).length;
+
+  const filteredSponsors = useMemo(() => {
+    return sponsors.filter(sp => {
+      const matchesSearch = sp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           sp.type.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = filterType === 'All' || sp.type === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [sponsors, searchQuery, filterType]);
+
+  const handleDelete = (id) => {
+    if (window.confirm('Terminate this sponsorship agreement?')) {
+      setSponsors(prev => prev.filter(sp => sp.id !== id));
+      showToast('Sponsorship terminated successfully');
+    }
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const getDaysLeft = (date) => {
+    const diff = new Date(date) - new Date();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
 
   return (
-    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#1a2b3c]">
-      <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-6">
-        
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200">
-          <div>
-            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
-              <Briefcase className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Partnership Portfolio
-            </h2>
-            <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Manage high-value sponsorships, brand visibility, and equity hub.</p>
-          </div>
-          <button
-            onClick={() => setShowNewPartnerModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
-          >
-            <Plus size={16} strokeWidth={3} /> Onboard Partner
-          </button>
-        </div>
-
-        {/* Stats Board */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-[#eb483f]/40 hover:shadow-md group">
-            <div className="flex items-center gap-4 mb-4">
-               <div className="w-10 h-10 rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
-                  <TrendingUp size={20} strokeWidth={2.5} />
-               </div>
-               <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Total Asset Value</p>
+    <div className="bg-[#F8FAFC] min-h-screen font-['Inter',_sans-serif] text-[#1E293B] relative antialiased selection:bg-[#eb483f]/10">
+      {/* Hyper-Compact Sticky Header */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 md:px-6 py-3 shadow-sm">
+        <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#eb483f] flex items-center justify-center text-white shadow-sm shadow-[#eb483f]/20">
+              <Briefcase size={16} strokeWidth={2.5} />
             </div>
-            <div className="flex items-end justify-between">
-              <h3 className="text-2xl md:text-3xl font-black font-display tracking-tight text-[#1a2b3c]">₹26.0L</h3>
-              <p className="text-[12px] font-black text-[#eb483f] flex items-center gap-1 bg-red-50 px-2 py-1 rounded-lg">
-                 +12.4% <ArrowUpRight size={14} />
-              </p>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-[#0F172A]">Sponsorship Portfolio</h1>
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest leading-none mt-0.5">Asset & Equity Hub</p>
             </div>
           </div>
-          <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-[#eb483f]/40 hover:shadow-md group">
-            <div className="flex items-center gap-4 mb-4">
-               <div className="w-10 h-10 rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
-                  <Calendar size={20} strokeWidth={2.5} />
-               </div>
-               <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Expiring Deals</p>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg">
+              {[
+                { id: 'directory', icon: List, label: 'Directory' },
+                { id: 'mapping', icon: LinkIcon, label: 'Mapping' },
+                { id: 'reports', icon: BarChart3, label: 'Reports' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${
+                    activeTab === tab.id 
+                      ? 'bg-white text-[#eb483f] shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <tab.icon size={13} strokeWidth={2.5} />
+                  <span className="hidden xs:inline">{tab.label}</span>
+                </button>
+              ))}
             </div>
-            <div className="flex items-end justify-between">
-              <h3 className="text-2xl md:text-3xl font-black font-display tracking-tight text-[#1a2b3c]">02</h3>
-              <p className="text-[10px] font-black text-red-500 uppercase tracking-widest italic animate-pulse">Critical Renewal</p>
-            </div>
-          </div>
-          <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-[#eb483f]/40 hover:shadow-md group sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-4 mb-4">
-               <div className="w-10 h-10 rounded-xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
-                  <Target size={20} strokeWidth={2.5} />
-               </div>
-               <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Active Ad Slots</p>
-            </div>
-            <div className="flex items-end justify-between">
-              <h3 className="text-2xl md:text-3xl font-black font-display tracking-tight text-[#1a2b3c]">15 / 20</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">75% Occupancy</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Partners List */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:border-[#eb483f]/40">
-          <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/30">
-             <h3 className="font-black font-display uppercase tracking-widest text-xs text-[#1a2b3c]">Partner Directory</h3>
-             <div className="relative group w-full md:max-w-xs">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#eb483f] transition-colors" />
-                <input type="text" placeholder="Search brands..." className="w-full py-2.5 pl-11 pr-4 text-[13px] font-bold rounded-xl border border-slate-200 bg-white outline-none focus:border-[#eb483f] transition-all shadow-sm" />
-             </div>
-          </div>
-          <div className="overflow-x-auto scrollbar-hide">
-            <table className="w-full text-left border-collapse min-w-[700px]">
-               <thead>
-                  <tr className="text-[10px] font-black uppercase tracking-widest border-b border-slate-100 text-[#1a2b3c] bg-slate-50/50">
-                     <th className="px-6 py-5">Brand Entity</th>
-                     <th className="px-6 py-5 text-center">Engagement</th>
-                     <th className="px-6 py-5 text-center">Net Worth</th>
-                     <th className="px-6 py-5 text-center">Authority Status</th>
-                     <th className="px-6 py-5 text-right pr-10">Operations</th>
-                  </tr>
-               </thead>
-               <tbody className="divide-y divide-slate-50">
-                  {SPONSORS.map((sp, idx) => (
-                     <tr key={sp.id} className="group transition-colors hover:bg-slate-50/30">
-                        <td className="px-6 py-5">
-                           <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black font-display text-[#eb483f] text-xl shadow-sm">
-                                 {sp.logo}
-                              </div>
-                              <div>
-                                 <p className="font-black text-[15px] tracking-tight text-[#1a2b3c]">{sp.name}</p>
-                                 <p className="text-[11px] font-bold text-slate-400 mt-0.5">{sp.contact}</p>
-                              </div>
-                           </div>
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                           <span className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200 bg-white text-slate-500 shadow-sm transition-all hover:bg-slate-50 hover:text-[#eb483f]">
-                              {sp.category}
-                           </span>
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                           <p className="font-display font-black text-sm text-[#1a2b3c]">{sp.value}</p>
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                           <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                             sp.status === 'Active' ? 'bg-[#eb483f]/5 text-[#eb483f] border-[#eb483f]/20' : 'bg-red-50 text-red-500 border-red-100 shadow-sm'
-                           }`}>
-                              {sp.status}
-                           </span>
-                        </td>
-                         <td className="px-6 py-5 pr-10 text-right">
-                            <div className="flex items-center justify-end gap-2 relative">
-                              <button className="p-2.5 rounded-xl bg-slate-50 border border-transparent text-slate-400 hover:text-[#eb483f] hover:bg-white hover:border-slate-100 transition-all shadow-sm">
-                                 <ExternalLink size={16} strokeWidth={2.5} />
-                              </button>
-                              <button 
-                                onClick={() => setActiveMenu(activeMenu === sp.id ? null : sp.id)}
-                                className={`p-2.5 rounded-xl transition-all border shadow-sm ${
-                                  activeMenu === sp.id
-                                    ? 'bg-[#eb483f] border-[#eb483f] text-white'
-                                    : 'bg-white border-slate-100 text-slate-400 hover:text-[#1a2b3c]'
-                                }`}
-                              >
-                                 <MoreVertical size={16} strokeWidth={2.5} />
-                              </button>
-
-                              <AnimatePresence>
-                                {activeMenu === sp.id && (
-                                  <>
-                                    <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
-                                    <motion.div
-                                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                      className={`absolute right-0 ${idx >= SPONSORS.length - 1 ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-xl z-20 transition-all`}
-                                    >
-                                      <div className="space-y-1">
-                                        {[
-                                          { label: 'Intelligence', icon: Eye, color: '#eb483f' },
-                                          { label: 'Re-negotiate', icon: RefreshCw, color: '#eb483f' },
-                                          { label: 'Documents', icon: FileText, color: '#eb483f' },
-                                          { label: 'Campaigns', icon: Settings, color: '#eb483f' },
-                                          { label: 'Terminate', icon: Trash2, color: '#ef4444' },
-                                        ].map((opt, i) => (
-                                          <button
-                                            key={i}
-                                            onClick={() => setActiveMenu(null)}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-all"
-                                          >
-                                            <div className="p-1.5 rounded-lg border transition-colors" style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}30`, color: opt.color }}>
-                                              <opt.icon size={12} strokeWidth={2.5} />
-                                            </div>
-                                            {opt.label}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </motion.div>
-                                  </>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                         </td>
-                     </tr>
-                  ))}
-               </tbody>
-            </table>
+            <div className="w-px h-6 bg-slate-200 mx-1" />
+            <button 
+              onClick={() => { setEditingSponsor(null); setShowModal(true); }}
+              className="px-4 py-1.5 rounded-lg bg-[#eb483f] text-white text-[11px] font-bold uppercase tracking-wider hover:shadow-md hover:bg-[#d43d35] transition-all flex items-center gap-2"
+            >
+              <Plus size={14} strokeWidth={3} /> Onboard
+            </button>
           </div>
         </div>
       </div>
 
-      {/* New Partner Modal */}
-      <AnimatePresence>
-        {showNewPartnerModal && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowNewPartnerModal(false)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
-            >
-              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <div>
-                  <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
-                    <Briefcase className="text-[#eb483f]" size={24} strokeWidth={3} /> Onboarding Protocol
-                  </h3>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Initialize new equity partnership</p>
-                </div>
-                <button onClick={() => setShowNewPartnerModal(false)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-400 bg-white border border-slate-200 shadow-sm">
-                  <X size={20} strokeWidth={2.5} />
-                </button>
-              </div>
-              <div className="p-6 md:p-8 space-y-6">
-                <div className="space-y-4">
-                  <div className="group">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Company / Brand Entity</label>
-                    <div className="relative">
-                      <Building size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all" />
-                      <input type="text" placeholder="e.g. Li-Ning India" className="w-full py-4 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
-                    </div>
+      <div className="max-w-[1600px] mx-auto p-4 md:p-6 space-y-5">
+        
+        {/* Compact Stats Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {[
+            { label: 'Valuation', value: `₹${(totalEquity/100000).toFixed(1)}L`, icon: TrendingUp, color: '#eb483f', trend: '+12%' },
+            { label: 'Partners', value: activeSponsors, icon: Users, color: '#1a2b3c', trend: 'Active' },
+            { label: 'Expiring', value: expiringSoon, icon: Clock, color: '#f59e0b', trend: 'Soon' },
+            { label: 'Expired', value: expiredSponsors, icon: AlertCircle, color: '#ef4444', trend: 'Audit' }
+          ].map((stat, i) => (
+            <div key={i} className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-[#eb483f]/30 transition-all group relative overflow-hidden">
+               <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br transition-all group-hover:scale-110 opacity-[0.03]`} style={{ background: stat.color }} />
+               <div className="flex justify-between items-start mb-2">
+                 <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500">{stat.label}</p>
+                 <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-50 text-slate-400 group-hover:text-[#eb483f] transition-colors" style={{ color: stat.color + 'aa' }}>
+                    <stat.icon size={14} strokeWidth={2.5} />
+                 </div>
+               </div>
+               <div className="flex items-baseline gap-2">
+                  <h3 className="text-xl font-bold text-[#0F172A]">{stat.value}</h3>
+                  <span className="text-[9px] font-bold uppercase tracking-tighter" style={{ color: stat.color }}>{stat.trend}</span>
+               </div>
+            </div>
+          ))}
+        </div>
+
+        {activeTab === 'directory' && (
+          <div className="space-y-4 animate-in fade-in duration-300">
+            {/* High-Density Filtering Toolbar */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-3 bg-white border border-slate-200 p-2.5 rounded-xl">
+               <div className="relative w-full md:w-72">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Search brand entities..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-9 pl-9 pr-4 rounded-lg bg-slate-50 text-[12px] font-medium outline-none focus:bg-white focus:ring-1 focus:ring-[#eb483f]/20 border border-transparent focus:border-[#eb483f]/30 transition-all"
+                  />
+               </div>
+               <div className="flex items-center gap-2 w-full md:w-auto">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-100 bg-slate-50">
+                    <Filter size={12} className="text-slate-400" />
+                    <select 
+                      value={filterType}
+                      onChange={(e) => setFilterType(e.target.value)}
+                      className="bg-transparent text-[11px] font-bold outline-none cursor-pointer"
+                    >
+                      <option value="All">All Categories</option>
+                      <option value="Title Sponsor">Title</option>
+                      <option value="Event Sponsor">Event</option>
+                      <option value="Partner Sponsor">Partner</option>
+                    </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Classification</label>
-                      <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
-                         <option>Title Sponsor</option>
-                         <option>Gear Partner</option>
-                         <option>Strategic Ally</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Deal Equity (Annual)</label>
-                      <input type="text" placeholder="e.g. ₹15.0L" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
-                    </div>
-                  </div>
-                  <div className="group">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Point of Contact Email</label>
-                    <div className="relative">
-                      <Mail size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all" />
-                      <input type="email" placeholder="partners@brand.com" className="w-full py-4 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowNewPartnerModal(false)}
-                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-                >
-                  Finalize Agreement <ArrowRight size={16} strokeWidth={3} />
-                </button>
-              </div>
-            </motion.div>
+                  <div className="h-6 w-px bg-slate-200 mx-1 hidden md:block" />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:block">{filteredSponsors.length} Assets Found</p>
+               </div>
+            </div>
+
+            {/* Compact Data Table */}
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden border-b-2 border-b-slate-100">
+               <div className="overflow-x-auto">
+                 <table className="w-full text-left">
+                    <thead className="bg-slate-50/50 border-b border-slate-200 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                       <tr>
+                          <th className="px-5 py-3">Brand Entity</th>
+                          <th className="px-5 py-3 text-center">Class</th>
+                          <th className="px-5 py-3 text-center">Valuation</th>
+                          <th className="px-5 py-3 text-center">Protocol Duration</th>
+                          <th className="px-5 py-3 text-right">Operations</th>
+                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                       {filteredSponsors.map((sp) => {
+                         const daysLeft = getDaysLeft(sp.contractEnd);
+                         const isExpired = sp.status === 'Expired' || daysLeft <= 0;
+                         const isExpiringSoon = sp.status === 'Active' && daysLeft > 0 && daysLeft <= 45;
+
+                         return (
+                           <tr key={sp.id} className="hover:bg-slate-50/50 transition-colors group">
+                             <td className="px-5 py-3">
+                               <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg border border-slate-100 bg-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:scale-105 transition-transform" style={{ color: sp.color }}>
+                                    {sp.logo}
+                                  </div>
+                                  <div>
+                                    <h4 className="text-[13px] font-bold text-[#0F172A] leading-tight">{sp.name}</h4>
+                                    <p className="text-[10px] font-medium text-slate-400 lowercase">{sp.contact}</p>
+                                  </div>
+                               </div>
+                             </td>
+                             <td className="px-5 py-3 text-center">
+                               <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                                  {sp.type.split(' ')[0]}
+                               </span>
+                             </td>
+                             <td className="px-5 py-3 text-center">
+                                <p className="text-[13px] font-bold text-[#0F172A]">₹{(sp.equity/100000).toFixed(1)}L</p>
+                             </td>
+                             <td className="px-5 py-3 text-center">
+                               <div className="flex flex-col items-center">
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    isExpired ? 'bg-red-50 text-red-600' :
+                                    isExpiringSoon ? 'bg-amber-50 text-amber-600' :
+                                    'bg-emerald-50 text-emerald-600'
+                                  }`}>
+                                    {isExpired ? 'Expired' : `${daysLeft}d left`}
+                                  </span>
+                                  <p className="text-[9px] font-medium text-slate-400 mt-0.5">{new Date(sp.contractEnd).toLocaleDateString()}</p>
+                               </div>
+                             </td>
+                             <td className="px-5 py-3 text-right">
+                               <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#eb483f] transition-all">
+                                    <Settings size={13} />
+                                  </button>
+                                  <button onClick={() => handleDelete(sp.id)} className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
+                                    <Trash2 size={13} />
+                                  </button>
+                               </div>
+                             </td>
+                           </tr>
+                         );
+                        })}
+                    </tbody>
+                 </table>
+               </div>
+            </div>
           </div>
+        )}
+
+        {activeTab === 'mapping' && (
+          <div className="animate-in fade-in duration-300">
+             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                {/* Compact Linking Hub */}
+                <div className="lg:col-span-4 space-y-4">
+                   <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                      <div className="flex items-center gap-2 mb-5">
+                         <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
+                            <LinkIcon size={16} strokeWidth={2.5} />
+                         </div>
+                         <h3 className="text-sm font-bold tracking-tight text-[#0F172A]">Connection Hub</h3>
+                      </div>
+
+                      <div className="space-y-4">
+                         <div className="space-y-1">
+                            <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Deployment Target</label>
+                            <select className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#eb483f]/40 transition-all">
+                               <option value="">Select Event...</option>
+                               {EVENTS_DATA.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+                            </select>
+                         </div>
+                         <div className="space-y-1">
+                            <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Assigned Asset</label>
+                            <select className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#eb483f]/40 transition-all">
+                               <option value="">Select Sponsor...</option>
+                               {sponsors.filter(s => s.status === 'Active').map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
+                            </select>
+                         </div>
+                         <button className="w-full py-2.5 rounded-lg bg-[#0F172A] text-white text-[11px] font-bold uppercase tracking-wider hover:bg-black transition-all mt-2 flex items-center justify-center gap-2">
+                            Integrate Asset <CheckCircle2 size={13} />
+                         </button>
+                      </div>
+                   </div>
+                   
+                   <div className="p-5 rounded-xl bg-slate-900 text-white relative overflow-hidden group border border-slate-800">
+                      <div className="relative z-10">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#eb483f] mb-1">Strategic Logic</p>
+                        <h4 className="text-sm font-bold mb-1">Asset Propagation</h4>
+                        <p className="text-[11px] font-medium text-slate-400 leading-snug">
+                          Mapping optimizes regional brand resonance across nodes.
+                        </p>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Compact Mapping Table */}
+                <div className="lg:col-span-8">
+                   <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden h-full min-h-[400px]">
+                      <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                         <h3 className="text-sm font-bold tracking-tight text-[#0F172A]">Active Mapping Matrix</h3>
+                         <span className="px-2 py-0.5 rounded-md bg-[#eb483f]/10 text-[#eb483f] text-[9px] font-bold uppercase tracking-widest border border-[#eb483f]/20">
+                            {mappings.length} Nodes
+                         </span>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                           <thead className="bg-slate-50/30 border-b border-slate-100 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                              <tr>
+                                 <th className="px-6 py-3">Node Context</th>
+                                 <th className="px-6 py-3 text-center">Entity</th>
+                                 <th className="px-6 py-3 text-right">Ops</th>
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-slate-100">
+                              {mappings.map(map => {
+                                const event = EVENTS_DATA.find(e => e.id === map.eventId);
+                                const sponsor = sponsors.find(s => s.id === map.sponsorId);
+                                return (
+                                  <tr key={map.id} className="hover:bg-slate-50/50 transition-colors">
+                                     <td className="px-6 py-3">
+                                        <p className="text-[12px] font-bold text-[#0F172A]">{event?.title}</p>
+                                        <p className="text-[9px] font-medium text-slate-400">{event?.type}</p>
+                                     </td>
+                                     <td className="px-6 py-3 text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                           <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold text-[10px]" style={{ color: sponsor?.color }}>{sponsor?.logo}</div>
+                                           <p className="text-[11px] font-bold text-[#0F172A]">{sponsor?.name}</p>
+                                        </div>
+                                     </td>
+                                     <td className="px-6 py-3 text-right">
+                                        <button className="text-slate-300 hover:text-red-400 transition-colors">
+                                           <Trash2 size={13} />
+                                        </button>
+                                     </td>
+                                  </tr>
+                                );
+                              })}
+                           </tbody>
+                        </table>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="animate-in fade-in duration-300 space-y-5">
+             <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                <div className="md:col-span-4 bg-[#0F172A] p-6 rounded-2xl text-white shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[200px]">
+                   <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-bl-full -mr-12 -mt-12 opacity-20" />
+                   <div>
+                     <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-1">Portfolio Valuation</p>
+                     <h3 className="text-3xl font-bold tracking-tighter">₹29.5L</h3>
+                   </div>
+                   <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold bg-emerald-400/5 w-fit px-2 py-1 rounded-md border border-emerald-400/10 uppercase tracking-tighter">
+                      <TrendingUp size={12} /> +₹4.5L GROWTH M/M
+                   </div>
+                </div>
+
+                <div className="md:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                   <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-sm font-bold tracking-tight text-[#0F172A]">Equity Optimization Metrics</h3>
+                      <button className="p-1.5 rounded-lg border border-slate-100 text-slate-400 hover:text-[#eb483f] transition-all"><Download size={14} /></button>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                      {[
+                        { label: 'Infrastructure', value: 45, color: '#eb483f' },
+                        { label: 'Strategic Networking', value: 30, color: '#1a2b3c' },
+                        { label: 'Event Core', value: 20, color: '#0078D4' },
+                        { label: 'Digital Display', value: 5, color: '#6e9e10' }
+                      ].map((bar, i) => (
+                        <div key={i} className="space-y-1.5">
+                          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tight text-slate-500">
+                             <span>{bar.label}</span>
+                             <span>{bar.value}%</span>
+                          </div>
+                          <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                             <motion.div 
+                               initial={{ width: 0 }}
+                               animate={{ width: `${bar.value}%` }}
+                               transition={{ duration: 0.8, ease: "easeOut" }}
+                               className="h-full rounded-full"
+                               style={{ backgroundColor: bar.color }}
+                             />
+                          </div>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+             </div>
+
+             <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                   <h3 className="text-sm font-bold tracking-tight text-[#0F172A]">Distribution Ledger</h3>
+                   <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold uppercase tracking-tight text-slate-600 hover:bg-slate-50 transition-all shadow-xs">
+                      <Filter size={12} /> Filter Ledger
+                   </button>
+                </div>
+                <div className="overflow-x-auto">
+                   <table className="w-full text-left">
+                      <thead className="bg-slate-50/30 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100">
+                         <tr>
+                            <th className="px-6 py-3">Asset ID</th>
+                            <th className="px-6 py-3">Brand Entity</th>
+                            <th className="px-6 py-3 text-right">Equity Allocated</th>
+                         </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                         {sponsors.map(sp => (
+                           <tr key={sp.id} className="hover:bg-slate-50/50 transition-colors">
+                             <td className="px-6 py-3 text-[10px] font-mono font-bold text-slate-300">#SP-{sp.id}</td>
+                             <td className="px-6 py-3">
+                               <span className="text-[12px] font-bold text-[#0F172A]">{sp.name}</span>
+                             </td>
+                             <td className="px-6 py-3 text-right">
+                                <span className="text-[12px] font-bold text-[#0F172A]">₹{(sp.equity/1000).toFixed(0)}k</span>
+                             </td>
+                           </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                </div>
+             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Compact Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowModal(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+             <motion.div
+               initial={{ scale: 0.98, opacity: 0, y: 10 }}
+               animate={{ scale: 1, opacity: 1, y: 0 }}
+               exit={{ scale: 0.98, opacity: 0, y: 10 }}
+               className="relative w-full max-w-md rounded-2xl bg-white text-[#0F172A] shadow-2xl overflow-hidden border border-slate-200"
+             >
+                <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+                    <div>
+                      <h3 className="text-base font-bold tracking-tight">{editingSponsor ? 'Modify Protocol' : 'Onboard Partner'}</h3>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#eb483f] mt-0.5">Deployment Framework</p>
+                    </div>
+                    <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-all shadow-sm">
+                      <X size={16} strokeWidth={3} />
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                   <div className="space-y-1">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Brand Node Name</label>
+                      <input type="text" placeholder="e.g. Under Armour" defaultValue={editingSponsor?.name || ''} className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:ring-1 focus:ring-[#eb483f]/20 focus:border-[#eb483f]/40 transition-all" />
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Category</label>
+                        <select className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none cursor-pointer">
+                            <option>Title Sponsor</option>
+                            <option>Event Sponsor</option>
+                            <option>Partner Sponsor</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Net Valuation</label>
+                        <input type="text" placeholder="₹12.0L" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none" />
+                      </div>
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Start Protocol</label>
+                        <input type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">End Protocol</label>
+                        <input type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
+                      </div>
+                   </div>
+
+                   <div className="pt-4 flex gap-2">
+                      <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 text-[11px] font-bold uppercase hover:bg-slate-50 transition-all font-mono">Abort</button>
+                      <button onClick={() => setShowModal(false)} className="flex-[1.5] py-2.5 rounded-lg bg-[#eb483f] text-white text-[11px] font-bold uppercase tracking-widest shadow-md shadow-[#eb483f]/20 hover:bg-[#d43d35] transition-all flex items-center justify-center gap-2">Deploy <CheckCircle2 size={14} /></button>
+                   </div>
+                </div>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Minimal Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 10, x: '-50%' }}
+            className="fixed bottom-6 left-1/2 z-[110] px-4 py-2 rounded-xl bg-slate-900 text-white text-[11px] font-bold shadow-xl flex items-center gap-3 border border-slate-700/50"
+          >
+            <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center text-[10px]">✓</div>
+            {toast}
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 };
-
-const ArrowUpRight = ({ size, ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <line x1="7" y1="17" x2="17" y2="7"></line>
-    <polyline points="7 7 17 7 17 17"></polyline>
-  </svg>
-);
 
 export default Sponsorships;

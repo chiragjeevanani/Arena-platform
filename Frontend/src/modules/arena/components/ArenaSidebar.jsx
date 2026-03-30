@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2, Target, Clock, DollarSign, CalendarX2,
   ChevronLeft, ChevronRight, LayoutDashboard, LogOut,
-  ArrowLeftRight
+  ArrowLeftRight, Package, Trophy, Store
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../../assets/Logo (3).png';
@@ -15,6 +15,9 @@ const NAV_ITEMS = [
   { path: '/arena/slots', icon: Clock, label: 'Slot Configuration' },
   { path: '/arena/pricing', icon: DollarSign, label: 'Pricing Rules' },
   { path: '/arena/availability', icon: CalendarX2, label: 'Availability' },
+  { path: '/arena/inventory', icon: Package, label: 'Inventory' },
+  { path: '/arena/events', icon: Trophy, label: 'Event Management' },
+  { path: '/arena/retail', icon: Store, label: 'Retail Hub' },
 ];
 
 const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {

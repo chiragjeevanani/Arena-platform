@@ -13,6 +13,7 @@ import SlotConfig from './ArenaPanel/SlotConfig';
 import PricingRules from './ArenaPanel/PricingRules';
 import AvailabilityControl from './ArenaPanel/AvailabilityControl';
 import WalkInBooking from './ArenaPanel/WalkInBooking';
+import MembershipAdmin from './ArenaPanel/MembershipAdmin';
 import ArenaAnalytics from './ArenaPanel/ArenaAnalytics';
 import StaffManagement from './ArenaPanel/StaffManagement';
 import ArenaIncome from './ArenaPanel/ArenaIncome';
@@ -23,8 +24,13 @@ import MaintenanceScheduler from './ArenaPanel/MaintenanceScheduler';
 
 import { 
   Users, BarChart3, ShoppingCart, Wallet, UserCheck, 
-  Megaphone, ShieldCheck, PenTool 
+  Megaphone, ShieldCheck, PenTool, Package, Trophy, Store,
+  CreditCard
 } from 'lucide-react';
+
+import Inventory from './Inventory';
+import EventsAdmin from './EventsAdmin';
+import RetailPOS from './RetailPOS';
 
 const TABS = [
   {
@@ -92,8 +98,17 @@ const TABS = [
     color: '#f59e0b',
   },
   {
+    id: 'membership',
+    label: 'Membership Plans',
+    shortLabel: 'Members',
+    icon: CreditCard,
+    description: 'Add, edit & manage membership plans',
+    color: '#eb483f',
+  },
+  {
     id: 'maintenance',
     label: 'Maintenance',
+
     shortLabel: 'Maint.',
     icon: PenTool,
     description: 'Schedule court repairs',
@@ -131,6 +146,30 @@ const TABS = [
     description: 'Block slots & manage closures',
     color: '#0ea5e9',
   },
+  {
+    id: 'inventory',
+    label: 'Inventory Management',
+    shortLabel: 'Inventory',
+    icon: Package,
+    description: 'Track equipment & stock levels',
+    color: '#eb483f',
+  },
+  {
+    id: 'events',
+    label: 'Event Management',
+    shortLabel: 'Events',
+    icon: Trophy,
+    description: 'Leagues & local championships',
+    color: '#f59e0b',
+  },
+  {
+    id: 'retail',
+    label: 'Retail Hub',
+    shortLabel: 'Shop',
+    icon: Store,
+    description: 'Sell products & drinks',
+    color: '#eb483f',
+  },
 ];
 
 // Quick summary stats — in production these come from API
@@ -154,6 +193,7 @@ const ArenaManagementPanel = () => {
       case 'pricing': return <PricingRules />;
       case 'availability': return <AvailabilityControl />;
       case 'walkin': return <WalkInBooking />;
+      case 'membership': return <MembershipAdmin />;
       case 'analytics': return <ArenaAnalytics />;
       case 'staff': return <StaffManagement />;
       case 'income': return <ArenaIncome />;
@@ -161,6 +201,9 @@ const ArenaManagementPanel = () => {
       case 'notices': return <Broadcaster />;
       case 'policies': return <PolicySettings />;
       case 'maintenance': return <MaintenanceScheduler />;
+      case 'inventory': return <Inventory />;
+      case 'events': return <EventsAdmin />;
+      case 'retail': return <RetailPOS />;
       default: return null;
     }
   };
@@ -184,7 +227,7 @@ const ArenaManagementPanel = () => {
               Arena Management
             </h1>
             <p className="text-sm text-slate-500 font-bold mt-1.5 ml-1">
-              Configure courts, slots, pricing and availability for your arena.
+              Manage courts, slots, pricing, inventory, and local events for your arena.
             </p>
           </div>
 

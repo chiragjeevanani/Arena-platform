@@ -1,35 +1,31 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Plus, X, ArrowRight, CalendarDays, Trash2, Sun, Moon, Copy } from 'lucide-react';
+import { 
+  Clock, Plus, X, ArrowRight, CalendarDays, Trash2, 
+  Sun, Moon, Activity, ShieldCheck, 
+  Timer, Zap, Star
+} from 'lucide-react';
 
 const INITIAL_SLOTS = {
   weekday: [
-    { id: 's1', startTime: '06:00', endTime: '07:00', duration: 60 },
-    { id: 's2', startTime: '07:00', endTime: '08:00', duration: 60 },
-    { id: 's3', startTime: '08:00', endTime: '09:00', duration: 60 },
-    { id: 's4', startTime: '17:00', endTime: '18:00', duration: 60 },
-    { id: 's5', startTime: '18:00', endTime: '19:00', duration: 60 },
-    { id: 's6', startTime: '19:00', endTime: '20:00', duration: 60 },
-    { id: 's7', startTime: '20:00', endTime: '21:00', duration: 60 },
+    { id: 's1', startTime: '06:00', endTime: '07:00', duration: 60, type: 'nonPrime' },
+    { id: 's2', startTime: '07:00', endTime: '08:00', duration: 60, type: 'nonPrime' },
+    { id: 's3', startTime: '08:00', endTime: '09:00', duration: 60, type: 'nonPrime' },
+    { id: 's4', startTime: '17:00', endTime: '18:00', duration: 60, type: 'prime' },
+    { id: 's5', startTime: '18:00', endTime: '19:00', duration: 60, type: 'prime' },
+    { id: 's6', startTime: '19:00', endTime: '20:00', duration: 60, type: 'prime' },
+    { id: 's7', startTime: '20:00', endTime: '21:00', duration: 60, type: 'prime' },
   ],
   weekend: [
-    { id: 'sw1', startTime: '06:00', endTime: '07:30', duration: 90 },
-    { id: 'sw2', startTime: '07:30', endTime: '09:00', duration: 90 },
-    { id: 'sw3', startTime: '09:00', endTime: '10:30', duration: 90 },
-    { id: 'sw4', startTime: '15:00', endTime: '16:30', duration: 90 },
-    { id: 'sw5', startTime: '16:30', endTime: '18:00', duration: 90 },
+    { id: 'sw1', startTime: '06:00', endTime: '07:30', duration: 90, type: 'nonPrime' },
+    { id: 'sw2', startTime: '07:30', endTime: '09:00', duration: 90, type: 'nonPrime' },
+    { id: 'sw3', startTime: '09:00', endTime: '10:30', duration: 90, type: 'nonPrime' },
+    { id: 'sw4', startTime: '15:00', endTime: '16:30', duration: 90, type: 'prime' },
+    { id: 'sw5', startTime: '16:30', endTime: '18:00', duration: 90, type: 'prime' },
   ],
 };
 
-const emptyForm = { startTime: '06:00', endTime: '07:00', duration: 60 };
-
-// Helper to determine time of day for slot styling
-const getTimeOfDay = (timeStr) => {
-  const hour = parseInt(timeStr.split(':')[0], 10);
-  if (hour < 12) return { label: 'Morning', color: 'text-amber-500', bg: 'bg-amber-50' };
-  if (hour < 17) return { label: 'Afternoon', color: 'text-orange-500', bg: 'bg-orange-50' };
-  return { label: 'Evening', color: 'text-indigo-500', bg: 'bg-indigo-50' };
-};
+const emptyForm = { startTime: '06:00', endTime: '07:00', duration: 60, type: 'nonPrime' };
 
 const SlotConfig = () => {
   const [slots, setSlots] = useState(INITIAL_SLOTS);
@@ -52,211 +48,268 @@ const SlotConfig = () => {
   };
 
   const currentSlots = slots[activeTab];
-
-  // Calculate stats
   const totalWeekday = slots.weekday.length;
   const totalWeekend = slots.weekend.length;
   const allSlots = [...slots.weekday, ...slots.weekend];
   const avgDuration = allSlots.length ? Math.round(allSlots.reduce((a, s) => a + s.duration, 0) / allSlots.length) : 0;
-
-  const inputCls = "w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c] shadow-sm";
+  const primeCount = allSlots.filter(s => s.type === 'prime').length;
+  const nonPrimeCount = allSlots.filter(s => s.type === 'nonPrime').length;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Stats Header */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        {[
-          { label: 'Weekday Slots', value: totalWeekday, icon: Sun, color: '#f59e0b', bg: '#fef3c7' },
-          { label: 'Weekend Slots', value: totalWeekend, icon: Moon, color: '#6366f1', bg: '#e0e7ff' },
-          { label: 'Total Active', value: totalWeekday + totalWeekend, icon: CalendarDays, color: '#10b981', bg: '#d1fae5' },
-          { label: 'Avg Duration', value: `${avgDuration}m`, icon: Clock, color: '#ef4444', bg: '#fee2e2' },
-        ].map((s, i) => (
-          <div key={i} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: s.bg }}>
-              <s.icon size={22} style={{ color: s.color }} strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">{s.label}</p>
-              <p className="text-2xl font-bold text-[#1a2b3c] leading-none">{s.value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Main Content Area */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        {/* Tab Switcher */}
-        <div className="flex border-b border-slate-100 bg-slate-50/50">
-          {[
-            { key: 'weekday', label: 'Weekday Configuration', icon: Sun },
-            { key: 'weekend', label: 'Weekend Configuration', icon: Moon },
-          ].map(t => (
-            <button key={t.key} onClick={() => setActiveTab(t.key)}
-              className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 py-5 px-4 transition-all border-b-2 relative overflow-hidden ${
-                activeTab === t.key
-                  ? 'border-[#eb483f] text-[#eb483f] bg-white'
-                  : 'border-transparent text-slate-500 hover:text-[#1a2b3c] hover:bg-slate-100/50'
-              }`}>
-              <div className="flex items-center gap-2 relative z-10">
-                <t.icon size={18} strokeWidth={activeTab === t.key ? 2.5 : 2} /> 
-                <span className="text-sm font-semibold tracking-wide">{t.label}</span>
+    <div className="font-sans text-[#1a2b3c] max-w-[1600px] mx-auto border-t border-slate-100 tracking-tight bg-[#F9FAFB]">
+      <div className="mx-auto space-y-4 py-4">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 pb-3 border-b border-slate-200 bg-white p-4 shadow-sm rounded-sm">
+           <div>
+              <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[0.3em] text-[#eb483f] mb-1">
+                 <div className="w-3 h-[1.5px] bg-[#eb483f]" />
+                 <Clock size={10} /> Operational Timeline
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold relative z-10 hidden sm:inline-block ${
-                activeTab === t.key ? 'bg-red-50 text-[#eb483f]' : 'bg-slate-200 text-slate-600'
-              }`}>
-                {slots[t.key].length} Slots
-              </span>
-              {/* Subtle background highlight for active tab */}
-              {activeTab === t.key && (
-                <div className="absolute inset-0 bg-gradient-to-t from-red-50 to-transparent opacity-50 pointer-events-none" />
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Slot Grid Container */}
-        <div className="p-6 md:p-8 bg-slate-50/30">
-          
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-md font-bold text-[#1a2b3c]">
-                {activeTab === 'weekday' ? 'Monday - Friday' : 'Saturday & Sunday'}
-              </h2>
-              <p className="text-xs font-medium text-slate-400 mt-0.5">Manage available time slots and durations</p>
-            </div>
-            
-            <button onClick={() => setShowModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#eb483f] text-white text-[11px] font-semibold uppercase tracking-widest flex items-center gap-2 hover:shadow-lg hover:shadow-[#eb483f]/30 hover:-translate-y-0.5 transition-all">
-              <Plus size={16} strokeWidth={2.5} /> Add Slot
-            </button>
-          </div>
-
-          {currentSlots.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 border-dashed">
-              <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4">
-                <Clock size={28} className="text-slate-300" />
+              <h2 className="text-xl md:text-2xl font-bold text-[#0A1121] tracking-tight leading-none uppercase">Slot Configuration</h2>
+              <p className="text-[9px] font-medium text-slate-600 uppercase tracking-widest mt-2 flex items-center gap-2">
+                 <span className="w-1 h-1 rounded-full bg-slate-400" /> Define Prime &amp; Non-Prime time slots per day type
+              </p>
+           </div>
+           
+           <div className="flex items-center gap-2 w-full md:w-auto">
+              <div className="flex bg-slate-50 p-1 border border-slate-200 rounded-sm">
+                 {[
+                   { label: 'Weekday', value: totalWeekday, color: 'text-[#0A1121]' },
+                   { label: 'Weekend', value: totalWeekend, color: 'text-[#eb483f]' },
+                   { label: 'Prime', value: primeCount, color: 'text-amber-500' },
+                   { label: 'Non-Prime', value: nonPrimeCount, color: 'text-slate-500' },
+                 ].map((s, i) => (
+                   <div key={i} className="px-3 py-1 flex flex-col border-r last:border-0 border-slate-200 min-w-[55px]">
+                      <span className="text-[7.5px] font-black uppercase text-slate-600 tracking-widest leading-none mb-1">{s.label}</span>
+                      <span className={`text-[12px] font-bold ${s.color} leading-none`}>{s.value.toString().padStart(2, '0')}</span>
+                   </div>
+                 ))}
               </div>
-              <p className="text-sm font-black uppercase tracking-widest text-slate-500">No time slots found</p>
-              <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">Click the Add Slot button above to start configuring availability for {activeTab}s.</p>
-              <button onClick={() => setShowModal(true)} className="mt-6 text-[#eb483f] text-sm font-bold hover:underline">
-                + Create First Slot
+              <button 
+                 onClick={() => setShowModal(true)}
+                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-[#0A1121] text-white hover:bg-black transition-all text-[9.5px] font-bold uppercase tracking-widest shadow-md active:translate-y-0.5"
+              >
+                 <Plus size={14} strokeWidth={3} /> Define Slot
               </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-              <AnimatePresence>
-                {currentSlots.map((slot, idx) => {
-                  const timeStyle = getTimeOfDay(slot.startTime);
-                  return (
-                    <motion.div key={slot.id}
-                      initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ delay: Math.min(idx * 0.05, 0.3) }}
-                      className="group bg-white rounded-2xl border border-slate-200 p-5 hover:border-[#eb483f]/40 hover:shadow-lg hover:shadow-[#eb483f]/5 transition-all relative overflow-hidden"
-                    >
-                      {/* Delete Button */}
-                      <button onClick={() => removeSlot(activeTab, slot.id)}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-red-50 border border-red-100 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white z-10">
-                        <Trash2 size={14} strokeWidth={2.5} />
-                      </button>
+           </div>
+        </div>
 
-                      {/* Time Indicator Badge */}
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${timeStyle.bg} mb-4`}>
-                        <div className={`w-1.5 h-1.5 rounded-full bg-current ${timeStyle.color}`} />
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${timeStyle.color}`}>
-                          {timeStyle.label}
-                        </span>
-                      </div>
+        {/* Metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+           {[
+             { label: 'Avg Duration', value: `${avgDuration}min`, icon: Timer, color: '#eb483f' },
+             { label: 'System Active', value: '24/7', icon: Activity, color: '#10b981' },
+             { label: 'Prime Slots', value: primeCount, icon: Star, color: '#f59e0b' },
+             { label: 'Non-Prime', value: nonPrimeCount, icon: CalendarDays, color: '#6366f1' }
+           ].map((stat, i) => (
+             <div key={i} className="bg-white border border-slate-200 p-2.5 rounded-sm flex items-center justify-between transition-all hover:bg-slate-50 shadow-sm">
+                <div>
+                   <p className="text-[7.5px] font-bold text-slate-600 uppercase tracking-[0.25em] mb-0.5">{stat.label}</p>
+                   <p className="text-lg font-bold text-[#0A1121]">{stat.value}</p>
+                </div>
+                <div className="w-8 h-8 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center">
+                   <stat.icon size={14} style={{ color: stat.color }} strokeWidth={2.5} />
+                </div>
+             </div>
+           ))}
+        </div>
 
-                      {/* Times */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Start</p>
-                          <p className="text-2xl font-black text-[#1a2b3c] leading-none">{slot.startTime}</p>
-                        </div>
-                        <div className="w-8 flex justify-center">
-                          <ArrowRight size={16} className="text-slate-300" />
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">End</p>
-                          <p className="text-2xl font-black text-[#1a2b3c] leading-none">{slot.endTime}</p>
-                        </div>
-                      </div>
+        {/* Slot Type Legend */}
+        <div className="flex items-center gap-4 bg-white border border-slate-200 rounded-sm px-4 py-2.5 shadow-sm">
+          <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Slot Type Legend:</span>
+          <div className="flex items-center gap-1.5">
+            <Star size={10} className="text-amber-500" fill="#f59e0b" />
+            <span className="text-[8px] font-black uppercase tracking-widest text-amber-600">Prime — Higher Base Rate, High-Demand Hours</span>
+          </div>
+          <div className="h-3 w-px bg-slate-200" />
+          <div className="flex items-center gap-1.5">
+            <CalendarDays size={10} className="text-slate-400" />
+            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Non-Prime — Standard Rate, Off-Peak Hours</span>
+          </div>
+        </div>
 
-                      {/* Footer/Duration */}
-                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-slate-500">
-                          <Clock size={13} strokeWidth={2.5} />
-                          <span className="text-[11px] font-bold">{slot.duration} mins</span>
-                        </div>
-                        <button className="text-[10px] font-bold text-slate-400 hover:text-[#eb483f] uppercase tracking-wider truncate">
-                          Edit
-                        </button>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </AnimatePresence>
-            </div>
-          )}
+        {/* Tab System */}
+        <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+           <div className="flex border-b border-slate-100 bg-slate-50/20">
+              {[
+                { key: 'weekday', label: 'Mon - Fri', icon: Sun },
+                { key: 'weekend', label: 'Sat - Sun', icon: Moon },
+              ].map(t => (
+                <button key={t.key} onClick={() => setActiveTab(t.key)}
+                  className={`flex-1 flex items-center justify-center gap-3 py-3 transition-all border-b-2 relative ${
+                    activeTab === t.key
+                      ? 'border-[#eb483f] text-[#0A1121] bg-white'
+                      : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                  }`}>
+                  <t.icon size={14} /> 
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t.label} Registry</span>
+                  <span className={`px-2 py-0.5 rounded-sm text-[8px] font-bold ${activeTab === t.key ? 'bg-[#eb483f] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                    {slots[t.key].length}
+                  </span>
+                </button>
+              ))}
+           </div>
+
+           {/* Slots Grid */}
+           <div className="p-4 bg-slate-50/20">
+              {currentSlots.length === 0 ? (
+                <div className="text-center py-16 bg-white border border-dashed border-slate-200 rounded-sm">
+                   <Clock size={24} className="mx-auto mb-2 text-slate-300" />
+                   <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">No Slots Defined</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  <AnimatePresence>
+                    {currentSlots.map((slot, idx) => {
+                      const isPrime = slot.type === 'prime';
+                      return (
+                        <motion.div key={slot.id}
+                          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                          transition={{ delay: idx * 0.02 }}
+                          className={`group bg-white rounded-sm border p-3 flex flex-col hover:border-slate-400 transition-all shadow-sm ${
+                            isPrime ? 'border-amber-200' : 'border-slate-200'
+                          }`}
+                        >
+                          {/* Type Badge + Delete */}
+                          <div className="flex items-center justify-between mb-4">
+                             <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-sm border ${
+                               isPrime 
+                                 ? 'bg-amber-50 border-amber-200 text-amber-600' 
+                                 : 'bg-slate-50 border-slate-100 text-slate-500'
+                             }`}>
+                                {isPrime 
+                                  ? <Star size={8} fill="currentColor" /> 
+                                  : <CalendarDays size={8} />
+                                }
+                                <span className="text-[7.5px] font-black uppercase tracking-widest">
+                                  {isPrime ? 'Prime' : 'Non-Prime'}
+                                </span>
+                             </div>
+                             <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => removeSlot(activeTab, slot.id)} className="w-6 h-6 flex items-center justify-center rounded-sm bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+                                   <Trash2 size={11} />
+                                </button>
+                             </div>
+                          </div>
+
+                          {/* Time Display */}
+                          <div className="flex flex-col items-center justify-center space-y-2 mb-4">
+                             <div className="flex items-center justify-between w-full px-2">
+                                <div className="text-center">
+                                   <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest block mb-0.5">Start</span>
+                                   <span className="text-[16px] font-bold text-[#0A1121] leading-none">{slot.startTime}</span>
+                                </div>
+                                <div className="w-px h-6 bg-slate-100" />
+                                <div className="text-center">
+                                   <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest block mb-0.5">End</span>
+                                   <span className="text-[16px] font-bold text-[#0A1121] leading-none">{slot.endTime}</span>
+                                </div>
+                             </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                             <div className="flex items-center gap-1.5 text-slate-600">
+                                <Clock size={11} />
+                                <span className="text-[9px] font-bold uppercase tracking-widest">{slot.duration} Min</span>
+                             </div>
+                             {isPrime && (
+                               <div className="flex items-center gap-1 text-amber-500">
+                                 <Zap size={10} />
+                                 <span className="text-[8px] font-black uppercase tracking-widest">High Rate</span>
+                               </div>
+                             )}
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </AnimatePresence>
+                </div>
+              )}
+           </div>
         </div>
       </div>
 
-      {/* Add Slot Modal */}
+      {/* Define Slot Modal */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowModal(false)} className="absolute inset-0 bg-[#0d1526]/40 backdrop-blur-sm" />
+              onClick={() => setShowModal(false)} className="absolute inset-0 bg-[#0A1121]/80 backdrop-blur-sm" />
             
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-md rounded-[2rem] bg-white border border-slate-200 shadow-2xl overflow-hidden">
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }}
+              className="relative w-full max-w-sm rounded-sm bg-white border border-white/10 shadow-2xl overflow-hidden font-sans">
 
-              <div className="p-6 md:p-8 bg-slate-50 border-b border-slate-100 flex items-start justify-between">
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#0A1121]">
                 <div>
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mb-4 shadow-sm">
-                    <Clock className="text-[#eb483f]" size={24} strokeWidth={2.5} />
-                  </div>
-                  <h3 className="text-2xl font-black text-[#1a2b3c]">Add Time Slot</h3>
-                  <p className="text-sm font-medium text-slate-500 mt-1">Configure for {activeTab === 'weekday' ? 'Mon-Fri' : 'Sat-Sun'}</p>
+                  <h3 className="text-xl font-bold uppercase tracking-tight italic">Define Time Slot</h3>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-1">New slot for {activeTab} schedule</p>
                 </div>
-                <button onClick={() => setShowModal(false)}
-                  className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-600 transition-colors shadow-sm">
-                  <X size={18} strokeWidth={2.5} />
-                </button>
+                <button onClick={() => setShowModal(false)} className="text-slate-300 hover:text-[#0A1121] transition-colors"><X size={18} /></button>
               </div>
 
-              <div className="p-6 md:p-8 space-y-5">
-                <div className="grid grid-cols-2 gap-5">
-                  <div>
-                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 block ml-1">Start Time</label>
-                    <input type="time" value={form.startTime}
-                      onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} className={inputCls} />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 block ml-1">End Time</label>
-                    <input type="time" value={form.endTime}
-                      onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} className={inputCls} />
+              <div className="p-6 space-y-5 bg-[#F9FAFB]/30">
+                {/* Slot Type Selection */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Slot Classification</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'prime', label: 'Prime', icon: Star, desc: 'High-demand rate', color: 'amber' },
+                      { value: 'nonPrime', label: 'Non-Prime', icon: CalendarDays, desc: 'Standard rate', color: 'slate' },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setForm(p => ({ ...p, type: opt.value }))}
+                        className={`p-3 rounded-sm border-2 text-left transition-all ${
+                          form.type === opt.value
+                            ? opt.value === 'prime' 
+                              ? 'border-amber-400 bg-amber-50'
+                              : 'border-slate-400 bg-slate-50'
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`flex items-center gap-1.5 mb-1 ${form.type === opt.value ? (opt.value === 'prime' ? 'text-amber-600' : 'text-slate-700') : 'text-slate-400'}`}>
+                          <opt.icon size={12} fill={form.type === opt.value && opt.value === 'prime' ? 'currentColor' : 'none'} />
+                          <span className="text-[10px] font-black uppercase tracking-widest">{opt.label}</span>
+                        </div>
+                        <p className="text-[8px] text-slate-500 font-bold uppercase tracking-wider">{opt.desc}</p>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2 block ml-1">Duration (Minutes)</label>
-                  <select value={form.duration} onChange={e => setForm(p => ({ ...p, duration: Number(e.target.value) }))} className={inputCls}>
-                    <option value={30}>30 mins (Quick Session)</option>
-                    <option value={45}>45 mins</option>
-                    <option value={60}>60 mins (Standard Class)</option>
-                    <option value={90}>90 mins (Match / Event)</option>
-                    <option value={120}>120 mins</option>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Start Time</label>
+                    <input type="time" value={form.startTime}
+                      onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#eb483f]" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">End Time</label>
+                    <input type="time" value={form.endTime}
+                      onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#eb483f]" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Duration</label>
+                  <select value={form.duration} onChange={e => setForm(p => ({ ...p, duration: Number(e.target.value) }))} className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase cursor-pointer">
+                    <option value={30}>30 Minutes</option>
+                    <option value={45}>45 Minutes</option>
+                    <option value={60}>60 Minutes (Standard)</option>
+                    <option value={90}>90 Minutes</option>
+                    <option value={120}>120 Minutes</option>
                   </select>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-2">
                   <button onClick={addSlot}
-                    className="w-full py-4 rounded-xl bg-[#eb483f] text-white text-[13px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[#eb483f]/30 hover:-translate-y-0.5 transition-all">
-                    Confirm & Add Slot <Plus size={16} strokeWidth={3} />
+                    className="w-full h-12 rounded-sm bg-[#0A1121] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md">
+                    Add Slot <Plus size={16} strokeWidth={3} />
                   </button>
                   <button onClick={() => setShowModal(false)}
-                    className="w-full mt-3 py-3 text-[12px] font-bold text-slate-500 hover:text-slate-800 transition-colors">
+                    className="w-full mt-2 text-[8px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1121] transition-colors py-2">
                     Cancel
                   </button>
                 </div>

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard } from 'lucide-react';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { ARENAS, USER_BOOKINGS, COACHING_BATCHES } from '../../../data/mockData';
+import { ARENAS, USER_BOOKINGS, COACHING_BATCHES, USER_MEMBERSHIP } from '../../../data/mockData';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -223,6 +223,95 @@ const Profile = () => {
                </div>
              )}
           </div>
+        </div>
+
+        {/* MY MEMBERSHIP SECTION */}
+        <div className="mt-6">
+          <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Membership</h3>
+          {USER_MEMBERSHIP.status === 'none' ? (
+            <div
+              onClick={() => navigate('/membership')}
+              className={`cursor-pointer rounded-2xl border border-dashed p-4 flex items-center gap-3 transition-all hover:border-[#eb483f]/40 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50 hover:bg-[#eb483f]/5'}`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#eb483f]/10 flex items-center justify-center shrink-0">
+                <Crown size={18} className="text-[#eb483f]" />
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>No Active Membership</p>
+                <p className="text-[10px] text-[#eb483f] font-black uppercase tracking-widest mt-0.5">View Plans →</p>
+              </div>
+            </div>
+          ) : (
+            <motion.div
+              whileHover={{ y: -1 }}
+              className={`rounded-2xl border p-4 shadow-sm relative overflow-hidden transition-all ${
+                USER_MEMBERSHIP.category === 'premium'
+                  ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200'
+                  : isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'
+              }`}
+            >
+              {/* Expired overlay */}
+              {USER_MEMBERSHIP.status === 'expired' && (
+                <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
+                  <div className="text-center">
+                    <p className="text-xs font-black text-red-600 uppercase tracking-widest">Membership Expired</p>
+                    <button onClick={() => navigate('/membership')} className="mt-2 px-4 py-1.5 rounded-xl bg-[#eb483f] text-white text-[10px] font-black uppercase tracking-widest">
+                      Renew Now
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-100' : 'bg-indigo-50'
+                  }`}>
+                    <Crown size={18} className={USER_MEMBERSHIP.category === 'premium' ? 'text-amber-500' : 'text-indigo-500'} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{USER_MEMBERSHIP.planName}</h4>
+                      <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
+                        USER_MEMBERSHIP.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'
+                      }`}>{USER_MEMBERSHIP.status}</span>
+                    </div>
+                    <p className={`text-[10px] font-bold mt-0.5 ${
+                      USER_MEMBERSHIP.category === 'premium' ? 'text-amber-600' : 'text-indigo-600'
+                    } uppercase tracking-widest`}>
+                      {USER_MEMBERSHIP.category === 'premium' ? 'Premium' : USER_MEMBERSHIP.category === 'individual' ? 'Individual' : 'Standard'} · {USER_MEMBERSHIP.discountPercent}% off bookings
+                    </p>
+                    <div className={`flex items-center gap-2 mt-1.5 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <span>{USER_MEMBERSHIP.startDate} → {USER_MEMBERSHIP.expiryDate}</span>
+                    </div>
+                  </div>
+                </div>
+                <CheckCircle2 size={16} className={USER_MEMBERSHIP.status === 'active' ? 'text-green-500' : 'text-red-400'} />
+              </div>
+
+              {/* Benefits preview */}
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {USER_MEMBERSHIP.benefits.slice(0, 2).map((b, i) => (
+                  <span key={i} className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${
+                    USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'
+                  }`}>{b}</span>
+                ))}
+                {USER_MEMBERSHIP.benefits.length > 2 && (
+                  <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>+{USER_MEMBERSHIP.benefits.length - 2} more</span>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="mt-3 flex gap-2">
+                <button onClick={() => navigate('/membership')} className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${
+                  isDark ? 'border-white/10 text-slate-300 hover:bg-white/5' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}>Upgrade Plan</button>
+                <button onClick={() => navigate('/membership')} className="flex-1 py-2 rounded-xl bg-[#eb483f] text-white text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-[#d83f36] transition-all">
+                  Renew
+                </button>
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* PLAYER STATS & SETTINGS */}

@@ -4,6 +4,9 @@ import CourtMgmt from '../../admin/pages/ArenaPanel/CourtMgmt';
 import SlotConfig from '../../admin/pages/ArenaPanel/SlotConfig';
 import PricingRules from '../../admin/pages/ArenaPanel/PricingRules';
 import AvailabilityControl from '../../admin/pages/ArenaPanel/AvailabilityControl';
+import Inventory from '../../admin/pages/Inventory';
+import EventsAdmin from '../../admin/pages/EventsAdmin';
+import RetailPOS from '../../admin/pages/RetailPOS';
 import AccountSettings from './AccountSettings';
 
 // Helper: wraps a light-theme page inside the dark arena layout content area
@@ -63,6 +66,33 @@ export const AvailabilityPage = () => (
     subtitle="Block slots and manage court closures via calendar"
     component={AvailabilityControl}
     color="#0ea5e9"
+  />
+);
+
+export const InventoryPage = () => (
+  <PageShell
+    title="Inventory Management"
+    subtitle="Track stadium equipment, shuttlecocks, and consumables"
+    component={Inventory}
+    color="#eb483f"
+  />
+);
+
+export const EventsAdminPage = () => (
+  <PageShell
+    title="Event Management"
+    subtitle="Organize local tournaments, leagues and championships"
+    component={EventsAdmin}
+    color="#f59e0b"
+  />
+);
+
+export const RetailPOSPage = () => (
+  <PageShell
+    title="Retail Hub"
+    subtitle="Sell products, drinks and equipment to walk-in players"
+    component={RetailPOS}
+    color="#eb483f"
   />
 );
 
