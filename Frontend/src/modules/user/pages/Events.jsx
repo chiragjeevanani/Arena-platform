@@ -120,6 +120,53 @@ const Events = () => {
           ))}
         </div>
 
+        {/* Recent Results Banner (Mock Implementation matching Admin) */}
+        {selectedTag === 'All' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 w-full rounded-[20px] md:rounded-[32px] overflow-hidden relative shadow-xl shadow-[#eb483f]/10 border border-white bg-white backdrop-blur-md"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/10 rounded-full blur-[60px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#eb483f]/5 rounded-full blur-[60px] pointer-events-none" />
+            
+            <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-8 items-center relative z-10">
+              {/* Left Side: Event Title & Trophy */}
+              <div className="flex-1 text-center md:text-left">
+                 <div className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-[14px] bg-[#eb483f]/10 text-[#eb483f] mb-2 md:mb-4">
+                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19,5h-2V3H7v2H5C3.9,5,3,5.9,3,7v1c0,2.5,1.7,4.6,4,5.3V15c0,1.1,0.9,2,2,2h2v4H9v2h6v-2h-2v-4h2c1.1,0,2-0.9,2-2v-1.7 c2.3-0.6,4-2.8,4-5.3V7C21,5.9,20.1,5,19,5z M5,8V7h2v3.8C5.8,10.4,5,9.3,5,8z M19,8c0,1.3-0.8,2.4-2,2.8V7h2V8z"/></svg>
+                 </div>
+                 <p className="text-[#eb483f] font-black tracking-[0.2em] text-[9px] md:text-[10px] uppercase mb-0.5">Results Declared</p>
+                 <h2 className="text-xl md:text-3xl font-black text-slate-800 tracking-tight uppercase leading-tight mb-1.5 md:mb-2">Summer Badminton Smash 2026</h2>
+                 <p className="text-[11px] md:text-sm font-semibold text-slate-500 max-w-[280px] mx-auto md:mx-0 leading-snug">The official leaderboard has been published by the administration.</p>
+              </div>
+
+              {/* Right Side: Podium */}
+              <div className="flex-1 w-full bg-slate-50/50 rounded-2xl p-3 md:p-6 border border-slate-100/50 flex flex-col gap-2 md:gap-3">
+                 {/* Winner */}
+                 <div className="flex items-center gap-3 md:gap-4 bg-white p-2.5 md:p-3 rounded-xl shadow-sm border border-yellow-400/30">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-yellow-400/20 text-yellow-600 flex items-center justify-center font-black text-sm md:text-lg">A</div>
+                    <div className="flex-1">
+                      <p className="text-[9px] md:text-[10px] font-black tracking-widest text-yellow-500 uppercase leading-none mb-0.5">Gold Medalist</p>
+                      <p className="text-xs md:text-sm font-black text-slate-800 leading-none">Anjali Varma</p>
+                    </div>
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-yellow-400 opacity-50" fill="currentColor" viewBox="0 0 24 24"><path d="M19,5h-2V3H7v2H5C3.9,5,3,5.9,3,7v1c0,2.5,1.7,4.6,4,5.3V15c0,1.1,0.9,2,2,2h2v4H9v2h6v-2h-2v-4h2c1.1,0,2-0.9,2-2v-1.7 c2.3-0.6,4-2.8,4-5.3V7C21,5.9,20.1,5,19,5z M5,8V7h2v3.8C5.8,10.4,5,9.3,5,8z M19,8c0,1.3-0.8,2.4-2,2.8V7h2V8z"/></svg>
+                 </div>
+                 {/* Runner Up */}
+                 <div className="flex items-center gap-3 md:gap-4 bg-white p-2.5 md:p-3 rounded-xl shadow-sm border border-slate-300/50">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center font-black text-sm md:text-lg">R</div>
+                    <div className="flex-1">
+                      <p className="text-[9px] md:text-[10px] font-black tracking-widest text-slate-400 uppercase leading-none mb-0.5">Silver Medalist</p>
+                      <p className="text-xs md:text-sm font-black text-slate-800 leading-none">Rahul Sharma</p>
+                    </div>
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-slate-300 opacity-50" fill="currentColor" viewBox="0 0 24 24"><path d="M19,5h-2V3H7v2H5C3.9,5,3,5.9,3,7v1c0,2.5,1.7,4.6,4,5.3V15c0,1.1,0.9,2,2,2h2v4H9v2h6v-2h-2v-4h2c1.1,0,2-0.9,2-2v-1.7 c2.3-0.6,4-2.8,4-5.3V7C21,5.9,20.1,5,19,5z M5,8V7h2v3.8C5.8,10.4,5,9.3,5,8z M19,8c0,1.3-0.8,2.4-2,2.8V7h2V8z"/></svg>
+                 </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Banners Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           <AnimatePresence mode="popLayout">

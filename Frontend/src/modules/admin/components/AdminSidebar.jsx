@@ -34,7 +34,6 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/sponsorships', icon: Briefcase, label: 'Sponsorships' },
       { path: '/admin/reports', icon: PieChart, label: 'Reports' },
       { path: '/admin/users', icon: Shield, label: 'Customers' },
-      { path: '/admin/settings', icon: Settings, label: 'Settings' },
     ]
   },
 ];

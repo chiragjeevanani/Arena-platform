@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, 
-  MoreHorizontal, History, RefreshCw, X, Tag, Layers, ArrowRight,
-  Eye, Settings2, FileText, Printer, Trash2, Activity, ShieldCheck, 
-  Target, BarChart3, Hash
+  MoreHorizontal, History, RefreshCw, X, Tag, ArrowRight,
+  Eye, Settings2, FileText, Printer, Trash2, Activity, 
+  Hash, Clock, ShieldCheck
 } from 'lucide-react';
 import { MOCK_DB } from '../../../data/mockDatabase';
 
 const Inventory = () => {
+  const [inventoryData, setInventoryData] = useState(MOCK_DB.inventory);
+  const [auditLog, setAuditLog] = useState([]);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
@@ -17,13 +19,26 @@ const Inventory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('All');
-  
-  const inventoryData = MOCK_DB.inventory;
+  const [statusFilter, setStatusFilter] = useState('All Listings');
+
+  // Add Item form state
+  const [newItem, setNewItem] = useState({ name: '', category: 'Equipment', sku: '', stock: 20, minStock: 5, price: 0 });
+
+  // Adjustment form state
+  const [adjustDelta, setAdjustDelta] = useState('');
 
   const filteredData = inventoryData.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'All' || (item.category && item.category.toLowerCase() === categoryFilter.toLowerCase());
-    return matchesSearch && matchesCategory;
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter;
+    const isLow = item.stock > 0 && item.stock <= item.minStock;
+    const isOut = item.stock === 0;
+    const matchesStatus =
+      statusFilter === 'All Listings' ? true :
+      statusFilter === 'In-Stock Range' ? (!isLow && !isOut) :
+      statusFilter === 'Critical Thresholds' ? isLow :
+      statusFilter === 'Depleted Clusters' ? isOut : true;
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
   const stats = [
@@ -40,6 +55,12 @@ const Inventory = () => {
       color: '#ef4444' 
     },
     { 
+      label: 'Healthy Stock', 
+      count: inventoryData.filter(i => i.stock > i.minStock).length, 
+      icon: ShieldCheck, 
+      color: '#16a34a' 
+    },
+    { 
       label: 'Total Catalog', 
       count: inventoryData.length, 
       icon: Package, 
@@ -47,11 +68,52 @@ const Inventory = () => {
     },
   ];
 
+  const handleAddItem = () => {
+    if (!newItem.name.trim()) return;
+    const entry = {
+      id: `inv-${Date.now()}`,
+      name: newItem.name,
+      category: newItem.category,
+      stock: parseInt(newItem.stock) || 0,
+      minStock: parseInt(newItem.minStock) || 5,
+      price: parseInt(newItem.price) || 0,
+    };
+    setInventoryData(prev => [entry, ...prev]);
+    addAuditEntry(entry.name, `New SKU registered (+${entry.stock} units)`);
+    setNewItem({ name: '', category: 'Equipment', sku: '', stock: 20, minStock: 5, price: 0 });
+    setShowAddItemModal(false);
+  };
+
+  const handleAdjustStock = () => {
+    const delta = parseInt(adjustDelta);
+    if (!selectedItem || isNaN(delta)) return;
+    const newStock = Math.max(0, selectedItem.stock + delta);
+    setInventoryData(prev =>
+      prev.map(i => i.id === selectedItem.id ? { ...i, stock: newStock } : i)
+    );
+    addAuditEntry(selectedItem.name, `Stock adjusted ${delta > 0 ? '+' : ''}${delta} units → ${newStock} remaining`);
+    setAdjustDelta('');
+    setShowAdjustmentModal(false);
+  };
+
+  const addAuditEntry = (itemName, action) => {
+    const entry = {
+      id: Date.now(),
+      item: itemName,
+      action,
+      timestamp: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+    };
+    setAuditLog(prev => [entry, ...prev]);
+  };
+
+  const CATEGORIES = ['All', 'Equipment', 'Consumables', 'Accessories', 'Medical Kits'];
+  const STATUS_FILTERS = ['All Listings', 'In-Stock Range', 'Critical Thresholds', 'Depleted Clusters'];
+
   return (
     <div className="font-sans text-[#1a2b3c] max-w-[1600px] mx-auto border-t border-slate-100 tracking-tight bg-[#F9FAFB]">
       <div className="mx-auto space-y-4 py-4 px-1 md:px-0">
         
-        {/* Professional Header (Classy & Compact) */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 pb-3 border-b border-slate-200 bg-white p-4 shadow-sm rounded-sm">
            <div>
               <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[0.3em] text-[#eb483f] mb-1">
@@ -80,8 +142,8 @@ const Inventory = () => {
            </div>
         </div>
 
-        {/* Global Key Metrics (Classy Miniature Cards) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stats.map((stat, idx) => (
             <div key={idx} className="bg-white border border-slate-200 p-4 rounded-sm flex items-center justify-between transition-all hover:bg-slate-50 shadow-sm group">
                <div>
@@ -97,7 +159,7 @@ const Inventory = () => {
           ))}
         </div>
 
-        {/* Search & Intelligence Controls (Compact) */}
+        {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row items-center gap-2 bg-white p-2 border border-slate-200 rounded-sm shadow-sm">
           <div className="w-full sm:max-w-md relative group">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#eb483f] transition-colors" />
@@ -109,15 +171,30 @@ const Inventory = () => {
               className="w-full h-9 pl-10 pr-4 rounded-sm border border-slate-100 bg-slate-50/30 text-[11px] font-bold text-[#0A1121] focus:outline-none focus:border-[#eb483f] focus:bg-white transition-all uppercase tracking-widest placeholder:text-slate-400"
             />
           </div>
+          <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`flex-shrink-0 px-3 h-9 rounded-sm border text-[8px] font-black uppercase tracking-widest transition-all ${
+                  categoryFilter === cat
+                    ? 'bg-[#0A1121] border-[#0A1121] text-white shadow-md'
+                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400 hover:text-[#0A1121]'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
           <button 
             onClick={() => setShowFilterDrawer(true)}
-            className="w-full sm:w-auto px-5 h-9 rounded-sm border border-slate-100 bg-white text-slate-600 flex items-center gap-2 text-[8.5px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+            className="w-full sm:w-auto px-5 h-9 rounded-sm border border-slate-100 bg-white text-slate-600 flex items-center gap-2 text-[8.5px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all ml-auto"
           >
-            <Filter size={14} strokeWidth={2.5} className="text-[#eb483f]" /> Detailed Filters
+            <Filter size={14} strokeWidth={2.5} className="text-[#eb483f]" /> Status Filter
           </button>
         </div>
 
-        {/* High-Precision Inventory Cluster (Hyper-Compact Card items) */}
+        {/* Inventory Table */}
         <div className="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
           <div className="overflow-x-auto scrollbar-hide">
             <table className="w-full text-left whitespace-nowrap min-w-[900px]">
@@ -125,23 +202,33 @@ const Inventory = () => {
                    <tr className="bg-slate-50/50 border-b border-slate-200 text-[8.5px] font-black uppercase tracking-[0.2em] text-slate-700">
                       <th className="px-5 py-4">Asset Intelligence</th>
                       <th className="px-5 py-4 text-center">Classification</th>
+                      <th className="px-5 py-4 text-center">Unit Price</th>
                       <th className="px-5 py-4 text-center">Stock Level</th>
                       <th className="px-5 py-4 text-center">Stability</th>
                       <th className="px-5 py-4 text-right pr-8">Operations</th>
                    </tr>
                 </thead>
                <tbody className="divide-y divide-slate-100">
-                  {filteredData.map((item, idx) => {
+                  {filteredData.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-16 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                        No inventory items match your filters.
+                      </td>
+                    </tr>
+                  ) : filteredData.map((item, idx) => {
                      const isLow = item.stock > 0 && item.stock <= item.minStock;
                      const isOut = item.stock === 0;
                      const status = isOut ? 'Depleted' : isLow ? 'Critical' : 'Stable';
+                     const barWidth = item.minStock > 0
+                       ? Math.min((item.stock / (item.minStock * 2)) * 100, 100)
+                       : 100;
                      
                      return (
                        <motion.tr 
                          key={item.id}
                          initial={{ opacity: 0 }}
                          animate={{ opacity: 1 }}
-                         transition={{ delay: idx * 0.02 }}
+                         transition={{ delay: idx * 0.03 }}
                          className="group hover:bg-slate-50/40 transition-colors"
                        >
                           <td className="px-5 py-3.5">
@@ -159,20 +246,23 @@ const Inventory = () => {
                           </td>
                           <td className="px-5 py-3.5 text-center">
                              <span className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-widest bg-slate-50 text-slate-600 border border-slate-200 shadow-sm">
-                                Equipment
+                                {item.category}
                              </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                             <span className="text-[11px] font-bold text-[#0A1121]">₹{item.price}</span>
                           </td>
                           <td className="px-5 py-3.5">
                              <div className="flex flex-col items-center gap-1.5">
                                 <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                                    <div 
                                      className={`h-full transition-all duration-700 ${
-                                       isOut ? 'bg-red-500' : isLow ? 'bg-[#eb483f]' : 'bg-[#0A1121]'
+                                       isOut ? 'bg-red-500' : isLow ? 'bg-[#eb483f]' : 'bg-green-500'
                                      }`} 
-                                     style={{ width: `${Math.min((item.stock / (item.minStock || 1)) * 50, 100)}%` }} 
+                                     style={{ width: `${barWidth}%` }} 
                                    />
                                 </div>
-                                <span className="text-[10px] font-bold text-[#0A1121] uppercase tracking-tighter">{item.stock} Units</span>
+                                <span className="text-[10px] font-bold text-[#0A1121] uppercase tracking-tighter">{item.stock} / {item.minStock} min</span>
                              </div>
                           </td>
                           <td className="px-5 py-3.5 text-center">
@@ -187,8 +277,9 @@ const Inventory = () => {
                           <td className="px-5 py-3.5 pr-8 text-right">
                              <div className="flex items-center justify-end gap-1.5 relative">
                                 <button 
-                                  onClick={() => { setSelectedItem(item); setShowAdjustmentModal(true); }}
+                                  onClick={() => { setSelectedItem(item); setAdjustDelta(''); setShowAdjustmentModal(true); }}
                                   className="w-8 h-8 flex items-center justify-center rounded-sm bg-slate-50 text-slate-500 hover:text-[#0A1121] hover:bg-white border border-transparent hover:border-slate-200 transition-all shadow-sm"
+                                  title="Adjust Stock"
                                 >
                                    <ArrowUpDown size={14} strokeWidth={2.5} />
                                 </button>
@@ -217,13 +308,17 @@ const Inventory = () => {
                                           {[
                                             { label: 'View Logistics', icon: Eye, color: '#0A1121' },
                                             { label: 'Manual Edit', icon: Settings2, color: '#0A1121' },
-                                            { label: 'Audit Trail', icon: FileText, color: '#0A1121' },
+                                            { label: 'Audit Trail', icon: FileText, color: '#0A1121', action: () => { setShowHistoryModal(true); } },
                                             { label: 'Print SKU', icon: Printer, color: '#0A1121' },
-                                            { label: 'Archive SKU', icon: Trash2, color: '#ef4444' },
+                                            { label: 'Archive SKU', icon: Trash2, color: '#ef4444', action: () => {
+                                                setInventoryData(prev => prev.filter(i => i.id !== item.id));
+                                                addAuditEntry(item.name, 'SKU archived and removed from catalog');
+                                              }
+                                            },
                                           ].map((opt, i) => (
                                             <button
                                               key={i}
-                                              onClick={() => setActiveMenu(null)}
+                                              onClick={() => { setActiveMenu(null); opt.action?.(); }}
                                               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-sm text-[9.5px] font-bold text-slate-700 hover:bg-slate-50 transition-all uppercase tracking-widest"
                                             >
                                               <opt.icon size={11} strokeWidth={2.5} style={{ color: opt.color }} />
@@ -246,12 +341,13 @@ const Inventory = () => {
         </div>
       </div>
 
-      {/* Advanced Orchestration Modals (Restored & Refined) */}
+      {/* ── MODALS ── */}
       <AnimatePresence>
+        {/* Add SKU Modal */}
         {showAddItemModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAddItemModal(false)} className="absolute inset-0 bg-[#0A1121]/80 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} 
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }}
               className="relative w-full max-w-sm rounded-sm bg-white border border-white/10 shadow-2xl overflow-hidden font-sans">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#0A1121]">
                 <div>
@@ -261,40 +357,68 @@ const Inventory = () => {
                 <button onClick={() => setShowAddItemModal(false)} className="text-slate-300 hover:text-[#0A1121] transition-colors"><X size={18} /></button>
               </div>
 
-              <div className="p-6 space-y-5 bg-[#F9FAFB]/30">
-                <div className="space-y-1.5 text-left">
+              <div className="p-6 space-y-4 bg-[#F9FAFB]/30">
+                <div className="space-y-1.5">
                   <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Nomenclature (Name)</label>
-                  <input type="text" placeholder="e.g. Victor Thruster K-Series" className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#eb483f] uppercase transition-all" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Victor Thruster K-Series"
+                    value={newItem.name}
+                    onChange={e => setNewItem(p => ({ ...p, name: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#eb483f] uppercase transition-all"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-1.5 text-left">
+                   <div className="space-y-1.5">
                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Category</label>
-                     <select className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase appearance-none cursor-pointer">
-                       <option>Apparel & Gear</option>
-                       <option>Training Equipment</option>
+                     <select
+                       value={newItem.category}
+                       onChange={e => setNewItem(p => ({ ...p, category: e.target.value }))}
+                       className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase appearance-none cursor-pointer"
+                     >
+                       {['Equipment', 'Consumables', 'Accessories', 'Medical Kits'].map(c => <option key={c}>{c}</option>)}
                      </select>
                    </div>
-                   <div className="space-y-1.5 text-left">
-                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Locus Identifier</label>
-                     <input type="text" placeholder="SKU-001" className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase" />
+                   <div className="space-y-1.5">
+                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Unit Price (₹)</label>
+                     <input
+                       type="number"
+                       placeholder="0"
+                       value={newItem.price}
+                       onChange={e => setNewItem(p => ({ ...p, price: e.target.value }))}
+                       className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase"
+                     />
                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-1.5 text-left">
-                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Initial Magnitude</label>
-                     <input type="number" defaultValue="20" className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase" />
+                   <div className="space-y-1.5">
+                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Initial Stock</label>
+                     <input
+                       type="number"
+                       value={newItem.stock}
+                       onChange={e => setNewItem(p => ({ ...p, stock: e.target.value }))}
+                       className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase"
+                     />
                    </div>
-                   <div className="space-y-1.5 text-left">
-                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Critical Bias</label>
-                     <input type="number" defaultValue="5" className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase" />
+                   <div className="space-y-1.5">
+                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Min Stock Threshold</label>
+                     <input
+                       type="number"
+                       value={newItem.minStock}
+                       onChange={e => setNewItem(p => ({ ...p, minStock: e.target.value }))}
+                       className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase"
+                     />
                    </div>
                 </div>
 
-                <div className="pt-2">
-                   <button onClick={() => setShowAddItemModal(false)} 
-                     className="w-full h-12 rounded-sm bg-[#0A1121] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md">
+                <div className="pt-1">
+                   <button
+                     onClick={handleAddItem}
+                     className="w-full h-12 rounded-sm bg-[#0A1121] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md disabled:opacity-40"
+                     disabled={!newItem.name.trim()}
+                   >
                      Confirm Catalog Point <ArrowRight size={14} />
                    </button>
                 </div>
@@ -303,34 +427,38 @@ const Inventory = () => {
           </div>
         )}
 
-        {/* Audit Log (Restored & Refined) */}
+        {/* Audit Log Modal */}
         {showHistoryModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowHistoryModal(false)} className="absolute inset-0 bg-[#0A1121]/80 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} 
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }}
               className="relative w-full max-w-[450px] rounded-sm bg-white border border-white/10 shadow-2xl overflow-hidden font-sans">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#0A1121]">
                 <div>
                   <h3 className="text-xl font-bold uppercase tracking-tight italic">Operational Audit</h3>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-1">Verification of logistics cluster states</p>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-1">Live log of all inventory mutations</p>
                 </div>
                 <button onClick={() => setShowHistoryModal(false)} className="text-slate-300 hover:text-[#0A1121] transition-colors"><X size={18} /></button>
               </div>
               <div className="p-4 max-h-[400px] overflow-y-auto space-y-1 bg-[#F9FAFB]/30">
-                {[1,2,3,4,5].map(i => (
-                  <div key={i} className="p-3 bg-white border border-slate-100 rounded-sm flex items-center justify-between hover:border-slate-300 transition-colors">
+                {auditLog.length === 0 ? (
+                  <div className="py-16 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                    No activity recorded yet.<br />Adjust stock or add items to start the log.
+                  </div>
+                ) : auditLog.map(entry => (
+                  <div key={entry.id} className="p-3 bg-white border border-slate-100 rounded-sm flex items-center justify-between hover:border-slate-300 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#0A1121]">
+                      <div className="w-8 h-8 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
                         <RefreshCw size={14} strokeWidth={2.5} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-[#0A1121] uppercase leading-none">Stock Reconciliation: S-00{i}</p>
-                        <p className="text-[7.5px] font-bold text-slate-500 uppercase tracking-widest mt-1.5 flex items-center gap-2">
-                           <Clock size={10} /> 24 Mar · 14:12 · Operational Hub Alpha
+                        <p className="text-[10px] font-black text-[#0A1121] uppercase leading-none">{entry.item}</p>
+                        <p className="text-[7.5px] font-bold text-slate-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
+                           <Clock size={9} /> {entry.timestamp}
                         </p>
+                        <p className="text-[8px] font-bold text-slate-600 mt-0.5">{entry.action}</p>
                       </div>
                     </div>
-                    <span className="text-[11px] font-black text-green-500 tracking-tighter">+20U</span>
                   </div>
                 ))}
               </div>
@@ -338,29 +466,44 @@ const Inventory = () => {
           </div>
         )}
 
-        {/* Quick Correction (Restored & Refined) */}
+        {/* Stock Adjustment Modal */}
         {showAdjustmentModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAdjustmentModal(false)} className="absolute inset-0 bg-[#0A1121]/80 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} 
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }}
               className="relative w-full max-w-sm rounded-sm bg-white border border-white/10 shadow-2xl overflow-hidden font-sans">
               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white text-[#0A1121]">
                 <div>
-                  <h3 className="text-lg font-bold uppercase tracking-tight italic">Manual Vector Adjust</h3>
-                  <p className="text-[8.4px] font-black uppercase text-slate-600 mt-1">Direct state correction for {selectedItem?.name}</p>
+                  <h3 className="text-lg font-bold uppercase tracking-tight italic">Stock Adjustment</h3>
+                  <p className="text-[8.4px] font-black uppercase text-slate-600 mt-1">Correcting: {selectedItem?.name}</p>
                 </div>
                 <button onClick={() => setShowAdjustmentModal(false)} className="text-slate-300 hover:text-[#0A1121] transition-colors"><X size={18} /></button>
               </div>
               <div className="p-6 space-y-6">
                 <div className="flex items-center justify-between p-4 rounded-sm bg-slate-50 border border-slate-200">
-                   <p className="text-[9px] font-black uppercase text-slate-600 tracking-widest">Active Magnitude</p>
-                   <p className="text-2xl font-bold text-[#0A1121] uppercase">{selectedItem?.stock}</p>
+                   <p className="text-[9px] font-black uppercase text-slate-600 tracking-widest">Current Stock</p>
+                   <p className="text-2xl font-bold text-[#0A1121] uppercase">{selectedItem?.stock} units</p>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-black uppercase tracking-widest text-[#0A1121] block">Correction Delta (+/- Units)</label>
-                  <input type="number" placeholder="Enter displacement mag..." className="w-full h-12 px-4 rounded-sm border border-slate-200 bg-white text-[14px] font-bold outline-none focus:border-[#eb483f]" />
+                  <input
+                    type="number"
+                    placeholder="e.g. +10 or -5"
+                    value={adjustDelta}
+                    onChange={e => setAdjustDelta(e.target.value)}
+                    className="w-full h-12 px-4 rounded-sm border border-slate-200 bg-white text-[14px] font-bold outline-none focus:border-[#eb483f]"
+                  />
+                  {adjustDelta !== '' && !isNaN(parseInt(adjustDelta)) && (
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                      New stock will be: <span className="text-[#0A1121]">{Math.max(0, (selectedItem?.stock || 0) + parseInt(adjustDelta))} units</span>
+                    </p>
+                  )}
                 </div>
-                <button onClick={() => setShowAdjustmentModal(false)} className="w-full h-12 rounded-sm bg-[#0A1121] text-white text-[10px] font-bold uppercase tracking-[0.25em] shadow-md hover:bg-black transition-all">
+                <button
+                  onClick={handleAdjustStock}
+                  disabled={adjustDelta === '' || isNaN(parseInt(adjustDelta))}
+                  className="w-full h-12 rounded-sm bg-[#0A1121] text-white text-[10px] font-bold uppercase tracking-[0.25em] shadow-md hover:bg-black transition-all disabled:opacity-40"
+                >
                   Commit Vector Override
                 </button>
               </div>
@@ -368,33 +511,30 @@ const Inventory = () => {
           </div>
         )}
 
-        {/* Dynamic Filter Sidepanel (Restored & Refined) */}
+        {/* Filter Status Drawer */}
         {showFilterDrawer && (
           <div className="fixed inset-0 z-[120] flex justify-end">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowFilterDrawer(false)} className="absolute inset-0 bg-[#0A1121]/50 backdrop-blur-sm" />
             <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="relative w-full max-w-[320px] h-full shadow-2xl bg-white border-l border-slate-200 flex flex-col font-sans">
               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white text-[#0A1121]">
                 <h3 className="text-xl font-bold uppercase tracking-tight italic">Filter Framework</h3>
-                <button onClick={() => setShowFilterDrawer(false)} className="text-slate-300 hover:text-slate-600 transition-colors transition-colors"><X size={20} /></button>
+                <button onClick={() => setShowFilterDrawer(false)} className="text-slate-300 hover:text-slate-600 transition-colors"><X size={20} /></button>
               </div>
               <div className="p-6 flex-1 space-y-8 overflow-y-auto bg-[#F9FAFB]/30">
                  <section>
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0A1121] mb-3 block">Operational State</label>
                     <div className="space-y-1.5">
-                       {['All Listings', 'In-Stock Range', 'Critical Thresholds', 'Depleted Clusters'].map(stat => (
-                         <button key={stat} className={`w-full py-2.5 px-4 rounded-sm border text-[9px] font-black uppercase text-left transition-all ${stat === 'All Listings' ? 'bg-[#0A1121] border-[#0A1121] text-white shadow-md' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400 hover:text-[#0A1121]'}`}>
-                           {stat}
-                         </button>
-                       ))}
-                    </div>
-                 </section>
-
-                 <section>
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0A1121] mb-3 block">Category Mapping</label>
-                    <div className="space-y-1.5">
-                       {['Shuttlecocks', 'Rackets', 'Court Accessories', 'Medical Kits'].map(cat => (
-                         <button key={cat} className="w-full py-2.5 px-4 rounded-sm border border-slate-200 bg-white text-[9px] font-black uppercase text-left text-slate-500 hover:bg-slate-50 hover:text-[#0A1121] transition-all">
-                           {cat}
+                       {STATUS_FILTERS.map(s => (
+                         <button
+                           key={s}
+                           onClick={() => setStatusFilter(s)}
+                           className={`w-full py-2.5 px-4 rounded-sm border text-[9px] font-black uppercase text-left transition-all ${
+                             statusFilter === s
+                               ? 'bg-[#0A1121] border-[#0A1121] text-white shadow-md'
+                               : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400 hover:text-[#0A1121]'
+                           }`}
+                         >
+                           {s}
                          </button>
                        ))}
                     </div>
@@ -402,7 +542,7 @@ const Inventory = () => {
               </div>
               <div className="p-6 border-t border-slate-200">
                  <button onClick={() => setShowFilterDrawer(false)} className="w-full h-12 rounded-sm bg-[#0A1121] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all">
-                   Execute Parameters <ArrowRight size={14} />
+                   Apply Filters <ArrowRight size={14} />
                  </button>
               </div>
             </motion.div>

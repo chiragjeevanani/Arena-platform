@@ -47,6 +47,14 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
           <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#eb483f] border-2 border-inherit shadow-[0_0_5px_rgba(235,72,63,0.5)]" />
         </button>
 
+        {/* Settings */}
+        <button 
+          onClick={() => navigate('/admin/settings')}
+          className="w-10 h-10 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-[#eb483f] flex items-center justify-center shadow-sm transition-all"
+        >
+          <Settings size={18} />
+        </button>
+
         {/* Profile Dropdown */}
         <div className="relative">
           <button 

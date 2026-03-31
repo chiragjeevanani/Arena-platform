@@ -28,9 +28,14 @@ export const MOCK_DB = {
   ],
 
   inventory: [
-    { id: 'inv-1', name: 'Yonyx Shuttlecocks (Gold)', stock: 45, category: 'Consumables', price: 120 },
-    { id: 'inv-2', name: 'Grip Tape (Neon)', stock: 120, category: 'Accessories', price: 50 },
-    { id: 'inv-3', name: 'Carbon Fiber Frame Racket', stock: 8, category: 'Equipment', price: 3500 },
+    { id: 'inv-1', name: 'Yonex Shuttlecocks (Gold)', stock: 45, minStock: 20, category: 'Consumables', price: 120 },
+    { id: 'inv-2', name: 'Grip Tape (Neon)', stock: 120, minStock: 30, category: 'Accessories', price: 50 },
+    { id: 'inv-3', name: 'Carbon Fiber Frame Racket', stock: 8, minStock: 10, category: 'Equipment', price: 3500 },
+    { id: 'inv-4', name: 'Badminton Net (Pro)', stock: 0, minStock: 5, category: 'Equipment', price: 1800 },
+    { id: 'inv-5', name: 'Court Floor Wax', stock: 3, minStock: 10, category: 'Consumables', price: 450 },
+    { id: 'inv-6', name: 'Sports Towel (Arena)', stock: 60, minStock: 20, category: 'Accessories', price: 180 },
+    { id: 'inv-7', name: 'Knee Guard Support', stock: 14, minStock: 8, category: 'Medical Kits', price: 650 },
+    { id: 'inv-8', name: 'Feather Shuttle (Tournament)', stock: 0, minStock: 15, category: 'Consumables', price: 320 },
   ],
 
   bookings: [
