@@ -223,7 +223,7 @@ const CoachingAdmin = () => {
                             <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${batch.enrolled >= batch.capacity ? 'bg-red-50 border border-red-100 text-red-600' : 'bg-slate-50 border border-slate-100 text-slate-500'}`}>
                                {batch.enrolled}/{batch.capacity} Load
                             </span>
-                            <p className="text-[12px] font-black text-[#1a2b3c]">₹{batch.fee}</p>
+                            <p className="text-[12px] font-black text-[#1a2b3c]">{batch.fee} OMR</p>
                          </div>
                       </div>
                       <h3 className="font-extrabold text-[#1a2b3c] text-[15px] leading-tight mb-0.5 group-hover:text-[#eb483f] transition-colors">{batch.name}</h3>
@@ -436,7 +436,7 @@ const CoachingAdmin = () => {
                               </td>
                               <td className="px-6 py-5 text-right">
                                  <div className="bg-[#eb483f]/5 border border-[#eb483f]/10 rounded-xl px-4 py-2 inline-block">
-                                    <span className="text-[16px] font-black text-[#eb483f]">₹{slab.price}</span>
+                                    <span className="text-[16px] font-black text-[#eb483f]">{slab.price} OMR</span>
                                  </div>
                               </td>
                             </tr>
@@ -546,7 +546,7 @@ const CoachingAdmin = () => {
                    </div>
                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Monthly Salary (₹)</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Monthly Salary (OMR)</label>
                         <input ref={salaryRef} type="number" defaultValue={editingCoach?.salary || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#eb483f] outline-none text-[13px] font-bold" />
                       </div>
                       <div>
@@ -615,7 +615,7 @@ const CoachingAdmin = () => {
                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center"><Banknote size={18} /></div>
                       <div>
-                        <p className="text-[14px] font-black">₹{viewingCoachDetails.salary || 'N/A'}</p>
+                        <p className="text-[14px] font-black">{viewingCoachDetails.salary || 'N/A'} OMR</p>
                         <p className="text-[9px] font-bold text-slate-400 uppercase">Monthly Salary</p>
                       </div>
                    </div>

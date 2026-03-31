@@ -17,40 +17,40 @@ const EVENTS_DATA = [
 const INITIAL_SPONSORS = [
   { 
     id: 1, 
-    name: 'Yonex India', 
+    name: 'Yonex Oman', 
     type: 'Title Sponsor', 
-    contact: 'rohan@yonex.in', 
-    phone: '+91 98765 43210',
+    contact: 'salim@yonex.om', 
+    phone: '+968 9876 5432',
     status: 'Active', 
     startDate: '2025-01-01',
     contractEnd: '2026-12-30', 
-    equity: 1250000, 
+    equity: 12500, 
     logo: 'Y',
     color: '#eb483f'
   },
   { 
     id: 2, 
-    name: 'RedBull', 
+    name: 'RedBull Oman', 
     type: 'Partner Sponsor', 
-    contact: 'sarah@redbull.com', 
-    phone: '+91 91234 56789',
+    contact: 'sarah@redbull.om', 
+    phone: '+968 9123 4567',
     status: 'Active', 
     startDate: '2025-06-01',
     contractEnd: '2027-01-15', 
-    equity: 800000, 
+    equity: 8000, 
     logo: 'RB',
     color: '#1a2b3c'
   },
   { 
     id: 3, 
-    name: 'Decathlon', 
+    name: 'Decathlon Muscat', 
     type: 'Event Sponsor', 
-    contact: 'amit@decathlon.in', 
-    phone: '+91 88888 77777',
+    contact: 'ahmed@decathlon.om', 
+    phone: '+968 8888 7777',
     status: 'Expired', 
     startDate: '2024-03-01',
     contractEnd: '2026-03-25', 
-    equity: 550000, 
+    equity: 5500, 
     logo: 'D',
     color: '#0078D4'
   },
@@ -59,11 +59,11 @@ const INITIAL_SPONSORS = [
     name: 'Monster Energy', 
     type: 'Banner Sponsor', 
     contact: 'jake@monster.com', 
-    phone: '+91 77777 66666',
+    phone: '+968 7777 6666',
     status: 'Active', 
     startDate: '2025-08-01',
     contractEnd: '2026-05-15', 
-    equity: 350000, 
+    equity: 3500, 
     logo: 'M',
     color: '#6e9e10'
   },
@@ -172,7 +172,7 @@ const Sponsorships = () => {
         {/* Compact Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {[
-            { label: 'Valuation', value: `₹${(totalEquity/100000).toFixed(1)}L`, icon: TrendingUp, color: '#eb483f', trend: '+12%' },
+            { label: 'Valuation', value: `${totalEquity.toLocaleString()} OMR`, icon: TrendingUp, color: '#eb483f', trend: '+12%' },
             { label: 'Partners', value: activeSponsors, icon: Users, color: '#1a2b3c', trend: 'Active' },
             { label: 'Expiring', value: expiringSoon, icon: Clock, color: '#f59e0b', trend: 'Soon' },
             { label: 'Expired', value: expiredSponsors, icon: AlertCircle, color: '#ef4444', trend: 'Audit' }
@@ -264,7 +264,7 @@ const Sponsorships = () => {
                                </span>
                              </td>
                              <td className="px-5 py-3 text-center">
-                                <p className="text-[13px] font-bold text-[#0F172A]">₹{(sp.equity/100000).toFixed(1)}L</p>
+                                <p className="text-[13px] font-bold text-[#0F172A]">{sp.equity.toLocaleString()} OMR</p>
                              </td>
                              <td className="px-5 py-3 text-center">
                                <div className="flex flex-col items-center">
@@ -400,11 +400,11 @@ const Sponsorships = () => {
                 <div className="md:col-span-4 bg-[#0F172A] p-6 rounded-2xl text-white shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[200px]">
                    <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-bl-full -mr-12 -mt-12 opacity-20" />
                    <div>
-                     <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-1">Portfolio Valuation</p>
-                     <h3 className="text-3xl font-bold tracking-tighter">₹29.5L</h3>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-1">Portfolio Valuation</p>
+                      <h3 className="text-3xl font-bold tracking-tighter">29,500 OMR</h3>
                    </div>
                    <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold bg-emerald-400/5 w-fit px-2 py-1 rounded-md border border-emerald-400/10 uppercase tracking-tighter">
-                      <TrendingUp size={12} /> +₹4.5L GROWTH M/M
+                      <TrendingUp size={12} /> +4,500 OMR GROWTH M/M
                    </div>
                 </div>
 
@@ -465,7 +465,7 @@ const Sponsorships = () => {
                                <span className="text-[12px] font-bold text-[#0F172A]">{sp.name}</span>
                              </td>
                              <td className="px-6 py-3 text-right">
-                                <span className="text-[12px] font-bold text-[#0F172A]">₹{(sp.equity/1000).toFixed(0)}k</span>
+                                <span className="text-[12px] font-bold text-[#0F172A]">{sp.equity.toLocaleString()} OMR</span>
                              </td>
                            </tr>
                          ))}
@@ -515,7 +515,7 @@ const Sponsorships = () => {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Net Valuation</label>
-                        <input type="text" placeholder="₹12.0L" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none" />
+                        <input type="text" placeholder="1,200 OMR" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none" />
                       </div>
                    </div>
 

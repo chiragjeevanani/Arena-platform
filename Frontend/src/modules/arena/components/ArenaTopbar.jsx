@@ -12,7 +12,7 @@ const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
   const MOCK_NOTIFICATIONS = [
     { id: 1, title: 'New Booking', desc: 'Court A booked for 8:00 PM', time: '2 mins ago', icon: Calendar, color: '#eb483f' },
     { id: 2, title: 'Maintenance Alert', desc: 'Court C plumbing check scheduled', time: '1 hr ago', icon: Target, color: '#f59e0b' },
-    { id: 3, title: 'Payment Received', desc: '₹1,200 received from Rahul', time: '3 hrs ago', icon: CheckCircle2, color: '#22c55e' },
+    { id: 3, title: 'Payment Received', desc: '1.200 OMR received from Rahul', time: '3 hrs ago', icon: CheckCircle2, color: '#22c55e' },
     { id: 4, title: 'Peak Hours Active', desc: 'Evening peak pricing is now live', time: '5 hrs ago', icon: ClockIcon, color: '#6366f1' },
   ];
 

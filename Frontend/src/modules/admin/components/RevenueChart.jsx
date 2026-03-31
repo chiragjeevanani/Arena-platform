@@ -41,12 +41,12 @@ const RevenueChart = () => {
             fontSize={12} 
             tickLine={false} 
             axisLine={false} 
-            tickFormatter={(value) => `₹${value}`}
+            tickFormatter={(value) => `${value} OMR`}
           />
           <Tooltip 
             contentStyle={{ backgroundColor: '#1a1d24', borderColor: '#eb483f20', borderRadius: '12px', color: '#fff' }}
             itemStyle={{ color: '#eb483f', fontWeight: 'bold' }}
-            formatter={(value) => [`₹${value}`, 'Revenue']}
+            formatter={(value) => [`${value} OMR`, 'Revenue']}
           />
           <Area 
             type="monotone" 

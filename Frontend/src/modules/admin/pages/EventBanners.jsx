@@ -51,12 +51,12 @@ const MOCK_EVENTS = [
     type: 'Tournament', 
     date: '2026-06-15', 
     time: '10:00 AM',
-    venue: 'Sector 62 Main Court', 
+    venue: 'Bawshar Main Court', 
     status: 'Upcoming', 
     participants: 128,
     maxParticipants: 256,
-    revenue: 55000,
-    expenses: 12000,
+    revenue: 550,
+    expenses: 120,
     banner: 'https://images.unsplash.com/photo-1626225967045-944062402170?q=80&w=800&auto=format&fit=crop'
   },
   { 
@@ -65,12 +65,12 @@ const MOCK_EVENTS = [
     type: 'Camp', 
     date: '2026-04-10', 
     time: '08:00 AM',
-    venue: 'Amm Sports Academy', 
+    venue: 'Amm Sports Academy Muscat', 
     status: 'Active', 
     participants: 45,
     maxParticipants: 50,
-    revenue: 35000,
-    expenses: 8000,
+    revenue: 350,
+    expenses: 80,
     banner: 'https://images.unsplash.com/photo-1544033527-b192daee1f5b?q=80&w=800&auto=format&fit=crop'
   },
   { 
@@ -79,20 +79,20 @@ const MOCK_EVENTS = [
     type: 'Special Event', 
     date: '2025-12-05', 
     time: '11:00 AM',
-    venue: 'Olympic Arena', 
+    venue: 'Sultan Qaboos Arena', 
     status: 'Completed', 
     participants: 96,
     maxParticipants: 100,
-    revenue: 25000,
-    expenses: 15000,
+    revenue: 250,
+    expenses: 150,
     banner: 'https://images.unsplash.com/photo-1534158914592-062992fbe900?q=80&w=800&auto=format&fit=crop'
   },
 ];
 
 const MOCK_PARTICIPANTS = [
-  { id: 1, name: 'Rahul Sharma', age: 24, contact: '+91 9876543210', category: 'Men\'s Solo', status: 'Approved' },
-  { id: 2, name: 'Anjali Varma', age: 19, contact: '+91 9123456789', category: 'Women\'s Solo', status: 'Pending' },
-  { id: 3, name: 'Vikram Singh', age: 28, contact: '+91 9988776655', category: 'Men\'s Solo', status: 'Rejected' },
+  { id: 1, name: 'Ali Al-Said', age: 24, contact: '+968 9876 5432', category: 'Men\'s Solo', status: 'Approved' },
+  { id: 2, name: 'Fatima Al-Harthy', age: 19, contact: '+968 9123 4567', category: 'Women\'s Solo', status: 'Pending' },
+  { id: 3, name: 'Salim Al-Abri', age: 28, contact: '+968 9988 7766', category: 'Men\'s Solo', status: 'Rejected' },
 ];
 
 const MOCK_SPONSORS = [
@@ -101,8 +101,8 @@ const MOCK_SPONSORS = [
 ];
 
 const MOCK_EXPENSES = [
-  { id: 1, title: 'Ground Maintenance', amount: 5000, date: '2026-03-01', notes: 'Grass cutting and marking' },
-  { id: 2, title: 'Trophies and Medals', amount: 3500, date: '2026-03-10', notes: 'Purchased from local dealer' },
+  { id: 1, title: 'Ground Maintenance', amount: 50, date: '2026-03-01', notes: 'Grass cutting and marking' },
+  { id: 2, title: 'Trophies and Medals', amount: 35, date: '2026-03-10', notes: 'Purchased from local dealer' },
 ];
 
 const COLORS = ['#eb483f', '#0A1121', '#627D98', '#1a2b3c'];
@@ -188,7 +188,7 @@ const EventBanners = () => {
           { label: 'Total Events', value: MOCK_EVENTS.length, icon: <EmojiEvents />, color: '#eb483f' },
           { label: 'Upcoming', value: '08', icon: <CalendarMonth />, color: '#0A1121' },
           { label: 'Athletes', value: '1.2K', icon: <Groups />, color: '#627D98' },
-          { label: 'Net Revenue', value: '₹4.5L', icon: <MonetizationOn />, color: '#2ECC71' }
+          { label: 'Net Revenue', value: '4,500 OMR', icon: <MonetizationOn />, color: '#2ECC71' }
         ].map((stat, i) => (
           <Grid item xs={12} sm={6} md={3} key={i}>
             <Card sx={{ 
@@ -432,7 +432,7 @@ const EventBanners = () => {
 
           {step === 2 && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <TextField size="small" fullWidth type="number" label="Access Fee (₹)" InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }} />
+              <TextField size="small" fullWidth type="number" label="Access Fee (OMR)" InputProps={{ endAdornment: <InputAdornment position="end">OMR</InputAdornment> }} />
               <TextField size="small" fullWidth multiline rows={4} label="Protocols & Mandates (Rules)" />
             </Box>
           )}
@@ -722,7 +722,7 @@ const EventBanners = () => {
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.7rem', lineHeight: 1.1 }}>{row.title}</Typography>
                   <Typography variant="caption" sx={{ opacity: 0.5, fontSize: '0.6rem' }}>{row.notes}</Typography>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: 'error.main', fontSize: '0.75rem', py: 1 }}>₹{row.amount}</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: 'error.main', fontSize: '0.75rem', py: 1 }}>{row.amount} OMR</TableCell>
                 <TableCell sx={{ fontSize: '0.65rem', fontWeight: 600, py: 1 }}>{row.date}</TableCell>
                 <TableCell align="right" sx={{ py: 0.5 }}>
                   <IconButton size="small"><Edit sx={{ fontSize: 16 }} /></IconButton>
@@ -771,7 +771,7 @@ const EventBanners = () => {
                 <Box sx={{ position: 'relative', zIndex: 1 }}>
                   <Typography variant="overline" sx={{ opacity: 0.7, letterSpacing: 1.5, fontSize: '0.65rem' }}>Summary Performance</Typography>
                   <Box sx={{ mt: 2, mb: 4 }}>
-                     <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-1px' }}>₹{(activeEvent?.revenue || 0) - (activeEvent?.expenses || 0)}</Typography>
+                     <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-1px' }}>{(activeEvent?.revenue || 0) - (activeEvent?.expenses || 0)} OMR</Typography>
                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(46, 204, 113, 0.1)', px: 1.5, py: 0.5, borderRadius: 2 }}>
                        <TrendingUp sx={{ color: '#2ECC71', fontSize: 14 }} />
                        <Typography variant="caption" sx={{ color: '#2ECC71', fontWeight: 700, fontSize: '0.65rem' }}>NET SURPLUS GAIN</Typography>
@@ -780,11 +780,11 @@ const EventBanners = () => {
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                      <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 1 }}>
                         <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.7rem' }}>Gross Collection</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>₹{activeEvent?.revenue || 0}</Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{activeEvent?.revenue || 0} OMR</Typography>
                      </Box>
                      <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 1 }}>
                         <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.7rem' }}>Total Disbursement</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#EF4444' }}>-₹{activeEvent?.expenses || 0}</Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#EF4444' }}>-{activeEvent?.expenses || 0} OMR</Typography>
                      </Box>
                   </Box>
                 </Box>

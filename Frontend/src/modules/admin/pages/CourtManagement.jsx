@@ -157,7 +157,7 @@ const CourtManagement = () => {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
                   <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Base Rate</p>
-                  <p className="text-[13px] font-display font-black text-[#1a2b3c]">₹{court.baseRate}<span className="text-[9px] font-bold text-slate-400">/hr</span></p>
+                  <p className="text-[13px] font-display font-black text-[#1a2b3c]">{court.pricePerHour} <span className="text-[9px] font-bold text-slate-400">OMR/hr</span></p>
                 </div>
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
                   <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Occupancy</p>
@@ -233,10 +233,10 @@ const CourtManagement = () => {
                 </div>
 
                 <div className="group">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Standard Hourly Rate (₹)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Standard Hourly Rate (OMR)</label>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                    <input type="number" defaultValue="800" className="w-full py-4 pl-12 pr-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner" />
+                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">OMR</span>
+                    <input type="number" defaultValue="8.0" className="w-full py-4 pl-6 pr-16 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner" />
                   </div>
                 </div>
 

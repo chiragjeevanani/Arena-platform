@@ -106,7 +106,7 @@ const CourtMgmtAdmin = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Rate (₹/hr)</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Rate (OMR/hr)</label>
                     <input 
                       type="text" value={form.baseRate} onChange={e => setForm({...form, baseRate: e.target.value})}
                       className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 px-3 text-xs font-semibold text-slate-900 outline-none"
@@ -157,7 +157,7 @@ const CourtMgmtAdmin = () => {
                 <div className="mt-auto grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
                   <div className="flex flex-col">
                     <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Base Rate</span>
-                    <span className="text-[13px] font-bold text-slate-900">₹{court.baseRate}<span className="text-[9px] font-normal text-slate-400">/hr</span></span>
+                    <span className="text-[13px] font-bold text-slate-900">{court.pricePerHour} OMR<span className="text-[9px] font-normal text-slate-400">/hr</span></span>
                   </div>
                   <div className="flex flex-col text-right">
                     <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Capacity</span>

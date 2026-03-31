@@ -250,7 +250,7 @@ const Inventory = () => {
                              </span>
                           </td>
                           <td className="px-5 py-3.5 text-center">
-                             <span className="text-[11px] font-bold text-[#0A1121]">₹{item.price}</span>
+                             <span className="text-[11px] font-bold text-[#0A1121]">{item.price} OMR</span>
                           </td>
                           <td className="px-5 py-3.5">
                              <div className="flex flex-col items-center gap-1.5">
@@ -381,7 +381,7 @@ const Inventory = () => {
                      </select>
                    </div>
                    <div className="space-y-1.5">
-                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Unit Price (₹)</label>
+                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Unit Price (OMR)</label>
                      <input
                        type="number"
                        placeholder="0"

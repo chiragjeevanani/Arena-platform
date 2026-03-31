@@ -3,23 +3,23 @@
 
 export const MOCK_DB = {
   arenas: [
-    { id: 'arena-1', name: 'Elite Badminton Hub', locations: 'HSR Layout, Bangalore', courts: ['court-1', 'court-2', 'court-3'] },
-    { id: 'arena-2', name: 'Pro-Smash Academy', locations: 'Indiranagar, Bangalore', courts: ['court-4', 'court-5'] },
-    { id: 'arena-3', name: 'Green Field Arena', locations: 'Whitefield, Bangalore', courts: ['court-6'] },
+    { id: 'arena-1', name: 'Elite Muscat Arena', locations: 'Bawshar, Muscat', courts: ['court-1', 'court-2', 'court-3'] },
+    { id: 'arena-2', name: 'Royal Smash Academy', locations: 'Muttrah, Muscat', courts: ['court-4', 'court-5'] },
+    { id: 'arena-3', name: 'Dhofar Green Arena', locations: 'Seeb, Muscat', courts: ['court-6'] },
   ],
   
   courts: [
-    { id: 'court-1', arenaId: 'arena-1', name: 'Premium Synthetic 1', type: 'Synthetic', pricePerHour: 450 },
-    { id: 'court-2', arenaId: 'arena-1', name: 'Premium Synthetic 2', type: 'Synthetic', pricePerHour: 450 },
-    { id: 'court-3', arenaId: 'arena-1', name: 'Wooden Pro 1', type: 'Wooden', pricePerHour: 550 },
-    { id: 'court-4', arenaId: 'arena-2', name: 'Court A', type: 'Synthetic', pricePerHour: 400 },
-    { id: 'court-5', arenaId: 'arena-2', name: 'Court B', type: 'Synthetic', pricePerHour: 400 },
-    { id: 'court-6', arenaId: 'arena-3', name: 'G-1 Court', type: 'Wooden', pricePerHour: 600 },
+    { id: 'court-1', arenaId: 'arena-1', name: 'Premium Synthetic 1', type: 'Synthetic', pricePerHour: 4.5 },
+    { id: 'court-2', arenaId: 'arena-1', name: 'Premium Synthetic 2', type: 'Synthetic', pricePerHour: 4.5 },
+    { id: 'court-3', arenaId: 'arena-1', name: 'Wooden Pro 1', type: 'Wooden', pricePerHour: 5.5 },
+    { id: 'court-4', arenaId: 'arena-2', name: 'Court A', type: 'Synthetic', pricePerHour: 4.0 },
+    { id: 'court-5', arenaId: 'arena-2', name: 'Court B', type: 'Synthetic', pricePerHour: 4.0 },
+    { id: 'court-6', arenaId: 'arena-3', name: 'G-1 Court', type: 'Wooden', pricePerHour: 6.0 },
   ],
 
   coaches: [
-    { id: 'coach-1', name: 'Rahul Dravid', specialty: 'Advanced Footwork', rating: 4.9, students: 25 },
-    { id: 'coach-2', name: 'Saina Nehwal', specialty: 'Smash Technique', rating: 5.0, students: 40 },
+    { id: 'coach-1', name: 'Said Al-Habsi', specialty: 'Advanced Footwork', rating: 4.9, students: 25 },
+    { id: 'coach-2', name: 'Amal Al-Balushi', specialty: 'Smash Technique', rating: 5.0, students: 40 },
   ],
 
   batches: [
@@ -28,29 +28,29 @@ export const MOCK_DB = {
   ],
 
   inventory: [
-    { id: 'inv-1', name: 'Yonex Shuttlecocks (Gold)', stock: 45, minStock: 20, category: 'Consumables', price: 120 },
-    { id: 'inv-2', name: 'Grip Tape (Neon)', stock: 120, minStock: 30, category: 'Accessories', price: 50 },
-    { id: 'inv-3', name: 'Carbon Fiber Frame Racket', stock: 8, minStock: 10, category: 'Equipment', price: 3500 },
-    { id: 'inv-4', name: 'Badminton Net (Pro)', stock: 0, minStock: 5, category: 'Equipment', price: 1800 },
-    { id: 'inv-5', name: 'Court Floor Wax', stock: 3, minStock: 10, category: 'Consumables', price: 450 },
-    { id: 'inv-6', name: 'Sports Towel (Arena)', stock: 60, minStock: 20, category: 'Accessories', price: 180 },
-    { id: 'inv-7', name: 'Knee Guard Support', stock: 14, minStock: 8, category: 'Medical Kits', price: 650 },
-    { id: 'inv-8', name: 'Feather Shuttle (Tournament)', stock: 0, minStock: 15, category: 'Consumables', price: 320 },
+    { id: 'inv-1', name: 'Yonex Shuttlecocks (Gold)', stock: 45, minStock: 20, category: 'Consumables', price: 1.2 },
+    { id: 'inv-2', name: 'Grip Tape (Neon)', stock: 120, minStock: 30, category: 'Accessories', price: 0.5 },
+    { id: 'inv-3', name: 'Carbon Fiber Frame Racket', stock: 8, minStock: 10, category: 'Equipment', price: 35.0 },
+    { id: 'inv-4', name: 'Badminton Net (Pro)', stock: 0, minStock: 5, category: 'Equipment', price: 18.0 },
+    { id: 'inv-5', name: 'Court Floor Wax', stock: 3, minStock: 10, category: 'Consumables', price: 4.5 },
+    { id: 'inv-6', name: 'Sports Towel (Arena)', stock: 60, minStock: 20, category: 'Accessories', price: 1.8 },
+    { id: 'inv-7', name: 'Knee Guard Support', stock: 14, minStock: 8, category: 'Medical Kits', price: 6.5 },
+    { id: 'inv-8', name: 'Feather Shuttle (Tournament)', stock: 0, minStock: 15, category: 'Consumables', price: 3.2 },
   ],
 
   bookings: [
-    { id: 'book-101', customerName: 'Amit Shah', arenaId: 'arena-1', courtId: 'court-1', date: '2026-03-14', time: '07:00 AM', status: 'Confirmed', amount: 450 },
-    { id: 'book-102', customerName: 'Priya Rai', arenaId: 'arena-1', courtId: 'court-2', date: '2026-03-14', time: '08:00 AM', status: 'Pending', amount: 450 },
-    { id: 'book-103', customerName: 'Karan Johar', arenaId: 'arena-2', courtId: 'court-4', date: '2026-03-15', time: '06:00 PM', status: 'Confirmed', amount: 400 },
+    { id: 'book-101', customerName: 'Ahmed Al-Saadi', arenaId: 'arena-1', courtId: 'court-1', date: '2026-03-14', time: '07:00 AM', status: 'Confirmed', amount: 4.5 },
+    { id: 'book-102', customerName: 'Laila Al-Farsi', arenaId: 'arena-1', courtId: 'court-2', date: '2026-03-14', time: '08:00 AM', status: 'Pending', amount: 4.5 },
+    { id: 'book-103', customerName: 'Yousuf Al-Zadjali', arenaId: 'arena-2', courtId: 'court-4', date: '2026-03-15', time: '06:00 PM', status: 'Confirmed', amount: 4.0 },
   ],
 
   users: [
-    { id: 'USR-001', name: 'John Doe', role: 'SUPER_ADMIN', arenaId: 'all', email: 'admin@arena.com', status: 'Active' },
-    { id: 'USR-002', name: 'Alia Bhatt', role: 'ARENA_ADMIN', arenaId: 'arena-1', email: 'elite@arena.com', status: 'Active' },
-    { id: 'USR-003', name: 'Raj Kumar', role: 'ARENA_ADMIN', arenaId: 'arena-2', email: 'prosmash@arena.com', status: 'Active' },
-    { id: 'USR-004', name: 'Neha Sharma', role: 'RECEPTIONIST', arenaId: 'arena-1', email: 'hsr_reception@arena.com', status: 'Active' },
-    { id: 'USR-005', name: 'Amit Shah', role: 'CUSTOMER', arenaId: 'arena-1', email: 'amit@gmail.com', status: 'Active' },
-    { id: 'USR-006', name: 'Priya Rai', role: 'CUSTOMER', arenaId: 'arena-2', email: 'priya@outlook.com', status: 'Active' },
+    { id: 'USR-001', name: 'Abdullah Al-Raisi', role: 'SUPER_ADMIN', arenaId: 'all', email: 'admin@arena.om', status: 'Active' },
+    { id: 'USR-002', name: 'Fatma Al-Shuaili', role: 'ARENA_ADMIN', arenaId: 'arena-1', email: 'elite@arena.om', status: 'Active' },
+    { id: 'USR-003', name: 'Mohamed Al-Kindy', role: 'ARENA_ADMIN', arenaId: 'arena-2', email: 'royal@arena.om', status: 'Active' },
+    { id: 'USR-004', name: 'Sara Al-Masrouri', role: 'RECEPTIONIST', arenaId: 'arena-1', email: 'bawshar_reception@arena.om', status: 'Active' },
+    { id: 'USR-005', name: 'Ahmed Al-Saadi', role: 'CUSTOMER', arenaId: 'arena-1', email: 'ahmed@gmail.com', status: 'Active' },
+    { id: 'USR-006', name: 'Laila Al-Farsi', role: 'CUSTOMER', arenaId: 'arena-2', email: 'laila@outlook.com', status: 'Active' },
   ]
 };
 

@@ -63,18 +63,18 @@ const revenueBySource = [
 ];
 
 const outstandingPayments = [
-  { id: 'BK-1002', customer: 'Rajesh Kumar', amount: 3500, type: 'Court Booking', dueDate: '2026-03-15', days: 13 },
-  { id: 'AC-2201', customer: 'Priya Sharma', amount: 25000, type: 'Coaching Fee', dueDate: '2026-03-10', days: 18 },
-  { id: 'BK-1007', customer: 'Anand Rao', amount: 4500, type: 'Court Booking', dueDate: '2026-03-20', days: 8 },
-  { id: 'AC-2198', customer: 'Kavita Nair', amount: 35000, type: 'Coaching — Quarterly', dueDate: '2026-03-05', days: 23 },
+  { id: 'BK-1002', customer: 'Ali Al-Said', amount: 35, type: 'Court Booking', dueDate: '2026-03-15', days: 13 },
+  { id: 'AC-2201', customer: 'Fatima Al-Harthy', amount: 250, type: 'Coaching Fee', dueDate: '2026-03-10', days: 18 },
+  { id: 'BK-1007', customer: 'Salim Al-Abri', amount: 45, type: 'Court Booking', dueDate: '2026-03-20', days: 8 },
+  { id: 'AC-2198', customer: 'Muna Al-Maskari', amount: 350, type: 'Coaching — Quarterly', dueDate: '2026-03-05', days: 23 },
 ];
 
 const ledgerEntries = [
-  { type: 'Court Bookings', id: 'TR-1082XN', amount: 8200, mode: 'Credit', date: '12 Mar 2026' },
-  { type: 'Academy Fees', id: 'TR-1081XN', amount: 12500, mode: 'Credit', date: '12 Mar 2026' },
-  { type: 'POS Retail', id: 'TR-1080XN', amount: 4100, mode: 'Credit', date: '11 Mar 2026' },
-  { type: 'Maintenance', id: 'TR-1079XN', amount: 15000, mode: 'Debit', date: '11 Mar 2026' },
-  { type: 'Event Revenue', id: 'TR-1078XN', amount: 6200, mode: 'Credit', date: '10 Mar 2026' },
+  { type: 'Court Bookings', id: 'TR-1082XN', amount: 82, mode: 'Credit', date: '12 Mar 2026' },
+  { type: 'Academy Fees', id: 'TR-1081XN', amount: 125, mode: 'Credit', date: '12 Mar 2026' },
+  { type: 'POS Retail', id: 'TR-1080XN', amount: 41, mode: 'Credit', date: '11 Mar 2026' },
+  { type: 'Maintenance', id: 'TR-1079XN', amount: 150, mode: 'Debit', date: '11 Mar 2026' },
+  { type: 'Event Revenue', id: 'TR-1078XN', amount: 62, mode: 'Credit', date: '10 Mar 2026' },
 ];
 
 // ── Main Component ─────────────────────────────────────────────
@@ -214,9 +214,9 @@ const FinancialReports = () => {
           <MapPin size={14} className="text-slate-400" />
           <select value={location} onChange={e => setLocation(e.target.value)} className="bg-transparent text-[11px] font-semibold text-[#1a2b3c] outline-none border-none cursor-pointer pr-2">
              <option>All Hubs</option>
-             <option>HSR Arena</option>
-             <option>Indiranagar Hub</option>
-             <option>Whitefield Centre</option>
+             <option>Bawshar Arena</option>
+             <option>Azaiba Hub</option>
+             <option>Seeb Centre</option>
           </select>
        </div>
 

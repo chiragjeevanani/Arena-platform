@@ -7,10 +7,10 @@ import {
 } from 'lucide-react';
 
 const EVENTS = [
-  { id: 1, title: 'Summer Smash 2026', type: 'Open Tournament', date: 'Mar 25-27', venue: 'Olympic Arena', status: 'Registration', prize: '₹50,000', participants: 128 },
+  { id: 1, title: 'Summer Smash 2026', type: 'Open Tournament', date: 'Mar 25-27', venue: 'Olympic Arena', status: 'Registration', prize: '500 OMR', participants: 128 },
   { id: 2, title: 'Junior Championship', type: 'U-17 Boys/Girls', date: 'Apr 05', venue: 'Olympic Arena', status: 'Drafting', prize: 'Trophies', participants: 0 },
   { id: 3, title: 'Corporate League', type: 'Teams of 4', date: 'Ongoing', venue: 'Delta Hub', status: 'Live', prize: 'Shield', participants: 16 },
-  { id: 4, title: 'Weekend Blitz', type: 'Solo Knockout', date: 'Apr 12', venue: 'Olympic Arena', status: 'Upcoming', prize: '₹12,000', participants: 64 },
+  { id: 4, title: 'Weekend Blitz', type: 'Solo Knockout', date: 'Apr 12', venue: 'Olympic Arena', status: 'Upcoming', prize: '120 OMR', participants: 64 },
 ];
 
 const EventsAdmin = () => {
@@ -172,7 +172,7 @@ const EventsAdmin = () => {
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block ml-0.5">Allocation (₹)</label>
+                    <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block ml-0.5">Allocation (OMR)</label>
                     <input type="text" placeholder="50,000" className="w-full h-8 px-3 rounded-sm border border-slate-200 bg-white text-[10px] font-bold outline-none focus:border-slate-500" />
                   </div>
                   <div className="space-y-1.5">

@@ -5,22 +5,22 @@ import { useNavigate } from 'react-router-dom';
 const STATS = [
   { label: 'Total Courts', value: '5', sub: '4 active now', icon: Target, color: '#eb483f', path: '/arena/courts' },
   { label: 'Today\'s Slots', value: '35', sub: '22 booked · 13 free', icon: Clock, color: '#6366f1', path: '/arena/slots' },
-  { label: 'Revenue Today', value: '₹8,450', sub: '+15% vs yesterday', icon: DollarSign, color: '#22c55e', path: '/arena/pricing' },
+  { label: 'Revenue Today', value: '8.450 OMR', sub: '+15% vs yesterday', icon: DollarSign, color: '#22c55e', path: '/arena/pricing' },
   { label: 'Blocked Slots', value: '2', sub: '1 maintenance · 1 event', icon: CalendarX2, color: '#f59e0b', path: '/arena/availability' },
   { label: 'Active Bookings', value: '22', sub: 'For today', icon: TrendingUp, color: '#0ea5e9', path: '/arena/slots' },
   { label: 'Upcoming Classes', value: '4', sub: 'Coaching sessions', icon: Users, color: '#a855f7', path: '/arena/availability' },
 ];
 
 const RECENT_ACTIVITY = [
-  { type: 'booking', text: 'Court 1 booked for 7:00-8:00 PM', user: 'Rahul Sharma', time: '5 min ago', color: '#eb483f' },
+  { type: 'booking', text: 'Court 1 booked for 7:00-8:00 PM', user: 'Ahmed Al-Harthy', time: '5 min ago', color: '#eb483f' },
   { type: 'block', text: 'Court 3 blocked for Maintenance', user: 'Arena Manager', time: '1 hr ago', color: '#f59e0b' },
   { type: 'pricing', text: 'Peak pricing enabled for evening', user: 'Arena Manager', time: '3 hr ago', color: '#22c55e' },
-  { type: 'booking', text: 'Court 2 booked for 6:00-7:00 PM', user: 'Priya Patel', time: '4 hr ago', color: '#6366f1' },
+  { type: 'booking', text: 'Court 2 booked for 6:00-7:00 PM', user: 'Laila Al-Saadi', time: '4 hr ago', color: '#6366f1' },
   { type: 'slot', text: 'New weekend slots added (10)', user: 'Arena Manager', time: '1 day ago', color: '#0ea5e9' },
 ];
 
 const COURT_STATUS = [
-  { name: 'Court 1', type: 'Indoor', status: 'Occupied', statusColor: '#eb483f', player: 'Rahul Sharma', until: '8:00 PM' },
+  { name: 'Court 1', type: 'Indoor', status: 'Occupied', statusColor: '#eb483f', player: 'Ahmed Al-Harthy', until: '8:00 PM' },
   { name: 'Court 2', type: 'Indoor', status: 'Available', statusColor: '#22c55e', player: null, until: null },
   { name: 'Court 3', type: 'Outdoor', status: 'Maintenance', statusColor: '#f59e0b', player: null, until: '6:00 PM' },
   { name: 'Court 4', type: 'Indoor', status: 'Available', statusColor: '#22c55e', player: null, until: null },
@@ -31,7 +31,7 @@ const ArenaDashboard = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 min-h-full max-w-[1100px] ml-0 text-[#1a2b3c]">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 min-h-full max-w-[1100px] mx-auto text-[#1a2b3c]">
       {/* Welcome Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Good Evening 👋</h1>

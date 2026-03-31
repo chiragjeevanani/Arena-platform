@@ -19,9 +19,9 @@ const AMENITY_OPTIONS = [
 const initialArena = {
   id: 'arena-1',
   name: 'AMM Sports Arena',
-  address: '12, MG Road, Indiranagar',
-  city: 'Bangalore',
-  contact: '+91 98765 43210',
+  address: 'Sultan Qaboos St, Al Khuwair',
+  city: 'Muscat',
+  contact: '+968 9876 5432',
   openTime: '06:00',
   closeTime: '22:00',
   amenities: ['wifi', 'parking', 'cafe'],
@@ -110,8 +110,8 @@ const ArenaDetails = () => {
             {field('Contact Number', <Phone size={12} className="text-[#eb483f]" />,
               <div className="relative">
                 <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                <input type="text" value={arena.contact} onChange={e => setArena(p => ({ ...p, contact: e.target.value }))}
-                  className={`${inputCls} pl-11`} placeholder="+91 XXXXX XXXXX" />
+                  <input type="text" value={arena.contact} onChange={e => setArena(p => ({ ...p, contact: e.target.value }))}
+                    className={`${inputCls} pl-11`} placeholder="+968 XXXX XXXX" />
               </div>
             )}
           </div>
