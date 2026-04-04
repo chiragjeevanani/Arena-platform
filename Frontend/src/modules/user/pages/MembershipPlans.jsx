@@ -178,23 +178,87 @@ const ConfirmModal = ({ plan, onClose, onConfirm }) => {
   );
 };
 
+// ── Cancel Modal ─────────────────────────────────────────────────────────────
+const CancelModal = ({ plan, onClose, onConfirm }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4"
+    >
+      <motion.div
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+        className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
+      >
+        <div className="p-6 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+            <Shield size={24} className="text-red-500" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-black text-slate-900">Cancel Membership?</h3>
+            <p className="text-xs font-medium text-slate-500 leading-relaxed px-4">
+              By cancelling, you'll lose your <span className="font-bold text-red-500">{plan.discountPercent}% discount</span> on all future bookings after this period ends.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-2 pt-2">
+            <button
+              onClick={onConfirm}
+              className="w-full py-3 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-colors"
+            >
+              Yes, Cancel Membership
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-colors"
+            >
+              No, Keep My Benefits
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 const MembershipPlans = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [buying, setBuying] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const [cancelling, setCancelling] = useState(null);
+  const [userMembership, setUserMembership] = useState(() => {
+    const saved = localStorage.getItem('userMembership');
+    return saved ? JSON.parse(saved) : USER_MEMBERSHIP;
+  });
 
   const plans = filter === 'all'
     ? MEMBERSHIP_PLANS
     : MEMBERSHIP_PLANS.filter(p => p.category === filter);
 
-  const isActive = USER_MEMBERSHIP.status === 'active';
+  const isActive = userMembership.status === 'active';
 
   const handleConfirm = () => {
-    setSuccess(true);
+    if (!buying) return;
+    
+    // Navigate to payment page with plan details
+    navigate('/payment', {
+      state: {
+        amount: buying.price,
+        plan: buying,
+        type: 'membership'
+      }
+    });
     setBuying(null);
-    setTimeout(() => setSuccess(false), 3000);
+  };
+
+  const handleCancel = () => {
+    const inactiveMembership = { ...userMembership, status: 'none', planId: null };
+    localStorage.setItem('userMembership', JSON.stringify(inactiveMembership));
+    setUserMembership(inactiveMembership);
+    setCancelling(null);
   };
 
   return (
@@ -219,30 +283,37 @@ const MembershipPlans = () => {
 
           {/* Active plan pill */}
           {isActive && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/15">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[10px] font-black text-white uppercase tracking-widest">
-                {USER_MEMBERSHIP.planName} · {USER_MEMBERSHIP.discountPercent}% Off Active
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4 p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                  <Crown size={20} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-white uppercase tracking-widest leading-none">
+                      {userMembership.planName}
+                    </span>
+                    <div className="px-1.5 py-0.5 rounded-md bg-green-400 text-[7px] font-black text-white uppercase tracking-widest animate-pulse">
+                      Active
+                    </div>
+                  </div>
+                  <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest mt-1">
+                    Valid until {userMembership.expiryDate}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setCancelling(userMembership)}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[9px] font-black uppercase tracking-widest transition-all"
+              >
+                Cancel Plan
+              </button>
             </div>
           )}
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 -mt-4 relative z-10 space-y-4">
-
-        {/* Success toast */}
-        <AnimatePresence>
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-2 p-3 rounded-2xl bg-green-500 text-white shadow-lg shadow-green-500/20"
-            >
-              <CheckCircle2 size={16} />
-              <span className="text-xs font-black">Membership Activated! Enjoy your discounts.</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Filter tabs */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-1.5 inline-flex gap-1 overflow-x-auto max-w-full no-scrollbar">
@@ -282,7 +353,7 @@ const MembershipPlans = () => {
               <PlanCard
                 key={plan.id}
                 plan={plan}
-                isCurrent={isActive && USER_MEMBERSHIP.planId === plan.id}
+                isCurrent={isActive && userMembership.planId === plan.id}
                 onBuy={setBuying}
               />
             ))}
@@ -294,10 +365,13 @@ const MembershipPlans = () => {
         </p>
       </div>
 
-      {/* Confirm modal */}
+      {/* Modals */}
       <AnimatePresence>
         {buying && (
           <ConfirmModal plan={buying} onClose={() => setBuying(null)} onConfirm={handleConfirm} />
+        )}
+        {cancelling && (
+          <CancelModal plan={cancelling} onClose={() => setCancelling(null)} onConfirm={handleCancel} />
         )}
       </AnimatePresence>
     </div>

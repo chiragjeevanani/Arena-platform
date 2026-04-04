@@ -5,7 +5,8 @@ import {
   Stepper, Step, StepLabel, LinearProgress, Tab, Tabs,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Avatar, Chip, TextField, InputAdornment, MenuItem,
-  Select, FormControl, InputLabel, Tooltip, Breadcrumbs, Link
+  Select, FormControl, InputLabel, Tooltip, Breadcrumbs, Link,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -35,12 +36,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Info,
-  Close
+  Close,
+  Add
 } from '@mui/icons-material';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
+import decathlonLogo from '../../../assets/Sponsors/decathlon.png';
+import redbullLogo from '../../../assets/Sponsors/redbull.png';
+import summerSmashBanner from '../../../assets/Events/summer_smash.png';
 import { useTheme } from '../../user/context/ThemeContext';
 
 // --- MOCK DATA ---
@@ -57,7 +62,7 @@ const MOCK_EVENTS = [
     maxParticipants: 256,
     revenue: 550,
     expenses: 120,
-    banner: 'https://images.unsplash.com/photo-1626225967045-944062402170?q=80&w=800&auto=format&fit=crop'
+    banner: summerSmashBanner
   },
   { 
     id: 2, 
@@ -95,15 +100,9 @@ const MOCK_PARTICIPANTS = [
   { id: 3, name: 'Salim Al-Abri', age: 28, contact: '+968 9988 7766', category: 'Men\'s Solo', status: 'Rejected' },
 ];
 
-const MOCK_SPONSORS = [
-  { id: 1, name: 'Decathlon', type: 'Main Sponsor', website: 'https://decathlon.in', logo: 'https://logo.clearbit.com/decathlon.com' },
-  { id: 2, name: 'Red Bull', type: 'Co-Sponsor', website: 'https://redbull.com', logo: 'https://logo.clearbit.com/redbull.com' },
-];
+// The mock constants are now handled inside the component state
 
-const MOCK_EXPENSES = [
-  { id: 1, title: 'Ground Maintenance', amount: 50, date: '2026-03-01', notes: 'Grass cutting and marking' },
-  { id: 2, title: 'Trophies and Medals', amount: 35, date: '2026-03-10', notes: 'Purchased from local dealer' },
-];
+// The mock constants are now handled inside the component state
 
 const COLORS = ['#eb483f', '#0A1121', '#627D98', '#1a2b3c'];
 
@@ -139,6 +138,59 @@ const EventBanners = () => {
     }, 1500);
   };
 
+  const [isSponsorDialogOpen, setIsSponsorDialogOpen] = useState(false);
+  const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
+  const [editingSponsor, setEditingSponsor] = useState(null);
+
+  // Data States
+  const [sponsors, setSponsors] = useState([
+    { id: 1, name: 'Decathlon', type: 'Main Sponsor', website: 'https://decathlon.in', logo: decathlonLogo },
+    { id: 2, name: 'Red Bull', type: 'Co-Sponsor', website: 'https://redbull.com', logo: redbullLogo },
+  ]);
+  const [expenses, setExpenses] = useState([
+    { id: 1, title: 'Ground Maintenance', amount: 50, date: '2026-03-01', notes: 'Grass cutting and marking' },
+    { id: 2, title: 'Trophies and Medals', amount: 35, date: '2026-03-10', notes: 'Purchased from local dealer' },
+  ]);
+
+  // Form States
+  const [sponsorForm, setSponsorForm] = useState({ name: '', type: 'Main Sponsor', website: '', logo: '' });
+  const [expenseForm, setExpenseForm] = useState({ title: '', amount: '', date: '', notes: '' });
+
+  const handleSponsorLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSponsorForm({ ...sponsorForm, logo: URL.createObjectURL(file) });
+    }
+  };
+
+  const handleAddSponsor = () => {
+    if (!sponsorForm.name) return;
+    if (editingSponsor) {
+      setSponsors(sponsors.map(s => s.id === editingSponsor.id ? { ...s, ...sponsorForm } : s));
+    } else {
+      const newSponsor = {
+        id: Date.now(),
+        ...sponsorForm,
+        logo: sponsorForm.logo || 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?q=80&w=150&auto=format&fit=crop'
+      };
+      setSponsors([...sponsors, newSponsor]);
+    }
+    setSponsorForm({ name: '', type: 'Main Sponsor', website: '', logo: '' });
+    setEditingSponsor(null);
+    setIsSponsorDialogOpen(false);
+  };
+
+  const handleAddExpense = () => {
+    if (!expenseForm.title || !expenseForm.amount) return;
+    const newExpense = {
+      id: Date.now(),
+      ...expenseForm
+    };
+    setExpenses([...expenses, newExpense]);
+    setExpenseForm({ title: '', amount: '', date: '', notes: '' });
+    setIsExpenseDialogOpen(false);
+  };
+
   // Layout Transition
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -148,7 +200,7 @@ const EventBanners = () => {
   const PageHeader = ({ title, subtitle, actionLabel, onAction }) => (
     <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid', borderColor: isDark ? 'white/10' : 'slate.200', pb: 1.5 }}>
       <Box>
-        <Typography variant="overline" sx={{ fontWeight: 600, color: '#eb483f', letterSpacing: 2, mb: 0, display: 'block', lineHeight: 1, fontSize: '0.6rem' }}>
+        <Typography variant="overline" sx={{ fontWeight: 600, color: '#eb483f', letterSpacing: 2, mb: 0, display: 'block', lineHeight: 1, fontSize: '0.9rem', letterSpacing: 3 }}>
           Portfolio Management
         </Typography>
         <Typography variant="h5" sx={{ fontWeight: 700, color: isDark ? 'white' : '#0A1121', textTransform: 'uppercase', mt: 0.5 }}>
@@ -164,7 +216,7 @@ const EventBanners = () => {
           size="small"
           startIcon={<AddCircleOutline fontSize="small" />}
           onClick={onAction}
-          sx={{ bgcolor: '#0A1121', color: 'white', px: 2, py: 0.5, borderRadius: 1.5, '&:hover': { bgcolor: 'black' }, textTransform: 'none', fontWeight: 500, fontSize: '0.65rem', letterSpacing: 0.5 }}
+          sx={{ bgcolor: '#0A1121', color: 'white', px: 2, py: 0.5, borderRadius: 1.5, '&:hover': { bgcolor: 'black' }, textTransform: 'none', fontWeight: 500, fontSize: '0.95rem', letterSpacing: 0.5 }}
         >
           {actionLabel}
         </Button>
@@ -199,7 +251,7 @@ const EventBanners = () => {
               position: 'relative', overflow: 'hidden'
             }}>
               <Box sx={{ position: 'relative', zIndex: 1 }}>
-                <Typography variant="overline" sx={{ fontWeight: 600, color: 'text.secondary', letterSpacing: 1, lineHeight: 1, display: 'block' }}>{stat.label}</Typography>
+                <Typography variant="overline" sx={{ fontWeight: 600, opacity: 0.85, fontSize: '0.95rem', lineHeight: 1, display: 'block' }}>{stat.label}</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: isDark ? 'white' : '#0A1121' }}>{stat.value}</Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.1, color: stat.color, transform: 'scale(2.5)' }}>
@@ -227,22 +279,22 @@ const EventBanners = () => {
                   <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
                     <Chip label={event.status} size="small" sx={{ 
                       bgcolor: event.status === 'Active' ? '#eb483f' : '#0A1121', 
-                      color: 'white', fontWeight: 600, fontSize: '0.5rem', height: 20, textTransform: 'uppercase' 
+                      color: 'white', fontWeight: 600, fontSize: '0.65rem', height: 20, textTransform: 'uppercase' 
                     }} />
                   </Box>
                 </Box>
                 <Box sx={{ p: 2 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#eb483f', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.55rem' }}>{event.type}</Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#eb483f', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.85rem', opacity: 0.9 }}>{event.type}</Typography>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, mt: 0, lineHeight: 1.2 }}>{event.name}</Typography>
                   <Box sx={{ display: 'flex', gap: 2, mt: 1, opacity: 0.6 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}><Groups sx={{ fontSize: '0.75rem' }} /><Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.6rem' }}>{event.participants}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}><LocationOn sx={{ fontSize: '0.75rem' }} /><Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.6rem' }}>{event.venue}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}><Groups sx={{ fontSize: '0.9rem', letterSpacing: 3 }} /><Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.9rem', letterSpacing: 3 }}>{event.participants}</Typography></Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}><LocationOn sx={{ fontSize: '0.9rem', letterSpacing: 3 }} /><Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.9rem', letterSpacing: 3 }}>{event.venue}</Typography></Box>
                   </Box>
                   <Button 
                     fullWidth 
                     size="small"
                     variant="outlined" 
-                    sx={{ mt: 1.5, borderRadius: 1.5, borderColor: 'divider', color: 'text.primary', fontWeight: 600, textTransform: 'none', py: 0.5, fontSize: '0.65rem' }}
+                    sx={{ mt: 1.5, borderRadius: 1.5, borderColor: 'divider', color: 'text.primary', fontWeight: 600, textTransform: 'none', py: 0.5, fontSize: '0.95rem' }}
                     onClick={() => { setActiveEvent(event); setView('DETAILS'); }}
                   >
                     Manage Module
@@ -289,7 +341,7 @@ const EventBanners = () => {
           }}>
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
               <Box key={day} sx={{ textAlign: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#eb483f', textTransform: 'uppercase', letterSpacing: 1.2, fontSize: '0.55rem' }}>{day}</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: '#eb483f', textTransform: 'uppercase', letterSpacing: 1.2, fontSize: '0.85rem', opacity: 0.9 }}>{day}</Typography>
               </Box>
             ))}
           </Box>
@@ -328,7 +380,7 @@ const EventBanners = () => {
                 }}>
                   <Typography variant="caption" sx={{ 
                     fontWeight: 700, 
-                    fontSize: '0.8rem', 
+                    fontSize: '0.95rem', 
                     color: isCurrentMonth ? 'text.primary' : 'text.disabled',
                     display: 'block',
                     lineHeight: 1
@@ -382,7 +434,7 @@ const EventBanners = () => {
         <Stepper activeStep={step} sx={{ mb: 4 }} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
-              <StepLabel sx={{ '& .MuiStepLabel-label': { fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' } }}>{label}</StepLabel>
+              <StepLabel sx={{ '& .MuiStepLabel-label': { fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3, textTransform: 'uppercase' } }}>{label}</StepLabel>
             </Step>
           ))}
         </Stepper>
@@ -461,7 +513,7 @@ const EventBanners = () => {
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Athlete Registry</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <TextField size="small" placeholder="Search athletes..." 
-            InputProps={{ startAdornment: <Search sx={{ fontSize: 16, mr: 0.5, opacity: 0.5 }} />, sx: { fontSize: '0.7rem', height: 32 } }} 
+            InputProps={{ startAdornment: <Search sx={{ fontSize: 16, mr: 0.5, opacity: 0.5 }} />, sx: { fontSize: '0.85rem', opacity: 0.9, height: 32 } }} 
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
           />
           <Button size="small" variant="contained" startIcon={<FilterList fontSize="small" />} sx={{ bgcolor: '#0A1121', borderRadius: 1.5, textTransform: 'none', fontWeight: 500 }}>Filters</Button>
@@ -471,11 +523,11 @@ const EventBanners = () => {
         <Table size="small">
           <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.55rem', py: 1 }}>Athlete</TableCell>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.55rem', py: 1 }}>Category</TableCell>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.55rem', py: 1 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.55rem', py: 1 }}>Contact</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.55rem', py: 1 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Athlete</TableCell>
+              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Category</TableCell>
+              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Contact</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -483,20 +535,20 @@ const EventBanners = () => {
               <TableRow key={row.id} hover>
                 <TableCell sx={{ py: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar sx={{ width: 24, height: 24, bgcolor: '#eb483f', fontWeight: 600, fontSize: '0.55rem' }}>{row.name[0]}</Avatar>
+                    <Avatar sx={{ width: 24, height: 24, bgcolor: '#eb483f', fontWeight: 600, fontSize: '0.85rem', opacity: 0.9 }}>{row.name[0]}</Avatar>
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.7rem', lineHeight: 1.1 }}>{row.name}</Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.6, fontSize: '0.6rem' }}>Age: {row.age}</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, lineHeight: 1.1 }}>{row.name}</Typography>
+                      <Typography variant="caption" sx={{ opacity: 0.6, fontSize: '0.9rem', letterSpacing: 3 }}>Age: {row.age}</Typography>
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, fontSize: '0.65rem', py: 1 }}>{row.category}</TableCell>
+                <TableCell sx={{ fontWeight: 500, fontSize: '0.95rem', py: 1 }}>{row.category}</TableCell>
                 <TableCell sx={{ py: 1 }}>
                   <Chip label={row.status} size="small" color={row.status === 'Approved' ? 'success' : row.status === 'Pending' ? 'warning' : 'error'} 
-                    sx={{ fontWeight: 600, fontSize: '0.5rem', height: 18, textTransform: 'uppercase' }} 
+                    sx={{ fontWeight: 600, fontSize: '0.85rem', height: 18, textTransform: 'uppercase' }} 
                   />
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem', opacity: 0.7, py: 1 }}>{row.contact}</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem', opacity: 0.7, py: 1 }}>{row.contact}</TableCell>
                 <TableCell align="right" sx={{ py: 0.5 }}>
                   <IconButton size="small" sx={{ p: 0.5 }}><CheckCircle sx={{ color: 'success.main', fontSize: 16 }} /></IconButton>
                   <IconButton size="small" sx={{ p: 0.5 }}><Cancel sx={{ color: 'error.main', fontSize: 16 }} /></IconButton>
@@ -513,19 +565,30 @@ const EventBanners = () => {
     <Box>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Partner Portfolio</Typography>
-        <Button size="small" variant="contained" startIcon={<Campaign fontSize="small" />} sx={{ bgcolor: '#eb483f', borderRadius: 1.5, textTransform: 'none' }}>Add Sponsor</Button>
+        <Button size="small" variant="contained" startIcon={<Add fontSize="small" />} sx={{ bgcolor: '#eb483f', borderRadius: 1.5, textTransform: 'none' }} onClick={() => setIsSponsorDialogOpen(true)}>Add Sponsor</Button>
       </Box>
       <Grid container spacing={2}>
-        {MOCK_SPONSORS.map((sponsor) => (
+        {sponsors.map((sponsor) => (
           <Grid item xs={12} sm={6} key={sponsor.id}>
             <Card sx={{ p: 1.5, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
               <Avatar src={sponsor.logo} variant="rounded" sx={{ width: 44, height: 44, bgcolor: 'white', border: '1px solid', borderColor: 'divider' }} />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{sponsor.name}</Typography>
-                <Typography variant="caption" sx={{ color: '#eb483f', fontWeight: 500, textTransform: 'uppercase', fontSize: '0.55rem' }}>{sponsor.type}</Typography>
-                <Link href={sponsor.website} target="_blank" sx={{ display: 'block', fontSize: '0.65rem', mt: 0.5, opacity: 0.6 }}>{sponsor.website}</Link>
+                <Typography variant="caption" sx={{ color: '#eb483f', fontWeight: 500, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9 }}>{sponsor.type}</Typography>
+                <Link href={sponsor.website} target="_blank" sx={{ display: 'block', fontSize: '0.95rem', mt: 0.5, opacity: 0.6 }}>{sponsor.website}</Link>
               </Box>
-              <IconButton color="error"><Delete /></IconButton>
+              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                <IconButton size="small" onClick={() => {
+                  setSponsorForm({ name: sponsor.name, type: sponsor.type, website: sponsor.website, logo: sponsor.logo });
+                  setEditingSponsor(sponsor);
+                  setIsSponsorDialogOpen(true);
+                }}>
+                  <Edit sx={{ fontSize: 20 }} />
+                </IconButton>
+                <IconButton size="small" color="error" onClick={() => setSponsors(sponsors.filter(s => s.id !== sponsor.id))}>
+                  <Delete sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Box>
             </Card>
           </Grid>
         ))}
@@ -540,7 +603,7 @@ const EventBanners = () => {
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
           {isPublished ? (isPubliclyVisible ? 'Tournament Concluded' : 'Results Archived') : 'Tournament Outcome'}
         </Typography>
-        <Typography variant="caption" sx={{ opacity: 0.6 }}>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>
           {isPublished ? (isPubliclyVisible ? 'Official results are live on the User App' : 'Results are hidden from the public UI') : 'Declare winners and publish leaderboard'}
         </Typography>
       </Box>
@@ -548,7 +611,7 @@ const EventBanners = () => {
       {isPublished ? (
         <Grid container spacing={3}>
            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#2ECC71', fontSize: '0.65rem' }}>Official Podium</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#2ECC71', fontSize: '0.95rem' }}>Official Podium</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                  {[
                    { rank: 'Gold Medalist - Winner', color: '#FFD700', id: resultWinner },
@@ -559,7 +622,7 @@ const EventBanners = () => {
                         {MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name[0]}
                      </Avatar>
                      <Box sx={{ flex: 1 }}>
-                       <Typography variant="caption" sx={{ fontWeight: 700, color: pos.color, fontSize: '0.6rem', textTransform: 'uppercase' }}>{pos.rank}</Typography>
+                       <Typography variant="caption" sx={{ fontWeight: 700, color: pos.color, fontSize: '0.9rem', letterSpacing: 3, textTransform: 'uppercase' }}>{pos.rank}</Typography>
                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name || 'N/A'}</Typography>
                      </Box>
                      <EmojiEvents sx={{ color: pos.color, fontSize: 32, opacity: 0.5 }} />
@@ -568,19 +631,19 @@ const EventBanners = () => {
               </Box>
            </Grid>
            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.65rem' }}>Official Scorecard</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.95rem' }}>Official Scorecard</Typography>
               <Box sx={{ 
                 height: 160, border: '1px solid', borderColor: 'divider', borderRadius: 3, 
                 position: 'relative', overflow: 'hidden'
               }}>
                  <img src={scorecardImage} alt="Final Scorecard" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                 <Button size="small" variant="contained" startIcon={<CloudUpload />} sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.7)', textTransform: 'none', fontSize: '0.6rem' }}>View Full Document</Button>
+                 <Button size="small" variant="contained" startIcon={<CloudUpload />} sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.7)', textTransform: 'none', fontSize: '0.9rem', letterSpacing: 3 }}>View Full Document</Button>
               </Box>
            </Grid>
            <Grid item xs={12}>
              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 2 }}>
-               <Chip label={`Auto-archives in: ${publishDuration === 'forever' ? 'Never' : publishDuration + ' Days'}`} size="small" sx={{ fontWeight: 600, fontSize: '0.6rem', bgcolor: 'divider' }} />
-               <Chip label={hideEventBanner ? "Event Banner: Removed" : "Event Banner: Active"} size="small" color={hideEventBanner ? "warning" : "success"} variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6rem' }} />
+               <Chip label={`Auto-archives in: ${publishDuration === 'forever' ? 'Never' : publishDuration + ' Days'}`} size="small" sx={{ fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3, bgcolor: 'divider' }} />
+               <Chip label={hideEventBanner ? "Event Banner: Removed" : "Event Banner: Active"} size="small" color={hideEventBanner ? "warning" : "success"} variant="outlined" sx={{ fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3 }} />
              </Box>
            </Grid>
            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
@@ -600,7 +663,7 @@ const EventBanners = () => {
         <>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#eb483f', fontSize: '0.65rem' }}>Podium Standings</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#eb483f', fontSize: '0.95rem' }}>Podium Standings</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {[
                   { rank: 'Winner', color: '#FFD700', icon: <EmojiEvents fontSize="small" />, value: resultWinner, setter: setResultWinner },
@@ -609,14 +672,14 @@ const EventBanners = () => {
                   <Card key={i} sx={{ p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid', borderColor: pos.color, boxShadow: 'none' }}>
                     <Box sx={{ color: pos.color }}>{pos.icon}</Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.6, fontSize: '0.55rem', textTransform: 'uppercase' }}>{pos.rank}</Typography>
-                      <Select fullWidth variant="standard" displayEmpty sx={{ fontWeight: 600, fontSize: '0.75rem' }} value={pos.value} onChange={(e) => pos.setter(e.target.value)}>
+                      <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.6, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase' }}>{pos.rank}</Typography>
+                      <Select fullWidth variant="standard" displayEmpty sx={{ fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3 }} value={pos.value} onChange={(e) => pos.setter(e.target.value)}>
                         <MenuItem value="" disabled>Select Athlete...</MenuItem>
                         {MOCK_PARTICIPANTS.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
                       </Select>
                     </Box>
                     {pos.value && (
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: pos.color, fontWeight: 700, fontSize: '0.8rem', color: isDark ? '#0A1121' : 'white' }}>
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: pos.color, fontWeight: 700, fontSize: '0.95rem', color: isDark ? '#0A1121' : 'white' }}>
                           {MOCK_PARTICIPANTS.find(p => p.id === pos.value)?.name[0]}
                       </Avatar>
                     )}
@@ -625,7 +688,7 @@ const EventBanners = () => {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.65rem' }}>Scorecard Upload</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.95rem' }}>Scorecard Upload</Typography>
               <Box sx={{ 
                 height: 120, border: '2px dashed', borderColor: scorecardImage ? '#eb483f' : 'divider', borderRadius: 3, 
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
@@ -654,11 +717,11 @@ const EventBanners = () => {
               </Box>
             </Grid>
             <Grid item xs={12}>
-               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.65rem' }}>Publication Preferences</Typography>
+               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.95rem' }}>Publication Preferences</Typography>
                <Card sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none', display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
                   <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                     <InputLabel sx={{ fontSize: '0.7rem', fontWeight: 600 }}>Auto-Archive Results</InputLabel>
-                     <Select value={publishDuration} onChange={(e) => setPublishDuration(e.target.value)} sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                     <InputLabel sx={{ fontSize: '0.85rem', opacity: 0.9, fontWeight: 600 }}>Auto-Archive Results</InputLabel>
+                     <Select value={publishDuration} onChange={(e) => setPublishDuration(e.target.value)} sx={{ fontSize: '0.9rem', letterSpacing: 3, fontWeight: 600 }}>
                         <MenuItem value="1">After 1 Day</MenuItem>
                         <MenuItem value="3">After 3 Days</MenuItem>
                         <MenuItem value="5">After 5 Days</MenuItem>
@@ -669,8 +732,8 @@ const EventBanners = () => {
                   
                   <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'action.hover', p: 1.5, borderRadius: 2 }}>
                      <Box>
-                       <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>Remove Event Banner</Typography>
-                       <Typography variant="caption" sx={{ opacity: 0.6, fontSize: '0.55rem' }}>Hide the promotional registering banner from the User app.</Typography>
+                       <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9 }}>Remove Event Banner</Typography>
+                       <Typography variant="caption" sx={{ opacity: 0.6, fontSize: '0.85rem', opacity: 0.9 }}>Hide the promotional registering banner from the User app.</Typography>
                      </Box>
                      <Button size="small" variant={hideEventBanner ? 'contained' : 'outlined'} color={hideEventBanner ? "error" : "primary"} onClick={() => setHideEventBanner(!hideEventBanner)} sx={{ borderRadius: 1.5, fontWeight: 600, textTransform: 'none' }}>
                         {hideEventBanner ? 'Yes, Remove Banner' : 'Keep Banner Active'}
@@ -703,30 +766,30 @@ const EventBanners = () => {
     <Box>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Disbursement Log</Typography>
-        <Button size="small" variant="contained" startIcon={<Receipt fontSize="small" />} sx={{ bgcolor: '#0A1121', borderRadius: 1.5, textTransform: 'none' }}>Log Expense</Button>
+        <Button size="small" variant="contained" startIcon={<Receipt fontSize="small" />} sx={{ bgcolor: '#0A1121', borderRadius: 1.5, textTransform: 'none' }} onClick={() => setIsExpenseDialogOpen(true)}>Log Expense</Button>
       </Box>
       <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
         <Table size="small">
           <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.55rem', textTransform: 'uppercase', py: 1 }}>Description</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.55rem', textTransform: 'uppercase', py: 1 }}>Amount</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.55rem', textTransform: 'uppercase', py: 1 }}>Date</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, fontSize: '0.55rem', textTransform: 'uppercase', py: 1 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Description</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Date</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {MOCK_EXPENSES.map((row) => (
+            {expenses.map((row) => (
               <TableRow key={row.id}>
                 <TableCell sx={{ py: 1 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.7rem', lineHeight: 1.1 }}>{row.title}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.5, fontSize: '0.6rem' }}>{row.notes}</Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 1, lineHeight: 1.1 }}>{row.title}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.85, fontSize: '0.85rem', letterSpacing: 1 }}>{row.notes}</Typography>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: 'error.main', fontSize: '0.75rem', py: 1 }}>{row.amount} OMR</TableCell>
-                <TableCell sx={{ fontSize: '0.65rem', fontWeight: 600, py: 1 }}>{row.date}</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: 'error.main', fontSize: '0.9rem', letterSpacing: 3, py: 1 }}>{row.amount} OMR</TableCell>
+                <TableCell sx={{ fontSize: '0.95rem', fontWeight: 600, py: 1 }}>{row.date}</TableCell>
                 <TableCell align="right" sx={{ py: 0.5 }}>
-                  <IconButton size="small"><Edit sx={{ fontSize: 16 }} /></IconButton>
-                  <IconButton size="small"><Delete sx={{ fontSize: 16 }} /></IconButton>
+                  <IconButton size="small" onClick={() => alert('Edit feature coming soon')}><Edit sx={{ fontSize: 16 }} /></IconButton>
+                  <IconButton size="small" onClick={() => setExpenses(expenses.filter(e => e.id !== row.id))}><Delete sx={{ fontSize: 16 }} /></IconButton>
                 </TableCell>
               </TableRow>
             ))}
@@ -746,7 +809,7 @@ const EventBanners = () => {
     return (
       <Box sx={{ width: '100%' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDark ? 'white' : '#0A1121' }}>Fiscal Overlook</Typography>
-        <Typography variant="caption" sx={{ opacity: 0.6, display: 'block', mb: 3 }}>Real-time revenue metrics and tournament disbursements.</Typography>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>Real-time revenue metrics and tournament disbursements.</Typography>
         
         <Grid container spacing={3} alignItems="stretch">
           {/* Summary Performance Card */}
@@ -769,21 +832,21 @@ const EventBanners = () => {
                 <Box sx={{ position: 'absolute', bottom: -50, left: -50, width: 150, height: 150, bgcolor: 'rgba(235, 72, 63, 0.1)', borderRadius: '50%', filter: 'blur(40px)' }} />
                 
                 <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Typography variant="overline" sx={{ opacity: 0.7, letterSpacing: 1.5, fontSize: '0.65rem' }}>Summary Performance</Typography>
+                  <Typography variant="overline" sx={{ opacity: 0.7, letterSpacing: 1.5, fontSize: '0.95rem' }}>Summary Performance</Typography>
                   <Box sx={{ mt: 2, mb: 4 }}>
                      <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-1px' }}>{(activeEvent?.revenue || 0) - (activeEvent?.expenses || 0)} OMR</Typography>
                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(46, 204, 113, 0.1)', px: 1.5, py: 0.5, borderRadius: 2 }}>
                        <TrendingUp sx={{ color: '#2ECC71', fontSize: 14 }} />
-                       <Typography variant="caption" sx={{ color: '#2ECC71', fontWeight: 700, fontSize: '0.65rem' }}>NET SURPLUS GAIN</Typography>
+                       <Typography variant="caption" sx={{ color: '#2ECC71', fontWeight: 700, fontSize: '0.95rem' }}>NET SURPLUS GAIN</Typography>
                      </Box>
                   </Box>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                      <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 1 }}>
-                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.7rem' }}>Gross Collection</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.85rem', opacity: 0.9 }}>Gross Collection</Typography>
                         <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{activeEvent?.revenue || 0} OMR</Typography>
                      </Box>
                      <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 1 }}>
-                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.7rem' }}>Total Disbursement</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.85rem', opacity: 0.9 }}>Total Disbursement</Typography>
                         <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#EF4444' }}>-{activeEvent?.expenses || 0} OMR</Typography>
                      </Box>
                   </Box>
@@ -806,7 +869,7 @@ const EventBanners = () => {
                 flexDirection: 'column' 
              }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'white' : '#0A1121', fontSize: '0.7rem', letterSpacing: 1 }}>Fiscal Breakdown</Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'white' : '#0A1121', fontSize: '0.85rem', opacity: 0.9, letterSpacing: 1 }}>Fiscal Breakdown</Typography>
                   <Tooltip title="Data is simulated based on participant fees and event logistics."><Info sx={{ fontSize: 16, opacity: 0.3 }} /></Tooltip>
                 </Box>
                 <Box sx={{ flex: 1, minHeight: 250, width: '100%', minWidth: 0, position: 'relative' }}>
@@ -858,7 +921,7 @@ const EventBanners = () => {
                 '& .MuiTabs-indicator': { bgcolor: '#eb483f', height: '100%', borderRadius: 1.5, zIndex: 0 },
                 '& .MuiTab-root': { 
                   zIndex: 1, minHeight: 36, py: 0.5, transition: 'all 0.3s', 
-                  fontWeight: 800, fontSize: '0.6rem', textTransform: 'uppercase', 
+                  fontWeight: 800, fontSize: '0.9rem', letterSpacing: 3, textTransform: 'uppercase', 
                   letterSpacing: 1.3, color: isDark ? 'rgba(255,255,255,0.4)' : '#64748b',
                   '&.Mui-selected': { color: 'white' }
                 }
@@ -896,7 +959,7 @@ const EventBanners = () => {
                       bgcolor: activeSubTab === i ? '#eb483f' : 'transparent',
                       borderColor: activeSubTab === i ? '#eb483f' : 'divider',
                       color: activeSubTab === i ? 'white' : 'text.primary',
-                      fontWeight: 600, fontSize: '0.55rem', textTransform: 'uppercase',
+                      fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase',
                       '&:hover': { bgcolor: activeSubTab === i ? '#eb483f' : 'action.hover' }
                     }}
                   >
@@ -923,14 +986,86 @@ const EventBanners = () => {
           )}
         </motion.div>
       </Container>
+
+      {/* MODAL DIALOGS */}
+      <Dialog open={isSponsorDialogOpen} onClose={() => { setIsSponsorDialogOpen(false); setEditingSponsor(null); setSponsorForm({ name: '', type: 'Main Sponsor', website: '', logo: '' }); }} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 700 }}>{editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+          <TextField 
+            label="Sponsor Name" fullWidth size="small" sx={{ mt: 1 }} 
+            value={sponsorForm.name} onChange={(e) => setSponsorForm({ ...sponsorForm, name: e.target.value })}
+          />
+          <TextField 
+            label="Sponsorship Type" fullWidth size="small" select 
+            value={sponsorForm.type} onChange={(e) => setSponsorForm({ ...sponsorForm, type: e.target.value })}
+          >
+             <MenuItem value="Main Sponsor">Main Sponsor</MenuItem>
+             <MenuItem value="Co-Sponsor">Co-Sponsor</MenuItem>
+             <MenuItem value="Partner">Partner</MenuItem>
+          </TextField>
+          <TextField 
+            label="Website URL" fullWidth size="small" 
+            value={sponsorForm.website} onChange={(e) => setSponsorForm({ ...sponsorForm, website: e.target.value })}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+            {sponsorForm.logo && (
+              <Avatar src={sponsorForm.logo} variant="rounded" sx={{ width: 44, height: 44, bgcolor: 'divider' }} />
+            )}
+            <Button variant="outlined" component="label" fullWidth startIcon={<CloudUpload />} sx={{ height: 44, textTransform: 'none' }}>
+               {sponsorForm.logo ? 'Change Logo' : 'Upload Logo'}
+               <input type="file" hidden accept="image/*" onChange={handleSponsorLogoUpload} />
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setIsSponsorDialogOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            sx={{ bgcolor: '#eb483f', textTransform: 'none', fontWeight: 600 }} 
+            onClick={handleAddSponsor}
+          >
+            {editingSponsor ? 'Save Changes' : 'Add Sponsor'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={isExpenseDialogOpen} onClose={() => setIsExpenseDialogOpen(false)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 700 }}>Log New Expense</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+          <TextField 
+            label="Description" placeholder="e.g. Catering, Equipment" fullWidth size="small" sx={{ mt: 1 }} 
+            value={expenseForm.title} onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
+          />
+          <TextField 
+            label="Amount (OMR)" type="number" fullWidth size="small" 
+            value={expenseForm.amount} onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+          />
+          <TextField 
+            label="Date" type="date" fullWidth size="small" InputLabelProps={{ shrink: true }} 
+            value={expenseForm.date} onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
+          />
+          <TextField 
+            label="Context/Notes" multiline rows={2} fullWidth size="small" 
+            value={expenseForm.notes} onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setIsExpenseDialogOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            sx={{ bgcolor: '#0A1121', textTransform: 'none', fontWeight: 600 }} 
+            onClick={handleAddExpense}
+          >
+            Create Log
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
-// Helper for Layout
 const Container = ({ children, maxWidth }) => (
   <Box sx={{ maxWidth: maxWidth === 'xl' ? 1400 : 800, mx: 'auto' }}>{children}</Box>
 );
 
 export default EventBanners;
-

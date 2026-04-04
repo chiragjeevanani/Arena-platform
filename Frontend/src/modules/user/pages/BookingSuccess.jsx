@@ -48,7 +48,34 @@ const BookingSuccess = () => {
       const existingBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
 
       let newBooking;
-      if (state.batch) {
+      if (state.type === 'membership') {
+        // Membership activation
+        newBooking = {
+          id: `MEM-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+          arenaName: "Arena Membership",
+          arenaImage: null,
+          location: "Global Access",
+          courtName: state.plan?.name,
+          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          slot: state.plan?.duration,
+          status: 'Active',
+          type: 'Membership',
+          price: state.amount
+        };
+        
+        // Save membership status
+        const membershipData = {
+          status: 'active',
+          planId: state.plan?.id,
+          planName: state.plan?.name,
+          category: state.plan?.category,
+          discountPercent: state.plan?.discountPercent,
+          startDate: new Date().toISOString().split('T')[0],
+          expiryDate: '2027-04-02', // 1 year approx for demo
+          benefits: state.plan?.benefits
+        };
+        localStorage.setItem('userMembership', JSON.stringify(membershipData));
+      } else if (state.batch) {
         // Coaching enrollment
         newBooking = {
           id: `AC-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
@@ -144,7 +171,7 @@ const BookingSuccess = () => {
               transition={{ delay: 0.3 }}
               className={`text-2xl md:text-3xl font-black tracking-tight font-display mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}
             >
-              {state?.batch ? 'Ready for Training!' : 'Slot Secured!'}
+              {state?.type === 'membership' ? 'Welcome to the Club!' : state?.batch ? 'Ready for Training!' : 'Slot Secured!'}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -152,7 +179,7 @@ const BookingSuccess = () => {
               transition={{ delay: 0.5 }}
               className={`text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}
             >
-              {state?.batch ? 'Your academic journey begins here' : 'Prepare for your match at the arena'}
+              {state?.type === 'membership' ? 'Your membership is now active' : state?.batch ? 'Your academic journey begins here' : 'Prepare for your match at the arena'}
             </motion.p>
           </div>
         </div>
@@ -187,12 +214,12 @@ const BookingSuccess = () => {
               {/* Arena Info */}
               <div className="space-y-1">
                 <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                  {state?.batch ? 'Academic Program' : 'Arena Details'}
+                  {state?.type === 'membership' ? 'Membership Active' : state?.batch ? 'Academic Program' : 'Arena Details'}
                 </p>
                 <h3 className={`text-xl md:text-2xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {state?.batch ? state.batch.coachName : state?.arena?.name}
+                  {state?.type === 'membership' ? state.plan?.name : state?.batch ? state.batch.coachName : state?.arena?.name}
                   <span className={`block text-lg md:text-xl mt-0.5 ${isDark ? 'text-[#eb483f]/80' : 'text-[#eb483f]'}`}>
-                    {state?.batch ? state.batch.level + ' Batch' : state?.court?.name}
+                    {state?.type === 'membership' ? 'Tier ' + state.plan?.category : state?.batch ? state.batch.level + ' Batch' : state?.court?.name}
                   </span>
                 </h3>
               </div>
@@ -200,17 +227,17 @@ const BookingSuccess = () => {
               {/* Detail Grid */}
               <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100">
                 <div className="space-y-1">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Date</p>
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{state?.type === 'membership' ? 'Activation Date' : 'Date'}</p>
                   <div className="flex items-center gap-2">
                     <CalendarDays size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.date}</p>
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.type === 'membership' ? new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : state?.date}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Timing</p>
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{state?.type === 'membership' ? 'Validity Period' : 'Timing'}</p>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.batch ? state.batch.timing : state?.slot?.time}</p>
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.type === 'membership' ? state.plan?.duration : state?.batch ? state.batch.timing : state?.slot?.time}</p>
                   </div>
                 </div>
               </div>

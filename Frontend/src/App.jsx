@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 
 // Layouts
 import UserLayout from './layouts/UserLayout';
@@ -83,103 +84,121 @@ import {
 // Components
 import ScrollToTop from './components/ScrollToTop';
 
+const muiTheme = createTheme({
+  typography: {
+    fontFamily: '"Outfit", sans-serif',
+    fontSize: 16.5,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
+  },
+});
+
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Routes>
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/otp-verify" element={<OTPVerification />} />
+    <MuiThemeProvider theme={muiTheme}>
+      <Router>
+        <ScrollToTop />
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/otp-verify" element={<OTPVerification />} />
 
-        {/* User App Routes (Mobile-first) - Primary Entry */}
-        <Route path="/" element={<UserLayout />}>
-          <Route index element={<UserHome />} />
-          <Route path="arenas" element={<ArenaListing />} />
-          <Route path="arenas/:id" element={<ArenaDetails />} />
-          <Route path="events" element={<Events />} />
-          <Route path="events/:id" element={<EventDetail />} />
-          <Route path="bookings" element={<Dashboard />} />
-          <Route path="coaching" element={<Coaching />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="profile/edit" element={<EditProfile />} />
-          <Route path="profile/wallet" element={<Wallet />} />
-          <Route path="profile/notifications" element={<Notifications />} />
-          <Route path="profile/privacy" element={<Privacy />} />
-          <Route path="profile/help" element={<Help />} />
-          <Route path="terms" element={<Terms />} />
-        </Route>
+          {/* User App Routes (Mobile-first) - Primary Entry */}
+          <Route path="/" element={<UserLayout />}>
+            <Route index element={<UserHome />} />
+            <Route path="arenas" element={<ArenaListing />} />
+            <Route path="arenas/:id" element={<ArenaDetails />} />
+            <Route path="events" element={<Events />} />
+            <Route path="events/:id" element={<EventDetail />} />
+            <Route path="bookings" element={<Dashboard />} />
+            <Route path="coaching" element={<Coaching />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="profile/edit" element={<EditProfile />} />
+            <Route path="profile/wallet" element={<Wallet />} />
+            <Route path="profile/notifications" element={<Notifications />} />
+            <Route path="profile/privacy" element={<Privacy />} />
+            <Route path="profile/help" element={<Help />} />
+            <Route path="terms" element={<Terms />} />
+          </Route>
 
-        {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
-        <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
-        <Route path="/booking-summary" element={<BookingSummary />} />
-        <Route path="/coaching-summary" element={<CoachingSummary />} />
-        <Route path="/membership" element={<MembershipPlans />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/booking-success" element={<BookingSuccess />} />
-        <Route path="/bookings/:id" element={<BookingDetails />} />
+          {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
+          <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
+          <Route path="/booking-summary" element={<BookingSummary />} />
+          <Route path="/coaching-summary" element={<CoachingSummary />} />
+          <Route path="/membership" element={<MembershipPlans />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/booking-success" element={<BookingSuccess />} />
+          <Route path="/bookings/:id" element={<BookingDetails />} />
 
-        {/* Unified Admin Login */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+          {/* Unified Admin Login */}
+          <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="roles" element={<RoleManagement />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="arenas" element={<ArenaManagement />} />
-          <Route path="courts" element={<CourtManagement />} />
-          <Route path="slots" element={<SlotSchedule />} />
-          <Route path="bookings" element={<Bookings />} />
-          <Route path="coaching" element={<CoachingAdmin />} />
-          <Route path="events" element={<EventsAdmin />} />
-          <Route path="sponsorships" element={<Sponsorships />} />
-          <Route path="inventory" element={<Inventory />} />
-          <Route path="pos" element={<RetailPOS />} />
-          <Route path="reports" element={<FinancialReports />} />
-          <Route path="pricing" element={<PricingManagement />} />
-          <Route path="user/hero" element={<FrontendHeroMgmt />} />
-          <Route path="user/events" element={<EventBanners />} />
-          <Route path="user/booking" element={<FrontendCategoryMgmt />} />
-          <Route path="arena/details" element={<ArenaListAdmin />} />
-          <Route path="arena/details/:id" element={<ArenaDetailsAdmin />} />
-          <Route path="arena/slots/:arenaId/:courtId" element={<CourtSlotsAdmin />} />
-          <Route path="settings" element={<AccountSettings />} />
-          <Route path="arena-panel" element={<ArenaManagementPanel />} />
-        </Route>
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="roles" element={<RoleManagement />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="arenas" element={<ArenaManagement />} />
+            <Route path="courts" element={<CourtManagement />} />
+            <Route path="slots" element={<SlotSchedule />} />
+            <Route path="bookings" element={<Bookings />} />
+            <Route path="coaching" element={<CoachingAdmin />} />
+            <Route path="events" element={<EventsAdmin />} />
+            <Route path="sponsorships" element={<Sponsorships />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="pos" element={<RetailPOS />} />
+            <Route path="reports" element={<FinancialReports />} />
+            <Route path="pricing" element={<PricingManagement />} />
+            <Route path="user/hero" element={<FrontendHeroMgmt />} />
+            <Route path="user/events" element={<EventBanners />} />
+            <Route path="user/booking" element={<FrontendCategoryMgmt />} />
+            <Route path="arena/details" element={<ArenaListAdmin />} />
+            <Route path="arena/details/:id" element={<ArenaDetailsAdmin />} />
+            <Route path="arena/slots/:arenaId/:courtId" element={<CourtSlotsAdmin />} />
+            <Route path="settings" element={<AccountSettings />} />
+            <Route path="arena-panel" element={<ArenaManagementPanel />} />
+          </Route>
 
-        {/* Coach Routes */}
-        <Route path="/coach" element={<CoachLayout />}>
-          <Route index element={<CoachDashboard />} />
-          <Route path="schedule" element={<ScheduleCalendar />} />
-          <Route path="students" element={<MyStudents />} />
-          <Route path="attendance" element={<AttendanceRecords />} />
-          <Route path="progress" element={<ProgressTracker />} />
-        </Route>
+          {/* Coach Routes */}
+          <Route path="/coach" element={<CoachLayout />}>
+            <Route index element={<CoachDashboard />} />
+            <Route path="schedule" element={<ScheduleCalendar />} />
+            <Route path="students" element={<MyStudents />} />
+            <Route path="attendance" element={<AttendanceRecords />} />
+            <Route path="progress" element={<ProgressTracker />} />
+          </Route>
 
-        <Route path="/coach/login" element={<CoachLogin />} />
-        <Route path="/coach/signup" element={<CoachSignup />} />
+          <Route path="/coach/login" element={<CoachLogin />} />
+          <Route path="/coach/signup" element={<CoachSignup />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
 
-        {/* === ARENA PANEL (Standalone) === */}
-        <Route path="/arena/login" element={<ArenaLogin />} />
-        <Route path="/arena" element={<ArenaLayout />}>
-          <Route index element={<ArenaDashboard />} />
-          <Route path="details" element={<ArenaDetailsPage />} />
-          <Route path="courts" element={<CourtMgmtPage />} />
-          <Route path="slots" element={<SlotConfigPage />} />
-          <Route path="pricing" element={<PricingRulesPage />} />
-          <Route path="availability" element={<AvailabilityPage />} />
-          <Route path="inventory" element={<InventoryPage />} />
-          <Route path="events" element={<EventsAdminPage />} />
-          <Route path="retail" element={<RetailPOSPage />} />
-          <Route path="account-settings" element={<AccountSettingsPage />} />
-        </Route>
-      </Routes>
-    </Router>
+          {/* === ARENA PANEL (Standalone) === */}
+          <Route path="/arena/login" element={<ArenaLogin />} />
+          <Route path="/arena" element={<ArenaLayout />}>
+            <Route index element={<ArenaDashboard />} />
+            <Route path="details" element={<ArenaDetailsPage />} />
+            <Route path="courts" element={<CourtMgmtPage />} />
+            <Route path="slots" element={<SlotConfigPage />} />
+            <Route path="pricing" element={<PricingRulesPage />} />
+            <Route path="availability" element={<AvailabilityPage />} />
+            <Route path="inventory" element={<InventoryPage />} />
+            <Route path="events" element={<EventsAdminPage />} />
+            <Route path="retail" element={<RetailPOSPage />} />
+            <Route path="account-settings" element={<AccountSettingsPage />} />
+          </Route>
+        </Routes>
+      </Router>
+    </MuiThemeProvider>
   );
 }
 

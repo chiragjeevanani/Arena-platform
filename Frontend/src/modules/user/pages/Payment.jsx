@@ -84,13 +84,17 @@ const Payment = () => {
 
                 <div className="mt-3 flex items-center justify-center gap-4">
                   <div className="text-center">
-                    <p className={`text-[10px] uppercase font-medium tracking-wide mb-0.5 ${isDark ? 'text-white/40' : 'text-white/60'}`}>Status</p>
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${isDark ? 'bg-amber-500/10 text-amber-500' : 'bg-white/20 text-white'}`}>Pending</span>
+                    <p className={`text-[10px] uppercase font-medium tracking-wide mb-0.5 ${isDark ? 'text-white/40' : 'text-white/60'}`}>{state?.type === 'membership' ? 'Plan' : 'Status'}</p>
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${isDark ? 'bg-amber-500/10 text-amber-500' : 'bg-white/20 text-white'}`}>
+                      {state?.type === 'membership' ? state.plan?.name : 'Pending'}
+                    </span>
                   </div>
                   <div className={`w-[1px] h-6 hidden md:block ${isDark ? 'bg-white/10' : 'bg-white/20'}`} />
                   <div className="text-center">
-                    <p className={`text-[10px] uppercase font-medium tracking-wide mb-0.5 ${isDark ? 'text-white/40' : 'text-white/60'}`}>Order ID</p>
-                    <span className={`text-[10px] font-semibold ${isDark ? 'text-white/70' : 'text-white'}`}>#ARN-8829</span>
+                    <p className={`text-[10px] uppercase font-medium tracking-wide mb-0.5 ${isDark ? 'text-white/40' : 'text-white/60'}`}>{state?.type === 'membership' ? 'Duration' : 'Order ID'}</p>
+                    <span className={`text-[10px] font-semibold ${isDark ? 'text-white/70' : 'text-white'}`}>
+                      {state?.type === 'membership' ? state.plan?.duration : '#ARN-8829'}
+                    </span>
                   </div>
                 </div>
               </div>
