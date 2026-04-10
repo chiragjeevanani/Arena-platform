@@ -1,11 +1,11 @@
-﻿import { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { useTheme } from '../context/ThemeContext';
 
 /**
- * ScoreboardSearch â€” Scoreboard-styled search bar with glass blur
+ * ScoreboardSearch — Scoreboard-styled search bar with glass blur
  */
 const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }) => {
   const [value, setValue] = useState('');
@@ -31,12 +31,12 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
       <motion.div
         animate={{
           boxShadow: isFocused
-            ? '0 0 20px rgba(235, 72, 63, 0.15), inset 0 0 20px rgba(235, 72, 63, 0.03)'
+            ? '0 0 20px rgba(206, 32, 41, 0.15), inset 0 0 20px rgba(206, 32, 41, 0.03)'
             : '0 0 0px transparent'
         }}
         className={`
           relative flex-1 ${'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-2xl transition-all duration-300
-          ${isFocused ? 'border-[#eb483f]' : ('border-white/40')}
+          ${isFocused ? 'border-[#CE2029]' : ('border-white/40')}
           border border-solid
         `}
       >
@@ -54,17 +54,17 @@ const ScoreboardSearch = ({ onSearch, placeholder = 'Search arenas, sports...' }
         />
         <Search
           size={16}
-          className={`absolute right-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-[#eb483f]' : ('text-white/80')}`}
+          className={`absolute right-5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-[#CE2029]' : ('text-white/80')}`}
         />
       </motion.div>
 
-      {/* Filter Button â€” Tournament Control Knob */}
+      {/* Filter Button — Tournament Control Knob */}
       <button
         onClick={handleFilterClick}
-        className={`w-12 h-12 ${'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-xl flex items-center justify-center border border-solid ${'border-white/40'} hover:border-[#eb483f] transition-all duration-300 group`}
+        className={`w-12 h-12 ${'bg-white/10'} backdrop-blur-md md:rounded-xl rounded-xl flex items-center justify-center border border-solid ${'border-white/40'} hover:border-[#CE2029] transition-all duration-300 group`}
       >
         <div ref={filterRef}>
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className={`${'text-white/80'} group-hover:text-[#eb483f] transition-colors`}>
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className={`${'text-white/80'} group-hover:text-[#CE2029] transition-colors`}>
             <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
             <circle cx="10" cy="10" r="2" fill="currentColor" />
             <line x1="10" y1="3" x2="10" y2="5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

@@ -30,7 +30,7 @@ const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       className="h-full md:h-screen sticky top-0 flex flex-col z-[100] relative shadow-lg bg-[#E8EDF2]"
     >
       {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#eb483f] to-transparent opacity-50" />
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#CE2029] to-transparent opacity-50" />
 
       {/* Header / Logo */}
       <div className="h-20 border-b border-[#D9E2EC] flex items-center justify-center px-6 shrink-0 relative z-20">
@@ -46,8 +46,8 @@ const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="mx-4 mt-4 px-4 py-2.5 rounded-xl bg-white border border-[#D9E2EC] shadow-sm text-center"
           >
-            <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#eb483f]">Arena Management</p>
-            <p className="text-[11px] font-semibold text-[#1a2b3c] mt-0.5">AMM Sports Arena</p>
+            <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#CE2029]">Arena Management</p>
+            <p className="text-[11px] font-semibold text-[#36454F] mt-0.5">AMM Sports Arena</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -58,7 +58,7 @@ const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       {/* Collapse Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-28 -right-4 w-8 h-8 bg-white border border-[#D9E2EC] rounded-full flex items-center justify-center text-[#eb483f] hover:bg-[#eb483f] hover:text-white transition-colors z-[110] shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
+        className="absolute top-28 -right-4 w-8 h-8 bg-white border border-[#D9E2EC] rounded-full flex items-center justify-center text-[#CE2029] hover:bg-[#CE2029] hover:text-white transition-colors z-[110] shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
       >
         {isCollapsed ? <ChevronRight size={16} strokeWidth={3} /> : <ChevronLeft size={16} strokeWidth={3} />}
       </button>
@@ -74,8 +74,8 @@ const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
             className={({ isActive }) =>
               `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
                 isActive
-                  ? 'bg-white text-[#eb483f] shadow-[0_4px_15px_rgba(235,72,63,0.15)] font-semibold'
-                  : 'text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-medium'
+                  ? 'bg-white text-[#CE2029] shadow-[0_4px_15px_rgba(206, 32, 41,0.15)] font-semibold'
+                  : 'text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-medium'
               }`
             }
           >
@@ -85,7 +85,7 @@ const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                   size={18}
                   strokeWidth={isActive ? 2.5 : 2}
                   className={`shrink-0 transition-all duration-300 relative z-10 ${
-                    isActive ? 'text-[#eb483f]' : 'text-[#627D98] group-hover:text-[#eb483f]'
+                    isActive ? 'text-[#CE2029]' : 'text-[#627D98] group-hover:text-[#CE2029]'
                   }`}
                 />
                 <AnimatePresence mode="popLayout">

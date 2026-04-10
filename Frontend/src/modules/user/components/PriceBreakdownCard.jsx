@@ -56,11 +56,11 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col"
       >
-        <p className="text-[8px] font-black uppercase tracking-[0.2em] mb-0 text-[#eb483f]/40">
+        <p className="text-[8px] font-black uppercase tracking-[0.2em] mb-0 text-[#CE2029]/40">
           {isOverridden ? 'Override Price' : isMember ? 'Member Price' : 'Total Amount'}
         </p>
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-black font-display tracking-tight text-[#eb483f]">
+          <span className="text-2xl font-black font-display tracking-tight text-[#CE2029]">
             OMR {finalPrice.toFixed(3)}
           </span>
           {isMember && !isOverridden && discountAmount > 0 && (
@@ -159,7 +159,7 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
         {/* Final Price Row */}
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#eb483f] mb-1">Final Price</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">Final Price</p>
             {isMember && !isOverridden && discountAmount > 0 && (
               <p className="text-xs font-bold text-slate-300 line-through leading-none">OMR {baseRate.toFixed(3)}</p>
             )}
@@ -169,7 +169,7 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className={`text-3xl font-black font-display tracking-tighter ${
-              isOverridden ? 'text-orange-500' : isMember && discountAmount > 0 ? 'text-green-600' : 'text-[#eb483f]'
+              isOverridden ? 'text-orange-500' : isMember && discountAmount > 0 ? 'text-green-600' : 'text-[#CE2029]'
             }`}
           >
             OMR {finalPrice.toFixed(3)}

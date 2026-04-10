@@ -24,7 +24,7 @@ const DesktopFooter = () => {
   }, []);
 
   return (
-    <footer className={`hidden md:block w-full border-t relative overflow-hidden transition-colors duration-500 z-10 ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-[#eb483f] border-[#eb483f]'}`}>
+    <footer className={`hidden md:block w-full border-t relative overflow-hidden transition-colors duration-500 z-10 ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-[#CE2029] border-[#CE2029]'}`}>
       
       {/* Stadium light streaks */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -41,9 +41,9 @@ const DesktopFooter = () => {
       {/* Background court pattern */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <svg width="100%" height="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <line x1="200" y1="0" x2="200" y2="200" stroke={isDark ? '#eb483f' : '#ffffff'} strokeWidth="0.5" opacity="0.3" />
-          <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke={isDark ? '#eb483f' : '#ffffff'} strokeWidth="0.3" opacity="0.2" />
-          <line x1="50" y1="100" x2="350" y2="100" stroke={isDark ? '#eb483f' : '#ffffff'} strokeWidth="0.3" opacity="0.2" strokeDasharray="4 4" />
+          <line x1="200" y1="0" x2="200" y2="200" stroke={isDark ? '#CE2029' : '#ffffff'} strokeWidth="0.5" opacity="0.3" />
+          <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke={isDark ? '#CE2029' : '#ffffff'} strokeWidth="0.3" opacity="0.2" />
+          <line x1="50" y1="100" x2="350" y2="100" stroke={isDark ? '#CE2029' : '#ffffff'} strokeWidth="0.3" opacity="0.2" strokeDasharray="4 4" />
         </svg>
       </div>
 
@@ -53,11 +53,11 @@ const DesktopFooter = () => {
           {/* Brand & Intro */}
           <div className="col-span-4 space-y-4">
             <Link to="/" className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-lg ${isDark ? 'bg-[#eb483f]' : 'bg-white'}`}>
-                <CourtIcon size={16} className={isDark ? 'text-white' : 'text-[#eb483f]'} />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-lg ${isDark ? 'bg-[#CE2029]' : 'bg-white'}`}>
+                <CourtIcon size={16} className={isDark ? 'text-white' : 'text-[#CE2029]'} />
               </div>
               <span className={`text-xl font-black font-display tracking-tight text-white`}>
-                Arena<span className={`${isDark ? 'text-[#eb483f]' : 'text-white/80'}`}>Platform</span>
+                Arena<span className={`${isDark ? 'text-[#CE2029]' : 'text-white/80'}`}>Platform</span>
               </span>
             </Link>
             <p className={`text-[11px] leading-relaxed pr-6 ${isDark ? 'text-white/60' : 'text-white/80'}`}>
@@ -65,7 +65,7 @@ const DesktopFooter = () => {
             </p>
             <div className="flex items-center gap-3 pt-1">
               {[Instagram, Twitter, Facebook].map((Icon, idx) => (
-                <a key={idx} href="#" className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all hover:-translate-y-1 ${isDark ? 'bg-white/5 border-white/10 text-white/70 hover:bg-[#eb483f] hover:border-[#eb483f] hover:text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/30 hover:border-white/40 hover:text-white'}`}>
+                <a key={idx} href="#" className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all hover:-translate-y-1 ${isDark ? 'bg-white/5 border-white/10 text-white/70 hover:bg-[#CE2029] hover:border-[#CE2029] hover:text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/30 hover:border-white/40 hover:text-white'}`}>
                   <Icon size={14} />
                 </a>
               ))}
@@ -83,7 +83,7 @@ const DesktopFooter = () => {
                 { label: 'My Bookings', path: '/bookings' }
               ].map((link, idx) => (
                 <li key={idx}>
-                  <Link to={link.path} className={`text-[11px] font-medium transition-colors ${isDark ? 'text-white/60 hover:text-[#eb483f]' : 'text-white/70 hover:text-white'}`}>
+                  <Link to={link.path} className={`text-[11px] font-medium transition-colors ${isDark ? 'text-white/60 hover:text-[#CE2029]' : 'text-white/70 hover:text-white'}`}>
                     {link.label}
                   </Link>
                 </li>
@@ -102,7 +102,7 @@ const DesktopFooter = () => {
                 { label: 'Cancellation Policy', path: '#' }
               ].map((link, idx) => (
                 <li key={idx}>
-                  <Link to={link.path} className={`text-[11px] font-medium transition-colors ${isDark ? 'text-white/60 hover:text-[#eb483f]' : 'text-white/70 hover:text-white'}`}>
+                  <Link to={link.path} className={`text-[11px] font-medium transition-colors ${isDark ? 'text-white/60 hover:text-[#CE2029]' : 'text-white/70 hover:text-white'}`}>
                     {link.label}
                   </Link>
                 </li>
@@ -115,7 +115,7 @@ const DesktopFooter = () => {
             <h4 className={`text-[11px] font-black uppercase tracking-widest text-white`}>Contact Us</h4>
             <div className="space-y-3">
               <div className={`flex items-start gap-3 p-3 rounded-xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-white/10 border-white/20'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-[#eb483f]/20 text-[#eb483f]' : 'bg-white/20 text-white'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-[#CE2029]/20 text-[#CE2029]' : 'bg-white/20 text-white'}`}>
                   <MapPin size={14} />
                 </div>
                 <div>
@@ -126,11 +126,11 @@ const DesktopFooter = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className={`flex items-center gap-2 p-2.5 rounded-xl border ${isDark ? 'bg-white/5 border-white/5 hover:border-white/20' : 'bg-white/10 border-white/20 hover:bg-white/20'} transition-colors cursor-pointer`}>
-                  <Phone size={14} className={isDark ? 'text-[#eb483f]' : 'text-white'} />
+                  <Phone size={14} className={isDark ? 'text-[#CE2029]' : 'text-white'} />
                   <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-white'}`}>+1 (800) 123-4567</span>
                 </div>
                 <div className={`flex items-center gap-2 p-2.5 rounded-xl border ${isDark ? 'bg-white/5 border-white/5 hover:border-white/20' : 'bg-white/10 border-white/20 hover:bg-white/20'} transition-colors cursor-pointer`}>
-                  <Mail size={14} className={isDark ? 'text-[#eb483f]' : 'text-white'} />
+                  <Mail size={14} className={isDark ? 'text-[#CE2029]' : 'text-white'} />
                   <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-white'}`}>hello@arena.co</span>
                 </div>
               </div>

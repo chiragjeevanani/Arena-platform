@@ -84,9 +84,9 @@ const ArenaDetailsAdmin = () => {
             initial={{ opacity: 0, y: 50 }} 
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[150] bg-white border border-[#eb483f]/20 text-[#1a2b3c] px-5 py-2.5 rounded-none shadow-2xl flex items-center gap-2.5 min-w-[280px]"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[150] bg-white border border-[#CE2029]/20 text-[#36454F] px-5 py-2.5 rounded-none shadow-2xl flex items-center gap-2.5 min-w-[280px]"
           >
-            <CheckCircle2 size={16} className="text-[#eb483f]" />
+            <CheckCircle2 size={16} className="text-[#CE2029]" />
             <span className="text-[10px] font-black uppercase tracking-widest">{toast}</span>
           </motion.div>
         )}
@@ -97,12 +97,12 @@ const ArenaDetailsAdmin = () => {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/admin/arena/details')}
-            className="w-10 h-10 rounded-none border border-slate-100 flex items-center justify-center text-slate-500 hover:text-[#eb483f] hover:bg-[#eb483f]/5 transition-all shadow-sm"
+            className="w-10 h-10 rounded-none border border-slate-100 flex items-center justify-center text-slate-500 hover:text-[#CE2029] hover:bg-[#CE2029]/5 transition-all shadow-sm"
           >
             <ArrowLeft size={18} />
           </button>
           <div>
-             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#eb483f] mb-1 font-black">
+             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#CE2029] mb-1 font-black">
                 <Building2 size={12} /> Facility Registry
              </div>
              <h1 className="text-xl font-bold tracking-tight text-slate-900">
@@ -111,7 +111,7 @@ const ArenaDetailsAdmin = () => {
           </div>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button onClick={handleSave} className="flex-1 sm:flex-none bg-[#eb483f] text-white px-5 py-2.5 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+          <button onClick={handleSave} className="flex-1 sm:flex-none bg-[#CE2029] text-white px-5 py-2.5 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
              <Save size={14} /> Publish Changes
           </button>
         </div>
@@ -122,11 +122,11 @@ const ArenaDetailsAdmin = () => {
            <div className="bg-white rounded-none border border-slate-100 p-8 shadow-sm">
              <div className="flex justify-between items-center mb-6">
                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                 <ImageIcon size={16} className="text-[#eb483f]" /> Arena Graphics
+                 <ImageIcon size={16} className="text-[#CE2029]" /> Arena Graphics
                </h3>
                <button 
                  onClick={() => fileInputRef.current?.click()}
-                 className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] flex items-center gap-1.5 hover:underline"
+                 className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] flex items-center gap-1.5 hover:underline"
                >
                  <Upload size={14} /> Upload from Gallery
                </button>
@@ -160,11 +160,11 @@ const ArenaDetailsAdmin = () => {
              <div className="space-y-6 text-slate-700">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] ml-1">Asset Identity</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] ml-1">Asset Identity</label>
                     <input 
                       type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                       placeholder="e.g. Phoenix Sports Park"
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white transition-all shadow-inner"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner"
                     />
                   </div>
                   <div className="space-y-2">
@@ -173,7 +173,7 @@ const ArenaDetailsAdmin = () => {
                       <input 
                         type="text" value={form.location} onChange={e => setForm({...form, location: e.target.value})}
                         placeholder="Noida, India"
-                        className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 pl-10 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white transition-all shadow-inner"
+                        className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 pl-10 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner"
                       />
                       <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                     </div>
@@ -184,7 +184,7 @@ const ArenaDetailsAdmin = () => {
                       <input 
                         type="text" value={form.distance} onChange={e => setForm({...form, distance: e.target.value})}
                         placeholder="1.5 km"
-                        className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 pl-10 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white transition-all shadow-inner"
+                        className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 pl-10 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner"
                       />
                       <Navigation size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                     </div>
@@ -210,13 +210,13 @@ const ArenaDetailsAdmin = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] ml-1">Base Price (OMR)</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] ml-1">Base Price (OMR)</label>
                     <div className="relative">
                       <input 
                         type="number" step="0.01" value={form.pricePerHour} onChange={e => setForm({...form, pricePerHour: e.target.value})}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-[#eb483f] outline-none shadow-inner"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-[#CE2029] outline-none shadow-inner"
                       />
-                      <BadgeDollarSign size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#eb483f]" />
+                      <BadgeDollarSign size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#CE2029]" />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -229,11 +229,11 @@ const ArenaDetailsAdmin = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] ml-1">Operational Taxonomy (Main Sport)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] ml-1">Operational Taxonomy (Main Sport)</label>
                   <input 
                     type="text" value={form.category} onChange={e => setForm({...form, category: e.target.value})}
                     placeholder="Badminton, Cricket, Football..."
-                    className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white shadow-inner"
+                    className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white shadow-inner"
                   />
                 </div>
 
@@ -242,7 +242,7 @@ const ArenaDetailsAdmin = () => {
                   <textarea 
                     rows="4" value={form.description} onChange={e => setForm({...form, description: e.target.value})}
                     placeholder="Tell your professional story..."
-                    className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white resize-none shadow-inner"
+                    className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white resize-none shadow-inner"
                   />
                 </div>
              </div>
@@ -259,7 +259,7 @@ const ArenaDetailsAdmin = () => {
                       onClick={() => toggleAmenity(item.name)}
                       className={`flex items-center gap-3 p-3.5 rounded-none border transition-all ${
                         form.amenities.includes(item.name)
-                          ? 'bg-[#eb483f]/5 border-[#eb483f]/20 text-[#eb483f]'
+                          ? 'bg-[#CE2029]/5 border-[#CE2029]/20 text-[#CE2029]'
                           : 'bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-200'
                       }`}
                     >
@@ -270,20 +270,20 @@ const ArenaDetailsAdmin = () => {
                 </div>
               </div>
 
-              <div className="bg-[#eb483f]/[0.02] rounded-none p-8 border border-[#eb483f]/10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#eb483f]/5 rounded-none blur-3xl -translate-y-12 translate-x-12" />
+              <div className="bg-[#CE2029]/[0.02] rounded-none p-8 border border-[#CE2029]/10 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#CE2029]/5 rounded-none blur-3xl -translate-y-12 translate-x-12" />
                 <div className="relative z-10 flex flex-col h-full justify-between">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#eb483f] mb-2">Resource Availability</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-2">Resource Availability</p>
                       <h4 className="text-xl font-black tracking-tight text-slate-900">{form.courtsCount} Courts Available for Play</h4>
                     </div>
                     <button
                       onClick={() => setIsEditingCourts(!isEditingCourts)}
                       className={`p-2 rounded-sm border transition-all ${
                         isEditingCourts
-                        ? 'bg-[#eb483f] text-white border-[#eb483f] shadow-lg shadow-[#eb483f]/20'
-                        : 'bg-white text-slate-400 border-slate-100 hover:text-[#eb483f] hover:border-[#eb483f]/30'
+                        ? 'bg-[#CE2029] text-white border-[#CE2029] shadow-lg shadow-[#CE2029]/20'
+                        : 'bg-white text-slate-400 border-slate-100 hover:text-[#CE2029] hover:border-[#CE2029]/30'
                       }`}
                     >
                       <Edit3 size={16} />
@@ -297,7 +297,7 @@ const ArenaDetailsAdmin = () => {
                           initial={{ opacity: 0, scale: 0.9, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           onClick={() => navigate(`/admin/arena/slots/${id}/${i + 1}`)}
-                          className="aspect-square bg-white border-2 border-[#eb483f]/10 shadow-sm flex flex-col items-center justify-center text-[#eb483f] relative group/unit transition-all cursor-pointer hover:border-[#eb483f] hover:bg-[#eb483f]/[0.02]"
+                          className="aspect-square bg-white border-2 border-[#CE2029]/10 shadow-sm flex flex-col items-center justify-center text-[#CE2029] relative group/unit transition-all cursor-pointer hover:border-[#CE2029] hover:bg-[#CE2029]/[0.02]"
                         >
                           {/* Popout Remove Unit Action - Floating on Border - Visible only in Edit Mode */}
                           <AnimatePresence>
@@ -310,14 +310,14 @@ const ArenaDetailsAdmin = () => {
                                   e.stopPropagation();
                                   setForm(prev => ({ ...prev, courtsCount: Math.max(0, Number(prev.courtsCount) - 1) }));
                                 }}
-                                className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-full bg-[#eb483f] text-white flex items-center justify-center transition-all shadow-xl z-50 hover:scale-110 active:scale-90 border-2 border-white"
+                                className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-full bg-[#CE2029] text-white flex items-center justify-center transition-all shadow-xl z-50 hover:scale-110 active:scale-90 border-2 border-white"
                               >
                                 <Minus size={14} strokeWidth={4} />
                               </motion.button>
                             )}
                           </AnimatePresence>
 
-                          <div className="absolute inset-0 bg-gradient-to-tr from-[#eb483f]/[0.05] to-transparent opacity-0 group-hover/unit:opacity-100 transition-opacity rounded-sm" />
+                          <div className="absolute inset-0 bg-gradient-to-tr from-[#CE2029]/[0.05] to-transparent opacity-0 group-hover/unit:opacity-100 transition-opacity rounded-sm" />
                           <Building2 size={22} className="mb-1.5 transition-transform group-hover/unit:scale-110" />
                           <div className="flex flex-col items-center">
                             <span className="text-[7.5px] font-black uppercase tracking-[0.2em] text-slate-900 leading-none mb-1">COURT</span>
@@ -334,7 +334,7 @@ const ArenaDetailsAdmin = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                             onClick={() => setForm(prev => ({ ...prev, courtsCount: Number(prev.courtsCount) + 1 }))}
-                            className="aspect-square border-2 border-dashed border-[#eb483f]/30 rounded-sm flex flex-col items-center justify-center text-[#eb483f] hover:bg-[#eb483f]/[0.02] transition-all group/add"
+                            className="aspect-square border-2 border-dashed border-[#CE2029]/30 rounded-sm flex flex-col items-center justify-center text-[#CE2029] hover:bg-[#CE2029]/[0.02] transition-all group/add"
                           >
                              <Plus size={24} className="scale-110" />
                              <span className="text-[7px] font-black uppercase tracking-widest mt-1">Add Court</span>
@@ -352,7 +352,7 @@ const ArenaDetailsAdmin = () => {
                   <div className="space-y-4 pt-6 mt-auto">
                     <div className="flex items-center justify-between text-[11px] font-bold border-b border-slate-100 pb-2">
                        <span className="text-slate-500">Active Booking Units</span>
-                       <span className="text-[#eb483f] font-black">{form.courtsCount} Units</span>
+                       <span className="text-[#CE2029] font-black">{form.courtsCount} Units</span>
                     </div>
                   </div>
                 </div>

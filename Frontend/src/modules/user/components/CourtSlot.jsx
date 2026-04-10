@@ -16,7 +16,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   const statusConfig = {
     Available: {
       bg: isPrime ? 'bg-amber-50' : 'bg-[#e9fff3]',
-      border: isPrime ? 'border-amber-200' : 'border-[#eb483f]/40',
+      border: isPrime ? 'border-amber-200' : 'border-[#CE2029]/40',
       text: isPrime ? 'text-amber-700' : 'text-[#069d4b]',
       label: null,
     },
@@ -60,7 +60,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   };
 
   const selectedStyles = isSelected
-    ? `bg-[#eb483f]/15 border-[#eb483f]/60 shadow-[0_0_15px_rgba(235,72,63,0.3)]`
+    ? `bg-[#CE2029]/15 border-[#CE2029]/60 shadow-[0_0_15px_rgba(206, 32, 41,0.3)]`
     : '';
 
   return (
@@ -73,31 +73,29 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
         relative py-4 px-3 rounded-2xl text-center font-bold border
         transition-all duration-300 overflow-hidden
         ${isSelected ? selectedStyles : `${config.bg} ${config.border}`}
-        ${slot.status !== 'Available' ? 'cursor-not-allowed' : 'cursor-pointer hover:border-[#eb483f]/30'}
+        ${slot.status !== 'Available' ? 'cursor-not-allowed' : 'cursor-pointer hover:border-[#CE2029]/30'}
       `}
     >
       {/* Prime / Non-Prime Badge — top left */}
       {slot.status === 'Available' && (
-        <div className={`absolute top-2 left-2 flex items-center gap-0.5 ${
-          isPrime ? 'text-amber-500' : 'text-slate-400'
-        }`}>
+        <div className={`absolute top-2 left-2 flex items-center gap-0.5 ${isPrime ? 'text-amber-500' : 'text-slate-400'
+          }`}>
           {isPrime
             ? <Star size={9} fill="currentColor" />
             : <CalendarDays size={9} />
           }
-          <span className={`text-[7px] font-black uppercase tracking-wide leading-none ${
-            isPrime ? 'text-amber-600' : 'text-slate-400'
-          }`}>
+          <span className={`text-[7px] font-black uppercase tracking-wide leading-none ${isPrime ? 'text-amber-600' : 'text-slate-400'
+            }`}>
             {isPrime ? 'Prime' : 'Std'}
           </span>
         </div>
       )}
 
       {/* Time */}
-      <span className={`text-[12px] font-black block mt-3 ${isSelected ? 'text-[#eb483f]' : config.text}`}>
+      <span className={`text-[12px] font-black block mt-3 ${isSelected ? 'text-[#CE2029]' : config.text}`}>
         {slot.time.split(' - ')[0]}
       </span>
-      <span className={`text-[9px] font-bold block opacity-60 ${isSelected ? 'text-[#eb483f]' : config.text}`}>
+      <span className={`text-[9px] font-bold block opacity-60 ${isSelected ? 'text-[#CE2029]' : config.text}`}>
         {slot.time.split(' - ')[1]}
       </span>
 
@@ -111,9 +109,8 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
       {/* Price */}
       {slot.status === 'Available' && (
         <div className="mt-2">
-          <span className={`block text-xs font-black ${
-            isSelected ? 'text-[#eb483f]' : isPrime ? 'text-amber-600' : 'text-[#eb483f]/60'
-          }`}>
+          <span className={`block text-xs font-black ${isSelected ? 'text-[#CE2029]' : isPrime ? 'text-amber-600' : 'text-[#CE2029]/60'
+            }`}>
             OMR {Number(slot.price).toFixed(3)}
           </span>
           {isPrime && (
@@ -129,7 +126,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#eb483f]"
+          className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#CE2029]"
         />
       )}
     </motion.button>

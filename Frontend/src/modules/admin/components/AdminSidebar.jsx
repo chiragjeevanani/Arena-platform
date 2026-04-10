@@ -2,11 +2,27 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LayoutDashboard, Users, Shield, MapPin, 
-  Target, CalendarClock, Receipt, Trophy,
-  Settings, Package, CreditCard, PieChart,
-  ChevronLeft, ChevronRight, DollarSign,
-  Building2, Clock, CalendarX2, Layout, Briefcase
+  LayoutDashboard, 
+  Users, 
+  Shield, 
+  MapPin, 
+  Target, 
+  CalendarClock, 
+  Receipt, 
+  Trophy,
+  Settings, 
+  Package, 
+  CreditCard, 
+  PieChart,
+  ChevronLeft, 
+  ChevronRight, 
+  DollarSign,
+  Building2, 
+  Clock, 
+  CalendarX2, 
+  Layout, 
+  Briefcase, 
+  Crown 
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -17,6 +33,7 @@ const SIDEBAR_STRUCTURE = [
     roles: ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'],
     items: [
       { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/admin/reports', icon: PieChart, label: 'Reports' },
     ]
   },
   {
@@ -25,15 +42,16 @@ const SIDEBAR_STRUCTURE = [
     items: [
       { path: '/admin/user/hero', icon: Package, label: 'Hero Banners', isSiteMgmt: true },
       { path: '/admin/user/booking', icon: Target, label: 'Service Categories', isSiteMgmt: true },
-      { path: '/admin/user/events', icon: Trophy, label: 'Event Banners', isSiteMgmt: true },
       { path: '/admin/arena/details', icon: Building2, label: 'Arena Details', isArenaMgmt: true },
+      { path: '/admin/user/events', icon: Trophy, label: 'Event Management' },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
       { path: '/admin/coaching', icon: Users, label: 'Coaching' },
       { path: '/admin/inventory', icon: Package, label: 'Inventory' },
       { path: '/admin/pricing', icon: DollarSign, label: 'Pricing' },
+      { path: '/admin/membership', icon: Crown, label: 'Membership Plans', isMembershipMgmt: true },
+      { path: '/admin/membership/active', icon: Users, label: 'Active Members', isMembershipMgmt: true },
       { path: '/admin/sponsorships', icon: Briefcase, label: 'Sponsorships' },
-      { path: '/admin/reports', icon: PieChart, label: 'Reports' },
-      { path: '/admin/users', icon: Shield, label: 'Customers' },
+      { path: '/admin/users', icon: Shield, label: 'Staff' },
     ]
   },
 ];
@@ -64,13 +82,13 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
         </div>
       </div>
 
-      {/* Right Vertical Border (Starts below the header so logo area naturally flows into topbar) */}
+      {/* Right Vertical Border */}
       <div className="absolute right-0 top-20 bottom-0 w-[1px] bg-[#D9E2EC] pointer-events-none z-10" />
 
       {/* Collapse Button (floating) */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-28 -right-4 w-8 h-8 bg-white border border-[#D9E2EC] rounded-full flex items-center justify-center text-[#eb483f] hover:bg-[#eb483f] hover:text-white transition-colors z-[110] shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+        className="absolute top-28 -right-4 w-8 h-8 bg-white border border-[#D9E2EC] rounded-full flex items-center justify-center text-[#CE2029] hover:bg-[#CE2029] hover:text-white transition-colors z-[110] shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
       >
         {isCollapsed ? <ChevronRight size={16} strokeWidth={3} /> : <ChevronLeft size={16} strokeWidth={3} />}
       </button>
@@ -78,49 +96,46 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-32 space-y-2 scrollbar-hide shrink-0 relative z-20">
         {filteredStructure.map((section, idx) => (
-          <div key={section.group} className="space-y-1">
+          <div key={idx} className="space-y-1">
             {/* Section Divider */}
             {idx > 0 && <div className="mx-6 my-3 h-[1.5px] bg-[#D9E2EC] opacity-80" />}
             
             {/* Group Label */}
             {!isCollapsed && section.group !== 'Overview' && (
               <div className="px-7 py-2.5 pt-2">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#eb483f]">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#CE2029]">
                   {section.group}
                 </p>
               </div>
             )}
 
             <div className="space-y-1 px-3">
-              {/* Special Handling for Site Mgmt inside any group (mostly Operations) */}
               {(() => {
                 const siteMgmtItems = section.items.filter(i => i.isSiteMgmt);
                 const arenaMgmtItems = section.items.filter(i => i.isArenaMgmt);
-                const otherItems = section.items.filter(i => !i.isSiteMgmt && !i.isArenaMgmt);
+                const membershipMgmtItems = section.items.filter(i => i.isMembershipMgmt);
+                const otherItems = section.items.filter(i => !i.isSiteMgmt && !i.isArenaMgmt && !i.isMembershipMgmt);
                 
                 return (
                   <>
                     {siteMgmtItems.length > 0 && (
                       <div className="group/sitemanager relative mb-1.5">
-                        {/* Site Mgmt Item */}
-                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold cursor-pointer transition-all duration-300">
-                          <Layout size={18} className="text-[#627D98] group-hover/sitemanager:text-[#eb483f]" />
+                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300">
+                          <Layout size={18} className="text-[#627D98] group-hover/sitemanager:text-[#CE2029]" />
                           {!isCollapsed && <span className="text-[13px] flex-1">Home Page Mgmt</span>}
                           {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/sitemanager:rotate-90 transition-transform" />}
                         </div>
 
-                        {/* Hover Sub-items */}
-                        <div className="hidden group-hover/sitemanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1 animate-in fade-in slide-in-from-left-2 transition-all duration-300">
+                        <div className="hidden group-hover/sitemanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1">
                           {siteMgmtItems.map((item) => (
                             <NavLink
                               key={item.path}
                               to={item.path}
-                              onClick={() => onMobileClose?.()}
                               className={({ isActive }) =>
                                 `flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
                                   isActive 
-                                    ? `text-[#eb483f] font-bold` 
-                                    : `text-[#486581] hover:text-[#eb483f] font-medium`
+                                    ? `text-[#CE2029] font-bold` 
+                                    : `text-[#486581] hover:text-[#CE2029] font-medium`
                                 }`
                               }
                             >
@@ -134,25 +149,51 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
 
                     {arenaMgmtItems.length > 0 && (
                       <div className="group/arenamanager relative mb-1.5">
-                        {/* Arena Mgmt Item */}
-                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold cursor-pointer transition-all duration-300">
-                          <Building2 size={18} className="text-[#627D98] group-hover/arenamanager:text-[#eb483f]" />
+                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300">
+                          <Building2 size={18} className="text-[#627D98] group-hover/arenamanager:text-[#CE2029]" />
                           {!isCollapsed && <span className="text-[13px] flex-1">Arena Management</span>}
                           {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/arenamanager:rotate-90 transition-transform" />}
                         </div>
 
-                        {/* Hover Sub-items */}
-                        <div className="hidden group-hover/arenamanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1 animate-in fade-in slide-in-from-left-2 transition-all duration-300">
+                        <div className="hidden group-hover/arenamanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1">
                           {arenaMgmtItems.map((item) => (
                             <NavLink
                               key={item.path}
                               to={item.path}
-                              onClick={() => onMobileClose?.()}
                               className={({ isActive }) =>
                                 `flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
                                   isActive 
-                                    ? `text-[#eb483f] font-bold` 
-                                    : `text-[#486581] hover:text-[#eb483f] font-medium`
+                                    ? `text-[#CE2029] font-bold` 
+                                    : `text-[#486581] hover:text-[#CE2029] font-medium`
+                                }`
+                              }
+                            >
+                              <item.icon size={14} className="shrink-0" />
+                              {!isCollapsed && <span className="text-[12px]">{item.label}</span>}
+                            </NavLink>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {membershipMgmtItems.length > 0 && (
+                      <div className="group/membership relative mb-1.5">
+                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300">
+                          <Crown size={18} className="text-[#627D98] group-hover/membership:text-[#CE2029]" />
+                          {!isCollapsed && <span className="text-[13px] flex-1">Membership Management</span>}
+                          {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/membership:rotate-90 transition-transform" />}
+                        </div>
+
+                        <div className="hidden group-hover/membership:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1">
+                          {membershipMgmtItems.map((item) => (
+                            <NavLink
+                              key={item.path}
+                              to={item.path}
+                              className={({ isActive }) =>
+                                `flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
+                                  isActive 
+                                    ? `text-[#CE2029] font-bold` 
+                                    : `text-[#486581] hover:text-[#CE2029] font-medium`
                                 }`
                               }
                             >
@@ -169,12 +210,11 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                         key={item.path}
                         to={item.path}
                         end={item.path === '/admin'}
-                        onClick={() => onMobileClose?.()}
                         className={({ isActive }) =>
                           `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
                             isActive 
-                              ? `bg-[#eb483f] text-white shadow-md shadow-[#eb483f]/30 font-bold` 
-                              : `text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44] font-semibold`
+                              ? `bg-[#CE2029] text-white shadow-md shadow-[#CE2029]/30 font-bold` 
+                              : `text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold`
                           }`
                         }
                       >
@@ -184,21 +224,14 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                               size={18}
                               strokeWidth={isActive ? 2.5 : 2}
                               className={`shrink-0 transition-all duration-300 ${
-                                isActive ? 'text-white' : 'text-[#627D98] group-hover:text-[#eb483f]'
+                                isActive ? 'text-white' : 'text-[#627D98] group-hover:text-[#CE2029]'
                               }`}
                             />
-                            <AnimatePresence mode="popLayout">
-                              {!isCollapsed && (
-                                <motion.span
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: -10 }}
-                                  className="whitespace-nowrap tracking-wide text-[13px]"
-                                >
-                                  {item.label}
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
+                            {!isCollapsed && (
+                              <span className="whitespace-nowrap tracking-wide text-[13px]">
+                                {item.label}
+                              </span>
+                            )}
                           </>
                         )}
                       </NavLink>
@@ -217,10 +250,9 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
         <img 
           src="https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?q=80&w=600&auto=format&fit=crop" 
           alt="Badminton Arena" 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-60"
         />
       </div>
-
     </motion.aside>
   );
 };

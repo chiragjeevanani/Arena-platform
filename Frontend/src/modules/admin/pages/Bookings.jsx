@@ -18,7 +18,7 @@ const ViewDetailsModal = ({ booking, onClose }) => (
   <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
     <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
-      <div className="bg-[#1a2b3c] px-6 py-5 text-white flex items-center justify-between">
+      <div className="bg-[#36454F] px-6 py-5 text-white flex items-center justify-between">
         <div>
           <p className="text-[10px] text-white/50 font-black uppercase tracking-widest">Booking Details</p>
           <h3 className="text-lg font-black mt-0.5">{booking.id}</h3>
@@ -37,13 +37,13 @@ const ViewDetailsModal = ({ booking, onClose }) => (
         ].map((row, i) => (
           <div key={i} className="flex items-center justify-between py-2 border-b border-dashed border-slate-100 last:border-0">
             <div className="flex items-center gap-2">
-              <row.icon size={13} className="text-[#eb483f]" strokeWidth={2.5} />
+              <row.icon size={13} className="text-[#CE2029]" strokeWidth={2.5} />
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{row.label}</span>
             </div>
-            <span className="text-[13px] font-black text-[#1a2b3c]">{row.value}</span>
+            <span className="text-[13px] font-black text-[#36454F]">{row.value}</span>
           </div>
         ))}
-        <div className="mt-2 flex items-center justify-between p-4 rounded-2xl bg-[#eb483f]/5 border border-[#eb483f]/10">
+        <div className="mt-2 flex items-center justify-between p-4 rounded-2xl bg-[#CE2029]/5 border border-[#CE2029]/10">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</span>
           <span className="px-3 py-1 rounded-lg text-xs font-black text-white" style={{ backgroundColor: booking.statusBg }}>{booking.status}</span>
         </div>
@@ -66,9 +66,9 @@ const RescheduleModal = ({ booking, onClose, onConfirm }) => {
       <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative w-full max-w-sm rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#eb483f]/10 flex items-center justify-center"><CalendarRange size={18} className="text-[#eb483f]" /></div>
+            <div className="w-10 h-10 rounded-2xl bg-[#CE2029]/10 flex items-center justify-center"><CalendarRange size={18} className="text-[#CE2029]" /></div>
             <div>
-              <h3 className="text-base font-black text-[#1a2b3c]">Reschedule Booking</h3>
+              <h3 className="text-base font-black text-[#36454F]">Reschedule Booking</h3>
               <p className="text-[10px] font-bold text-slate-400 uppercase">{booking.id} · {booking.customer}</p>
             </div>
           </div>
@@ -82,13 +82,13 @@ const RescheduleModal = ({ booking, onClose, onConfirm }) => {
           <div>
             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">New Date</label>
             <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} min={new Date().toISOString().split('T')[0]}
-              className="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] focus:bg-white transition-all" />
+              className="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] outline-none focus:border-[#CE2029] focus:bg-white transition-all" />
           </div>
           <div className="p-3 rounded-2xl bg-amber-50 border border-amber-100">
             <p className="text-[10px] font-bold text-amber-700">⚡ Customer will be notified automatically upon confirmation.</p>
           </div>
           <button onClick={handleConfirm} disabled={done || !newDate}
-            className="w-full py-3.5 rounded-2xl bg-[#eb483f] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60">
+            className="w-full py-3.5 rounded-2xl bg-[#CE2029] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60">
             {done ? <><CheckCircle size={14} /> Rescheduled!</> : <><CalendarRange size={14} /> Confirm Reschedule</>}
           </button>
         </div>
@@ -110,9 +110,9 @@ const RefundModal = ({ booking, onClose, onConfirm }) => {
       <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative w-full max-w-sm rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
         <div className="p-6">
           <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-4"><RefreshCw size={26} className="text-amber-500" /></div>
-          <h3 className="text-lg font-black text-[#1a2b3c] text-center">Process Refund?</h3>
+          <h3 className="text-lg font-black text-[#36454F] text-center">Process Refund?</h3>
           <p className="text-xs text-slate-500 text-center mt-2 leading-relaxed">
-            Refund <span className="font-black text-[#eb483f]">OMR {booking.amount.toFixed(3)}</span> to <span className="font-black text-[#1a2b3c]">{booking.customer}</span>?<br />Amount will be credited within 5–7 business days.
+            Refund <span className="font-black text-[#CE2029]">OMR {booking.amount.toFixed(3)}</span> to <span className="font-black text-[#36454F]">{booking.customer}</span>?<br />Amount will be credited within 5–7 business days.
           </p>
           <div className="mt-6 flex gap-3">
             <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 text-xs font-black uppercase hover:bg-slate-50 transition-all">Cancel</button>
@@ -140,9 +140,9 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
       <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative w-full max-w-sm rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
         <div className="p-6">
           <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4"><AlertTriangle size={26} className="text-red-500" /></div>
-          <h3 className="text-lg font-black text-[#1a2b3c] text-center">Cancel Booking?</h3>
+          <h3 className="text-lg font-black text-[#36454F] text-center">Cancel Booking?</h3>
           <p className="text-xs text-slate-500 text-center mt-2 leading-relaxed">
-            You're cancelling <span className="font-black text-[#1a2b3c]">{booking.id}</span> for <span className="font-black text-[#1a2b3c]">{booking.customer}</span>. This cannot be undone.
+            You're cancelling <span className="font-black text-[#36454F]">{booking.id}</span> for <span className="font-black text-[#36454F]">{booking.customer}</span>. This cannot be undone.
           </p>
           <div className="mt-6 flex gap-3">
             <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 text-xs font-black uppercase hover:bg-slate-50 transition-all">Keep It</button>
@@ -223,7 +223,7 @@ const Bookings = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowFilterDrawer(false)} className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" />
             <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25 }} className="relative w-72 bg-white h-full shadow-2xl p-6 flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-black text-[#1a2b3c] text-lg">Filter Bookings</h3>
+                <h3 className="font-black text-[#36454F] text-lg">Filter Bookings</h3>
                 <button onClick={() => setShowFilterDrawer(false)} className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50"><X size={15} /></button>
               </div>
               <div>
@@ -231,7 +231,7 @@ const Bookings = () => {
                 <div className="space-y-2">
                   {['All', 'Upcoming', 'Completed', 'Cancelled'].map(s => (
                     <button key={s} onClick={() => { setStatusFilter(s); setShowFilterDrawer(false); }}
-                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all border ${statusFilter === s ? 'bg-[#eb483f]/10 border-[#eb483f] text-[#eb483f]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all border ${statusFilter === s ? 'bg-[#CE2029]/10 border-[#CE2029] text-[#CE2029]' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
                       {s}
                     </button>
                   ))}
@@ -247,12 +247,12 @@ const Bookings = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[#1a2b3c] flex items-center gap-2">
-              <Receipt className="text-[#eb483f]" size={24} /> Bookings Ledger
+            <h2 className="text-xl md:text-2xl font-bold text-[#36454F] flex items-center gap-2">
+              <Receipt className="text-[#CE2029]" size={24} /> Bookings Ledger
             </h2>
             <p className="text-xs md:text-sm mt-1 font-medium text-slate-500">Manage all facility reservations and transactions.</p>
           </div>
-          <button onClick={exportToCSV} className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-[#eb483f] hover:border-[#eb483f] transition-all shadow-sm font-bold text-xs uppercase tracking-wider">
+          <button onClick={exportToCSV} className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-[#CE2029] hover:border-[#CE2029] transition-all shadow-sm font-bold text-xs uppercase tracking-wider">
             <Download size={14} /> Export CSV
           </button>
         </div>
@@ -260,15 +260,15 @@ const Bookings = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Total Revenue', value: `OMR ${totalRevenue.toFixed(3)}`, color: '#eb483f' },
-            { label: 'Total Bookings', value: `${bookings.length}`, color: '#eb483f' },
+            { label: 'Total Revenue', value: `OMR ${totalRevenue.toFixed(3)}`, color: '#CE2029' },
+            { label: 'Total Bookings', value: `${bookings.length}`, color: '#CE2029' },
             { label: 'Cancellations', value: `${totalCancellations}`, color: '#ff6b6b' },
             { label: 'Upcoming', value: `${bookings.filter(b => b.status === 'Upcoming').length}`, color: '#E88E3E' },
           ].map((stat, idx) => (
-            <div key={idx} className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition-all hover:border-[#eb483f]/40">
+            <div key={idx} className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition-all hover:border-[#CE2029]/40">
               <div>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                <h3 className="text-2xl font-bold text-[#1a2b3c] tracking-tight">{stat.value}</h3>
+                <h3 className="text-2xl font-bold text-[#36454F] tracking-tight">{stat.value}</h3>
               </div>
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${stat.color}15`, color: stat.color }}>
                 <ArrowUpRight size={20} />
@@ -280,21 +280,21 @@ const Bookings = () => {
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="w-full sm:flex-1 relative group">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#eb483f] transition-colors" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
             <input type="text" placeholder="Search by customer or booking ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium text-[#1a2b3c] placeholder:text-slate-400 focus:outline-none focus:border-[#eb483f] transition-all shadow-sm" />
+              className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium text-[#36454F] placeholder:text-slate-400 focus:outline-none focus:border-[#CE2029] transition-all shadow-sm" />
           </div>
           <button onClick={() => setShowFilterDrawer(true)}
-            className={`w-full sm:w-auto px-6 py-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest transition-all shadow-sm ${statusFilter !== 'All' ? 'bg-[#eb483f]/10 border-[#eb483f] text-[#eb483f]' : 'bg-white border-slate-200 text-slate-600 hover:text-[#eb483f]'}`}>
+            className={`w-full sm:w-auto px-6 py-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest transition-all shadow-sm ${statusFilter !== 'All' ? 'bg-[#CE2029]/10 border-[#CE2029] text-[#CE2029]' : 'bg-white border-slate-200 text-slate-600 hover:text-[#CE2029]'}`}>
             <Filter size={14} /> {statusFilter !== 'All' ? statusFilter : 'Filters'}
           </button>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#eb483f]/40">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#CE2029]/40">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap min-w-[900px]">
-              <thead className="bg-[#F8F9FA] text-[#1a2b3c] font-semibold border-b border-slate-100">
+              <thead className="bg-[#F8F9FA] text-[#36454F] font-semibold border-b border-slate-100">
                 <tr>
                   <th className="px-6 py-4">Client</th>
                   <th className="px-6 py-4 text-center">Facility</th>
@@ -308,7 +308,7 @@ const Bookings = () => {
                 {filteredBookings.map((booking, idx) => (
                   <motion.tr key={booking.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-bold text-[#1a2b3c]">{booking.customer}</p>
+                      <p className="font-bold text-[#36454F]">{booking.customer}</p>
                       <p className="text-[10px] font-bold text-slate-400 mt-0.5">{booking.id}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -317,13 +317,13 @@ const Bookings = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                        <Clock size={12} className="text-[#eb483f]" />
+                        <Clock size={12} className="text-[#CE2029]" />
                         <span className="text-xs font-bold">{booking.time}</span>
                       </div>
                       <p className="text-[10px] font-bold text-slate-500 mt-1">{booking.date}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <p className="font-bold text-[#1a2b3c] text-sm">OMR {booking.amount.toFixed(3)}</p>
+                      <p className="font-bold text-[#36454F] text-sm">OMR {booking.amount.toFixed(3)}</p>
                       <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${booking.payment === 'Paid' ? 'text-[#76A87A]' : booking.payment === 'Pending' ? 'text-[#E88E3E]' : 'text-[#ff6b6b]'}`}>{booking.payment}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -332,7 +332,7 @@ const Bookings = () => {
                     <td className="px-6 py-4 text-center">
                       <div className="relative inline-block text-left">
                         <button onClick={() => setActiveMenu(activeMenu === booking.id ? null : booking.id)}
-                          className={`p-2 rounded-lg border transition-all ${activeMenu === booking.id ? 'bg-slate-100 border-slate-300 text-[#eb483f]' : 'bg-white border-slate-200 text-slate-400 hover:text-[#eb483f] hover:border-slate-300 shadow-sm'}`}>
+                          className={`p-2 rounded-lg border transition-all ${activeMenu === booking.id ? 'bg-slate-100 border-slate-300 text-[#CE2029]' : 'bg-white border-slate-200 text-slate-400 hover:text-[#CE2029] hover:border-slate-300 shadow-sm'}`}>
                           <MoreHorizontal size={16} />
                         </button>
                         <AnimatePresence>
@@ -343,13 +343,13 @@ const Bookings = () => {
                                 className="absolute right-0 top-full mt-2 w-48 p-1.5 rounded-xl border border-slate-200 bg-white shadow-xl z-20">
                                 <div className="space-y-1">
                                   {[
-                                    { label: 'View Details', icon: Eye, color: '#eb483f', action: () => { setViewModal(booking); setActiveMenu(null); } },
-                                    { label: 'Reschedule', icon: CalendarRange, color: '#eb483f', action: () => { setRescheduleModal(booking); setActiveMenu(null); }, disabled: booking.status === 'Cancelled' || booking.status === 'Completed' },
+                                    { label: 'View Details', icon: Eye, color: '#CE2029', action: () => { setViewModal(booking); setActiveMenu(null); } },
+                                    { label: 'Reschedule', icon: CalendarRange, color: '#CE2029', action: () => { setRescheduleModal(booking); setActiveMenu(null); }, disabled: booking.status === 'Cancelled' || booking.status === 'Completed' },
                                     { label: 'Process Refund', icon: RefreshCw, color: '#E88E3E', action: () => { setRefundModal(booking); setActiveMenu(null); }, disabled: booking.payment === 'Refunded' || booking.payment === 'Pending Refund' },
                                     { label: 'Cancel Booking', icon: Trash2, color: '#FF4B4B', action: () => { setCancelModal(booking); setActiveMenu(null); }, disabled: booking.status === 'Cancelled' },
                                   ].map((opt, i) => (
                                     <button key={i} onClick={opt.action} disabled={opt.disabled}
-                                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#1a2b3c] transition-colors ${opt.disabled ? 'opacity-30 cursor-not-allowed' : ''}`}>
+                                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors ${opt.disabled ? 'opacity-30 cursor-not-allowed' : ''}`}>
                                       <div className="p-1.5 rounded-md border" style={{ backgroundColor: `${opt.color}15`, borderColor: `${opt.color}30`, color: opt.color }}>
                                         <opt.icon size={12} />
                                       </div>

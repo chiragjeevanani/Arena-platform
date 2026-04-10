@@ -93,9 +93,9 @@ const MatchBanner = ({ promos = [] }) => {
                 {promo.title}
               </h2>
               <div className="absolute top-4 right-4 animate-float opacity-80 z-20">
-                <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_15px_rgba(235,72,63,0.5)]" />
+                <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_15px_rgba(206, 32, 41,0.5)]" />
               </div>
-              <button className="mt-3 bg-[#fffdd0] text-[#eb483f] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(235,72,63,0.2)]">
+              <button className="mt-3 bg-[#fffdd0] text-[#CE2029] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(206, 32, 41,0.2)]">
                 {promo.buttonText || 'Join Match'}
               </button>
             </div>
@@ -146,7 +146,7 @@ const MatchBanner = ({ promos = [] }) => {
                       />
                       <div className="absolute inset-0" />
                       <div className="absolute top-6 right-6 animate-float opacity-0 group-hover/card:opacity-100 transition-all duration-500 z-30 pointer-events-none">
-                        <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_20px_rgba(235,72,63,0.6)]" />
+                        <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_20px_rgba(206, 32, 41,0.6)]" />
                       </div>
                       <div className="absolute inset-x-0 bottom-0 p-6 z-20">
                         <span className="text-[#fffdd0] text-[8px] font-black uppercase tracking-[0.3em] mb-1.5 block">
@@ -155,7 +155,7 @@ const MatchBanner = ({ promos = [] }) => {
                         <h2 className="text-white text-base font-black leading-tight font-display line-clamp-2 mb-4">
                           {promo.title}
                         </h2>
-                        <div className="bg-[#fffdd0] text-[#eb483f] px-4 py-1.5 rounded-lg font-black text-[10px] w-fit uppercase tracking-wider">
+                        <div className="bg-[#fffdd0] text-[#CE2029] px-4 py-1.5 rounded-lg font-black text-[10px] w-fit uppercase tracking-wider">
                           {promo.buttonText}
                         </div>
                       </div>
@@ -170,13 +170,13 @@ const MatchBanner = ({ promos = [] }) => {
           <div className="absolute inset-y-0 -left-6 -right-6 flex items-center justify-between pointer-events-none opacity-0 group-hover/carousel:opacity-100 transition-opacity">
             <button
               onClick={prevDesktop}
-              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#eb483f] transition-all hover:scale-110 shadow-lg"
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#CE2029] transition-all hover:scale-110 shadow-lg"
             >
               <ChevronLeft size={24} />
             </button>
             <button
               onClick={nextDesktop}
-              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#eb483f] transition-all hover:scale-110 shadow-lg"
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white pointer-events-auto hover:bg-[#fffdd0] hover:text-[#CE2029] transition-all hover:scale-110 shadow-lg"
             >
               <ChevronRight size={24} />
             </button>

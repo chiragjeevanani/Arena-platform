@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, User, Mail, Phone, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -8,13 +9,42 @@ const EditProfile = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
 
+  const fileInputRef = useRef(null);
+  const [profileImage, setProfileImage] = useState(
+    localStorage.getItem('userProfileImage') || 
+    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
+  );
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = () => {
+    localStorage.setItem('userProfileImage', profileImage);
+    navigate('/profile');
+  };
+
   return (
     <div className={`min-h-screen pb-32 relative overflow-hidden ${'bg-[#F8FAFC]'}`}>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleImageChange} 
+        className="hidden" 
+        accept="image/*"
+      />
       {/* Premium Background Decorative Elements */}
       {!isDark && (
         <>
           <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#CE2029]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
@@ -28,7 +58,7 @@ const EditProfile = () => {
           }`}
         >
           {/* Header - Always Project Theme */}
-          <div className={`px-6 pt-5 pb-5 backdrop-blur-2xl border-b border-white/10 transition-all duration-500 bg-[#eb483f] shadow-[0_15px_40px_rgba(235,72,63,0.25)]`}>
+          <div className={`px-6 pt-5 pb-5 backdrop-blur-2xl border-b border-white/10 transition-all duration-500 bg-[#CE2029] shadow-[0_15px_40px_rgba(206, 32, 41,0.25)]`}>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate(-1)}
@@ -48,13 +78,16 @@ const EditProfile = () => {
                   'border-white bg-white hover:border-blue-100 hover:scale-105'
                 }`}>
                   <img
-                    src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
+                    src={profileImage}
                     alt="User"
                     className="w-full h-full object-cover md:rounded-none rounded-lg transition-all duration-500 group-hover:scale-110"
                   />
                   {!isDark && <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />}
                 </div>
-                <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#eb483f] text-white md:rounded-none rounded-lg border-2 border-white flex items-center justify-center shadow-xl active:scale-90 transition-all hover:bg-[#eb483f]/90">
+                <button 
+                  onClick={() => fileInputRef.current.click()}
+                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#CE2029] text-white md:rounded-none rounded-lg border-2 border-white flex items-center justify-center shadow-xl active:scale-90 transition-all hover:bg-[#CE2029]/90"
+                >
                   <Camera size={14} />
                 </button>
               </div>
@@ -92,7 +125,7 @@ const EditProfile = () => {
                 <div className={`p-3 md:rounded-none rounded-xl border transition-all duration-500 relative overflow-hidden group ${
                   isDark 
                     ? 'bg-white/5 border-white/10 hover:border-emerald-500/40' 
-                    : 'bg-white border-slate-200 shadow-[0_4px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_16px_-4px_rgba(15,23,42,0.06)]'
+                    : 'bg-white border-slate-200 shadow-[0_4px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_16_rgba(15,23,42,0.06)]'
                 }`}>
                   <div className="flex items-center gap-4 relative z-10">
                     <div className={`w-10 h-10 md:rounded-none rounded-lg flex items-center justify-center transition-all duration-300 ${
@@ -158,12 +191,9 @@ const EditProfile = () => {
             </div>
             <div className="mt-10">
               <ShuttleButton 
-                className="w-full !rounded-none !py-4 active:scale-[0.98] transition-all shadow-xl shadow-[#eb483f]/20 text-[12px] uppercase tracking-widest font-black"
+                className="w-full !rounded-none !py-4 active:scale-[0.98] transition-all shadow-xl shadow-[#CE2029]/20 text-[12px] uppercase tracking-widest font-black"
                 variant="red"
-                onClick={() => {
-                  // Simulate save
-                  navigate('/profile');
-                }}
+                onClick={handleSave}
               >
                 Save Profile Changes
               </ShuttleButton>

@@ -20,13 +20,13 @@ const ShuttleButton = ({
   const glowRef = useRef(null);
 
   const variants = {
-    primary: 'bg-[#eb483f] text-white hover:shadow-[0_0_30px_rgba(235, 72, 63,0.3)]',
-    secondary: 'bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20 hover:border-[#eb483f]/40',
-    outline: 'bg-transparent text-[#eb483f] border border-[#eb483f]/30 hover:bg-[#eb483f]/5',
+    primary: 'bg-[#CE2029] text-white hover:shadow-[0_0_30px_rgba(206, 32, 41,0.3)]',
+    secondary: 'bg-[#CE2029]/10 text-[#CE2029] border border-[#CE2029]/20 hover:border-[#CE2029]/40',
+    outline: 'bg-transparent text-[#CE2029] border border-[#CE2029]/30 hover:bg-[#CE2029]/5',
     ghost: 'bg-transparent text-slate-600 hover:bg-slate-50',
     danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20',
-    blue: 'bg-gradient-to-br from-[#eb483f] via-[#D94F47] to-[#eb483f] text-white shadow-xl shadow-[#eb483f]/20 border border-white/20 hover:shadow-[#eb483f]/40 relative overflow-hidden',
-    premium: 'bg-gradient-to-br from-[#eb483f] to-[#D94F47] text-white border border-white/10 hover:shadow-[0_0_30px_rgba(235, 72, 63,0.25)]',
+    blue: 'bg-gradient-to-br from-[#CE2029] via-[#D94F47] to-[#CE2029] text-white shadow-xl shadow-[#CE2029]/20 border border-white/20 hover:shadow-[#CE2029]/40 relative overflow-hidden',
+    premium: 'bg-gradient-to-br from-[#CE2029] to-[#D94F47] text-white border border-white/10 hover:shadow-[0_0_30px_rgba(206, 32, 41,0.25)]',
   };
 
   const sizes = {

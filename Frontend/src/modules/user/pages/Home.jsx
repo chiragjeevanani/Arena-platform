@@ -46,20 +46,20 @@ const UserHome = () => {
       <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
         {/* Subtle Theme Gradient Overlay */}
         <div className={`absolute inset-0 transition-opacity duration-1000 ${isDark
-          ? 'bg-gradient-to-b from-[#eb483f]/[0.05] via-transparent to-transparent'
-          : 'bg-gradient-to-b from-[#eb483f]/[0.1] via-transparent to-transparent'
+          ? 'bg-gradient-to-b from-[#CE2029]/[0.05] via-transparent to-transparent'
+          : 'bg-gradient-to-b from-[#CE2029]/[0.1] via-transparent to-transparent'
           }`} />
 
         {/* Decorative Theme Glows */}
-        <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${isDark ? 'bg-[#eb483f]/[0.08]' : 'bg-[#eb483f]/[0.15]'
+        <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${isDark ? 'bg-[#CE2029]/[0.08]' : 'bg-[#CE2029]/[0.15]'
           }`} />
-        <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${isDark ? 'bg-[#eb483f]/[0.05]' : 'bg-blue-50/40'
+        <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${isDark ? 'bg-[#CE2029]/[0.05]' : 'bg-blue-50/40'
           }`} />
 
         {/* Fine Neon Grid for Texture */}
         <div className="absolute inset-0 opacity-[0.2]"
           style={{
-            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(235, 72, 63, 0.08)'} 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 1.5px 1.5px, ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(206, 32, 41, 0.08)'} 1px, transparent 0)`,
             backgroundSize: '40px 40px'
           }}
         />
@@ -67,7 +67,7 @@ const UserHome = () => {
 
       {/* ═╦═╦═╦═╦═╦═╦═╦═ Hero Header ── Hidden on Desktop ═╦═╦═╦═╦═╦═╦═╦═ */}
       <div className="md:hidden">
-        <div ref={heroRef} className={`relative px-5 pt-3 pb-3 overflow-hidden bg-[#eb483f] shadow-[0_10px_30px_rgba(235, 72, 63, 0.2)]`}>
+        <div ref={heroRef} className={`relative px-5 pt-3 pb-3 overflow-hidden bg-[#CE2029] shadow-[0_10px_30px_rgba(206, 32, 41, 0.2)]`}>
           {/* Stadium light streaks */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div
@@ -148,7 +148,8 @@ const UserHome = () => {
                   transition={{ delay: sport.delay }}
                   whileHover={{ y: -5, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`relative rounded-xl md:rounded-[24px] overflow-hidden group cursor-pointer transition-all duration-500 ${isDark ? 'shadow-[0_20px_40px_rgba(0,0,0,0.5)] border border-white/5' : 'shadow-[0_20px_40px_rgba(235,72,63,0.15)] md:border border-[#eb483f]/10'}`}
+                  onClick={() => sport.link && navigate(sport.link)}
+                  className={`relative rounded-xl md:rounded-[24px] overflow-hidden group cursor-pointer transition-all duration-500 ${isDark ? 'shadow-[0_20px_40px_rgba(0,0,0,0.5)] border border-white/5' : 'shadow-[0_20px_40px_rgba(206, 32, 41,0.15)] md:border border-[#CE2029]/10'}`}
                 >
                   <img src={sport.image} alt={sport.title} className="w-full h-auto block md:aspect-video md:object-cover md:object-center" />
                   
@@ -156,7 +157,7 @@ const UserHome = () => {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 md:group-hover:bg-black/10 transition-colors duration-300" />
                   
                   {/* Glowing border effect on hover (Desktop) */}
-                  <div className="hidden md:block absolute inset-0 border-[3px] border-[#eb483f]/0 group-hover:border-[#eb483f]/60 transition-colors duration-500 rounded-[32px] pointer-events-none" />
+                  <div className="hidden md:block absolute inset-0 border-[3px] border-[#CE2029]/0 group-hover:border-[#CE2029]/60 transition-colors duration-500 rounded-[32px] pointer-events-none" />
                 </motion.div>
               ))}
             </div>
@@ -169,8 +170,8 @@ const UserHome = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               onClick={() => navigate('/book/1/1')} 
-              className={`relative rounded-[32px] overflow-hidden group cursor-pointer border shadow-lg transition-all duration-500 hover:shadow-[0_30px_60px_rgba(235,72,63,0.2)] hover:-translate-y-2 ${
-                isDark ? 'bg-[#1a1d24] border-white/10 hover:border-[#eb483f]/50' : 'bg-white border-slate-200 hover:border-[#eb483f]/40'
+              className={`relative rounded-[32px] overflow-hidden group cursor-pointer border shadow-lg transition-all duration-500 hover:shadow-[0_30px_60px_rgba(206, 32, 41,0.2)] hover:-translate-y-2 ${
+                isDark ? 'bg-[#1a1d24] border-white/10 hover:border-[#CE2029]/50' : 'bg-white border-slate-200 hover:border-[#CE2029]/40'
               }`}
             >
               <div className="flex flex-col md:flex-row h-auto md:h-[280px]">
@@ -188,17 +189,17 @@ const UserHome = () => {
                 {/* Content Section */}
                 <div className={`w-full md:w-[40%] p-8 flex flex-col justify-center relative ${isDark ? 'bg-gradient-to-l from-[#1a1d24] to-[#1a1d24]/90' : 'bg-white'}`}>
                   {/* Glowing background accent on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#eb483f]/0 to-[#eb483f]/0 group-hover:from-[#eb483f]/5 group-hover:to-transparent transition-colors duration-500 rounded-r-[32px] pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#CE2029]/0 to-[#CE2029]/0 group-hover:from-[#CE2029]/5 group-hover:to-transparent transition-colors duration-500 rounded-r-[32px] pointer-events-none" />
                   
                   <div className="relative z-10">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#eb483f]/10 text-[#eb483f] border border-[#eb483f]/20 mb-4">
-                      <Zap size={12} className="fill-[#eb483f]" />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#CE2029]/10 text-[#CE2029] border border-[#CE2029]/20 mb-4">
+                      <Zap size={12} className="fill-[#CE2029]" />
                       <span className="text-[10px] font-black uppercase tracking-widest">Premium Wooden Courts</span>
                     </div>
                     
                     <h3 className={`text-3xl font-black font-display tracking-tight leading-tight mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>{ARENAS[0].name}</h3>
                     <p className={`text-sm font-medium flex items-center gap-1 mb-6 flex-wrap ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
-                      <MapPin size={14} /> {ARENAS[0].location} • <span className="text-[#eb483f] font-bold">{ARENAS[0].distance} away</span>
+                      <MapPin size={14} /> {ARENAS[0].location} • <span className="text-[#CE2029] font-bold">{ARENAS[0].distance} away</span>
                     </p>
 
                     <div className="flex gap-2 flex-wrap mb-8">
@@ -212,12 +213,12 @@ const UserHome = () => {
                     <div className="flex items-center justify-between mt-auto">
                       <div>
                         <p className={`text-[10px] uppercase font-black tracking-widest mb-1 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Book a slot</p>
-                        <p className={`font-black font-display text-2xl leading-none ${isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'}`}>
+                        <p className={`font-black font-display text-2xl leading-none ${isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'}`}>
                           OMR {Number(ARENAS[0].pricePerHour).toFixed(3)} <span className={`text-xs font-bold ${isDark ? 'text-white/30' : 'text-slate-400'}`}>/hr</span>
                         </p>
                       </div>
                       
-                      <button className="px-6 py-3 rounded-xl bg-[#eb483f] text-white text-xs font-black tracking-widest uppercase shadow-[0_8px_20px_rgba(235,72,63,0.3)] group-hover:shadow-[0_12px_25px_rgba(235,72,63,0.4)] transition-all flex items-center gap-2 group-hover:-translate-y-1">
+                      <button className="px-6 py-3 rounded-xl bg-[#CE2029] text-white text-xs font-black tracking-widest uppercase shadow-[0_8px_20px_rgba(206, 32, 41,0.3)] group-hover:shadow-[0_12px_25px_rgba(206, 32, 41,0.4)] transition-all flex items-center gap-2 group-hover:-translate-y-1">
                         Book Now <ChevronRight size={16} className="opacity-70 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
@@ -237,9 +238,9 @@ const UserHome = () => {
             >
               <div>
                 <h3 className={`text-lg md:text-3xl font-bold md:font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Our Events</h3>
-                <p className={`text-[10px] md:text-sm font-bold uppercase tracking-widest mt-1 hidden md:block ${isDark ? 'text-white/40' : 'text-[#eb483f]/60'}`}>Join the action</p>
+                <p className={`text-[10px] md:text-sm font-bold uppercase tracking-widest mt-1 hidden md:block ${isDark ? 'text-white/40' : 'text-[#CE2029]/60'}`}>Join the action</p>
               </div>
-              <Link to="/events" className={`font-bold text-xs md:text-sm flex items-center gap-1 hover:gap-1.5 md:hover:gap-2.5 transition-all uppercase tracking-widest px-4 md:px-5 py-2 md:py-2.5 rounded-full border ${isDark ? 'text-[#eb483f] bg-[#eb483f]/10 border-[#eb483f]/20 hover:bg-[#eb483f]/20' : 'text-[#eb483f] bg-[#eb483f]/5 border-[#eb483f]/30 hover:bg-[#eb483f]/10 shadow-sm'}`}>
+              <Link to="/events" className={`font-bold text-xs md:text-sm flex items-center gap-1 hover:gap-1.5 md:hover:gap-2.5 transition-all uppercase tracking-widest px-4 md:px-5 py-2 md:py-2.5 rounded-full border ${isDark ? 'text-[#CE2029] bg-[#CE2029]/10 border-[#CE2029]/20 hover:bg-[#CE2029]/20' : 'text-[#CE2029] bg-[#CE2029]/5 border-[#CE2029]/30 hover:bg-[#CE2029]/10 shadow-sm'}`}>
                 See all <ChevronRight size={14} className="md:w-4 md:h-4" />
               </Link>
             </motion.div>
@@ -253,7 +254,7 @@ const UserHome = () => {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => navigate(`/events/${event.id}`)}
-                  className={`group relative aspect-[4/5] md:aspect-[4/3] bg-[#0F172A] rounded-xl md:rounded-[24px] overflow-hidden cursor-pointer transition-all duration-500 ${isDark ? 'shadow-xl shadow-black/50 border border-white/5 hover:border-[#eb483f]/50' : 'shadow-[0_10px_30px_rgba(235,72,63,0.1)] hover:shadow-[0_20px_40px_rgba(235,72,63,0.2)] md:border border-[#eb483f]/10 hover:border-[#eb483f]/40 md:hover:-translate-y-2'}`}
+                  className={`group relative aspect-[4/5] md:aspect-[4/3] bg-[#0F172A] rounded-xl md:rounded-[24px] overflow-hidden cursor-pointer transition-all duration-500 ${isDark ? 'shadow-xl shadow-black/50 border border-white/5 hover:border-[#CE2029]/50' : 'shadow-[0_10px_30px_rgba(206, 32, 41,0.1)] hover:shadow-[0_20px_40px_rgba(206, 32, 41,0.2)] md:border border-[#CE2029]/10 hover:border-[#CE2029]/40 md:hover:-translate-y-2'}`}
                 >
                   <img
                     src={event.image}
@@ -264,10 +265,10 @@ const UserHome = () => {
                   <div className="absolute inset-0 md:hidden bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-50" />
                   
                   {/* Desktop Hover Glow Effect */}
-                  <div className="hidden md:block absolute inset-0 bg-[#eb483f]/0 group-hover:bg-[#eb483f]/5 transition-colors duration-500 pointer-events-none" />
+                  <div className="hidden md:block absolute inset-0 bg-[#CE2029]/0 group-hover:bg-[#CE2029]/5 transition-colors duration-500 pointer-events-none" />
                   
                   {/* Glowing inner border effect on hover (Desktop) */}
-                  <div className="hidden md:block absolute inset-0 border-[3px] border-[#eb483f]/0 group-hover:border-[#eb483f]/30 transition-colors duration-500 rounded-[24px] pointer-events-none" />
+                  <div className="hidden md:block absolute inset-0 border-[3px] border-[#CE2029]/0 group-hover:border-[#CE2029]/30 transition-colors duration-500 rounded-[24px] pointer-events-none" />
 
                   {/* Tap hint overlay (subtle for desktop, mainly mobile/hover) */}
                   <div className="absolute inset-0 flex items-end justify-center pb-5 md:pb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">

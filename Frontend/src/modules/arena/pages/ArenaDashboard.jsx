@@ -1,122 +1,154 @@
 import { motion } from 'framer-motion';
-import { Target, Clock, DollarSign, CalendarX2, TrendingUp, Users, ArrowUpRight } from 'lucide-react';
+import { Target, Clock, DollarSign, CalendarX2, Activity, Layers, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const BRAND_RED = '#CE2029';
+const BOOKED_RED = '#E65055'; // Lighter, vibrant shade of #CE2029
+
 const STATS = [
-  { label: 'Total Courts', value: '5', sub: '4 active now', icon: Target, color: '#eb483f', path: '/arena/courts' },
+  { label: 'Total Courts', value: '5', sub: '4 active now', icon: Target, color: BRAND_RED, path: '/arena/courts' },
   { label: 'Today\'s Slots', value: '35', sub: '22 booked · 13 free', icon: Clock, color: '#6366f1', path: '/arena/slots' },
-  { label: 'Revenue Today', value: '8.450 OMR', sub: '+15% vs yesterday', icon: DollarSign, color: '#22c55e', path: '/arena/pricing' },
+  { label: 'Revenue Today', value: '8.450', sub: '+15% vs yesterday', icon: DollarSign, color: '#10b981', path: '/arena/pricing' },
   { label: 'Blocked Slots', value: '2', sub: '1 maintenance · 1 event', icon: CalendarX2, color: '#f59e0b', path: '/arena/availability' },
-  { label: 'Active Bookings', value: '22', sub: 'For today', icon: TrendingUp, color: '#0ea5e9', path: '/arena/slots' },
-  { label: 'Upcoming Classes', value: '4', sub: 'Coaching sessions', icon: Users, color: '#a855f7', path: '/arena/availability' },
+  { label: 'Active Bookings', value: '22', sub: 'For today', icon: Activity, color: '#0ea5e9', path: '/arena/slots' },
+  { label: 'Upcoming Class', value: '1', sub: 'Elite Group Session', icon: Layers, color: '#a855f7', path: '/arena/availability' },
 ];
 
-const RECENT_ACTIVITY = [
-  { type: 'booking', text: 'Court 1 booked for 7:00-8:00 PM', user: 'Ahmed Al-Harthy', time: '5 min ago', color: '#eb483f' },
-  { type: 'block', text: 'Court 3 blocked for Maintenance', user: 'Arena Manager', time: '1 hr ago', color: '#f59e0b' },
-  { type: 'pricing', text: 'Peak pricing enabled for evening', user: 'Arena Manager', time: '3 hr ago', color: '#22c55e' },
-  { type: 'booking', text: 'Court 2 booked for 6:00-7:00 PM', user: 'Laila Al-Saadi', time: '4 hr ago', color: '#6366f1' },
-  { type: 'slot', text: 'New weekend slots added (10)', user: 'Arena Manager', time: '1 day ago', color: '#0ea5e9' },
+const TIME_SLOTS = [
+  '5-6 AM', '6-7 AM', '7-8 AM', '8-9 AM', '9-10 AM', '10-11 AM', '11-12 PM',
+  '12-1 PM', '1-2 PM', '2-3 PM', '3-4 PM', '4-5 PM', '5-6 PM', '6-7 PM',
+  '7-8 PM', '8-9 PM', '9-10 PM', '10-11 PM', '11-12 AM'
 ];
 
-const COURT_STATUS = [
-  { name: 'Court 1', type: 'Indoor', status: 'Occupied', statusColor: '#eb483f', player: 'Ahmed Al-Harthy', until: '8:00 PM' },
-  { name: 'Court 2', type: 'Indoor', status: 'Available', statusColor: '#22c55e', player: null, until: null },
-  { name: 'Court 3', type: 'Outdoor', status: 'Maintenance', statusColor: '#f59e0b', player: null, until: '6:00 PM' },
-  { name: 'Court 4', type: 'Indoor', status: 'Available', statusColor: '#22c55e', player: null, until: null },
-  { name: 'Court 5', type: 'Indoor', status: 'Available', statusColor: '#22c55e', player: null, until: null },
-];
+const COURTS = ['Court 1', 'Court 2', 'Court 3', 'Court 4', 'Court 5'];
 
 const ArenaDashboard = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 min-h-full max-w-[1100px] mx-auto text-[#1a2b3c]">
-      {/* Welcome Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Good Evening 👋</h1>
-        <p className="text-slate-600 font-semibold mt-1">Here's your arena overview for today — Mar 24</p>
+    <div className="min-h-screen bg-[#fffafa] p-4 md:p-6 lg:px-12 lg:py-6 space-y-4 text-[#36454F]">
+      {/* High-Impact Header */}
+      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-2">
+        <div>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="w-5 h-[2.5px]" style={{ backgroundColor: BRAND_RED }} />
+            <span className="text-[9px] font-black uppercase tracking-[0.4em]" style={{ color: BRAND_RED }}>Control Center</span>
+          </div>
+          <h1 className="text-2xl font-black uppercase tracking-tighter text-[#36454F] leading-none" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            Good <span style={{ color: BRAND_RED }}>Evening</span> 👋
+          </h1>
+        </div>
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-white border border-slate-100 shadow-sm rounded-md">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <p className="text-[9px] font-black uppercase tracking-widest text-[#36454F]">System Ready</p>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+      <div className="max-w-[1440px] mx-auto grid grid-cols-2 lg:grid-cols-6 gap-3">
         {STATS.map((stat, i) => (
-          <motion.button key={i}
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
+          <button 
+            key={i}
             onClick={() => navigate(stat.path)}
-            className="group bg-white hover:bg-slate-50 border border-slate-200 hover:border-[#eb483f]/30 rounded-2xl p-4 text-left transition-all shadow-sm hover:shadow-md relative overflow-hidden"
+            className="group relative bg-white border border-slate-100 rounded-xl p-4 text-left transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 flex flex-col h-[130px]"
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 group-hover:bg-[#eb483f]/20 transition-colors" />
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
-              style={{ backgroundColor: `${stat.color}10` }}>
-              <stat.icon size={17} style={{ color: stat.color }} strokeWidth={2.5} />
+            <div className="w-8 h-8 rounded flex items-center justify-center mb-2 shadow-sm"
+              style={{ backgroundColor: `${stat.color}15` }}>
+              <stat.icon size={16} style={{ color: stat.color }} strokeWidth={2.5} />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-500 mb-1">{stat.label}</p>
-            <p className="text-2xl font-bold">{stat.value}</p>
-            <p className="text-[9px] font-bold text-slate-600 mt-1">{stat.sub}</p>
-            <ArrowUpRight size={14} className="absolute top-4 right-4 text-slate-200 group-hover:text-[#eb483f] transition-colors" />
-          </motion.button>
+            <div className="flex-1">
+              <p className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-500 mb-0.5">{stat.label}</p>
+              <h3 className="text-xl font-black text-[#36454F] tracking-tighter leading-tight">{stat.value}</h3>
+            </div>
+            <div className="mt-auto pt-2 flex items-center justify-between border-t border-slate-50">
+                <p className="text-[9px] font-black text-slate-800 uppercase tracking-tighter leading-none opacity-80">{stat.sub}</p>
+            </div>
+          </button>
         ))}
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-
-        {/* Court Status */}
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h2 className="font-bold uppercase tracking-wide text-sm">Court Status</h2>
-              <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-widest">Real-time node availability</p>
+      {/* Booking Schedule - Sharp & Brand Aligned */}
+      <div className="max-w-[1440px] mx-auto space-y-4 pb-12">
+        {['WEEKDAYS BOOKING', 'WEEKEND BOOKING'].map((title, sIdx) => (
+          <div key={sIdx} className="bg-white rounded-xl overflow-hidden shadow-[0_5px_20px_rgba(0,0,0,0.02)] border border-slate-100">
+            <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: sIdx === 0 ? '#36454F' : BRAND_RED }}>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90">{title}</h2>
+              <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">LIVE</p>
             </div>
-            <button onClick={() => navigate('/arena/courts')}
-              className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] hover:underline flex items-center gap-1">
-              Manage <ArrowUpRight size={12} />
-            </button>
+            
+            <div className="overflow-x-auto scrollbar-hide">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="bg-slate-50/80">
+                    <th className="sticky left-0 z-20 bg-slate-50 p-3 border-r border-slate-100 min-w-[120px]">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Arena Node</span>
+                    </th>
+                    {TIME_SLOTS.map((time, tIdx) => (
+                      <th key={tIdx} className="px-3 py-2 border-r border-slate-50 min-w-[100px] text-center">
+                        <span className="text-[10px] font-black uppercase tracking-tight text-slate-600 whitespace-nowrap">{time}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COURTS.map((court, cIdx) => (
+                    <tr key={cIdx} className="group">
+                      <td className="sticky left-0 z-20 bg-white group-hover:bg-slate-50 p-3 border-r border-b border-slate-50 font-black text-[12px] text-[#36454F] uppercase tracking-tight">
+                        {court}
+                      </td>
+                      {TIME_SLOTS.map((_, tIdx) => {
+                        const isBooked = (tIdx === 1 && cIdx < 3) || (tIdx > 11 && tIdx < 16 && (cIdx === 0 || cIdx === 2)) || (tIdx >= 16 && tIdx <= 18);
+                        const isMaintenance = (tIdx > 12 && tIdx < 15 && cIdx === 4);
+                        
+                        return (
+                          <td key={tIdx} className="p-1 border-r border-b border-slate-50 relative group/cell min-w-[100px]">
+                            <div className={`h-10 rounded transition-all flex items-center justify-center cursor-pointer relative overflow-hidden ${
+                                isBooked ? 'shadow shadow-red-500/10' : 
+                                isMaintenance ? 'shadow shadow-amber-500/10' : 
+                                'bg-white hover:bg-slate-50'
+                            }`}
+                                 style={{ 
+                                    backgroundColor: isBooked ? BOOKED_RED : isMaintenance ? '#f59e0b' : ''
+                                 }}>
+                                {isBooked ? (
+                                    <div className="flex flex-col items-center">
+                                        <Activity size={10} className="text-white/30 mb-0.5" />
+                                        <span className="text-[8px] font-black text-white uppercase tracking-tighter leading-none">BOOKED</span>
+                                    </div>
+                                ) : isMaintenance ? (
+                                    <span className="text-[8px] font-black text-white uppercase tracking-tighter leading-none">BLOCKED</span>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center gap-0.5 opacity-100 group-hover/cell:opacity-100 transition-opacity">
+                                        <div className="w-1.5 h-1.5 rounded-sm border border-slate-300" />
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Available</span>
+                                    </div>
+                                )}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="divide-y divide-slate-50">
-            {COURT_STATUS.map((c, i) => (
-              <div key={i} className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-                    <Target size={16} className="text-slate-400" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#1a2b3c] text-[12px]">{c.name}</p>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{c.type}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8.5px] font-black uppercase tracking-widest border shadow-sm transition-all"
-                    style={{ color: c.statusColor, backgroundColor: `${c.statusColor}08`, borderColor: `${c.statusColor}15` }}>
-                    <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: c.statusColor }} />
-                    {c.status}
-                  </span>
-                  {c.player && <p className="text-[9px] font-bold text-slate-600 mt-1 uppercase tracking-tighter">{c.player} · UNTIL {c.until}</p>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <h2 className="font-bold uppercase tracking-wide text-sm">Recent Activity</h2>
-            <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-widest">Latest actions in your arena</p>
-          </div>
-          <div className="divide-y divide-slate-50">
-            {RECENT_ACTIVITY.map((a, i) => (
-              <div key={i} className="flex items-start gap-3 px-5 py-4 hover:bg-slate-50 transition-colors group">
-                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0 group-hover:scale-125 transition-transform" style={{ backgroundColor: a.color }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-slate-700 leading-snug">{a.text}</p>
-                  <p className="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-widest leading-none">{a.user}</p>
-                </div>
-                <span className="text-[9px] font-black text-slate-300 shrink-0 mt-0.5 uppercase">{a.time}</span>
-              </div>
-            ))}
-          </div>
+      {/* Legend */}
+      <div className="max-w-[1440px] mx-auto flex flex-wrap items-center gap-8 pb-4 opacity-50">
+        <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: BOOKED_RED }} />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#36454F]">Booked</span>
+        </div>
+        <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm bg-[#f59e0b]" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#36454F]">Blocked</span>
+        </div>
+        <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-sm border border-slate-300" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#36454F]">Available</span>
         </div>
       </div>
     </div>

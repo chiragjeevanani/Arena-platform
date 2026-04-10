@@ -17,12 +17,12 @@ const GuestSystem = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-black tracking-tight text-[#1a2b3c]">Guest Check-in System</h2>
+          <h2 className="text-xl font-black tracking-tight text-[#36454F]">Guest Check-in System</h2>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Manage non-registered visitors and walk-in players</p>
         </div>
         <button 
           onClick={() => setShowModal(true)}
-          className="bg-[#1a2b3c] text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-[#1a2b3c]/20 hover:-translate-y-0.5 transition-all outline-none"
+          className="bg-[#36454F] text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-[#36454F]/20 hover:-translate-y-0.5 transition-all outline-none"
         >
           <UserPlus size={16} strokeWidth={3} /> Quick Check-in
         </button>
@@ -32,12 +32,12 @@ const GuestSystem = () => {
          {[
            { label: 'In-Arena Now', value: '12', icon: UserCheck, color: '#22c55e' },
            { label: 'Pending Check-ins', value: '05', icon: Search, color: '#6366f1' },
-           { label: 'Total Guests Today', value: '28', icon: Shield, color: '#eb483f' },
+           { label: 'Total Guests Today', value: '28', icon: Shield, color: '#CE2029' },
          ].map((stat, i) => (
            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{stat.label}</p>
-                <p className="text-2xl font-black text-[#1a2b3c] mt-1">{stat.value}</p>
+                <p className="text-2xl font-black text-[#36454F] mt-1">{stat.value}</p>
               </div>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center italic" style={{ backgroundColor: `${stat.color}15` }}>
                  <stat.icon size={18} style={{ color: stat.color }} strokeWidth={2.5} />
@@ -48,9 +48,9 @@ const GuestSystem = () => {
 
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#1a2b3c]">Live Guest Status</h3>
+           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#36454F]">Live Guest Status</h3>
            <div className="flex items-center gap-2">
-              <input type="text" placeholder="Search by name/phone..." className="text-[10px] font-black uppercase tracking-widest bg-white border border-slate-100 rounded-lg px-3 py-1.5 outline-none focus:border-[#eb483f] transition-all" />
+              <input type="text" placeholder="Search by name/phone..." className="text-[10px] font-black uppercase tracking-widest bg-white border border-slate-100 rounded-lg px-3 py-1.5 outline-none focus:border-[#CE2029] transition-all" />
            </div>
         </div>
         <div className="overflow-x-auto">
@@ -67,13 +67,13 @@ const GuestSystem = () => {
                {guests.map(guest => (
                   <tr key={guest.id} className="hover:bg-slate-50/50 transition-all">
                      <td className="px-6 py-5">
-                        <p className="text-sm font-black text-[#1a2b3c]">{guest.name}</p>
+                        <p className="text-sm font-black text-[#36454F]">{guest.name}</p>
                         <p className="text-[10px] font-bold text-slate-400">{guest.phone}</p>
                      </td>
                      <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f]" />
-                          <p className="text-[11px] font-black text-[#1a2b3c] uppercase tracking-widest">{guest.court}</p>
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029]" />
+                          <p className="text-[11px] font-black text-[#36454F] uppercase tracking-widest">{guest.court}</p>
                         </div>
                         <p className="text-[9px] font-bold text-slate-400 mt-0.5">{guest.time}</p>
                      </td>
@@ -93,7 +93,7 @@ const GuestSystem = () => {
                            {guest.status === 'Pending' && (
                              <button className="p-2 bg-green-500 text-white rounded-lg hover:scale-105 transition-all"><UserCheck size={14} /></button>
                            )}
-                           <button className="p-2 border border-slate-100 text-slate-400 hover:text-[#eb483f] rounded-lg transition-all"><MoreVertical size={14} /></button>
+                           <button className="p-2 border border-slate-100 text-slate-400 hover:text-[#CE2029] rounded-lg transition-all"><MoreVertical size={14} /></button>
                         </div>
                      </td>
                   </tr>

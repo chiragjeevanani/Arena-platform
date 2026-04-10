@@ -30,28 +30,28 @@ const SlotSchedule = () => {
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case 'Booked': return 'bg-slate-50 border-slate-200 text-[#1a2b3c] hover:bg-slate-100';
+      case 'Booked': return 'bg-slate-50 border-slate-200 text-[#36454F] hover:bg-slate-100';
       case 'Maintenance': return 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100/50';
-      case 'Alert': return 'bg-red-50 border-[#eb483f]/30 text-[#eb483f] animate-pulse';
-      default: return 'bg-white border-dashed border-slate-200 text-slate-300 hover:border-[#eb483f]/40 hover:bg-slate-50/50';
+      case 'Alert': return 'bg-red-50 border-[#CE2029]/30 text-[#CE2029] animate-pulse';
+      default: return 'bg-white border-dashed border-slate-200 text-slate-300 hover:border-[#CE2029]/40 hover:bg-slate-50/50';
     }
   };
 
   return (
-    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#1a2b3c]">
+    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#36454F]">
       <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
           <div>
-            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
-              <CalendarClock className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Inventory Queue
+            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#36454F]">
+              <CalendarClock className="text-[#CE2029] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Inventory Queue
             </h2>
             <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Real-time slot intelligence and facility occupancy matrix.</p>
           </div>
           <button
             onClick={() => setShowBlockModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#CE2029]/20"
           >
             <Plus size={16} strokeWidth={3} /> Reserve Maintenance
           </button>
@@ -60,8 +60,8 @@ const SlotSchedule = () => {
         {/* Scheduler Control Bar */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
            {/* Facility Selector Card */}
-           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:border-[#eb483f]/40">
-              <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#eb483f] shadow-sm">
+           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:border-[#CE2029]/40">
+              <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#CE2029] shadow-sm">
                 <MapPin size={22} strokeWidth={2.5} />
               </div>
               <div className="flex-1">
@@ -69,7 +69,7 @@ const SlotSchedule = () => {
                 <select
                   value={selectedArenaId}
                   onChange={(e) => setSelectedArenaId(e.target.value)}
-                  className="w-full bg-transparent text-sm font-black text-[#1a2b3c] outline-none cursor-pointer appearance-none"
+                  className="w-full bg-transparent text-sm font-black text-[#36454F] outline-none cursor-pointer appearance-none"
                 >
                   {MOCK_DB.arenas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
@@ -77,13 +77,13 @@ const SlotSchedule = () => {
            </div>
 
            {/* Date Navigator Card */}
-           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-[#eb483f]/40">
+           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-[#CE2029]/40">
               <button onClick={() => setSelectedDate(addDays(selectedDate, -1))} className="p-2 rounded-xl hover:bg-slate-50 text-slate-400 transition-all border border-transparent hover:border-slate-100">
                 <ChevronLeft size={20} strokeWidth={2.5} />
               </button>
               <div className="text-center group cursor-pointer">
-                <p className="text-sm font-black text-[#1a2b3c] tracking-tight">{format(selectedDate, 'MMMM dd, yyyy')}</p>
-                <p className="text-[10px] font-black text-[#eb483f] uppercase tracking-[0.2em] leading-none mt-1 group-hover:tracking-[0.3em] transition-all">Live Sync</p>
+                <p className="text-sm font-black text-[#36454F] tracking-tight">{format(selectedDate, 'MMMM dd, yyyy')}</p>
+                <p className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.2em] leading-none mt-1 group-hover:tracking-[0.3em] transition-all">Live Sync</p>
               </div>
               <button onClick={() => setSelectedDate(addDays(selectedDate, 1))} className="p-2 rounded-xl hover:bg-slate-50 text-slate-400 transition-all border border-transparent hover:border-slate-100">
                 <ChevronRight size={20} strokeWidth={2.5} />
@@ -93,7 +93,7 @@ const SlotSchedule = () => {
            {/* Legend Card */}
            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-around gap-2 md:col-span-2 lg:col-span-1 border-dashed">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#eb483f]" />
+                <div className="w-2.5 h-2.5 rounded-full bg-[#CE2029]" />
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active</span>
               </div>
               <div className="flex items-center gap-2">
@@ -101,14 +101,14 @@ const SlotSchedule = () => {
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Blocked</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#1a2b3c]/10" />
+                <div className="w-2.5 h-2.5 rounded-full bg-[#36454F]/10" />
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Open</span>
               </div>
            </div>
         </div>
 
         {/* Grid Container */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:border-[#eb483f]/40">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:border-[#CE2029]/40">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="min-w-[900px]">
               {/* Sticky Court Header */}
@@ -119,7 +119,7 @@ const SlotSchedule = () => {
                 <div className="flex-1 flex divide-x divide-slate-100">
                   {arenaCourts.map(court => (
                     <div key={court.id} className="flex-1 py-6 text-center group">
-                      <p className="text-[11px] font-black text-[#1a2b3c] uppercase tracking-widest group-hover:text-[#eb483f] transition-colors">{court.name}</p>
+                      <p className="text-[11px] font-black text-[#36454F] uppercase tracking-widest group-hover:text-[#CE2029] transition-colors">{court.name}</p>
                       <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase italic leading-none">{court.type}</p>
                     </div>
                   ))}
@@ -132,8 +132,8 @@ const SlotSchedule = () => {
                   <div key={time} className="flex items-stretch group min-h-[100px]">
                     {/* Time Column */}
                     <div className="w-28 md:w-36 shrink-0 flex flex-col items-center justify-center border-r border-slate-100 bg-slate-50/30 group-hover:bg-slate-50 transition-colors">
-                      <span className="text-lg font-black font-display text-[#1a2b3c]">{time}</span>
-                      <span className="text-[9px] font-black text-[#eb483f] uppercase tracking-widest opacity-30 mt-1">Peak PR</span>
+                      <span className="text-lg font-black font-display text-[#36454F]">{time}</span>
+                      <span className="text-[9px] font-black text-[#CE2029] uppercase tracking-widest opacity-30 mt-1">Peak PR</span>
                     </div>
 
                     {/* Court Slots Column */}
@@ -148,23 +148,23 @@ const SlotSchedule = () => {
                           >
                             <div className="flex justify-between items-start">
                               <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{status}</span>
-                              {status === 'Alert' && <AlertTriangle size={14} className="text-[#eb483f]" strokeWidth={2.5} />}
+                              {status === 'Alert' && <AlertTriangle size={14} className="text-[#CE2029]" strokeWidth={2.5} />}
                             </div>
 
                             {status !== 'Available' ? (
                               <div className="space-y-1">
-                                <p className="text-xs font-black truncate text-[#1a2b3c]">
+                                <p className="text-xs font-black truncate text-[#36454F]">
                                   {status === 'Booked' ? data.customerName : data.reason}
                                 </p>
                                 <div className="flex items-center gap-1.5 opacity-40">
-                                   <div className="w-1 h-1 rounded-full bg-[#1a2b3c]" />
+                                   <div className="w-1 h-1 rounded-full bg-[#36454F]" />
                                    <p className="text-[9px] font-black uppercase tracking-tighter">Verified Entry</p>
                                 </div>
                               </div>
                             ) : (
                                <div className="flex flex-col items-center justify-center h-full opacity-0 group-hover/slot:opacity-100 transition-all">
-                                  <Plus size={16} className="text-[#eb483f]" strokeWidth={3} />
-                                  <span className="text-[8px] font-black text-[#eb483f] uppercase tracking-widest mt-1">Reserve</span>
+                                  <Plus size={16} className="text-[#CE2029]" strokeWidth={3} />
+                                  <span className="text-[8px] font-black text-[#CE2029] uppercase tracking-widest mt-1">Reserve</span>
                                </div>
                             )}
 
@@ -192,12 +192,12 @@ const SlotSchedule = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#36454F] shadow-2xl overflow-hidden"
             >
               <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
-                    <CalendarClock className="text-[#eb483f]" size={24} strokeWidth={3} /> Block Protocol
+                    <CalendarClock className="text-[#CE2029]" size={24} strokeWidth={3} /> Block Protocol
                   </h3>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Initialize temporary facility closure</p>
                 </div>
@@ -208,13 +208,13 @@ const SlotSchedule = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Target Court</label>
-                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner">
+                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner">
                       {arenaCourts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Protocol Type</label>
-                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] shadow-inner">
+                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner">
                       <option>Maintenance</option>
                       <option>Privilege Block</option>
                       <option>Tournament</option>
@@ -225,22 +225,22 @@ const SlotSchedule = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Window Start</label>
-                    <input type="time" defaultValue="09:00" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
+                    <input type="time" defaultValue="09:00" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white text-[#36454F]" />
                   </div>
                   <div>
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Window End</label>
-                    <input type="time" defaultValue="11:00" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]" />
+                    <input type="time" defaultValue="11:00" className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white text-[#36454F]" />
                   </div>
                 </div>
 
                 <div>
                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Verification Note</label>
-                   <textarea placeholder="e.g. Surface polishing and light fixture repair..." rows={2} className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] resize-none" />
+                   <textarea placeholder="e.g. Surface polishing and light fixture repair..." rows={2} className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white text-[#36454F] resize-none" />
                 </div>
 
                 <button
                   onClick={() => setShowBlockModal(false)}
-                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#CE2029]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
                   Confirm Blockage <AlertTriangle size={18} strokeWidth={3} />
                 </button>

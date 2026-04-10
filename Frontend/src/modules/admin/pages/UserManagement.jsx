@@ -29,6 +29,7 @@ const UserManagement = () => {
   };
 
   const filteredUsers = MOCK_DB.users.filter(user => {
+    if (user.role === 'CUSTOMER') return false;
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'All' || user.role === roleFilter;
@@ -43,7 +44,7 @@ const UserManagement = () => {
             initial={{ opacity: 0, y: 50, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 20, x: '-50%' }}
-            className="fixed bottom-10 left-1/2 z-[1000] px-6 py-3 rounded-2xl bg-[#1a2b3c] text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 border border-white/10"
+            className="fixed bottom-10 left-1/2 z-[1000] px-6 py-3 rounded-2xl bg-[#36454F] text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 border border-white/10"
           >
             <div className={`w-6 h-6 rounded-full flex items-center justify-center ${toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'}`}>
                {toast.type === 'error' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
@@ -57,8 +58,8 @@ const UserManagement = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200">
           <div>
-            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
-              <div className="w-10 h-10 rounded-2xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
+            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#36454F]">
+              <div className="w-10 h-10 rounded-2xl bg-[#CE2029]/10 flex items-center justify-center text-[#CE2029]">
                  <Fingerprint size={24} strokeWidth={2.5} />
               </div>
               Identity Registry
@@ -67,7 +68,7 @@ const UserManagement = () => {
           </div>
           <button 
             onClick={() => setShowNewUserModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-xl hover:shadow-[#eb483f]/20 hover:-translate-y-0.5 transition-all text-[11px] font-black uppercase tracking-[0.1em] shadow-sm"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white hover:shadow-xl hover:shadow-[#CE2029]/20 hover:-translate-y-0.5 transition-all text-[11px] font-black uppercase tracking-[0.1em] shadow-sm"
           >
             <UserPlus size={16} strokeWidth={3} /> New Assignment
           </button>
@@ -76,13 +77,13 @@ const UserManagement = () => {
         {/* Global Toolbar */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="w-full sm:flex-1 relative group">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#eb483f] transition-colors" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
             <input
               type="text"
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium text-[#1a2b3c] placeholder:text-slate-400 focus:outline-none focus:border-[#eb483f] transition-all shadow-sm"
+              className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium text-[#36454F] placeholder:text-slate-400 focus:outline-none focus:border-[#CE2029] transition-all shadow-sm"
             />
           </div>
 
@@ -90,8 +91,8 @@ const UserManagement = () => {
             onClick={() => setShowFilterDrawer(true)}
             className={`w-full sm:w-auto px-6 py-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest transition-all shadow-sm ${
               roleFilter !== 'All' 
-                ? 'bg-[#eb483f]/10 border-[#eb483f] text-[#eb483f]' 
-                : 'bg-white border-slate-200 text-slate-600 hover:text-[#eb483f]'
+                ? 'bg-[#CE2029]/10 border-[#CE2029] text-[#CE2029]' 
+                : 'bg-white border-slate-200 text-slate-600 hover:text-[#CE2029]'
             }`}
           >
             <Filter size={14} /> {roleFilter !== 'All' ? roleFilter.replace('_', ' ') : 'Role Filter'}
@@ -99,10 +100,10 @@ const UserManagement = () => {
         </div>
 
         {/* Table Container */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#eb483f]/40">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#CE2029]/40">
           <div className="overflow-x-auto scrollbar-hide">
             <table className="w-full text-left whitespace-nowrap min-w-[800px]">
-              <thead className="bg-[#F8F9FA] text-[#1a2b3c] font-semibold border-b border-slate-100">
+              <thead className="bg-[#F8F9FA] text-[#36454F] font-semibold border-b border-slate-100">
                 <tr className="text-[10px] font-black uppercase tracking-[0.15em]">
                   <th className="px-6 py-4">Identity Detail</th>
                   <th className="px-6 py-4">Authentication</th>
@@ -122,11 +123,11 @@ const UserManagement = () => {
                   >
                      <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#eb483f]/5 border border-[#eb483f]/10 text-[#eb483f] font-black text-xs">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#CE2029]/5 border border-[#CE2029]/10 text-[#CE2029] font-black text-xs">
                           {user.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-extrabold text-[#1a2b3c] text-[14px] leading-tight">{user.name}</p>
+                          <p className="font-extrabold text-[#36454F] text-[14px] leading-tight">{user.name}</p>
                           <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">{user.email}</p>
                         </div>
                       </div>
@@ -134,23 +135,23 @@ const UserManagement = () => {
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] border ${
                         user.role === 'SUPER_ADMIN' 
-                          ? 'bg-[#1a2b3c] border-[#1a2b3c] text-white' 
+                          ? 'bg-[#36454F] border-[#36454F] text-white' 
                           : 'bg-slate-50 border-slate-200 text-slate-600'
                       }`}>
-                        <Shield size={10} className={user.role === 'SUPER_ADMIN' ? 'text-[#eb483f]' : 'text-slate-400'} strokeWidth={3} />
+                        <Shield size={10} className={user.role === 'SUPER_ADMIN' ? 'text-[#CE2029]' : 'text-slate-400'} strokeWidth={3} />
                         {user.role.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 font-bold text-slate-500 text-[11px] uppercase tracking-wider">
-                        <MapPin size={12} className="text-[#eb483f] opacity-60" />
+                        <MapPin size={12} className="text-[#CE2029] opacity-60" />
                         {getArenaName(user.arenaId)}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                        <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border ${
                          user.status === 'Active' 
-                           ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' 
+                           ? 'bg-[#CE2029]/10 text-[#CE2029] border-[#CE2029]/20' 
                            : 'bg-slate-100 text-slate-400 border-slate-200'
                        }`}>
                          {user.status === 'Active' ? 'Verified' : 'Inactive'}
@@ -162,8 +163,8 @@ const UserManagement = () => {
                           onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
                           className={`p-2 rounded-lg border transition-all ${
                             activeMenu === user.id
-                              ? 'bg-[#1a2b3c] border-[#1a2b3c] text-white'
-                              : 'bg-white border-slate-200 text-slate-400 hover:text-[#eb483f] hover:border-[#eb483f] shadow-sm'
+                              ? 'bg-[#36454F] border-[#36454F] text-white'
+                              : 'bg-white border-slate-200 text-slate-400 hover:text-[#CE2029] hover:border-[#CE2029] shadow-sm'
                           }`}
                         >
                           <MoreVertical size={16} strokeWidth={2.5} />
@@ -182,34 +183,34 @@ const UserManagement = () => {
                                   <div className="space-y-1">
                                     <button
                                       onClick={() => { setViewingUser(user); setActiveMenu(null); }}
-                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#1a2b3c] transition-colors group"
+                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
                                     >
-                                      <div className="p-1.5 rounded-md border bg-[#eb483f]10 border-[#eb483f]30 text-[#eb483f]">
+                                      <div className="p-1.5 rounded-md border bg-[#CE2029]10 border-[#CE2029]30 text-[#CE2029]">
                                         <Eye size={12} strokeWidth={2.5} />
                                       </div>
                                       View Profile
                                     </button>
                                     <button
                                       onClick={() => { setEditingUserDetails(user); setActiveMenu(null); }}
-                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#1a2b3c] transition-colors group"
+                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
                                     >
-                                      <div className="p-1.5 rounded-md border bg-[#eb483f]10 border-[#eb483f]30 text-[#eb483f]">
+                                      <div className="p-1.5 rounded-md border bg-[#CE2029]10 border-[#CE2029]30 text-[#CE2029]">
                                         <UserCog size={12} strokeWidth={2.5} />
                                       </div>
                                       Edit Rules
                                     </button>
                                     <button
                                       onClick={() => { showToast(`Key reset link sent to ${user.email}`); setActiveMenu(null); }}
-                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#1a2b3c] transition-colors group"
+                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
                                     >
-                                      <div className="p-1.5 rounded-md border bg-[#eb483f]10 border-[#eb483f]30 text-[#eb483f]">
+                                      <div className="p-1.5 rounded-md border bg-[#CE2029]10 border-[#CE2029]30 text-[#CE2029]">
                                         <Key size={12} strokeWidth={2.5} />
                                       </div>
                                       Reset Key
                                     </button>
                                     <button
                                       onClick={() => { showToast('User identity suspended', 'error'); setActiveMenu(null); }}
-                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#1a2b3c] transition-colors group"
+                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
                                     >
                                       <div className="p-1.5 rounded-md border bg-[#FF4B4B]10 border-[#FF4B4B]30 text-[#FF4B4B]">
                                         <UserMinus size={12} strokeWidth={2.5} />
@@ -246,12 +247,12 @@ const UserManagement = () => {
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#36454F] shadow-2xl overflow-hidden"
             >
               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                    <UserPlus className="text-[#eb483f]" size={24} strokeWidth={3} /> Assignment
+                    <UserPlus className="text-[#CE2029]" size={24} strokeWidth={3} /> Assignment
                   </h3>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Initialize user credentials</p>
                 </div>
@@ -270,7 +271,7 @@ const UserManagement = () => {
                     <input 
                       type="text" 
                       placeholder="Full Name"
-                      className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] placeholder:text-slate-400"
+                      className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F] placeholder:text-slate-400"
                     />
                   </div>
 
@@ -279,23 +280,22 @@ const UserManagement = () => {
                     <input 
                       type="email" 
                       placeholder="admin@arena.com"
-                      className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c] placeholder:text-slate-400"
+                      className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F] placeholder:text-slate-400"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Role</label>
-                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
-                        <option value="SUPER_ADMIN">Admin</option>
-                        <option value="ARENA_ADMIN">Arena Manager</option>
+                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
+                        <option value="SUPER_ADMIN">Super Admin</option>
+                        <option value="ARENA_ADMIN">Admin</option>
                         <option value="COACH">Coach</option>
-                        <option value="CUSTOMER">Customer</option>
                       </select>
                     </div>
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Arena</label>
-                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
+                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
                         {MOCK_DB.arenas.map(arena => (
                           <option key={arena.id} value={arena.id}>{arena.name.split(' ')[0]}</option>
                         ))}
@@ -305,19 +305,19 @@ const UserManagement = () => {
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-4">
-                   <ShieldCheck className="text-[#eb483f]" size={24} strokeWidth={2.5} />
+                   <ShieldCheck className="text-[#CE2029]" size={24} strokeWidth={2.5} />
                    <div className="flex-1">
-                      <p className="text-[11px] font-black uppercase tracking-widest text-[#eb483f]">Privacy & Shield</p>
+                      <p className="text-[11px] font-black uppercase tracking-widest text-[#CE2029]">Privacy & Shield</p>
                       <p className="text-[10px] font-bold text-slate-400 mt-0.5">Automated 2FA enforcement required for assignment.</p>
                    </div>
-                   <div className="w-10 h-6 bg-[#eb483f] rounded-full relative shadow-sm">
+                   <div className="w-10 h-6 bg-[#CE2029] rounded-full relative shadow-sm">
                       <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
                    </div>
                 </div>
 
                 <button 
                   onClick={() => { setShowNewUserModal(false); showToast('Assignment initialized'); }}
-                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mt-2"
+                  className="w-full py-4 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#CE2029]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mt-2"
                 >
                   Create Identity <ArrowRight size={16} strokeWidth={3} />
                 </button>
@@ -347,7 +347,7 @@ const UserManagement = () => {
             >
               <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-black font-display tracking-tight text-[#1a2b3c] uppercase">Filter Registry</h3>
+                  <h3 className="text-xl font-black font-display tracking-tight text-[#36454F] uppercase">Filter Registry</h3>
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 italic">Refine user perspective</p>
                 </div>
                 <button 
@@ -364,17 +364,16 @@ const UserManagement = () => {
                   <div className="grid grid-cols-1 gap-2">
                     {[
                       { label: 'All', value: 'All' },
-                      { label: 'Admin', value: 'SUPER_ADMIN' },
-                      { label: 'Arena Manager', value: 'ARENA_ADMIN' },
+                      { label: 'Super Admin', value: 'SUPER_ADMIN' },
+                      { label: 'Admin', value: 'ARENA_ADMIN' },
                       { label: 'Coach', value: 'COACH' },
-                      { label: 'Customer', value: 'CUSTOMER' },
                     ].map(role => (
                       <button
                         key={role.value}
                         onClick={() => setRoleFilter(role.value)}
                         className={`w-full py-4 px-5 rounded-xl border text-[11px] font-black uppercase tracking-widest text-left transition-all ${
                           roleFilter === role.value 
-                            ? 'bg-[#eb483f]/5 border-[#eb483f] text-[#eb483f] shadow-sm' 
+                            ? 'bg-[#CE2029]/5 border-[#CE2029] text-[#CE2029] shadow-sm' 
                             : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
                         }`}
                       >
@@ -388,7 +387,7 @@ const UserManagement = () => {
               <div className="p-8 border-t border-slate-100 bg-slate-50/50">
                 <button 
                   onClick={() => { setRoleFilter('All'); setShowFilterDrawer(false); }}
-                  className="w-full py-4 rounded-xl bg-[#1a2b3c] text-white text-[11px] font-black uppercase tracking-widest hover:bg-[#eb483f] transition-all shadow-md"
+                  className="w-full py-4 rounded-xl bg-[#36454F] text-white text-[11px] font-black uppercase tracking-widest hover:bg-[#CE2029] transition-all shadow-md"
                 >
                   Clear All Filters
                 </button>
@@ -403,11 +402,11 @@ const UserManagement = () => {
         {editingUserDetails && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditingUserDetails(null)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden">
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white text-[#36454F] shadow-2xl overflow-hidden">
                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <div>
                     <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                       <UserCog className="text-[#eb483f]" size={24} strokeWidth={3} /> Edit Rules
+                       <UserCog className="text-[#CE2029]" size={24} strokeWidth={3} /> Edit Rules
                     </h3>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Update {editingUserDetails.name}'s scope</p>
                   </div>
@@ -419,16 +418,15 @@ const UserManagement = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">New Role</label>
-                      <select defaultValue={editingUserDetails.role} className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
-                        <option value="SUPER_ADMIN">Admin</option>
-                        <option value="ARENA_ADMIN">Arena Manager</option>
+                      <select defaultValue={editingUserDetails.role} className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
+                        <option value="SUPER_ADMIN">Super Admin</option>
+                        <option value="ARENA_ADMIN">Admin</option>
                         <option value="COACH">Coach</option>
-                        <option value="CUSTOMER">Customer</option>
                       </select>
                     </div>
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Arena Scope</label>
-                      <select defaultValue={editingUserDetails.arenaId} className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]">
+                      <select defaultValue={editingUserDetails.arenaId} className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
                          <option value="all">Global</option>
                         {MOCK_DB.arenas.map(arena => (
                           <option key={arena.id} value={arena.id}>{arena.name.split(' ')[0]}</option>
@@ -438,7 +436,7 @@ const UserManagement = () => {
                   </div>
                   <button 
                     onClick={() => { setEditingUserDetails(null); showToast('Rules updated successfully'); }}
-                    className="w-full py-4 rounded-xl bg-[#eb483f] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-lg transition-all"
+                    className="w-full py-4 rounded-xl bg-[#CE2029] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-lg transition-all"
                   >
                     Save Changes
                   </button>
@@ -457,7 +455,7 @@ const UserManagement = () => {
               initial={{ scale: 0.95, opacity: 0, y: 10 }} 
               animate={{ scale: 1, opacity: 1, y: 0 }} 
               exit={{ scale: 0.95, opacity: 0, y: 10 }} 
-              className="relative w-full max-w-[420px] rounded-[32px] bg-white text-[#1a2b3c] shadow-2xl overflow-hidden border border-white/20 p-6 md:p-7"
+              className="relative w-full max-w-[420px] rounded-[32px] bg-white text-[#36454F] shadow-2xl overflow-hidden border border-white/20 p-6 md:p-7"
             >
                {/* Background Watermark */}
                <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
@@ -467,13 +465,13 @@ const UserManagement = () => {
                {/* Header Block - Compact Horizontal */}
                <div className="flex items-center justify-between mb-6 relative z-10">
                   <div className="flex items-center gap-4">
-                     <div className="w-14 h-14 rounded-2xl bg-[#eb483f] flex items-center justify-center text-xl font-black text-white shadow-lg shadow-[#eb483f]/20">
+                     <div className="w-14 h-14 rounded-2xl bg-[#CE2029] flex items-center justify-center text-xl font-black text-white shadow-lg shadow-[#CE2029]/20">
                         {viewingUser.name.charAt(0)}
                      </div>
                      <div className="min-w-0">
-                        <h3 className="text-xl font-black tracking-tight text-[#1a2b3c] leading-none mb-1.5 truncate">{viewingUser.name}</h3>
+                        <h3 className="text-xl font-black tracking-tight text-[#36454F] leading-none mb-1.5 truncate">{viewingUser.name}</h3>
                         <div className="flex items-center gap-2">
-                           <span className="text-[9px] font-black uppercase tracking-widest text-[#eb483f]">{viewingUser.role.replace('_', ' ')}</span>
+                           <span className="text-[9px] font-black uppercase tracking-widest text-[#CE2029]">{viewingUser.role.replace('_', ' ')}</span>
                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100">
                               <Activity size={8} strokeWidth={3} />
                               <span className="text-[7px] font-black uppercase tracking-widest">LIVE</span>
@@ -483,7 +481,7 @@ const UserManagement = () => {
                   </div>
                   <button 
                     onClick={() => setViewingUser(null)} 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 text-slate-400 border border-slate-100 hover:bg-[#eb483f] hover:text-white transition-all shadow-sm"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 text-slate-400 border border-slate-100 hover:bg-[#CE2029] hover:text-white transition-all shadow-sm"
                   >
                       <X size={16} strokeWidth={3} />
                   </button>
@@ -491,29 +489,29 @@ const UserManagement = () => {
                
                {/* Core Information Grid (1x2 to save space) */}
                <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#eb483f]30 hover:shadow-sm">
-                     <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[#eb483f] mb-3">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#CE2029]30 hover:shadow-sm">
+                     <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[#CE2029] mb-3">
                         <MapPin size={16} strokeWidth={2.5} />
                      </div>
                      <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Arena Scope</p>
-                     <p className="font-black text-[12px] text-[#1a2b3c] truncate">{getArenaName(viewingUser.arenaId)}</p>
+                     <p className="font-black text-[12px] text-[#36454F] truncate">{getArenaName(viewingUser.arenaId)}</p>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#eb483f]30 hover:shadow-sm">
-                     <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[#eb483f] mb-3">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#CE2029]30 hover:shadow-sm">
+                     <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[#CE2029] mb-3">
                         <Mail size={16} strokeWidth={2.5} />
                      </div>
                      <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Registry Email</p>
-                     <p className="font-black text-[12px] text-[#1a2b3c] truncate">{viewingUser.email}</p>
+                     <p className="font-black text-[12px] text-[#36454F] truncate">{viewingUser.email}</p>
                   </div>
                </div>
                
                {/* Actions Bar - Compact */}
                <div className="flex gap-2 relative z-10">
-                  <button className="flex-1 py-3 rounded-xl bg-[#eb483f] text-white text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-[#eb483f]/20 hover:-translate-y-0.5 transition-all"> 
+                  <button className="flex-1 py-3 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-[#CE2029]/20 hover:-translate-y-0.5 transition-all"> 
                      Contact Identity
                   </button>
-                  <button className="flex-[0.6] py-3 rounded-xl bg-[#1a2b3c] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#eb483f] transition-all"> 
+                  <button className="flex-[0.6] py-3 rounded-xl bg-[#36454F] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#CE2029] transition-all"> 
                      Audit Log
                   </button>
                </div>

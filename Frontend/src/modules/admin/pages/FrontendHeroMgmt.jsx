@@ -66,9 +66,9 @@ const FrontendHeroMgmt = () => {
         {toast && (
           <motion.div 
             initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-white text-[#1a2b3c] px-5 py-2.5 rounded-xl shadow-2xl border border-[#eb483f]/20 flex items-center gap-2.5"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-white text-[#36454F] px-5 py-2.5 rounded-xl shadow-2xl border border-[#CE2029]/20 flex items-center gap-2.5"
           >
-            <CheckCircle2 size={16} className="text-[#eb483f]" />
+            <CheckCircle2 size={16} className="text-[#CE2029]" />
             <span className="text-[10px] font-bold uppercase tracking-widest">{toast}</span>
           </motion.div>
         )}
@@ -76,12 +76,12 @@ const FrontendHeroMgmt = () => {
 
       <div className="flex justify-between items-center pb-4 border-b border-slate-200">
         <div>
-           <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.15em] text-[#eb483f] mb-1">
+           <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.15em] text-[#CE2029] mb-1">
               <LayoutPanelTop size={10} /> Site Manager
            </div>
-           <h1 className="text-xl font-bold tracking-tight text-[#1a2b3c]">Hero Banners</h1>
+           <h1 className="text-xl font-bold tracking-tight text-[#36454F]">Hero Banners</h1>
         </div>
-        <button onClick={openAdd} className="bg-[#eb483f] text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-md shadow-[#eb483f]/10 hover:-translate-y-0.5 transition-all flex items-center gap-2">
+        <button onClick={openAdd} className="bg-[#CE2029] text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-md shadow-[#CE2029]/10 hover:-translate-y-0.5 transition-all flex items-center gap-2">
            <Plus size={14} /> Add Slide
         </button>
       </div>
@@ -104,7 +104,7 @@ const FrontendHeroMgmt = () => {
                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
                  
                  <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => openEdit(banner)} className="p-1.5 bg-white/90 backdrop-blur-md rounded-lg text-slate-800 hover:bg-[#eb483f] hover:text-white transition-all shadow-sm">
+                    <button onClick={() => openEdit(banner)} className="p-1.5 bg-white/90 backdrop-blur-md rounded-lg text-slate-800 hover:bg-[#CE2029] hover:text-white transition-all shadow-sm">
                        <Edit3 size={12} />
                     </button>
                     <button onClick={() => deleteBanner(banner.id)} className="p-1.5 bg-white/90 backdrop-blur-md rounded-lg text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm">
@@ -120,12 +120,12 @@ const FrontendHeroMgmt = () => {
 
               <div className="p-3 flex justify-between items-center bg-slate-50/30">
                  <div className="flex items-center gap-1.5">
-                    <div className="w-6 h-6 rounded bg-white border border-slate-200 flex items-center justify-center text-[#eb483f] text-[9px] font-bold">
+                    <div className="w-6 h-6 rounded bg-white border border-slate-200 flex items-center justify-center text-[#CE2029] text-[9px] font-bold">
                        {index + 1}
                     </div>
                     <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Pos</span>
                  </div>
-                 <button className="flex items-center gap-1 py-1 px-3 rounded-full bg-[#eb483f] text-white text-[8px] font-bold uppercase tracking-widest">
+                 <button className="flex items-center gap-1 py-1 px-3 rounded-full bg-[#CE2029] text-white text-[8px] font-bold uppercase tracking-widest">
                     {banner.buttonText}
                  </button>
               </div>
@@ -134,18 +134,18 @@ const FrontendHeroMgmt = () => {
       </div>
 
       {/* Manual Explainer */}
-      <div className="mt-8 p-6 bg-[#eb483f]/5 border border-[#eb483f]/10 rounded-2xl relative overflow-hidden">
+      <div className="mt-8 p-6 bg-[#CE2029]/5 border border-[#CE2029]/10 rounded-2xl relative overflow-hidden">
          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-               <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#eb483f] mb-2">Recommended Size</h4>
+               <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#CE2029] mb-2">Recommended Size</h4>
                <p className="text-[11px] text-slate-600 font-medium leading-relaxed">Images in 16:9 aspect ratio work best. Minimum width 1200px.</p>
             </div>
             <div>
-               <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#eb483f] mb-2">Content Strategy</h4>
+               <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#CE2029] mb-2">Content Strategy</h4>
                <p className="text-[11px] text-slate-600 font-medium leading-relaxed">Keep titles short (max 30 chars). Use high-contrast images.</p>
             </div>
             <div>
-               <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#eb483f] mb-2">Action Links</h4>
+               <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#CE2029] mb-2">Action Links</h4>
                <p className="text-[11px] text-slate-600 font-medium leading-relaxed">Use valid app paths like /events, /arenas/1, or /coaching.</p>
             </div>
          </div>
@@ -174,7 +174,7 @@ const FrontendHeroMgmt = () => {
                
                <div className="p-8">
                   <div className="flex justify-between items-center mb-8">
-                     <h3 className="text-lg font-bold uppercase tracking-tight text-[#1a2b3c]">
+                     <h3 className="text-lg font-bold uppercase tracking-tight text-[#36454F]">
                         {editingId ? 'Edit Slide Details' : 'Design New Slide'}
                      </h3>
                      <button onClick={() => setShowModal(false)} className="p-1.5 hover:bg-slate-50 rounded-lg transition-all">
@@ -184,31 +184,31 @@ const FrontendHeroMgmt = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#eb483f] ml-1">Main Title</label>
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#CE2029] ml-1">Main Title</label>
                         <input 
                            type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})}
-                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#1a2b3c] outline-none focus:border-[#eb483f] transition-colors"
+                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#36454F] outline-none focus:border-[#CE2029] transition-colors"
                         />
                      </div>
                      <div className="space-y-1.5">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Sub-headline</label>
                         <input 
                            type="text" value={form.subtitle} onChange={e => setForm({...form, subtitle: e.target.value})}
-                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#1a2b3c] outline-none focus:border-[#eb483f] transition-colors"
+                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#36454F] outline-none focus:border-[#CE2029] transition-colors"
                         />
                      </div>
                      <div className="space-y-1.5">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">CTA Button Text</label>
                         <input 
                            type="text" value={form.buttonText} onChange={e => setForm({...form, buttonText: e.target.value})}
-                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#1a2b3c] outline-none focus:border-[#eb483f] transition-colors"
+                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#36454F] outline-none focus:border-[#CE2029] transition-colors"
                         />
                      </div>
                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#eb483f] ml-1">Destination URL</label>
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#CE2029] ml-1">Destination URL</label>
                         <input 
                            type="text" value={form.link} onChange={e => setForm({...form, link: e.target.value})}
-                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#1a2b3c] outline-none focus:border-[#eb483f] transition-colors"
+                           className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#36454F] outline-none focus:border-[#CE2029] transition-colors"
                         />
                      </div>
                      
@@ -218,7 +218,7 @@ const FrontendHeroMgmt = () => {
                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#6366f1]">Background Image</label>
                           <button 
                             onClick={() => fileInputRef.current?.click()}
-                            className="bg-slate-100 hover:bg-white hover:shadow-sm border border-slate-200 text-[#1a2b3c] px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
+                            className="bg-slate-100 hover:bg-white hover:shadow-sm border border-slate-200 text-[#36454F] px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
                           >
                             <Upload size={10} /> Gallery
                           </button>
@@ -228,7 +228,7 @@ const FrontendHeroMgmt = () => {
                           <input 
                             type="text" value={form.image} onChange={e => setForm({...form, image: e.target.value})}
                             placeholder="Enter image URL or pick from gallery"
-                            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-10 text-xs font-semibold text-[#1a2b3c] outline-none focus:border-[#eb483f] transition-colors"
+                            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-10 text-xs font-semibold text-[#36454F] outline-none focus:border-[#CE2029] transition-colors"
                           />
                           <Cloud size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
                           
@@ -242,7 +242,7 @@ const FrontendHeroMgmt = () => {
                   </div>
 
                   <div className="mt-8">
-                     <button onClick={saveBanner} className="w-full py-4 bg-[#eb483f] text-white rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-[#eb483f]/10 hover:-translate-y-0.5 transition-all">
+                     <button onClick={saveBanner} className="w-full py-4 bg-[#CE2029] text-white rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-[#CE2029]/10 hover:-translate-y-0.5 transition-all">
                         Apply Changes to Live Slider
                      </button>
                   </div>

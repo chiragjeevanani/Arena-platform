@@ -26,7 +26,7 @@ const INITIAL_SPONSORS = [
     contractEnd: '2026-12-30', 
     equity: 12500, 
     logo: 'Y',
-    color: '#eb483f'
+    color: '#CE2029'
   },
   { 
     id: 2, 
@@ -39,7 +39,7 @@ const INITIAL_SPONSORS = [
     contractEnd: '2027-01-15', 
     equity: 8000, 
     logo: 'RB',
-    color: '#1a2b3c'
+    color: '#36454F'
   },
   { 
     id: 3, 
@@ -84,6 +84,8 @@ const Sponsorships = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [toast, setToast] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [selectedSponsorId, setSelectedSponsorId] = useState('');
 
   // Stats
   const totalEquity = sponsors.reduce((acc, sp) => acc + sp.equity, 0);
@@ -111,6 +113,23 @@ const Sponsorships = () => {
     }
   };
 
+  const handleIntegrateAsset = () => {
+    if (!selectedEventId || !selectedSponsorId) {
+      showToast('Please select both a Deployment Target and Assigned Asset');
+      return;
+    }
+    const newMapping = {
+      id: Date.now(),
+      eventId: Number(selectedEventId),
+      sponsorId: Number(selectedSponsorId),
+      type: 'Linked Asset'
+    };
+    setMappings(prev => [...prev, newMapping]);
+    setSelectedEventId('');
+    setSelectedSponsorId('');
+    showToast('Asset successfully integrated with Deployment Target');
+  };
+
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
@@ -122,12 +141,12 @@ const Sponsorships = () => {
   };
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen font-['Inter',_sans-serif] text-[#1E293B] relative antialiased selection:bg-[#eb483f]/10">
+    <div className="bg-[#F8FAFC] min-h-screen font-['Inter',_sans-serif] text-[#1E293B] relative antialiased selection:bg-[#CE2029]/10">
       {/* Hyper-Compact Sticky Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 md:px-6 py-3 shadow-sm">
         <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#eb483f] flex items-center justify-center text-white shadow-sm shadow-[#eb483f]/20">
+            <div className="w-8 h-8 rounded-lg bg-[#CE2029] flex items-center justify-center text-white shadow-sm shadow-[#CE2029]/20">
               <Briefcase size={16} strokeWidth={2.5} />
             </div>
             <div>
@@ -147,7 +166,7 @@ const Sponsorships = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${
                     activeTab === tab.id 
-                      ? 'bg-white text-[#eb483f] shadow-sm' 
+                      ? 'bg-white text-[#CE2029] shadow-sm' 
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -159,7 +178,7 @@ const Sponsorships = () => {
             <div className="w-px h-6 bg-slate-200 mx-1" />
             <button 
               onClick={() => { setEditingSponsor(null); setShowModal(true); }}
-              className="px-4 py-1.5 rounded-lg bg-[#eb483f] text-white text-[11px] font-bold uppercase tracking-wider hover:shadow-md hover:bg-[#d43d35] transition-all flex items-center gap-2"
+              className="px-4 py-1.5 rounded-lg bg-[#CE2029] text-white text-[11px] font-bold uppercase tracking-wider hover:shadow-md hover:bg-[#d43d35] transition-all flex items-center gap-2"
             >
               <Plus size={14} strokeWidth={3} /> Onboard
             </button>
@@ -172,16 +191,16 @@ const Sponsorships = () => {
         {/* Compact Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {[
-            { label: 'Valuation', value: `${totalEquity.toLocaleString()} OMR`, icon: TrendingUp, color: '#eb483f', trend: '+12%' },
-            { label: 'Partners', value: activeSponsors, icon: Users, color: '#1a2b3c', trend: 'Active' },
+            { label: 'Valuation', value: `${totalEquity.toLocaleString()} OMR`, icon: TrendingUp, color: '#CE2029', trend: '+12%' },
+            { label: 'Partners', value: activeSponsors, icon: Users, color: '#36454F', trend: 'Active' },
             { label: 'Expiring', value: expiringSoon, icon: Clock, color: '#f59e0b', trend: 'Soon' },
             { label: 'Expired', value: expiredSponsors, icon: AlertCircle, color: '#ef4444', trend: 'Audit' }
           ].map((stat, i) => (
-            <div key={i} className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-[#eb483f]/30 transition-all group relative overflow-hidden">
+            <div key={i} className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-[#CE2029]/30 transition-all group relative overflow-hidden">
                <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br transition-all group-hover:scale-110 opacity-[0.03]`} style={{ background: stat.color }} />
                <div className="flex justify-between items-start mb-2">
                  <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500">{stat.label}</p>
-                 <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-50 text-slate-400 group-hover:text-[#eb483f] transition-colors" style={{ color: stat.color + 'aa' }}>
+                 <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-50 text-slate-400 group-hover:text-[#CE2029] transition-colors" style={{ color: stat.color + 'aa' }}>
                     <stat.icon size={14} strokeWidth={2.5} />
                  </div>
                </div>
@@ -204,7 +223,7 @@ const Sponsorships = () => {
                     placeholder="Search brand entities..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-9 pl-9 pr-4 rounded-lg bg-slate-50 text-[12px] font-medium outline-none focus:bg-white focus:ring-1 focus:ring-[#eb483f]/20 border border-transparent focus:border-[#eb483f]/30 transition-all"
+                    className="w-full h-9 pl-9 pr-4 rounded-lg bg-slate-50 text-[12px] font-medium outline-none focus:bg-white focus:ring-1 focus:ring-[#CE2029]/20 border border-transparent focus:border-[#CE2029]/30 transition-all"
                   />
                </div>
                <div className="flex items-center gap-2 w-full md:w-auto">
@@ -280,7 +299,7 @@ const Sponsorships = () => {
                              </td>
                              <td className="px-5 py-3 text-right">
                                <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#eb483f] transition-all">
+                                  <button className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#CE2029] transition-all">
                                     <Settings size={13} />
                                   </button>
                                   <button onClick={() => handleDelete(sp.id)} className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
@@ -314,19 +333,19 @@ const Sponsorships = () => {
                       <div className="space-y-4">
                          <div className="space-y-1">
                             <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Deployment Target</label>
-                            <select className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#eb483f]/40 transition-all">
+                            <select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#CE2029]/40 transition-all">
                                <option value="">Select Event...</option>
                                {EVENTS_DATA.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
                             </select>
                          </div>
                          <div className="space-y-1">
                             <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Assigned Asset</label>
-                            <select className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#eb483f]/40 transition-all">
+                            <select value={selectedSponsorId} onChange={(e) => setSelectedSponsorId(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#CE2029]/40 transition-all">
                                <option value="">Select Sponsor...</option>
                                {sponsors.filter(s => s.status === 'Active').map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
                             </select>
                          </div>
-                         <button className="w-full py-2.5 rounded-lg bg-[#0F172A] text-white text-[11px] font-bold uppercase tracking-wider hover:bg-black transition-all mt-2 flex items-center justify-center gap-2">
+                         <button onClick={handleIntegrateAsset} className="w-full py-2.5 rounded-lg bg-[#0F172A] text-white text-[11px] font-bold uppercase tracking-wider hover:bg-black transition-all mt-2 flex items-center justify-center gap-2">
                             Integrate Asset <CheckCircle2 size={13} />
                          </button>
                       </div>
@@ -334,7 +353,7 @@ const Sponsorships = () => {
                    
                    <div className="p-5 rounded-xl bg-slate-900 text-white relative overflow-hidden group border border-slate-800">
                       <div className="relative z-10">
-                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#eb483f] mb-1">Strategic Logic</p>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#CE2029] mb-1">Strategic Logic</p>
                         <h4 className="text-sm font-bold mb-1">Asset Propagation</h4>
                         <p className="text-[11px] font-medium text-slate-400 leading-snug">
                           Mapping optimizes regional brand resonance across nodes.
@@ -348,7 +367,7 @@ const Sponsorships = () => {
                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden h-full min-h-[400px]">
                       <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                          <h3 className="text-sm font-bold tracking-tight text-[#0F172A]">Active Mapping Matrix</h3>
-                         <span className="px-2 py-0.5 rounded-md bg-[#eb483f]/10 text-[#eb483f] text-[9px] font-bold uppercase tracking-widest border border-[#eb483f]/20">
+                         <span className="px-2 py-0.5 rounded-md bg-[#CE2029]/10 text-[#CE2029] text-[9px] font-bold uppercase tracking-widest border border-[#CE2029]/20">
                             {mappings.length} Nodes
                          </span>
                       </div>
@@ -378,7 +397,7 @@ const Sponsorships = () => {
                                         </div>
                                      </td>
                                      <td className="px-6 py-3 text-right">
-                                        <button className="text-slate-300 hover:text-red-400 transition-colors">
+                                        <button onClick={() => { if(window.confirm('Remove this asset integration?')) { setMappings(prev => prev.filter(m => m.id !== map.id)); showToast('Integration removed from registry.'); } }} className="text-slate-300 hover:text-red-400 transition-colors">
                                            <Trash2 size={13} />
                                         </button>
                                      </td>
@@ -411,13 +430,13 @@ const Sponsorships = () => {
                 <div className="md:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                    <div className="flex justify-between items-center mb-6">
                       <h3 className="text-sm font-bold tracking-tight text-[#0F172A]">Equity Optimization Metrics</h3>
-                      <button className="p-1.5 rounded-lg border border-slate-100 text-slate-400 hover:text-[#eb483f] transition-all"><Download size={14} /></button>
+                      <button className="p-1.5 rounded-lg border border-slate-100 text-slate-400 hover:text-[#CE2029] transition-all"><Download size={14} /></button>
                    </div>
                    
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                       {[
-                        { label: 'Infrastructure', value: 45, color: '#eb483f' },
-                        { label: 'Strategic Networking', value: 30, color: '#1a2b3c' },
+                        { label: 'Infrastructure', value: 45, color: '#CE2029' },
+                        { label: 'Strategic Networking', value: 30, color: '#36454F' },
                         { label: 'Event Core', value: 20, color: '#0078D4' },
                         { label: 'Digital Display', value: 5, color: '#6e9e10' }
                       ].map((bar, i) => (
@@ -491,7 +510,7 @@ const Sponsorships = () => {
                 <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
                     <div>
                       <h3 className="text-base font-bold tracking-tight">{editingSponsor ? 'Modify Protocol' : 'Onboard Partner'}</h3>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#eb483f] mt-0.5">Deployment Framework</p>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#CE2029] mt-0.5">Deployment Framework</p>
                     </div>
                     <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-all shadow-sm">
                       <X size={16} strokeWidth={3} />
@@ -501,7 +520,7 @@ const Sponsorships = () => {
                 <div className="p-6 space-y-4">
                    <div className="space-y-1">
                       <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Brand Node Name</label>
-                      <input type="text" placeholder="e.g. Under Armour" defaultValue={editingSponsor?.name || ''} className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:ring-1 focus:ring-[#eb483f]/20 focus:border-[#eb483f]/40 transition-all" />
+                      <input type="text" placeholder="e.g. Under Armour" defaultValue={editingSponsor?.name || ''} className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:ring-1 focus:ring-[#CE2029]/20 focus:border-[#CE2029]/40 transition-all" />
                    </div>
 
                    <div className="grid grid-cols-2 gap-4">
@@ -532,7 +551,7 @@ const Sponsorships = () => {
 
                    <div className="pt-4 flex gap-2">
                       <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 text-[11px] font-bold uppercase hover:bg-slate-50 transition-all font-mono">Abort</button>
-                      <button onClick={() => setShowModal(false)} className="flex-[1.5] py-2.5 rounded-lg bg-[#eb483f] text-white text-[11px] font-bold uppercase tracking-widest shadow-md shadow-[#eb483f]/20 hover:bg-[#d43d35] transition-all flex items-center justify-center gap-2">Deploy <CheckCircle2 size={14} /></button>
+                      <button onClick={() => setShowModal(false)} className="flex-[1.5] py-2.5 rounded-lg bg-[#CE2029] text-white text-[11px] font-bold uppercase tracking-widest shadow-md shadow-[#CE2029]/20 hover:bg-[#d43d35] transition-all flex items-center justify-center gap-2">Deploy <CheckCircle2 size={14} /></button>
                    </div>
                 </div>
              </motion.div>

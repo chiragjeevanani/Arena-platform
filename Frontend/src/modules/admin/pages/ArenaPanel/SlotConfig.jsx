@@ -56,17 +56,17 @@ const SlotConfig = () => {
   const nonPrimeCount = allSlots.filter(s => s.type === 'nonPrime').length;
 
   return (
-    <div className="font-sans text-[#1a2b3c] max-w-[1600px] mx-auto border-t border-slate-100 tracking-tight bg-[#F9FAFB]">
+    <div className="font-sans text-[#36454F] max-w-[1600px] mx-auto border-t border-slate-100 tracking-tight bg-[#F9FAFB]">
       <div className="mx-auto space-y-4 py-4">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 pb-3 border-b border-slate-200 bg-white p-4 shadow-sm rounded-sm">
            <div>
-              <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[0.3em] text-[#eb483f] mb-1">
-                 <div className="w-3 h-[1.5px] bg-[#eb483f]" />
+              <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[0.3em] text-[#CE2029] mb-1">
+                 <div className="w-3 h-[1.5px] bg-[#CE2029]" />
                  <Clock size={10} /> Operational Timeline
               </div>
-              <h2 className="text-xl md:text-2xl font-bold text-[#0A1121] tracking-tight leading-none uppercase">Slot Configuration</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-[#36454F] tracking-tight leading-none uppercase">Slot Configuration</h2>
               <p className="text-[9px] font-medium text-slate-600 uppercase tracking-widest mt-2 flex items-center gap-2">
                  <span className="w-1 h-1 rounded-full bg-slate-400" /> Define Prime &amp; Non-Prime time slots per day type
               </p>
@@ -75,8 +75,8 @@ const SlotConfig = () => {
            <div className="flex items-center gap-2 w-full md:w-auto">
               <div className="flex bg-slate-50 p-1 border border-slate-200 rounded-sm">
                  {[
-                   { label: 'Weekday', value: totalWeekday, color: 'text-[#0A1121]' },
-                   { label: 'Weekend', value: totalWeekend, color: 'text-[#eb483f]' },
+                   { label: 'Weekday', value: totalWeekday, color: 'text-[#36454F]' },
+                   { label: 'Weekend', value: totalWeekend, color: 'text-[#CE2029]' },
                    { label: 'Prime', value: primeCount, color: 'text-amber-500' },
                    { label: 'Non-Prime', value: nonPrimeCount, color: 'text-slate-500' },
                  ].map((s, i) => (
@@ -88,28 +88,26 @@ const SlotConfig = () => {
               </div>
               <button 
                  onClick={() => setShowModal(true)}
-                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-[#0A1121] text-white hover:bg-black transition-all text-[9.5px] font-bold uppercase tracking-widest shadow-md active:translate-y-0.5"
+                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-[#36454F] text-white hover:bg-black transition-all text-[9.5px] font-bold uppercase tracking-widest shadow-md active:translate-y-0.5"
               >
                  <Plus size={14} strokeWidth={3} /> Define Slot
               </button>
            </div>
         </div>
 
-        {/* Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        {/* Compact Metrics Bar */}
+        <div className="flex flex-wrap items-center gap-3">
            {[
-             { label: 'Avg Duration', value: `${avgDuration}min`, icon: Timer, color: '#eb483f' },
-             { label: 'System Active', value: '24/7', icon: Activity, color: '#10b981' },
              { label: 'Prime Slots', value: primeCount, icon: Star, color: '#f59e0b' },
              { label: 'Non-Prime', value: nonPrimeCount, icon: CalendarDays, color: '#6366f1' }
            ].map((stat, i) => (
-             <div key={i} className="bg-white border border-slate-200 p-2.5 rounded-sm flex items-center justify-between transition-all hover:bg-slate-50 shadow-sm">
-                <div>
-                   <p className="text-[7.5px] font-bold text-slate-600 uppercase tracking-[0.25em] mb-0.5">{stat.label}</p>
-                   <p className="text-lg font-bold text-[#0A1121]">{stat.value}</p>
+             <div key={i} className="bg-white border border-slate-200 px-4 py-2.5 rounded-sm flex items-center gap-6 transition-all hover:bg-slate-50 shadow-sm min-w-[200px]">
+                <div className="flex-1">
+                   <p className="text-[7.5px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-0.5">{stat.label}</p>
+                   <p className="text-sm font-black text-[#36454F] leading-tight">{stat.value.toString().padStart(2, '0')}</p>
                 </div>
-                <div className="w-8 h-8 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center">
-                   <stat.icon size={14} style={{ color: stat.color }} strokeWidth={2.5} />
+                <div className="w-7 h-7 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                   <stat.icon size={12} style={{ color: stat.color }} strokeWidth={3} />
                 </div>
              </div>
            ))}
@@ -139,12 +137,12 @@ const SlotConfig = () => {
                 <button key={t.key} onClick={() => setActiveTab(t.key)}
                   className={`flex-1 flex items-center justify-center gap-3 py-3 transition-all border-b-2 relative ${
                     activeTab === t.key
-                      ? 'border-[#eb483f] text-[#0A1121] bg-white'
+                      ? 'border-[#CE2029] text-[#36454F] bg-white'
                       : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50'
                   }`}>
                   <t.icon size={14} /> 
                   <span className="text-[10px] font-black uppercase tracking-widest">{t.label} Registry</span>
-                  <span className={`px-2 py-0.5 rounded-sm text-[8px] font-bold ${activeTab === t.key ? 'bg-[#eb483f] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`px-2 py-0.5 rounded-sm text-[8px] font-bold ${activeTab === t.key ? 'bg-[#CE2029] text-white' : 'bg-slate-100 text-slate-500'}`}>
                     {slots[t.key].length}
                   </span>
                 </button>
@@ -198,12 +196,12 @@ const SlotConfig = () => {
                              <div className="flex items-center justify-between w-full px-2">
                                 <div className="text-center">
                                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest block mb-0.5">Start</span>
-                                   <span className="text-[16px] font-bold text-[#0A1121] leading-none">{slot.startTime}</span>
+                                   <span className="text-[16px] font-bold text-[#36454F] leading-none">{slot.startTime}</span>
                                 </div>
                                 <div className="w-px h-6 bg-slate-100" />
                                 <div className="text-center">
                                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest block mb-0.5">End</span>
-                                   <span className="text-[16px] font-bold text-[#0A1121] leading-none">{slot.endTime}</span>
+                                   <span className="text-[16px] font-bold text-[#36454F] leading-none">{slot.endTime}</span>
                                 </div>
                              </div>
                           </div>
@@ -236,23 +234,23 @@ const SlotConfig = () => {
         {showModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowModal(false)} className="absolute inset-0 bg-[#0A1121]/80 backdrop-blur-sm" />
+              onClick={() => setShowModal(false)} className="absolute inset-0 bg-[#36454F]/80 backdrop-blur-sm" />
             
             <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }}
               className="relative w-full max-w-sm rounded-sm bg-white border border-white/10 shadow-2xl overflow-hidden font-sans">
 
-              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#0A1121]">
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#36454F]">
                 <div>
                   <h3 className="text-xl font-bold uppercase tracking-tight italic">Define Time Slot</h3>
                   <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-1">New slot for {activeTab} schedule</p>
                 </div>
-                <button onClick={() => setShowModal(false)} className="text-slate-300 hover:text-[#0A1121] transition-colors"><X size={18} /></button>
+                <button onClick={() => setShowModal(false)} className="text-slate-300 hover:text-[#36454F] transition-colors"><X size={18} /></button>
               </div>
 
               <div className="p-6 space-y-5 bg-[#F9FAFB]/30">
                 {/* Slot Type Selection */}
                 <div className="space-y-2">
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Slot Classification</label>
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#36454F] block">Slot Classification</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { value: 'prime', label: 'Prime', icon: Star, desc: 'High-demand rate', color: 'amber' },
@@ -281,19 +279,19 @@ const SlotConfig = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Start Time</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#36454F] block">Start Time</label>
                     <input type="time" value={form.startTime}
-                      onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#eb483f]" />
+                      onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#CE2029]" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">End Time</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-[#36454F] block">End Time</label>
                     <input type="time" value={form.endTime}
-                      onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#eb483f]" />
+                      onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#CE2029]" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#0A1121] block">Duration</label>
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#36454F] block">Duration</label>
                   <select value={form.duration} onChange={e => setForm(p => ({ ...p, duration: Number(e.target.value) }))} className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase cursor-pointer">
                     <option value={30}>30 Minutes</option>
                     <option value={45}>45 Minutes</option>
@@ -305,11 +303,11 @@ const SlotConfig = () => {
 
                 <div className="pt-2">
                   <button onClick={addSlot}
-                    className="w-full h-12 rounded-sm bg-[#0A1121] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md">
+                    className="w-full h-12 rounded-sm bg-[#36454F] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md">
                     Add Slot <Plus size={16} strokeWidth={3} />
                   </button>
                   <button onClick={() => setShowModal(false)}
-                    className="w-full mt-2 text-[8px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1121] transition-colors py-2">
+                    className="w-full mt-2 text-[8px] font-black uppercase tracking-widest text-slate-500 hover:text-[#36454F] transition-colors py-2">
                     Cancel
                   </button>
                 </div>

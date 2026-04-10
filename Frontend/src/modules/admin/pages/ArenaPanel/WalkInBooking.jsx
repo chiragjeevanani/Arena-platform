@@ -78,8 +78,8 @@ const WalkInBooking = () => {
 
         {/* 1. Court Selection */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-          <h3 className="text-sm font-black uppercase tracking-widest text-[#1a2b3c] mb-4 flex items-center gap-2">
-            <div className="w-1.5 h-4 bg-[#eb483f] rounded-full" />
+          <h3 className="text-sm font-black uppercase tracking-widest text-[#36454F] mb-4 flex items-center gap-2">
+            <div className="w-1.5 h-4 bg-[#CE2029] rounded-full" />
             1. Select Court
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -87,11 +87,11 @@ const WalkInBooking = () => {
               <button key={court.id} onClick={() => setSelectedCourt(court)}
                 className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
                   selectedCourt?.id === court.id
-                    ? 'border-[#eb483f] bg-[#eb483f]/5 text-[#eb483f]'
+                    ? 'border-[#CE2029] bg-[#CE2029]/5 text-[#CE2029]'
                     : 'border-slate-100 hover:border-slate-200 text-slate-500'
                 }`}>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  selectedCourt?.id === court.id ? 'bg-[#eb483f] text-white' : 'bg-slate-100'
+                  selectedCourt?.id === court.id ? 'bg-[#CE2029] text-white' : 'bg-slate-100'
                 }`}>
                   <span className="text-xs font-black">{court.name.split(' ')[1]}</span>
                 </div>
@@ -103,7 +103,7 @@ const WalkInBooking = () => {
 
         {/* 2. Slot Selection */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-          <h3 className="text-sm font-black uppercase tracking-widest text-[#1a2b3c] mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-black uppercase tracking-widest text-[#36454F] mb-4 flex items-center gap-2">
             <div className="w-1.5 h-4 bg-[#6366f1] rounded-full" />
             2. Select Time Slots
           </h3>
@@ -185,7 +185,7 @@ const WalkInBooking = () => {
       {/* Right: Customer & Payment */}
       <div className="space-y-5">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-5 sticky top-4 space-y-5">
-          <h3 className="text-sm font-black uppercase tracking-widest text-[#1a2b3c] flex items-center gap-2">
+          <h3 className="text-sm font-black uppercase tracking-widest text-[#36454F] flex items-center gap-2">
             <div className="w-1.5 h-4 bg-[#22c55e] rounded-full" />
             3. Customer Details
           </h3>
@@ -195,13 +195,13 @@ const WalkInBooking = () => {
               <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input type="text" placeholder="Customer Name" value={customer.name}
                 onChange={e => setCustomer({ ...customer, name: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-10 pr-4 text-xs font-bold focus:border-[#eb483f] outline-none transition-all" />
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-10 pr-4 text-xs font-bold focus:border-[#CE2029] outline-none transition-all" />
             </div>
             <div className="relative">
               <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input type="text" placeholder="Phone Number" value={customer.phone}
                 onChange={e => setCustomer({ ...customer, phone: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-10 pr-4 text-xs font-bold focus:border-[#eb483f] outline-none transition-all" />
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-10 pr-4 text-xs font-bold focus:border-[#CE2029] outline-none transition-all" />
             </div>
 
             {/* ── Member Toggle ── */}
@@ -239,8 +239,8 @@ const WalkInBooking = () => {
                 <button key={m} onClick={() => setPaymentMethod(m)}
                   className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
                     paymentMethod === m
-                      ? 'bg-[#1a2b3c] border-[#1a2b3c] text-white'
-                      : 'bg-white border-slate-200 text-slate-400 hover:border-[#1a2b3c]'
+                      ? 'bg-[#36454F] border-[#36454F] text-white'
+                      : 'bg-white border-slate-200 text-slate-400 hover:border-[#36454F]'
                   }`}>{m}</button>
               ))}
             </div>
@@ -263,7 +263,7 @@ const WalkInBooking = () => {
                         isPrime ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'
                       }`}>{isPrime ? 'Prime' : 'Non-Prime'}</span>
                     </div>
-                    <span className="font-black text-[#1a2b3c]">OMR {price.toFixed(3)}</span>
+                    <span className="font-black text-[#36454F]">OMR {price.toFixed(3)}</span>
                   </div>
                 );
               })}
@@ -283,7 +283,7 @@ const WalkInBooking = () => {
               {/* Auto Total */}
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Auto Total</span>
-                <span className={`text-lg font-black ${adminOverrideEnabled ? 'text-slate-300 line-through' : 'text-[#1a2b3c]'}`}>
+                <span className={`text-lg font-black ${adminOverrideEnabled ? 'text-slate-300 line-through' : 'text-[#36454F]'}`}>
                   OMR {calculateAutoTotal().toFixed(3)}
                 </span>
               </div>
@@ -337,8 +337,8 @@ const WalkInBooking = () => {
 
               {/* Final Total */}
               <div className="flex justify-between items-baseline pt-1 border-t border-slate-200">
-                <span className="text-[11px] font-black uppercase tracking-widest text-[#eb483f]">Final Total</span>
-                <span className={`text-2xl font-black ${adminOverrideEnabled && adminOverridePrice ? 'text-orange-500' : 'text-[#1a2b3c]'}`}>
+                <span className="text-[11px] font-black uppercase tracking-widest text-[#CE2029]">Final Total</span>
+                <span className={`text-2xl font-black ${adminOverrideEnabled && adminOverridePrice ? 'text-orange-500' : 'text-[#36454F]'}`}>
                   OMR {getFinalTotal().toFixed(3)}
                 </span>
               </div>
@@ -353,7 +353,7 @@ const WalkInBooking = () => {
               isBooked
                 ? 'bg-green-500 text-white shadow-green-500/20'
                 : selectedSlots.length > 0 && customer.name
-                  ? 'bg-[#eb483f] text-white shadow-[#eb483f]/20 hover:shadow-[#eb483f]/40 hover:-translate-y-0.5'
+                  ? 'bg-[#CE2029] text-white shadow-[#CE2029]/20 hover:shadow-[#CE2029]/40 hover:-translate-y-0.5'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}>
             {isBooked

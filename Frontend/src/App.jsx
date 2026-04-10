@@ -51,6 +51,8 @@ import RetailPOS from './modules/admin/pages/RetailPOS';
 import FinancialReports from './modules/admin/pages/FinancialReports';
 import AccountSettings from './modules/admin/pages/AccountSettings';
 import AdminLogin from './modules/admin/pages/AdminLogin';
+import MembershipMgmt from './modules/admin/pages/MembershipMgmt';
+import ActiveMemberships from './modules/admin/pages/ActiveMemberships';
 import Placeholder from './modules/admin/pages/Placeholder';
 
 // Coach Pages
@@ -61,6 +63,11 @@ import CoachSignup from './modules/coach/pages/CoachSignup';
 import AttendanceRecords from './modules/coach/pages/AttendanceRecords';
 import ScheduleCalendar from './modules/coach/pages/ScheduleCalendar';
 import ProgressTracker from './modules/coach/pages/ProgressTracker';
+import CoachBatches from './modules/coach/pages/CoachBatches';
+import BatchDetails from './modules/coach/pages/BatchDetails';
+import BatchStudents from './modules/coach/pages/BatchStudents';
+import StudentPerformance from './modules/coach/pages/StudentPerformance';
+import CoachProfile from './modules/coach/pages/CoachProfile';
 
 // Admin Extra Pages
 import PricingManagement from './modules/admin/pages/PricingManagement';
@@ -88,6 +95,17 @@ const muiTheme = createTheme({
   typography: {
     fontFamily: '"Outfit", sans-serif',
     fontSize: 16.5,
+  },
+  palette: {
+    text: {
+      primary: '#36454F',
+      secondary: '#818589',
+    },
+    grey: {
+      400: '#818589',
+      500: '#818589',
+      600: '#818589',
+    }
   },
   components: {
     MuiButton: {
@@ -157,6 +175,8 @@ function App() {
             <Route path="pos" element={<RetailPOS />} />
             <Route path="reports" element={<FinancialReports />} />
             <Route path="pricing" element={<PricingManagement />} />
+            <Route path="membership" element={<MembershipMgmt />} />
+            <Route path="membership/active" element={<ActiveMemberships />} />
             <Route path="user/hero" element={<FrontendHeroMgmt />} />
             <Route path="user/events" element={<EventBanners />} />
             <Route path="user/booking" element={<FrontendCategoryMgmt />} />
@@ -171,9 +191,14 @@ function App() {
           <Route path="/coach" element={<CoachLayout />}>
             <Route index element={<CoachDashboard />} />
             <Route path="schedule" element={<ScheduleCalendar />} />
+            <Route path="batches" element={<CoachBatches />} />
+            <Route path="batches/:id" element={<BatchDetails />} />
+            <Route path="batches/:id/students" element={<BatchStudents />} />
+            <Route path="students/:id/performance" element={<StudentPerformance />} />
             <Route path="students" element={<MyStudents />} />
             <Route path="attendance" element={<AttendanceRecords />} />
             <Route path="progress" element={<ProgressTracker />} />
+            <Route path="profile" element={<CoachProfile />} />
           </Route>
 
           <Route path="/coach/login" element={<CoachLogin />} />

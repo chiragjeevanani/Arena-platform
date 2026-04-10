@@ -57,21 +57,21 @@ const MembershipAdmin = () => {
 
   const filtered = filterCat === 'all' ? plans : plans.filter(p => p.category === filterCat);
 
-  const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-sm font-medium text-slate-800 outline-none focus:border-[#eb483f] focus:bg-white transition-all";
+  const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-sm font-medium text-slate-800 outline-none focus:border-[#CE2029] focus:bg-white transition-all";
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-black text-[#1a2b3c] uppercase tracking-widest">Membership Plans</h2>
+          <h2 className="text-lg font-black text-[#36454F] uppercase tracking-widest">Membership Plans</h2>
           <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">
             {plans.length} total · {plans.filter(p => p.status === 'active').length} active
           </p>
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#eb483f] text-white text-[10px] font-black uppercase tracking-widest shadow-sm hover:shadow-md hover:bg-[#d83f36] transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest shadow-sm hover:shadow-md hover:bg-[#d83f36] transition-all"
         >
           <Plus size={14} strokeWidth={3} /> Add Plan
         </button>
@@ -82,7 +82,7 @@ const MembershipAdmin = () => {
         {['all', 'premium', 'non-premium', 'individual'].map(c => (
           <button key={c} onClick={() => setFilterCat(c)}
             className={`px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest whitespace-nowrap border transition-all ${
-              filterCat === c ? 'bg-[#1a2b3c] text-white border-[#1a2b3c]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
+              filterCat === c ? 'bg-[#36454F] text-white border-[#36454F]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
             }`}>
             {c === 'all' ? 'All' : CATEGORY_META[c]?.label}
           </button>
@@ -104,7 +104,7 @@ const MembershipAdmin = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm font-black text-[#1a2b3c]">{plan.name}</h4>
+                      <h4 className="text-sm font-black text-[#36454F]">{plan.name}</h4>
                       {plan.bestValue && (
                         <span className="px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-widest border border-amber-200 flex items-center gap-1">
                           <Star size={8} fill="currentColor" /> Best Value
@@ -125,16 +125,16 @@ const MembershipAdmin = () => {
                         <Zap size={9} /> {plan.discountPercent}% off
                       </span>
                     </div>
-                    <p className="text-xs font-black text-[#1a2b3c] mt-1.5">OMR {Number(plan.price).toFixed(3)}</p>
+                    <p className="text-xs font-black text-[#36454F] mt-1.5">OMR {Number(plan.price).toFixed(3)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button onClick={() => toggleStatus(plan.id)} title="Toggle active/disabled">
                     {plan.status === 'active'
-                      ? <ToggleRight size={22} className="text-[#eb483f]" />
+                      ? <ToggleRight size={22} className="text-[#CE2029]" />
                       : <ToggleLeft size={22} className="text-slate-300" />}
                   </button>
-                  <button onClick={() => openEdit(plan)} className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#eb483f] hover:border-[#eb483f]/30 transition-all">
+                  <button onClick={() => openEdit(plan)} className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#CE2029] hover:border-[#CE2029]/30 transition-all">
                     <Edit3 size={13} />
                   </button>
                   <button onClick={() => deletePlan(plan.id)} className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 transition-all">
@@ -155,9 +155,9 @@ const MembershipAdmin = () => {
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
             <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
               className="relative w-full max-w-md bg-white rounded-[24px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-              <div className="h-1 w-full bg-gradient-to-r from-[#eb483f] to-amber-400" />
+              <div className="h-1 w-full bg-gradient-to-r from-[#CE2029] to-amber-400" />
               <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <h3 className="text-base font-black text-[#1a2b3c] uppercase tracking-widest">
+                <h3 className="text-base font-black text-[#36454F] uppercase tracking-widest">
                   {editingPlan ? 'Edit Plan' : 'New Plan'}
                 </h3>
                 <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 transition-all">
@@ -221,7 +221,7 @@ const MembershipAdmin = () => {
               </div>
 
               <div className="p-5 border-t border-slate-100 shrink-0">
-                <button onClick={handleSave} className="w-full py-3 rounded-xl bg-[#eb483f] text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#d83f36] transition-all shadow-md">
+                <button onClick={handleSave} className="w-full py-3 rounded-xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#d83f36] transition-all shadow-md">
                   <Save size={15} /> {editingPlan ? 'Update Plan' : 'Create Plan'}
                 </button>
               </div>

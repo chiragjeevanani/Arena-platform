@@ -67,18 +67,18 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
         className="relative"
       >
         {index > 0 && (
-          <div className="absolute -top-6 left-6 w-[2px] h-6 bg-gradient-to-b from-transparent to-[#eb483f]/20" />
+          <div className="absolute -top-6 left-6 w-[2px] h-6 bg-gradient-to-b from-transparent to-[#CE2029]/20" />
         )}
 
         <div className={`rounded-xl transition-all duration-500 group border relative flex flex-col ${
           isCancelled ? 'opacity-50 grayscale' :
           isDark
-            ? 'glass-card border-white/5 bg-white/5 hover:border-[#eb483f]/20 shadow-2xl shadow-black/40'
+            ? 'glass-card border-white/5 bg-white/5 hover:border-[#CE2029]/20 shadow-2xl shadow-black/40'
             : 'bg-white border-blue-50 shadow-[0_15px_35px_-12px_rgba(10,31,68,0.12)] hover:shadow-[0_25px_50px_-15px_rgba(10,31,68,0.2)] hover:border-blue-200'
         }`}>
-          <div className="flex items-stretch h-[160px]">
+          <div className="flex items-stretch h-[170px]">
             {/* Arena Image */}
-            <div className="w-[110px] relative overflow-hidden flex-shrink-0">
+            <div className="w-[125px] relative overflow-hidden flex-shrink-0">
               <img
                 src={booking.arenaImage}
                 alt={booking.arenaName}
@@ -95,11 +95,11 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
             </div>
 
             {/* Content */}
-            <div className="flex-1 p-4 flex flex-col justify-between">
-              <div className="space-y-1">
-                <div className="flex justify-between items-start gap-2">
-                  <div className="flex flex-col gap-0.5">
-                    <h4 className="font-black text-[14px] leading-tight tracking-tight line-clamp-1 text-[#0F172A]">{booking.arenaName}</h4>
+            <div className="flex-1 p-4 flex flex-col justify-between overflow-hidden">
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-start gap-1">
+                  <div className="flex flex-col gap-0.5 max-w-[70%]">
+                    <h4 className="font-black text-[15px] leading-tight tracking-tight line-clamp-2 text-[#36454F]">{booking.arenaName}</h4>
                     {/* Prime slot highlight */}
                     {isPrimeSlot && !isCancelled && (
                       <div className="flex items-center gap-1">
@@ -108,44 +108,44 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
                       </div>
                     )}
                   </div>
-                  <div className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest border shrink-0 ${
+                  <div className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest border shrink-0 mt-0.5 ${
                     isCancelled ? 'bg-red-50 border-red-100 text-red-500' :
                     booking.status === 'Upcoming' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400'
                   }`}>{booking.status}</div>
                 </div>
-                <div className="flex items-center gap-1 opacity-50">
-                  <MapPin size={10} className="text-[#0F172A]" strokeWidth={3} />
-                  <span className="text-[9px] font-bold truncate max-w-[100px] text-[#0F172A]">{booking.location}</span>
+                <div className="flex items-center gap-1.5 opacity-60">
+                  <MapPin size={10} className="text-slate-400" strokeWidth={3} />
+                  <span className="text-[9px] font-bold truncate text-slate-500">{booking.location}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 py-2.5 border-t border-dashed border-slate-100">
+              <div className="grid grid-cols-2 gap-2 py-3 border-t border-dashed border-slate-100">
                 <div className="space-y-0.5">
-                  <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-40 text-[#eb483f]">Date</p>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar size={11} className="text-[#eb483f]" strokeWidth={2.5} />
-                    <span className="text-[10px] font-black tracking-tight text-[#eb483f]">{booking.date}</span>
+                  <p className="text-[8px] font-black uppercase tracking-[0.15em] opacity-40 text-[#CE2029]">Date</p>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={12} className="text-[#CE2029]" strokeWidth={2.5} />
+                    <span className="text-[12px] font-black tracking-tight text-[#CE2029]">{booking.date}</span>
                   </div>
                 </div>
                 <div className="space-y-0.5">
-                  <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-40 text-[#eb483f]">Court</p>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1 h-1 rounded-full bg-[#eb483f]" />
-                    <span className="text-[10px] font-black text-[#eb483f]">{booking.courtName}</span>
+                  <p className="text-[8px] font-black uppercase tracking-[0.15em] opacity-40 text-[#CE2029]">Court</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#CE2029]" />
+                    <span className="text-[12px] font-black text-[#CE2029]">{booking.courtName}</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-between items-end">
                 <div className="space-y-0.5">
-                  <p className="text-[7px] font-black uppercase tracking-[0.15em] opacity-40 text-[#eb483f]">Time Slot</p>
-                  <div className="flex items-center gap-1">
-                    <Clock size={11} className="text-blue-500" strokeWidth={2.5} />
-                    <span className="text-[10px] font-black tracking-tight text-[#eb483f]">{booking.slot}</span>
+                  <p className="text-[8px] font-black uppercase tracking-[0.15em] opacity-40 text-[#CE2029]">Time Slot</p>
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={12} className="text-blue-500" strokeWidth={2.5} />
+                    <span className="text-[12px] font-black tracking-tight text-[#CE2029]">{booking.slot}</span>
                   </div>
                 </div>
                 {booking.status === 'Completed' && (
-                  <span className="text-[10px] font-black text-[#eb483f]/50">OMR {Number(booking.price).toFixed(3)}</span>
+                  <span className="text-[12px] font-black text-[#CE2029]/50">OMR {Number(booking.price).toFixed(3)}</span>
                 )}
               </div>
             </div>
@@ -155,9 +155,9 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
           <div className="px-3 pb-3 pt-0 bg-slate-50/30 rounded-b-xl">
             {/* Countdown row */}
             {booking.status === 'Upcoming' && !isCancelled && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-100 shadow-sm mb-2 w-fit">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-100 shadow-sm mb-3 w-fit">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#FFD600] animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Starts in {countdown}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.1em] text-amber-500">Starts in {countdown}</span>
               </div>
             )}
             {/* Buttons row — always full width */}
@@ -166,13 +166,13 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
                 <>
                   <button
                     onClick={() => setShowRescheduleModal(true)}
-                    className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider border border-slate-200 bg-white text-slate-500 hover:border-[#eb483f]/30 hover:text-[#eb483f] transition-all active:scale-95"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-slate-200 bg-white text-slate-500 hover:border-[#CE2029]/30 hover:text-[#CE2029] transition-all active:scale-95"
                   >
                     <RefreshCw size={10} strokeWidth={3} /> Reschedule
                   </button>
                   <button
                     onClick={() => setShowCancelModal(true)}
-                    className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider border border-red-100 bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-red-100 bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"
                   >
                     <X size={10} strokeWidth={3} /> Cancel
                   </button>
@@ -180,7 +180,7 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
               )}
               <button
                 onClick={() => navigate(`/bookings/${booking.id || new Date().getTime()}`, { state: { booking } })}
-                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl font-black text-[9px] uppercase tracking-wider bg-[#0F172A] text-white transition-all active:scale-95 hover:bg-[#eb483f] ${
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider bg-[#0F172A] text-white transition-all active:scale-95 hover:bg-[#CE2029] ${
                   booking.status === 'Upcoming' && !isCancelled ? 'px-4' : 'flex-1 px-4'
                 }`}
               >
@@ -201,9 +201,9 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
                 <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
                   <AlertTriangle size={28} className="text-red-500" strokeWidth={2.5} />
                 </div>
-                <h3 className="text-lg font-black text-[#1a2b3c] text-center">Cancel Booking?</h3>
+                <h3 className="text-lg font-black text-[#36454F] text-center">Cancel Booking?</h3>
                 <p className="text-xs text-slate-500 text-center mt-2 leading-relaxed">
-                  Are you sure you want to cancel your booking at <span className="font-bold text-[#1a2b3c]">{booking.arenaName}</span>? A refund of <span className="font-bold text-[#eb483f]">OMR {Number(booking.price).toFixed(3)}</span> will be processed within 5–7 business days.
+                  Are you sure you want to cancel your booking at <span className="font-bold text-[#36454F]">{booking.arenaName}</span>? A refund of <span className="font-bold text-[#CE2029]">OMR {Number(booking.price).toFixed(3)}</span> will be processed within 5–7 business days.
                 </p>
                 <div className="mt-6 flex gap-3">
                   <button onClick={() => setShowCancelModal(false)} className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-wider hover:bg-slate-50 transition-all">Keep It</button>
@@ -225,11 +225,11 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
             <motion.div initial={{ scale: 0.92, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.92, opacity: 0, y: 20 }} className="relative w-full max-w-sm bg-white rounded-[28px] shadow-2xl overflow-hidden border border-slate-100">
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-11 h-11 rounded-2xl bg-[#eb483f]/10 flex items-center justify-center">
-                    <RefreshCw size={20} className="text-[#eb483f]" strokeWidth={2.5} />
+                  <div className="w-11 h-11 rounded-2xl bg-[#CE2029]/10 flex items-center justify-center">
+                    <RefreshCw size={20} className="text-[#CE2029]" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-[#1a2b3c]">Reschedule Booking</h3>
+                    <h3 className="text-base font-black text-[#36454F]">Reschedule Booking</h3>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{booking.arenaName}</p>
                   </div>
                   <button onClick={() => setShowRescheduleModal(false)} className="ml-auto w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50">
@@ -245,13 +245,13 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
                       value={rescheduleDate}
                       onChange={(e) => setRescheduleDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] focus:bg-white transition-all"
+                      className="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] outline-none focus:border-[#CE2029] focus:bg-white transition-all"
                     />
                   </div>
                   <div>
                     <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Current Time Slot</label>
                     <div className="py-3 px-4 rounded-2xl border border-slate-100 bg-slate-50 text-sm font-bold text-slate-400 flex items-center gap-2">
-                      <Clock size={14} className="text-[#eb483f]" />{booking.slot}
+                      <Clock size={14} className="text-[#CE2029]" />{booking.slot}
                     </div>
                   </div>
                   <div className="p-3 rounded-2xl bg-amber-50 border border-amber-100">
@@ -259,7 +259,7 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
                   </div>
                 </div>
 
-                <button onClick={handleReschedule} disabled={rescheduledDone || !rescheduleDate} className="w-full mt-5 py-3.5 rounded-2xl bg-[#eb483f] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60">
+                <button onClick={handleReschedule} disabled={rescheduledDone || !rescheduleDate} className="w-full mt-5 py-3.5 rounded-2xl bg-[#CE2029] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60">
                   {rescheduledDone ? <><CheckCircle size={16} /> Rescheduled!</> : <><RefreshCw size={14} /> Confirm Reschedule</>}
                 </button>
               </div>

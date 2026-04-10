@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2 } from 'lucide-react';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { ARENAS, USER_BOOKINGS, COACHING_BATCHES, USER_MEMBERSHIP } from '../../../data/mockData';
+import { AnimatePresence } from 'framer-motion';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -14,371 +16,780 @@ const Profile = () => {
   const activeCoaching = COACHING_BATCHES[0];
   const favoriteArenas = ARENAS; // Mock favorite arenas
 
+  // Performance Matrix Mock Data
+  const [performanceMode, setPerformanceMode] = useState('weekly');
+  const [showReportCard, setShowReportCard] = useState(false);
+
+  const performanceData = {
+    weekly: {
+      overall: 84,
+      trend: '+4%',
+      categories: [
+        { 
+          name: 'Foundations', 
+          score: 8.5,
+          metrics: [
+            { name: 'Grip', score: 8 },
+            { name: 'Footwork (Front)', score: 9 },
+            { name: 'Footwork (Back)', score: 8.5 }
+          ]
+        },
+        { 
+          name: 'Service', 
+          score: 7.0,
+          metrics: [
+            { name: 'Serve (Front)', score: 7.5 },
+            { name: 'Serve (Back)', score: 6.5 }
+          ]
+        },
+        { 
+          name: 'Forehand', 
+          score: 9.2,
+          metrics: [
+            { name: 'Forehand Toss', score: 8.5 },
+            { name: 'Forehand Smash', score: 9.5 },
+            { name: 'Forehand Drop', score: 8.9 },
+            { name: 'Forehand Dribble', score: 8.0 }
+          ]
+        },
+        { 
+          name: 'Backhand', 
+          score: 6.5,
+          metrics: [
+            { name: 'Backhand Drive', score: 6.0 },
+            { name: 'Backhand Smash', score: 7.0 },
+            { name: 'Backhand Drop', score: 8.0 },
+            { name: 'Backhand Dribble', score: 7.5 }
+          ]
+        },
+        { 
+          name: 'Physical & Mental', 
+          score: 8.0,
+          metrics: [
+            { name: 'Leg Strength', score: 8.5 },
+            { name: 'Arm Strength', score: 8.0 },
+            { name: 'Movement Speed', score: 8.5 },
+            { name: 'Game Strategy', score: 7.5 },
+            { name: 'Mental Strength', score: 8.0 }
+          ]
+        },
+        { 
+          name: 'Consistency', 
+          score: 9.4,
+          metrics: [
+            { name: 'Attendance', score: 9.4 }
+          ]
+        }
+      ]
+    },
+    monthly: {
+      overall: 78,
+      trend: '+12%',
+      categories: [
+        { 
+          name: 'Foundations', 
+          score: 7.8,
+          metrics: [
+            { name: 'Grip', score: 7.5 },
+            { name: 'Footwork (Front)', score: 8.0 },
+            { name: 'Footwork (Back)', score: 7.8 }
+          ]
+        },
+        { 
+          name: 'Service', 
+          score: 6.5,
+          metrics: [
+            { name: 'Serve (Front)', score: 7.0 },
+            { name: 'Serve (Back)', score: 6.0 }
+          ]
+        },
+        { 
+          name: 'Forehand', 
+          score: 8.5,
+          metrics: [
+            { name: 'Forehand Toss', score: 8.0 },
+            { name: 'Forehand Smash', score: 8.8 },
+            { name: 'Forehand Drop', score: 8.2 },
+            { name: 'Forehand Dribble', score: 8.0 }
+          ]
+        },
+        { 
+          name: 'Backhand', 
+          score: 5.8,
+          metrics: [
+            { name: 'Backhand Drive', score: 5.5 },
+            { name: 'Backhand Smash', score: 6.1 },
+            { name: 'Backhand Drop', score: 6.0 },
+            { name: 'Backhand Dribble', score: 5.8 }
+          ]
+        },
+        { 
+          name: 'Physical & Mental', 
+          score: 7.5,
+          metrics: [
+            { name: 'Leg Strength', score: 7.0 },
+            { name: 'Arm Strength', score: 7.5 },
+            { name: 'Movement Speed', score: 7.8 },
+            { name: 'Game Strategy', score: 7.2 },
+            { name: 'Mental Strength', score: 8.0 }
+          ]
+        },
+        { 
+          name: 'Consistency', 
+          score: 9.0,
+          metrics: [
+            { name: 'Attendance', score: 9.0 }
+          ]
+        }
+      ]
+    }
+  };
+
   const menuItems = [
     { icon: History, label: 'Booking History', path: '/bookings' },
     { icon: Wallet, label: 'My Wallet Tracker', path: '/profile/wallet' },
+    { icon: Crown, label: 'My Membership Plan', path: '/membership' },
     { icon: Shield, label: 'Privacy & Security', path: '/profile/privacy' },
     { icon: HelpCircle, label: 'Help & Support', path: '/profile/help' },
   ];
 
   return (
     <div className={`min-h-screen pb-24 relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0a0a0c]' : 'bg-[#fafafa]'}`}>
-      
-      {/* Background Decorative Glows */}
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className={`absolute top-[40%] -left-32 w-[300px] h-[300px] rounded-full blur-[100px] pointer-events-none ${isDark ? 'bg-blue-500/10' : 'bg-blue-400/10'}`} />
+      <div id="profile-page-content">
+        {/* Background Decorative Glows */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#CE2029]/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className={`absolute top-[40%] -left-32 w-[300px] h-[300px] rounded-full blur-[100px] pointer-events-none ${isDark ? 'bg-blue-500/10' : 'bg-blue-400/10'}`} />
 
-      {/* HEADER SECTION (Red Bar matching other global layouts) */}
-      <div className={`px-4 md:px-6 py-6 pb-8 rounded-b-[2rem] relative overflow-hidden transition-all duration-500 z-[100] mb-6 shadow-xl bg-[#eb483f]`}>
-        {/* Subtle dynamic pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:16px_16px]" />
-        
-        <div className="flex items-center justify-between relative z-10 w-full max-w-5xl mx-auto">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/5 border-white/10 text-white hover:bg-white/10 shadow-sm"
-            >
-              <ArrowLeft size={18} />
-            </button>
+        {/* HEADER SECTION (Red Bar matching other global layouts) */}
+        <div className={`px-4 md:px-6 py-6 pb-8 rounded-b-[2rem] relative overflow-hidden transition-all duration-500 z-[100] mb-6 shadow-xl bg-[#CE2029]`}>
+          {/* Subtle dynamic pattern overlay */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:16px_16px]" />
+          
+          <div className="flex items-center justify-between relative z-10 w-full max-w-5xl mx-auto">
             <div className="flex items-center gap-3">
-              <div className="relative group cursor-pointer" onClick={() => navigate('/profile/edit')}>
-                <div className="w-11 h-11 rounded-full overflow-hidden border-2 p-0.5 shadow-md border-white/20">
-                  <img
-                    src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
-                    alt="User"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-xl font-black font-display leading-tight tracking-tight text-white shadow-sm">
-                  Muhammad <span className="text-white/80">A.</span>
-                </h1>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Lvl 4 Premium</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button onClick={() => navigate('/profile/edit')} className="w-9 h-9 rounded-xl flex items-center justify-center transition-all bg-white/5 text-white/80 border border-white/10 hover:bg-white/10 hover:text-white shadow-sm">
-            <Pencil size={18} />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 md:px-6 max-w-5xl mx-auto relative z-20">
-        
-        {/* HERO DASHBOARD GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          
-          {/* 1. Next Match Widget */}
-          <div className="md:col-span-8 group">
-            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Next Up</h3>
-            {nextMatch ? (
-              <motion.div 
-                whileHover={{ y: -2 }}
-                className={`relative rounded-2xl overflow-hidden border p-4 shadow-sm transition-all hover:shadow-md ${
-                  isDark 
-                    ? 'bg-[#12141a] border-white/5 group-hover:border-white/10' 
-                    : 'bg-white border-slate-100'
-                }`}
+              <button
+                onClick={() => navigate(-1)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/5 border-white/10 text-white hover:bg-white/10 shadow-sm"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#eb483f]/10 to-transparent rounded-bl-full pointer-events-none" />
-                
-                <div className="flex flex-row items-center justify-between gap-4 relative z-10 w-full">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden shadow-sm flex-shrink-0 border border-slate-200/20">
-                      <img src={nextMatch.arenaImage} alt="Arena" className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex flex-col justify-center">
-                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#eb483f]/10 text-[#eb483f] mb-1.5 w-max">
-                        <Zap size={10} className="fill-[#eb483f]" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider">Today, 7:00 PM</span>
-                      </div>
-                      <h4 className={`text-sm md:text-base font-bold leading-tight line-clamp-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {nextMatch.arenaName}
-                      </h4>
-                      <p className={`text-[11px] mt-0.5 flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        <MapPin size={10} /> {nextMatch.courtName}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="hidden md:flex items-center gap-2">
-                    <button className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#eb483f] text-white font-bold text-xs shadow-sm hover:shadow-md transition-all hover:bg-[#d83f36]">
-                      <Ticket size={14} /> Ticket
-                    </button>
+                <ArrowLeft size={18} />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="relative group cursor-pointer" onClick={() => navigate('/profile/edit')}>
+                  <div className="w-11 h-11 rounded-full overflow-hidden border-2 p-0.5 shadow-md border-white/20">
+                    <img
+                      src={localStorage.getItem('userProfileImage') || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"}
+                      alt="User"
+                      className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
+                    />
                   </div>
                 </div>
-              </motion.div>
-            ) : (
-              <div className={`rounded-2xl border border-dashed flex items-center justify-center p-6 text-center ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#eb483f]/10 text-[#eb483f] flex items-center justify-center">
-                    <Ticket size={16} />
-                  </div>
-                  <div className="text-left">
-                    <p className={`text-xs font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>No upcoming matches</p>
-                    <button onClick={() => navigate('/arenas')} className="text-[#eb483f] text-[10px] font-bold uppercase tracking-wider hover:underline">Book a Court</button>
+                <div>
+                  <h1 className="text-xl font-black font-display leading-tight tracking-tight text-white shadow-sm">
+                    Muhammad <span className="text-white/80">A.</span>
+                  </h1>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Lvl 4 Premium</span>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* 2. Wallet & Finance Snapshot */}
-          <div className="md:col-span-4 group">
-            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Wallet</h3>
-            <div className={`h-[90px] md:h-[102px] rounded-2xl border p-4 flex justify-between relative overflow-hidden transition-all shadow-sm ${
-              isDark 
-                ? 'bg-gradient-to-br from-[#16181f] to-[#12141a] border-white/5 group-hover:border-white/10' 
-                : 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-800' // Keep it dark and premium even on light mode
-            }`}>
-              <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:12px_12px]" />
-              
-              <div className="relative z-10 flex flex-col justify-center">
-                <div className="flex items-center gap-1.5 mb-1 text-white/60">
-                  <Wallet size={12} />
-                  <p className="text-[9px] uppercase tracking-wider font-bold">Balance</p>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-white/80 text-sm font-bold">OMR </span>
-                  <span className="text-white text-2xl md:text-3xl font-black tracking-tight">1.450</span>
-                </div>
-              </div>
-
-              <div className="relative z-10 flex flex-col items-end gap-2 justify-center">
-                <button onClick={() => navigate('/profile/wallet')} className="px-3 py-1.5 rounded-lg bg-[#eb483f] text-white text-[10px] md:text-xs font-bold tracking-wide hover:bg-[#d83f36] transition-colors shadow-sm w-full text-center">
-                  Top Up
-                </button>
-                <button onClick={() => navigate('/bookings')} className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-[10px] md:text-xs font-bold tracking-wide hover:bg-white/20 transition-colors shadow-sm w-full text-center backdrop-blur-md border border-white/5">
-                  History
-                </button>
               </div>
             </div>
+            <button onClick={() => navigate('/profile/edit')} className="w-9 h-9 rounded-xl flex items-center justify-center transition-all bg-white/5 text-white/80 border border-white/10 hover:bg-white/10 hover:text-white shadow-sm">
+              <Pencil size={18} />
+            </button>
           </div>
         </div>
 
-        {/* SECONDARY GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-6">
+        <div className="px-4 md:px-6 max-w-5xl mx-auto relative z-20">
           
-          {/* 3. Favorite Arenas (Compact) */}
-          <div className="md:col-span-7">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Book It Again</h3>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar snap-x">
-              {favoriteArenas.map((arena) => (
-                <div key={arena.id} onClick={() => navigate(`/arenas/${arena.id}`)} className={`min-w-[190px] md:min-w-[220px] p-2.5 rounded-2xl border cursor-pointer group transition-all snap-start shadow-sm hover:shadow-md ${
-                  isDark ? 'bg-[#12141a] border-white/5 hover:border-[#eb483f]/30' : 'bg-white border-slate-100 hover:border-[#eb483f]/40'
-                }`}>
-                  <div className="flex gap-2.5 items-center">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 relative">
-                      <img src={arena.image} alt={arena.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                    </div>
-                    <div className="overflow-hidden">
-                      <h4 className={`text-xs font-bold tracking-tight truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>{arena.name}</h4>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Star size={9} className="text-[#eb483f] fill-[#eb483f]" />
-                        <span className={`text-[9px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'} truncate`}>{arena.rating} • {arena.distance}</span>
+          {/* HERO DASHBOARD GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            
+            {/* 1. Next Match Widget */}
+            <div className="md:col-span-8 group">
+              <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Next Up</h3>
+              {nextMatch ? (
+                <motion.div 
+                  whileHover={{ y: -2 }}
+                  className={`relative rounded-2xl overflow-hidden border p-4 shadow-sm transition-all hover:shadow-md ${
+                    isDark 
+                      ? 'bg-[#12141a] border-white/5 group-hover:border-white/10' 
+                      : 'bg-white border-slate-100'
+                  }`}
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#CE2029]/10 to-transparent rounded-bl-full pointer-events-none" />
+                  
+                  <div className="flex flex-row items-center justify-between gap-4 relative z-10 w-full">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden shadow-sm flex-shrink-0 border border-slate-200/20">
+                        <img src={nextMatch.arenaImage} alt="Arena" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex flex-col justify-center">
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#CE2029]/10 text-[#CE2029] mb-1.5 w-max">
+                          <Zap size={10} className="fill-[#CE2029]" />
+                          <span className="text-[9px] font-bold uppercase tracking-wider">Today, 7:00 PM</span>
+                        </div>
+                        <h4 className={`text-sm md:text-base font-bold leading-tight line-clamp-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          {nextMatch.arenaName}
+                        </h4>
+                        <p className={`text-[11px] mt-0.5 flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                          <MapPin size={10} /> {nextMatch.courtName}
+                        </p>
                       </div>
                     </div>
+                    <div className="hidden md:flex items-center gap-2">
+                      <button className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#CE2029] text-white font-bold text-xs shadow-sm hover:shadow-md transition-all hover:bg-[#d83f36]">
+                        <Ticket size={14} /> Ticket
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 4. Active Coaching Combined */}
-          <div className="md:col-span-5">
-             <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Coaching</h3>
-             {activeCoaching ? (
-               <div className={`p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between transition-all ${
-                 isDark ? 'bg-[#12141a] border-white/5 hover:border-white/10' : 'bg-white border-slate-100 hover:border-slate-200'
-               }`}>
-                 <div className="flex gap-3 items-center w-full">
-                   <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-100 flex-shrink-0">
-                     <img src={activeCoaching.image} alt="Coach" className="w-full h-full object-cover" />
-                   </div>
-                   <div className="flex-1">
-                     <div className="flex items-center justify-between mb-1.5">
-                       <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{activeCoaching.coachName}</h4>
-                       <span className={`text-[9px] font-black tracking-wide text-[#eb483f]`}>12/15</span>
-                     </div>
-                     <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
-                        <motion.div 
-                          className="h-full bg-[#eb483f] rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "80%" }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             ) : (
-               <div className={`h-[68px] md:h-[74px] rounded-2xl border border-dashed flex items-center justify-center p-4 text-center ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
-                 <span className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>No active coaching</span>
-               </div>
-             )}
-          </div>
-        </div>
-
-        {/* MY MEMBERSHIP SECTION */}
-        <div className="mt-6">
-          <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Membership</h3>
-          {USER_MEMBERSHIP.status === 'none' ? (
-            <div
-              onClick={() => navigate('/membership')}
-              className={`cursor-pointer rounded-2xl border border-dashed p-4 flex items-center gap-3 transition-all hover:border-[#eb483f]/40 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50 hover:bg-[#eb483f]/5'}`}
-            >
-              <div className="w-10 h-10 rounded-xl bg-[#eb483f]/10 flex items-center justify-center shrink-0">
-                <Crown size={18} className="text-[#eb483f]" />
-              </div>
-              <div className="flex-1">
-                <p className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>No Active Membership</p>
-                <p className="text-[10px] text-[#eb483f] font-black uppercase tracking-widest mt-0.5">View Plans →</p>
-              </div>
-            </div>
-          ) : (
-            <motion.div
-              whileHover={{ y: -1 }}
-              className={`rounded-2xl border p-4 shadow-sm relative overflow-hidden transition-all ${
-                USER_MEMBERSHIP.category === 'premium'
-                  ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200'
-                  : isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'
-              }`}
-            >
-              {/* Expired overlay */}
-              {USER_MEMBERSHIP.status === 'expired' && (
-                <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
-                  <div className="text-center">
-                    <p className="text-xs font-black text-red-600 uppercase tracking-widest">Membership Expired</p>
-                    <button onClick={() => navigate('/membership')} className="mt-2 px-4 py-1.5 rounded-xl bg-[#eb483f] text-white text-[10px] font-black uppercase tracking-widest">
-                      Renew Now
-                    </button>
+                </motion.div>
+              ) : (
+                <div className={`rounded-2xl border border-dashed flex items-center justify-center p-6 text-center ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#CE2029]/10 text-[#CE2029] flex items-center justify-center">
+                      <Ticket size={16} />
+                    </div>
+                    <div className="text-left">
+                      <p className={`text-xs font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>No upcoming matches</p>
+                      <button onClick={() => navigate('/arenas')} className="text-[#CE2029] text-[10px] font-bold uppercase tracking-wider hover:underline">Book a Court</button>
+                    </div>
                   </div>
                 </div>
               )}
+            </div>
 
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-100' : 'bg-indigo-50'
-                  }`}>
-                    <Crown size={18} className={USER_MEMBERSHIP.category === 'premium' ? 'text-amber-500' : 'text-indigo-500'} />
+            {/* 2. Wallet & Finance Snapshot */}
+            <div className="md:col-span-4 group">
+              <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Wallet</h3>
+              <div className={`h-[90px] md:h-[102px] rounded-2xl border p-4 flex justify-between relative overflow-hidden transition-all shadow-sm ${
+                isDark 
+                  ? 'bg-gradient-to-br from-[#16181f] to-[#12141a] border-white/5 group-hover:border-white/10' 
+                  : 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-800' // Keep it dark and premium even on light mode
+              }`}>
+                <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:12px_12px]" />
+                
+                <div className="relative z-10 flex flex-col justify-center">
+                  <div className="flex items-center gap-1.5 mb-1 text-white/60">
+                    <Wallet size={12} />
+                    <p className="text-[9px] uppercase tracking-wider font-bold">Balance</p>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{USER_MEMBERSHIP.planName}</h4>
-                      <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
-                        USER_MEMBERSHIP.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'
-                      }`}>{USER_MEMBERSHIP.status}</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-white/80 text-sm font-bold">OMR </span>
+                    <span className="text-white text-2xl md:text-3xl font-black tracking-tight">1.450</span>
+                  </div>
+                </div>
+
+                <div className="relative z-10 flex flex-col items-end gap-2 justify-center">
+                  <button onClick={() => navigate('/profile/wallet')} className="px-3 py-1.5 rounded-lg bg-[#CE2029] text-white text-[10px] md:text-xs font-bold tracking-wide hover:bg-[#d83f36] transition-colors shadow-sm w-full text-center">
+                    Top Up
+                  </button>
+                  <button onClick={() => navigate('/bookings')} className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-[10px] md:text-xs font-bold tracking-wide hover:bg-white/20 transition-colors shadow-sm w-full text-center backdrop-blur-md border border-white/5">
+                    History
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECONDARY GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-6">
+            
+            {/* 3. Favorite Arenas (Compact) */}
+            <div className="md:col-span-7">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Book It Again</h3>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar snap-x">
+                {favoriteArenas.map((arena) => (
+                  <div key={arena.id} onClick={() => navigate(`/arenas/${arena.id}`)} className={`min-w-[190px] md:min-w-[220px] p-2.5 rounded-2xl border cursor-pointer group transition-all snap-start shadow-sm hover:shadow-md ${
+                    isDark ? 'bg-[#12141a] border-white/5 hover:border-[#CE2029]/30' : 'bg-white border-slate-100 hover:border-[#CE2029]/40'
+                  }`}>
+                    <div className="flex gap-2.5 items-center">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden flex-shrink-0 relative">
+                        <img src={arena.image} alt={arena.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <h4 className={`text-xs font-bold tracking-tight truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>{arena.name}</h4>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Star size={9} className="text-[#CE2029] fill-[#CE2029]" />
+                          <span className={`text-[9px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'} truncate`}>{arena.rating} • {arena.distance}</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className={`text-[10px] font-bold mt-0.5 ${
-                      USER_MEMBERSHIP.category === 'premium' ? 'text-amber-600' : 'text-indigo-600'
-                    } uppercase tracking-widest`}>
-                      {USER_MEMBERSHIP.category === 'premium' ? 'Premium' : USER_MEMBERSHIP.category === 'individual' ? 'Individual' : 'Standard'} · {USER_MEMBERSHIP.discountPercent}% off bookings
-                    </p>
-                    <div className={`flex items-center gap-2 mt-1.5 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      <span>{USER_MEMBERSHIP.startDate} → {USER_MEMBERSHIP.expiryDate}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Active Coaching Combined */}
+            <div className="md:col-span-5">
+               <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Coaching</h3>
+               {activeCoaching ? (
+                 <div className={`p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between transition-all ${
+                   isDark ? 'bg-[#12141a] border-white/5 hover:border-white/10' : 'bg-white border-slate-100 hover:border-slate-200'
+                 }`}>
+                   <div className="flex gap-3 items-center w-full">
+                     <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-100 flex-shrink-0">
+                       <img src={activeCoaching.image} alt="Coach" className="w-full h-full object-cover" />
+                     </div>
+                     <div className="flex-1">
+                       <div className="flex items-center justify-between mb-1.5">
+                         <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{activeCoaching.coachName}</h4>
+                         <span className={`text-[9px] font-black tracking-wide text-[#CE2029]`}>12/15</span>
+                       </div>
+                       <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                          <motion.div 
+                            className="h-full bg-[#CE2029] rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: "80%" }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                          />
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               ) : (
+                 <div className={`h-[68px] md:h-[74px] rounded-2xl border border-dashed flex items-center justify-center p-4 text-center ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                   <span className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>No active coaching</span>
+                 </div>
+               )}
+            </div>
+          </div>
+
+          {/* MY MEMBERSHIP SECTION */}
+          <div className="mt-6">
+            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Membership</h3>
+            {USER_MEMBERSHIP.status === 'none' ? (
+              <div
+                onClick={() => navigate('/membership')}
+                className={`cursor-pointer rounded-2xl border border-dashed p-4 flex items-center gap-3 transition-all hover:border-[#CE2029]/40 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50 hover:bg-[#CE2029]/5'}`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#CE2029]/10 flex items-center justify-center shrink-0">
+                  <Crown size={18} className="text-[#CE2029]" />
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>No Active Membership</p>
+                  <p className="text-[10px] text-[#CE2029] font-black uppercase tracking-widest mt-0.5">View Plans →</p>
+                </div>
+              </div>
+            ) : (
+              <motion.div
+                whileHover={{ y: -1 }}
+                className={`rounded-2xl border p-4 shadow-sm relative overflow-hidden transition-all ${
+                  USER_MEMBERSHIP.category === 'premium'
+                    ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200'
+                    : isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'
+                }`}
+              >
+                {/* Expired overlay */}
+                {USER_MEMBERSHIP.status === 'expired' && (
+                  <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
+                    <div className="text-center">
+                      <p className="text-xs font-black text-red-600 uppercase tracking-widest">Membership Expired</p>
+                      <button onClick={() => navigate('/membership')} className="mt-2 px-4 py-1.5 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest">
+                        Renew Now
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-100' : 'bg-indigo-50'
+                    }`}>
+                      <Crown size={18} className={USER_MEMBERSHIP.category === 'premium' ? 'text-amber-500' : 'text-indigo-500'} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{USER_MEMBERSHIP.planName}</h4>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
+                          USER_MEMBERSHIP.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'
+                        }`}>{USER_MEMBERSHIP.status}</span>
+                      </div>
+                      <p className={`text-[10px] font-bold mt-0.5 ${
+                        USER_MEMBERSHIP.category === 'premium' ? 'text-amber-600' : 'text-indigo-600'
+                      } uppercase tracking-widest`}>
+                        {USER_MEMBERSHIP.category === 'premium' ? 'Premium' : USER_MEMBERSHIP.category === 'individual' ? 'Individual' : 'Standard'} · {USER_MEMBERSHIP.discountPercent}% off bookings
+                      </p>
+                      <div className={`flex items-center gap-2 mt-1.5 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <span>{USER_MEMBERSHIP.startDate} → {USER_MEMBERSHIP.expiryDate}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <CheckCircle2 size={16} className={USER_MEMBERSHIP.status === 'active' ? 'text-green-500' : 'text-red-400'} />
+                </div>
+
+                {/* Benefits preview */}
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {USER_MEMBERSHIP.benefits.slice(0, 2).map((b, i) => (
+                    <span key={i} className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${
+                      USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'
+                    }`}>{b}</span>
+                  ))}
+                  {USER_MEMBERSHIP.benefits.length > 2 && (
+                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>+{USER_MEMBERSHIP.benefits.length - 2} more</span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="mt-3 flex gap-2">
+                  <button onClick={() => navigate('/membership')} className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${
+                    isDark ? 'border-white/10 text-slate-300 hover:bg-white/5' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}>Upgrade Plan</button>
+                  <button onClick={() => navigate('/membership')} className="flex-1 py-2 rounded-xl bg-[#CE2029] text-white text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-[#d83f36] transition-all">
+                    Renew
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* PERFORMANCE ANALYTICS SECTION */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Performance Analytics</h3>
+              <div className={`flex p-0.5 rounded-lg border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>
+                {['weekly', 'monthly'].map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setPerformanceMode(mode)}
+                    className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
+                      performanceMode === mode 
+                        ? 'bg-[#CE2029] text-white shadow-sm' 
+                        : `text-slate-500 hover:text-${isDark ? 'white' : 'slate-900'}`
+                    }`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+              {/* 1. Overall Score Card - COMPACTED */}
+              <div className={`md:col-span-4 p-4 rounded-2xl border relative overflow-hidden flex flex-col justify-between ${
+                isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100 shadow-sm'
+              }`}>
+                <div className="absolute top-0 right-0 w-16 h-16 bg-[#CE2029]/10 rounded-bl-full pointer-events-none" />
+                
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Activity size={10} className="text-[#CE2029]" />
+                    <span className={`text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Overall Mastery</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <h4 className={`text-3xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>{performanceData[performanceMode].overall}%</h4>
+                    <div className="flex items-center gap-0.5 text-emerald-500 font-bold text-[10px]">
+                      <TrendingUp size={10} />
+                      <span>{performanceData[performanceMode].trend}</span>
                     </div>
                   </div>
                 </div>
-                <CheckCircle2 size={16} className={USER_MEMBERSHIP.status === 'active' ? 'text-green-500' : 'text-red-400'} />
-              </div>
 
-              {/* Benefits preview */}
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {USER_MEMBERSHIP.benefits.slice(0, 2).map((b, i) => (
-                  <span key={i} className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${
-                    USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'
-                  }`}>{b}</span>
-                ))}
-                {USER_MEMBERSHIP.benefits.length > 2 && (
-                  <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>+{USER_MEMBERSHIP.benefits.length - 2} more</span>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="mt-3 flex gap-2">
-                <button onClick={() => navigate('/membership')} className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${
-                  isDark ? 'border-white/10 text-slate-300 hover:bg-white/5' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}>Upgrade Plan</button>
-                <button onClick={() => navigate('/membership')} className="flex-1 py-2 rounded-xl bg-[#eb483f] text-white text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-[#d83f36] transition-all">
-                  Renew
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* PLAYER STATS & SETTINGS */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-6">
-          
-          {/* Quick Stats */}
-          <div className="md:col-span-4 flex flex-row md:flex-col gap-3">
-            <div className={`flex-1 p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
-              <div>
-                <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Courts Conquered</p>
-                <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>12</h4>
-              </div>
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                <Trophy size={16} />
-              </div>
-            </div>
-            <div className={`flex-1 p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
-              <div>
-                <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Hours Played</p>
-                <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>38<span className="text-sm">h</span></h4>
-              </div>
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                <TrendingUp size={16} />
-              </div>
-            </div>
-          </div>
-
-          {/* Settings / Navigation List */}
-          <div className="md:col-span-8 flex flex-col h-full justify-between">
-            <div className={`rounded-2xl border shadow-sm overflow-hidden flex-1 ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
-              {menuItems.map((item, i) => (
-                <button
-                  key={i}
-                  onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center justify-between px-4 py-3 border-b last:border-0 transition-colors group ${
-                    isDark ? 'border-white/5 hover:bg-white/5' : 'border-slate-50 hover:bg-slate-50'
-                  }`}
+                <button 
+                  onClick={() => setShowReportCard(true)}
+                  className="mt-3 w-full flex items-center justify-center gap-2 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-[9px] font-black uppercase tracking-widest hover:bg-[#CE2029] hover:text-white transition-all group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                      isDark ? 'bg-white/5 text-slate-400 group-hover:text-[#eb483f] group-hover:bg-[#eb483f]/10' : 'bg-slate-100 text-slate-500 group-hover:text-[#eb483f] group-hover:bg-[#eb483f]/10'
-                    }`}>
-                      <item.icon size={16} />
-                    </div>
-                    <span className={`text-sm font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{item.label}</span>
-                  </div>
-                  <ChevronRight size={14} className={isDark ? 'text-slate-600' : 'text-slate-400'} />
+                  <FileText size={12} className="group-hover:scale-110 transition-transform" /> Full Report
                 </button>
-              ))}
+              </div>
+
+              {/* 2. Detailed Performance Matrix - COMPACTED */}
+              <div className={`md:col-span-8 p-4 rounded-2xl border ${
+                isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100 shadow-sm'
+              }`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                  {performanceData[performanceMode].categories.map((cat, idx) => (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className={`text-[9px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{cat.name}</span>
+                        <span className="text-[9px] font-black text-[#CE2029]">{cat.score}/10</span>
+                      </div>
+                      <div className={`h-1 w-full rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${cat.score * 10}%` }}
+                          transition={{ duration: 1, ease: "easeOut", delay: idx * 0.1 }}
+                          className="h-full bg-[#CE2029] rounded-full"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* PLAYER STATS & SETTINGS */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-6">
+            
+            {/* Quick Stats */}
+            <div className="md:col-span-4 flex flex-row md:flex-col gap-3">
+              <div className={`flex-1 p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
+                <div>
+                  <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Courts Conquered</p>
+                  <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>12</h4>
+                </div>
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                  <Trophy size={16} />
+                </div>
+              </div>
+              <div className={`flex-1 p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
+                <div>
+                  <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Hours Played</p>
+                  <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>38<span className="text-sm">h</span></h4>
+                </div>
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                  <TrendingUp size={16} />
+                </div>
+              </div>
             </div>
 
-            <button 
-              onClick={() => navigate('/login')}
-              className={`w-full mt-3 px-4 py-3 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest shadow-sm ${
-                isDark 
-                  ? 'bg-red-500/5 border-red-500/10 text-red-500 hover:bg-red-500/10' 
-                  : 'bg-white border-red-100 text-red-500 hover:bg-red-50'
-              }`}
-            >
-              <LogOut size={14} /> Logout
-            </button>
+            {/* Settings / Navigation List */}
+            <div className="md:col-span-8 flex flex-col h-full justify-between">
+              <div className={`rounded-2xl border shadow-sm overflow-hidden flex-1 ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
+                {menuItems.map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => navigate(item.path)}
+                    className={`w-full flex items-center justify-between px-4 py-3 border-b last:border-0 transition-colors group ${
+                      isDark ? 'border-white/5 hover:bg-white/5' : 'border-slate-50 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                        isDark ? 'bg-white/5 text-slate-400 group-hover:text-[#CE2029] group-hover:bg-[#CE2029]/10' : 'bg-slate-100 text-slate-500 group-hover:text-[#CE2029] group-hover:bg-[#CE2029]/10'
+                      }`}>
+                        <item.icon size={16} />
+                      </div>
+                      <span className={`text-sm font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{item.label}</span>
+                    </div>
+                    <ChevronRight size={14} className={isDark ? 'text-slate-600' : 'text-slate-400'} />
+                  </button>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => navigate('/login')}
+                className={`w-full mt-3 px-4 py-3 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest shadow-sm ${
+                  isDark 
+                    ? 'bg-red-500/5 border-red-500/10 text-red-500 hover:bg-red-500/10' 
+                    : 'bg-white border-red-100 text-red-500 hover:bg-red-50'
+                }`}
+              >
+                <LogOut size={14} /> Logout
+              </button>
+            </div>
           </div>
         </div>
-        
       </div>
-      
+
+      {/* OVERALL REPORT CARD MODAL */}
+      <ReportCardModal 
+        isOpen={showReportCard} 
+        onClose={() => setShowReportCard(false)} 
+        isDark={isDark} 
+        data={performanceData[performanceMode]}
+        mode={performanceMode}
+      />
     </div>
+  );
+};
+
+// REPORT CARD MODAL COMPONENT
+const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
+  if (!isOpen) return null;
+
+  const chartData = data.categories.map(cat => ({
+    subject: cat.name,
+    A: cat.score,
+  }));
+
+  const handleDownload = () => window.print();
+
+  return (
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4 backdrop-blur-md bg-black/70"
+      >
+        <motion.div 
+          initial={{ scale: 0.95, y: 10, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 10, opacity: 0 }}
+          className={`print-container relative w-full max-w-3xl max-h-[85vh] rounded-none shadow-2xl overflow-y-auto flex flex-col pb-32 ${
+            isDark ? 'bg-[#0f1115] border border-white/10' : 'bg-white border border-slate-200'
+          }`}
+        >
+          <div className="print-content flex-1 flex flex-col">
+            {/* OFFICIAL PRINT HEADER (Specifically isolated for print) */}
+            <div className="print-header-visible border-b-4 border-[#CE2029] pb-6 mb-8 w-full">
+              <div className="text-center mb-6">
+                <h1 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] text-slate-900 leading-none">
+                  AMM Sports Arena
+                </h1>
+              </div>
+              <div className="flex justify-between items-end border-t border-slate-100 pt-4">
+                <h2 className="text-xs font-black uppercase tracking-widest text-[#CE2029]">
+                  PLAYER REPORT
+                </h2>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  DATE- {new Date().getDate()}-{new Date().toLocaleString('en-US', { month: 'long' })}-{new Date().getFullYear()}
+                </div>
+              </div>
+            </div>
+
+            {/* Compact Header (Screen view Only versions usually hide on print if we have a print header, but user might want both if they are different styles) */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 relative z-10 bg-gradient-to-r from-[#CE2029]/10 to-transparent print:hidden">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#CE2029]/10 flex items-center justify-center">
+                  <Trophy size={14} className="text-[#CE2029]" />
+                </div>
+                <div>
+                  <h2 className={`text-lg font-black italic uppercase tracking-tighter leading-none ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Performance <span className="text-[#CE2029]">Snapshot</span>
+                  </h2>
+                  <p className={`text-[8px] font-black uppercase tracking-widest opacity-50 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {mode} Assessment · Level 4
+                  </p>
+                </div>
+              </div>
+              <button onClick={onClose} className={`no-print w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                isDark ? 'bg-white/5 text-white/40 hover:bg-white/10' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-x-12 gap-y-4 mb-8 text-[9px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-6 print:flex">
+              <div className="flex flex-col gap-1">
+                <span className="opacity-50">Student Name</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">MUHAMMAD A.</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="opacity-50">Student ID</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">AS202492</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="opacity-50">Batch Name</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">MORNING ELITE</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="opacity-50">Membership</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">INDIVIDUAL ANNUAL</span>
+              </div>
+            </div>
+
+            <div className="flex-1 custom-scrollbar">
+              {/* Top Grid: Chart & Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border-b border-white/5">
+                {/* Radar Chart Section */}
+                <div className="md:col-span-4 p-4 flex items-center justify-center bg-white/[0.01]">
+                  <div className="h-[240px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart cx="50%" cy="50%" outerRadius="65%" data={chartData}>
+                          <PolarGrid stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
+                          <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 9, fontWeight: '900' }} />
+                          <Radar name="Player" dataKey="A" stroke="#CE2029" fill="#CE2029" fillOpacity={0.4} />
+                        </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 border-l border-white/5">
+                  {[
+                    { label: 'Overall Mastery', value: `${data.overall}%`, trend: '+4.2%', icon: Activity, color: '#CE2029' },
+                    { label: 'Attendance Rate', value: '94%', trend: 'Elite', icon: CheckCircle2, color: '#22c55e' },
+                    { label: 'Training Load', value: '38.5h', trend: 'Active', icon: Zap, color: '#f59e0b' },
+                  ].map((stat, i) => (
+                    <div key={i} className={`p-4 border-r border-b border-white/5 flex flex-col justify-center`}>
+                      <p className="text-[7px] font-black uppercase tracking-widest text-slate-500 mb-1 leading-none">{stat.label}</p>
+                      <div className="flex items-baseline gap-1.5">
+                        <p className={`text-xl font-black italic ${isDark ? 'text-white' : 'text-slate-900'}`}>{stat.value}</p>
+                        <span className="text-[8px] font-bold text-emerald-500">{stat.trend}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="col-span-full sm:col-span-1 p-4 flex items-center gap-3 bg-gradient-to-br from-[#CE2029]/5 to-transparent">
+                    <div className="w-10 h-10 rounded-xl bg-[#CE2029] flex items-center justify-center text-white shrink-0 shadow-lg shadow-[#CE2029]/20">
+                      <Star size={18} fill="white" />
+                    </div>
+                    <div>
+                      <p className="text-[7px] font-black uppercase tracking-widest text-[#CE2029]">Ranking</p>
+                      <p className="text-[10px] font-black uppercase italic leading-none text-slate-900 dark:text-white">Advanced Elite</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Breakdown - More Compact */}
+              <div className="p-6 pt-5">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-12 gap-y-8">
+                    {data.categories.map((cat, idx) => (
+                      <div key={idx} className="group page-break-inside-avoid">
+                        <div className="flex items-center justify-between mb-3 border-b border-slate-50 pb-2">
+                          <span className={`text-[10px] font-black uppercase tracking-[0.2em] text-[#CE2029]`}>{cat.name}</span>
+                          <span className={`text-[11px] font-black ${isDark ? 'text-white' : 'text-[#CE2029]'}`}>{cat.score}.0</span>
+                        </div>
+                        <div className="space-y-3">
+                          {cat.metrics.map((m, midx) => (
+                            <div key={midx}>
+                              <div className="flex justify-between items-center text-[9px] font-bold mb-1 ml-0.5">
+                                <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{m.name}</span>
+                                <span className={isDark ? 'text-white' : 'text-slate-900'}>{m.score}</span>
+                              </div>
+                              <div className={`h-1.5 w-full rounded-full ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
+                                 <motion.div initial={{ width: 0 }} animate={{ width: `${m.score * 10}%` }} transition={{ delay: 0.3, duration: 0.6 }} className="h-full bg-[#CE2029] rounded-full shadow-[0_0_8px_rgba(206,32,41,0.2)]" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+            </div>
+
+            {/* Compact Action Bar */}
+            <div className="no-print px-6 py-6 border-t border-white/5 bg-white/[0.01] flex flex-col sm:flex-row gap-3 relative z-20">
+               <button 
+                 onClick={() => {
+                   const btn = document.getElementById('download-btn-text');
+                   const originalText = btn.innerText;
+                   const originalTitle = document.title;
+                   btn.innerText = 'GENERATING PDF...';
+                   setTimeout(() => {
+                     btn.innerText = 'DOWNLOAD READY';
+                     setTimeout(() => {
+                       document.title = "AMM sports arena - badminton court booking";
+                       window.print();
+                       document.title = originalTitle;
+                       btn.innerText = originalText;
+                     }, 500); // 500ms delay as requested
+                   }, 1500);
+                 }}
+                 className="flex-[2] bg-gradient-to-r from-[#CE2029] to-[#d83f36] text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-lg shadow-[#CE2029]/25 hover:shadow-[#CE2029]/40 active:scale-95 transition-all outline-none"
+               >
+                 <Download size={16} className="animate-bounce" /> 
+                 <span id="download-btn-text">Download Performance PDF</span>
+               </button>
+               
+               <button 
+                 onClick={onClose} 
+                 className={`flex-1 py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] border transition-all active:scale-95 ${
+                   isDark 
+                     ? 'border-white/10 text-white/50 hover:bg-white/5 hover:text-white' 
+                     : 'border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                 }`}
+               >
+                 Dismiss
+               </button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

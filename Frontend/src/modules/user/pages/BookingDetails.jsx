@@ -27,7 +27,7 @@ const BookingDetails = () => {
   }, [booking, id]);
 
   if (!booking) return (
-    <div className={`p-10 text-center ${'text-[#eb483f]/40'}`}>
+    <div className={`p-10 text-center ${'text-[#CE2029]/40'}`}>
       No booking details found.
       <button onClick={() => navigate(-1)} className="mt-4 text-blue-500 underline block mx-auto">Go Back</button>
     </div>
@@ -42,13 +42,13 @@ const BookingDetails = () => {
       {/* Background Decorative Elements */}
       {!isDark && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-[#eb483f]/[0.03] rounded-full blur-[100px]" />
+          <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-[#CE2029]/[0.03] rounded-full blur-[100px]" />
           <div className="absolute bottom-[20%] left-[-10%] w-[300px] h-[300px] bg-blue-500/[0.03] rounded-full blur-[80px]" />
         </div>
       )}
 
       {/* Header - Mobile */}
-      <div className={`lg:hidden px-4 pt-4 pb-3 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${'bg-[#eb483f] border-blue-900/10 rounded-b-[20px] shadow-[0_4px_15px_rgba(10,31,68,0.1)]'}`}>
+      <div className={`lg:hidden px-4 pt-4 pb-3 sticky top-0 z-50 backdrop-blur-xl border-b transition-all ${'bg-[#CE2029] border-blue-900/10 rounded-b-[20px] shadow-[0_4px_15px_rgba(10,31,68,0.1)]'}`}>
         <div className="flex items-center gap-3">
            <button
              onClick={() => navigate(-1)}
@@ -65,9 +65,9 @@ const BookingDetails = () => {
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
            <button
              onClick={() => navigate(-1)}
-             className="group flex items-center gap-2 text-slate-400 hover:text-[#eb483f] transition-all duration-300"
+             className="group flex items-center gap-2 text-slate-400 hover:text-[#CE2029] transition-all duration-300"
            >
-             <div className="w-8 h-8 rounded-full flex items-center justify-center border border-slate-100 bg-white shadow-sm group-hover:shadow group-hover:border-[#eb483f]/20 group-hover:translate-x-[-2px] transition-all">
+             <div className="w-8 h-8 rounded-full flex items-center justify-center border border-slate-100 bg-white shadow-sm group-hover:shadow group-hover:border-[#CE2029]/20 group-hover:translate-x-[-2px] transition-all">
                <ArrowLeft size={16} />
              </div>
              <span className="text-[10px] font-black uppercase tracking-[0.15em]">Go Back</span>
@@ -75,7 +75,7 @@ const BookingDetails = () => {
            
            <div className="flex flex-col items-center">
              <h1 className="text-xs font-black text-slate-900 uppercase tracking-[0.3em] font-display">Booking Detail</h1>
-             <div className="h-0.5 w-6 bg-[#eb483f] rounded-full mt-0.5" />
+             <div className="h-0.5 w-6 bg-[#CE2029] rounded-full mt-0.5" />
            </div>
 
            <div className="w-20" />
@@ -109,7 +109,7 @@ const BookingDetails = () => {
 
                <div className="p-4 lg:p-6 space-y-6">
                   <div className="flex items-center gap-2 text-slate-600">
-                     <MapPin size={16} className="text-[#eb483f]" />
+                     <MapPin size={16} className="text-[#CE2029]" />
                      <span className="text-xs font-bold tracking-wide">{booking.location}</span>
                   </div>
 
@@ -161,7 +161,7 @@ const BookingDetails = () => {
                      <div className="space-y-1">
                         <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Date</p>
                         <div className="flex items-center gap-1.5 text-slate-900">
-                           <Calendar size={12} className="text-[#eb483f]" />
+                           <Calendar size={12} className="text-[#CE2029]" />
                            <span className="text-xs font-black">{booking.date}</span>
                         </div>
                      </div>
@@ -169,7 +169,7 @@ const BookingDetails = () => {
                         <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Court</p>
                         <div className="flex items-center gap-1.5 justify-end text-slate-900">
                            <span className="text-xs font-black">{booking.courtName}</span>
-                           <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f]" />
+                           <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029]" />
                         </div>
                      </div>
                      <div className="space-y-1">
@@ -202,7 +202,7 @@ const BookingDetails = () => {
                      </div>
                      
                      <div className="pt-3 mt-3 border-t border-slate-100 flex justify-between items-end">
-                        <p className="text-[9px] font-black uppercase tracking-[0.15em] text-[#eb483f]">Total Paid</p>
+                        <p className="text-[9px] font-black uppercase tracking-[0.15em] text-[#CE2029]">Total Paid</p>
                         <span className="text-2xl font-black font-display text-slate-900">OMR {priceParsed.toFixed(3)}</span>
                      </div>
                   </div>

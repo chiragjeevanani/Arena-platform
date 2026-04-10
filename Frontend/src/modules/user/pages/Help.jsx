@@ -26,11 +26,11 @@ const Help = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className={`w-full overflow-hidden md:rounded-3xl rounded-none md:shadow-[0_20px_50px_-12px_rgba(15,23,42,0.1)] md:border transition-all duration-500 ${
-            isDark ? 'md:bg-[#eb483f] md:border-white/10' : 'md:bg-white md:border-slate-100'
+            isDark ? 'md:bg-[#CE2029] md:border-white/10' : 'md:bg-white md:border-slate-100'
           }`}
         >
           {/* Header - Always Project Theme */}
-          <div className={`px-6 pt-4 pb-4 md:pt-6 md:pb-6 backdrop-blur-2xl border-b border-white/10 transition-all duration-500 bg-[#eb483f] shadow-[0_15px_40px_rgba(235,72,63,0.25)]`}>
+          <div className={`px-6 pt-4 pb-4 md:pt-6 md:pb-6 backdrop-blur-2xl border-b border-white/10 transition-all duration-500 bg-[#CE2029] shadow-[0_15px_40px_rgba(206, 32, 41,0.25)]`}>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate(-1)}
@@ -47,7 +47,7 @@ const Help = () => {
 
             {/* Contact Info */}
             <div className={`p-6 md:p-8 rounded-3xl md:rounded-2xl border-[2.5px] transition-all duration-300 ${
-              isDark ? 'bg-white/5 border-white/10 hover:border-[#eb483f]/40' : 'bg-white border-[#eb483f]/20 shadow-[0_15px_40px_-10px_rgba(235,72,63,0.15)] hover:border-[#eb483f]'
+              isDark ? 'bg-white/5 border-white/10 hover:border-[#CE2029]/40' : 'bg-white border-[#CE2029]/20 shadow-[0_15px_40px_-10px_rgba(206, 32, 41,0.15)] hover:border-[#CE2029]'
             }`}>
               <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] mb-4 md:mb-6 ${'text-slate-400'}`}>Direct Contact</h3>
               <div className="space-y-4 md:space-y-6">
@@ -83,7 +83,7 @@ const Help = () => {
               <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] ${'text-slate-400'}`}>Popular Questions</h3>
               {faqs.map((faq, idx) => (
                 <div key={idx} className={`p-5 md:p-6 rounded-[24px] md:rounded-2xl border-[2.5px] transition-all duration-300 group ${
-                  isDark ? 'bg-white/5 border-white/10 hover:border-[#eb483f]/40' : 'bg-white border-[#eb483f]/20 shadow-lg hover:border-[#eb483f] hover:scale-[1.02]'
+                  isDark ? 'bg-white/5 border-white/10 hover:border-[#CE2029]/40' : 'bg-white border-[#CE2029]/20 shadow-lg hover:border-[#CE2029] hover:scale-[1.02]'
                 }`}>
                   <h4 className={`font-black text-sm md:text-[15px] tracking-tight ${'text-[#0F172A]'}`}>{faq.q}</h4>
                   <p className={`text-[11px] md:text-xs mt-2 md:mt-3 leading-relaxed font-medium ${'text-slate-500'}`}>{faq.a}</p>

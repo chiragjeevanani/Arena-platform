@@ -44,26 +44,26 @@ const Header = () => {
 
   return (
     <header className={`relative px-6 pt-2 pb-2 md:pt-3 md:pb-3 overflow-hidden transition-all duration-500 z-[100] ${
-      'bg-[#eb483f] shadow-[0_10px_30px_rgba(235, 72, 63, 0.15)]'
+      'bg-[#CE2029] shadow-[0_10px_30px_rgba(206, 32, 41, 0.15)]'
     }`}>
       {/* Stadium light streaks */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           ref={lightRef1}
-          className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-[#eb483f]/20 to-transparent -skew-x-12"
+          className="absolute top-0 w-32 h-full bg-gradient-to-r from-transparent via-[#CE2029]/20 to-transparent -skew-x-12"
         />
         <div
           ref={lightRef2}
-          className="absolute top-0 w-24 h-full bg-gradient-to-r from-transparent via-[#eb483f]/15 to-transparent skew-x-12"
+          className="absolute top-0 w-24 h-full bg-gradient-to-r from-transparent via-[#CE2029]/15 to-transparent skew-x-12"
         />
       </div>
 
       {/* Background court pattern */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <svg width="100%" height="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
-          <line x1="200" y1="0" x2="200" y2="200" stroke="#eb483f" strokeWidth="0.5" opacity="0.1" />
-          <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke="#eb483f" strokeWidth="0.3" opacity="0.08" />
-          <line x1="50" y1="100" x2="350" y2="100" stroke="#eb483f" strokeWidth="0.3" opacity="0.05" strokeDasharray="4 4" />
+          <line x1="200" y1="0" x2="200" y2="200" stroke="#CE2029" strokeWidth="0.5" opacity="0.1" />
+          <rect x="50" y="20" width="300" height="160" rx="4" fill="none" stroke="#CE2029" strokeWidth="0.3" opacity="0.08" />
+          <line x1="50" y1="100" x2="350" y2="100" stroke="#CE2029" strokeWidth="0.3" opacity="0.05" strokeDasharray="4 4" />
         </svg>
       </div>
 
@@ -77,7 +77,7 @@ const Header = () => {
               className="flex items-center gap-2 cursor-pointer ml-[3px] shrink-0 px-1" 
               onClick={() => navigate('/')}
             >
-              <ShuttlecockIcon size={24} className="text-[#eb483f] md:text-white" />
+              <ShuttlecockIcon size={24} className="text-[#CE2029] md:text-white" />
               <span className="hidden sm:inline text-lg md:text-xl font-black tracking-tight uppercase italic font-display text-white">
                 AmmSportsArena
               </span>
@@ -124,17 +124,17 @@ const Header = () => {
               {/* Notification Bell */}
               <button
                 onClick={() => navigate('/profile/notifications')}
-                className="relative w-8 h-8 md:w-9 md:h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 hover:border-[#eb483f]/40 transition-all group"
+                className="relative w-8 h-8 md:w-9 md:h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 hover:border-[#CE2029]/40 transition-all group"
                 title="Notifications"
               >
                 <Bell size={16} className="text-white/60 group-hover:text-white transition-colors" />
-                <div className="absolute top-2 right-2 md:right-2.5 w-1.5 h-1.5 bg-[#eb483f] rounded-full shadow-[0_0_5px_rgba(235, 72, 63,0.5)]" />
+                <div className="absolute top-2 right-2 md:right-2.5 w-1.5 h-1.5 bg-[#CE2029] rounded-full shadow-[0_0_5px_rgba(206, 32, 41,0.5)]" />
               </button>
 
               {!isLoggedIn ? (
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-4 md:px-5 h-8 md:h-9 bg-[#eb483f] text-[#eb483f] font-bold text-[10px] md:text-[11px] uppercase tracking-wider rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg active:scale-95 ml-1"
+                  className="px-4 md:px-5 h-8 md:h-9 bg-[#CE2029] text-[#CE2029] font-bold text-[10px] md:text-[11px] uppercase tracking-wider rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg active:scale-95 ml-1"
                 >
                   <LogIn size={14} strokeWidth={3} />
                   <span className="hidden lg:inline whitespace-nowrap">Login</span>

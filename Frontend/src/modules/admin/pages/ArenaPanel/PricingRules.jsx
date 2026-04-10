@@ -57,7 +57,7 @@ const PricingRules = () => {
     if (isPeak) {
       baseRate += (pricing.peakPrice - pricing.basePrice);
       label += ' + Peak';
-      color = '#eb483f';
+      color = '#CE2029';
     }
 
     let finalRate = baseRate;
@@ -88,11 +88,11 @@ const PricingRules = () => {
 
   const removeOverride = (id) => setOverrides(prev => prev.filter(o => o.id !== id));
 
-  const inputCls = "w-full py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c]";
+  const inputCls = "w-full py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#CE2029] focus:bg-white transition-all text-[#36454F]";
 
   const ToggleSwitch = ({ checked, onToggle }) => (
     <button onClick={onToggle} className="transition-all shrink-0">
-      {checked ? <ToggleRight size={26} className="text-[#eb483f]" /> : <ToggleLeft size={26} className="text-slate-300" />}
+      {checked ? <ToggleRight size={26} className="text-[#CE2029]" /> : <ToggleLeft size={26} className="text-slate-300" />}
     </button>
   );
 
@@ -115,7 +115,7 @@ const PricingRules = () => {
               <button key={s.id} onClick={() => setActiveSection(s.id)}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 text-[9px] font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap ${
                   activeSection === s.id 
-                    ? 'border-[#eb483f] text-[#eb483f] bg-red-50/30' 
+                    ? 'border-[#CE2029] text-[#CE2029] bg-red-50/30' 
                     : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}>
                 <s.icon size={12} />
@@ -131,7 +131,7 @@ const PricingRules = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Star size={14} className="text-amber-500" fill="#f59e0b" />
-                  <h3 className="font-bold text-sm text-[#1a2b3c] uppercase tracking-widest">Slot Type Base Rates</h3>
+                  <h3 className="font-bold text-sm text-[#36454F] uppercase tracking-widest">Slot Type Base Rates</h3>
                 </div>
                 <p className="text-[9px] text-slate-600 font-bold uppercase tracking-wider -mt-2 mb-4">
                   These are the base rates per slot category. Applied to all slots based on their Prime / Non-Prime classification.
@@ -144,7 +144,7 @@ const PricingRules = () => {
                       <Star size={15} className="text-amber-600" fill="#d97706" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-[#1a2b3c] text-xs uppercase tracking-widest leading-none">Prime Slot Rate</h4>
+                      <h4 className="font-bold text-[#36454F] text-xs uppercase tracking-widest leading-none">Prime Slot Rate</h4>
                       <p className="text-[9px] text-slate-600 font-bold mt-1 leading-none">High-demand hours (e.g., evenings)</p>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ const PricingRules = () => {
                       <CalendarDays size={15} className="text-slate-500" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-[#1a2b3c] text-xs uppercase tracking-widest leading-none">Non-Prime Slot Rate</h4>
+                      <h4 className="font-bold text-[#36454F] text-xs uppercase tracking-widest leading-none">Non-Prime Slot Rate</h4>
                       <p className="text-[9px] text-slate-600 font-bold mt-1 leading-none">Standard hours (e.g., early morning)</p>
                     </div>
                   </div>
@@ -188,8 +188,8 @@ const PricingRules = () => {
             {activeSection === 'peak' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap size={14} className="text-[#eb483f]" />
-                  <h3 className="font-bold text-sm text-[#1a2b3c] uppercase tracking-widest">Peak Hour Surcharge</h3>
+                  <Zap size={14} className="text-[#CE2029]" />
+                  <h3 className="font-bold text-sm text-[#36454F] uppercase tracking-widest">Peak Hour Surcharge</h3>
                 </div>
                 <p className="text-[9px] text-slate-600 font-bold uppercase tracking-wider -mt-2 mb-4">
                   An additional time-based surcharge added on top of the Slot Type rate during busy hours.
@@ -210,7 +210,7 @@ const PricingRules = () => {
                 <div className={`p-4 rounded-xl border transition-all ${pricing.peakEnabled ? 'border-red-100 bg-red-50/20' : 'border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h4 className="font-bold text-[#1a2b3c] text-xs uppercase tracking-widest">Peak Hour Enabled</h4>
+                      <h4 className="font-bold text-[#36454F] text-xs uppercase tracking-widest">Peak Hour Enabled</h4>
                       <p className="text-[9px] text-slate-600 mt-1">Apply surcharge between set hours</p>
                     </div>
                     <ToggleSwitch checked={pricing.peakEnabled} onToggle={() => toggle('peakEnabled')} />
@@ -239,8 +239,8 @@ const PricingRules = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl p-3">
-                          <Clock size={12} className="text-[#eb483f]" />
-                          <span className="text-[9px] font-black text-[#eb483f] uppercase tracking-widest">
+                          <Clock size={12} className="text-[#CE2029]" />
+                          <span className="text-[9px] font-black text-[#CE2029] uppercase tracking-widest">
                             Surcharge active: {pricing.peakStart} — {pricing.peakEnd}
                           </span>
                         </div>
@@ -253,7 +253,7 @@ const PricingRules = () => {
                 <div className={`p-4 rounded-xl border transition-all ${pricing.weekendEnabled ? 'border-indigo-100 bg-indigo-50/20' : 'border-slate-100'}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-bold text-[#1a2b3c] text-xs uppercase tracking-widest">Weekend Rate</h4>
+                      <h4 className="font-bold text-[#36454F] text-xs uppercase tracking-widest">Weekend Rate</h4>
                       <p className="text-[9px] text-slate-600 mt-1">Sat & Sun surcharge</p>
                     </div>
                     <ToggleSwitch checked={pricing.weekendEnabled} onToggle={() => toggle('weekendEnabled')} />
@@ -280,7 +280,7 @@ const PricingRules = () => {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Users size={14} className="text-indigo-500" />
-                    <h3 className="font-bold text-sm text-[#1a2b3c] uppercase tracking-widest">Member Discounts</h3>
+                    <h3 className="font-bold text-sm text-[#36454F] uppercase tracking-widest">Member Discounts</h3>
                   </div>
                   <ToggleSwitch checked={pricing.memberDiscountEnabled} onToggle={() => toggle('memberDiscountEnabled')} />
                 </div>
@@ -317,7 +317,7 @@ const PricingRules = () => {
                       <div className="p-4 rounded-xl border border-amber-100 bg-amber-50/30 space-y-3">
                         <div className="flex items-center gap-2">
                           <Star size={12} className="text-amber-500" fill="#f59e0b" />
-                          <h4 className="font-bold text-xs text-[#1a2b3c] uppercase tracking-widest">Prime Slot Discount</h4>
+                          <h4 className="font-bold text-xs text-[#36454F] uppercase tracking-widest">Prime Slot Discount</h4>
                         </div>
                         <div className="flex items-center gap-3">
                           <input type="number" min={0} max={pricing.memberDiscountType === 'percentage' ? 100 : 99} step={pricing.memberDiscountType === 'percentage' ? 1 : 0.001} value={pricing.memberDiscountPrime}
@@ -358,7 +358,7 @@ const PricingRules = () => {
                       <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/30 space-y-3">
                         <div className="flex items-center gap-2">
                           <CalendarDays size={12} className="text-slate-500" />
-                          <h4 className="font-bold text-xs text-[#1a2b3c] uppercase tracking-widest">Non-Prime Slot Discount</h4>
+                          <h4 className="font-bold text-xs text-[#36454F] uppercase tracking-widest">Non-Prime Slot Discount</h4>
                         </div>
                         <div className="flex items-center gap-3">
                           <input type="number" min={0} max={pricing.memberDiscountType === 'percentage' ? 100 : 99} step={pricing.memberDiscountType === 'percentage' ? 1 : 0.001} value={pricing.memberDiscountNonPrime}
@@ -413,10 +413,10 @@ const PricingRules = () => {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <CalendarDays size={14} className="text-purple-500" />
-                    <h3 className="font-bold text-sm text-[#1a2b3c] uppercase tracking-widest">Holiday Rate Overrides</h3>
+                    <h3 className="font-bold text-sm text-[#36454F] uppercase tracking-widest">Holiday Rate Overrides</h3>
                   </div>
                   <button onClick={() => setShowOverrideModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0A1121] text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#36454F] text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
                     <Plus size={12} strokeWidth={3} /> New Override
                   </button>
                 </div>
@@ -436,7 +436,7 @@ const PricingRules = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <CalendarDays size={11} className="text-purple-500" />
-                            <p className="text-[10px] font-black text-[#1a2b3c] uppercase tracking-wider">{ov.name}</p>
+                            <p className="text-[10px] font-black text-[#36454F] uppercase tracking-wider">{ov.name}</p>
                           </div>
                           <p className="text-[8.5px] text-slate-500 font-bold uppercase tracking-widest mt-1">
                             {ov.startDate} → {ov.endDate || ov.startDate}
@@ -462,7 +462,7 @@ const PricingRules = () => {
 
         <motion.button whileTap={{ scale: 0.98 }} onClick={handleSave}
            className={`w-full py-4 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all shadow-sm ${
-            saved ? 'bg-green-500 text-white' : 'bg-[#0A1121] text-white hover:shadow-lg active:translate-y-0.5'
+            saved ? 'bg-green-500 text-white' : 'bg-[#36454F] text-white hover:shadow-lg active:translate-y-0.5'
           }`}>
           {saved ? '✓ Pricing Rules Saved' : <>Save All Pricing Rules <ArrowRight size={14} strokeWidth={3} /></>}
         </motion.button>
@@ -472,8 +472,8 @@ const PricingRules = () => {
       <div className="xl:col-span-2">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 sticky top-4 space-y-5">
            <div className="flex items-center justify-between pb-3 border-b border-slate-50">
-              <h3 className="text-xs font-black uppercase tracking-widest text-[#0A1121] flex items-center gap-2 leading-none">
-                <Activity size={14} className="text-[#eb483f]" /> Live Rate Preview
+              <h3 className="text-xs font-black uppercase tracking-widest text-[#36454F] flex items-center gap-2 leading-none">
+                <Activity size={14} className="text-[#CE2029]" /> Live Rate Preview
               </h3>
            </div>
 
@@ -485,7 +485,7 @@ const PricingRules = () => {
                 {[{v:'prime',l:'Prime'},{v:'nonPrime',l:'Non-Prime'}].map(t => (
                   <button key={t.v} onClick={() => setPreviewSlot(p => ({ ...p, slotType: t.v }))}
                     className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
-                      previewSlot.slotType === t.v ? 'bg-[#0A1121] border-[#0A1121] text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-400'
+                      previewSlot.slotType === t.v ? 'bg-[#36454F] border-[#36454F] text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-400'
                     }`}>{t.l}</button>
                 ))}
               </div>
@@ -498,7 +498,7 @@ const PricingRules = () => {
                 {['weekday','weekend'].map(d => (
                   <button key={d} onClick={() => setPreviewSlot(p => ({ ...p, day: d }))}
                     className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
-                      previewSlot.day === d ? 'bg-[#eb483f] border-[#eb483f] text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-400'
+                      previewSlot.day === d ? 'bg-[#CE2029] border-[#CE2029] text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-400'
                     }`}>{d}</button>
                 ))}
               </div>
@@ -517,7 +517,7 @@ const PricingRules = () => {
               <div className="flex items-center gap-2">
                 <Users size={14} className="text-indigo-600" />
                 <div>
-                  <p className="text-[10px] font-black text-[#1a2b3c] uppercase tracking-widest leading-none">Member Booking</p>
+                  <p className="text-[10px] font-black text-[#36454F] uppercase tracking-widest leading-none">Member Booking</p>
                   <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mt-1 leading-none">Apply member discount</p>
                 </div>
               </div>
@@ -550,7 +550,7 @@ const PricingRules = () => {
             {[
               { label: '★ Prime Rate', value: pricing.primeRate, color: '#f59e0b' },
               { label: '◆ Non-Prime Rate', value: pricing.nonPrimeRate, color: '#6366f1' },
-              { label: '⚡ Peak Surcharge', value: pricing.peakPrice, color: '#eb483f', active: pricing.peakEnabled },
+              { label: '⚡ Peak Surcharge', value: pricing.peakPrice, color: '#CE2029', active: pricing.peakEnabled },
               { label: '👥 Member Disc. (Prime)', value: `-${pricing.memberDiscountPrime}%`, color: '#22c55e', isText: true, active: pricing.memberDiscountEnabled },
             ].map((r, i) => (
               <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl border text-[11px] font-bold transition-all ${
@@ -571,12 +571,12 @@ const PricingRules = () => {
         {showOverrideModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowOverrideModal(false)} className="absolute inset-0 bg-[#0A1121]/80 backdrop-blur-sm" />
+              onClick={() => setShowOverrideModal(false)} className="absolute inset-0 bg-[#36454F]/80 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }}
               className="relative w-full max-w-sm rounded-2xl bg-white shadow-2xl overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-black text-[#1a2b3c] uppercase tracking-widest">New Date Override</h3>
+                  <h3 className="text-lg font-black text-[#36454F] uppercase tracking-widest">New Date Override</h3>
                   <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mt-1">Schedule special rates for a date range</p>
                 </div>
                 <button onClick={() => setShowOverrideModal(false)}><X size={18} className="text-slate-400" /></button>
@@ -617,7 +617,7 @@ const PricingRules = () => {
                   </div>
                 </div>
                 <button onClick={addOverride}
-                  className="w-full h-12 rounded-xl bg-[#0A1121] text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md">
+                  className="w-full h-12 rounded-xl bg-[#36454F] text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md">
                   Schedule Override <Plus size={14} strokeWidth={3} />
                 </button>
               </div>

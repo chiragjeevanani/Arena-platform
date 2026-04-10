@@ -34,14 +34,14 @@ const ArenaManagement = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200">
           <div>
-            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
-              <Map className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Asset Management
+            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#36454F]">
+              <Map className="text-[#CE2029] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Asset Management
             </h2>
             <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Configure facilities, court availability, and regional operations.</p>
           </div>
           <button 
             onClick={() => setShowNewArenaModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#CE2029]/20"
           >
             <Plus size={16} strokeWidth={3} /> Register Arena
           </button>
@@ -57,7 +57,7 @@ const ArenaManagement = () => {
                 initial={{ opacity: 0, scale: 1 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.1 }}
-                className="group relative rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 flex flex-col hover:border-[#eb483f]/40 hover:shadow-md"
+                className="group relative rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 flex flex-col hover:border-[#CE2029]/40 hover:shadow-md"
               >
                 {/* Image Header */}
                  <div className="h-44 w-full relative overflow-hidden bg-slate-100">
@@ -73,14 +73,14 @@ const ArenaManagement = () => {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                    <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-widest border border-slate-100 text-[#eb483f] shadow-sm">
+                    <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg font-black text-[9px] uppercase tracking-widest border border-slate-100 text-[#CE2029] shadow-sm">
                       Live
                     </span>
                     <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
                        <div className="max-w-[75%]">
                          <h3 className="font-black font-display text-lg tracking-tight text-white drop-shadow-sm">{arena.name}</h3>
                          <p className="text-[9px] font-black uppercase tracking-[0.1em] flex items-center gap-1.5 mt-0.5 text-white/90 drop-shadow-sm">
-                           <MapPin size={10} className="text-[#eb483f]" /> {arena.locations}
+                           <MapPin size={10} className="text-[#CE2029]" /> {arena.locations}
                          </p>
                        </div>
                        <div className="relative">
@@ -88,8 +88,8 @@ const ArenaManagement = () => {
                             onClick={() => setActiveMenu(arena.id === activeMenu ? null : arena.id)}
                             className={`w-9 h-9 rounded-xl transition-all border flex items-center justify-center shadow-sm ${
                               activeMenu === arena.id 
-                                ? 'bg-[#eb483f] border-[#eb483f] text-white' 
-                                : 'bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white hover:text-[#eb483f]'
+                                ? 'bg-[#CE2029] border-[#CE2029] text-white' 
+                                : 'bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white hover:text-[#CE2029]'
                             }`}
                           >
                              <MoreVertical size={18} strokeWidth={2.5} />
@@ -107,9 +107,9 @@ const ArenaManagement = () => {
                                >
                                   <div className="space-y-1">
                                    {[
-                                     { label: 'Overview', icon: Eye, color: '#eb483f' },
-                                     { label: 'Staff Hub', icon: Shield, color: '#eb483f' },
-                                     { label: 'Schedules', icon: Calendar, color: '#eb483f' },
+                                     { label: 'Overview', icon: Eye, color: '#CE2029' },
+                                     { label: 'Staff Hub', icon: Shield, color: '#CE2029' },
+                                     { label: 'Schedules', icon: Calendar, color: '#CE2029' },
                                      { label: 'Archive', icon: Trash2, color: '#FF4B4B' },
                                    ].map((opt, i) => (
                                      <button
@@ -136,21 +136,21 @@ const ArenaManagement = () => {
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div className="grid grid-cols-2 gap-3 mb-5">
                     <div className="rounded-xl p-3.5 border border-slate-100 bg-slate-50 flex flex-col justify-between h-24">
-                       <div className="w-8 h-8 rounded-lg bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
+                       <div className="w-8 h-8 rounded-lg bg-[#CE2029]/10 flex items-center justify-center text-[#CE2029]">
                           <Target size={16} strokeWidth={2.5} />
                        </div>
                        <div>
                          <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Total Courts</p>
-                         <p className="text-xl font-black text-[#1a2b3c]">{details.courtDetails.length}</p>
+                         <p className="text-xl font-black text-[#36454F]">{details.courtDetails.length}</p>
                        </div>
                     </div>
                     <div className="rounded-xl p-3.5 border border-slate-100 bg-slate-50 flex flex-col justify-between h-24">
-                       <div className="w-8 h-8 rounded-lg bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f]">
+                       <div className="w-8 h-8 rounded-lg bg-[#CE2029]/10 flex items-center justify-center text-[#CE2029]">
                           <Layers size={16} strokeWidth={2.5} />
                        </div>
                        <div>
                          <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Batches</p>
-                         <p className="text-xl font-black text-[#1a2b3c]">{details.batches.length}</p>
+                         <p className="text-xl font-black text-[#36454F]">{details.batches.length}</p>
                        </div>
                     </div>
                   </div>
@@ -160,7 +160,7 @@ const ArenaManagement = () => {
                         {[1,2,3].map(i => (
                           <div key={i} className="w-7 h-7 rounded-full border-2 border-white bg-slate-200" />
                         ))}
-                        <div className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black bg-[#eb483f] text-white">
+                        <div className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black bg-[#CE2029] text-white">
                           +4
                         </div>
                      </div>
@@ -168,11 +168,11 @@ const ArenaManagement = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-5 border-t border-slate-100">
-                    <button className="flex items-center justify-center py-3 rounded-xl transition-all text-[11px] font-black uppercase tracking-widest gap-2 bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-[#1a2b3c] border border-transparent">
-                      <Target size={12} className="text-[#eb483f]" strokeWidth={2.5} /> Arena Setup
+                    <button className="flex items-center justify-center py-3 rounded-xl transition-all text-[11px] font-black uppercase tracking-widest gap-2 bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-[#36454F] border border-transparent">
+                      <Target size={12} className="text-[#CE2029]" strokeWidth={2.5} /> Arena Setup
                     </button>
-                    <button className="flex items-center justify-center py-3 rounded-xl border border-[#eb483f]/30 transition-all text-[11px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-[#eb483f] hover:text-white group">
-                      <Settings size={12} className="text-[#eb483f] group-hover:text-white" strokeWidth={2.5} /> Config
+                    <button className="flex items-center justify-center py-3 rounded-xl border border-[#CE2029]/30 transition-all text-[11px] font-black uppercase tracking-widest gap-2 text-slate-500 hover:bg-[#CE2029] hover:text-white group">
+                      <Settings size={12} className="text-[#CE2029] group-hover:text-white" strokeWidth={2.5} /> Config
                     </button>
                   </div>
                 </div>
@@ -197,12 +197,12 @@ const ArenaManagement = () => {
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white text-[#36454F] shadow-2xl overflow-hidden"
             >
               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
-                    <Map className="text-[#eb483f]" size={24} strokeWidth={3} /> Deployment
+                    <Map className="text-[#CE2029]" size={24} strokeWidth={3} /> Deployment
                   </h3>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Initialize facility registry</p>
                 </div>
@@ -219,11 +219,11 @@ const ArenaManagement = () => {
                   <div className="group">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Facility Name</label>
                     <div className="relative">
-                      <Home size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all" />
+                      <Home size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:text-[#CE2029] group-focus-within:opacity-100 transition-all" />
                       <input 
                         type="text" 
                         placeholder="e.g. Phoenix Sports Center"
-                        className="w-full py-3.5 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]"
+                        className="w-full py-3.5 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
                       />
                     </div>
                   </div>
@@ -231,11 +231,11 @@ const ArenaManagement = () => {
                   <div className="group">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Location</label>
                     <div className="relative">
-                      <Navigation size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:text-[#eb483f] group-focus-within:opacity-100 transition-all" />
+                      <Navigation size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:text-[#CE2029] group-focus-within:opacity-100 transition-all" />
                       <input 
                         type="text" 
                         placeholder="e.g. Indiranagar, Bangalore"
-                        className="w-full py-3.5 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#eb483f] focus:bg-white text-[#1a2b3c]"
+                        className="w-full py-3.5 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
                       />
                     </div>
                   </div>
@@ -246,12 +246,12 @@ const ArenaManagement = () => {
                       <input 
                         type="number" 
                         defaultValue="6"
-                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white"
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white"
                       />
                     </div>
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Lead Admin</label>
-                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#eb483f] focus:bg-white">
+                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#CE2029] focus:bg-white">
                         <option>Sarah Johnson</option>
                       </select>
                     </div>
@@ -260,7 +260,7 @@ const ArenaManagement = () => {
 
                 <button 
                   onClick={() => setShowNewArenaModal(false)}
-                  className="w-full py-4 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#eb483f]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#CE2029]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
                   Confirm Registry <ArrowRight size={16} strokeWidth={3} />
                 </button>

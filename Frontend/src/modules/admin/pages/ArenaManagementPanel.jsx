@@ -39,7 +39,7 @@ const TABS = [
     shortLabel: 'Details',
     icon: Building2,
     description: 'Basic info, images & amenities',
-    color: '#eb483f',
+    color: '#CE2029',
   },
   {
     id: 'courts',
@@ -71,7 +71,7 @@ const TABS = [
     shortLabel: 'Income',
     icon: Wallet,
     description: 'Earnings & payout records',
-    color: '#1a2b3c',
+    color: '#36454F',
   },
   {
     id: 'guest',
@@ -87,7 +87,7 @@ const TABS = [
     shortLabel: 'Staff',
     icon: Users,
     description: 'Manage roles & permissions',
-    color: '#eb483f',
+    color: '#CE2029',
   },
   {
     id: 'notices',
@@ -103,7 +103,7 @@ const TABS = [
     shortLabel: 'Members',
     icon: CreditCard,
     description: 'Add, edit & manage membership plans',
-    color: '#eb483f',
+    color: '#CE2029',
   },
   {
     id: 'maintenance',
@@ -152,7 +152,7 @@ const TABS = [
     shortLabel: 'Inventory',
     icon: Package,
     description: 'Track equipment & stock levels',
-    color: '#eb483f',
+    color: '#CE2029',
   },
   {
     id: 'events',
@@ -168,13 +168,13 @@ const TABS = [
     shortLabel: 'Shop',
     icon: Store,
     description: 'Sell products & drinks',
-    color: '#eb483f',
+    color: '#CE2029',
   },
 ];
 
 // Quick summary stats — in production these come from API
 const SUMMARY_STATS = [
-  { label: 'Total Courts', value: '5', icon: Target, color: '#eb483f' },
+  { label: 'Total Courts', value: '5', icon: Target, color: '#CE2029' },
   { label: 'Active Slots', value: '10', icon: Clock, color: '#6366f1' },
   { label: 'Base Rate', value: 'OMR 4.500', icon: DollarSign, color: '#22c55e' },
   { label: 'Blocked Today', value: '1', icon: CalendarX2, color: '#f59e0b' },
@@ -209,19 +209,19 @@ const ArenaManagementPanel = () => {
   };
 
   return (
-    <div className="bg-[#F4F7F6] min-h-full font-sans text-[#1a2b3c]">
+    <div className="bg-[#F4F7F6] min-h-full font-sans text-[#36454F]">
       <div className="max-w-[1600px] mx-auto space-y-5 md:space-y-6 p-3 md:p-4 lg:p-8">
 
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-3 pb-5 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
-              <Shield size={11} className="text-[#eb483f]" /> Admin
+              <Shield size={11} className="text-[#CE2029]" /> Admin
               <ChevronRight size={11} />
               <span>Arena Management</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[#1a2b3c] flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-[#eb483f] to-[#ff6b6b] flex items-center justify-center shadow-lg shadow-[#eb483f]/30">
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[#36454F] flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-[#CE2029] to-[#ff6b6b] flex items-center justify-center shadow-lg shadow-[#CE2029]/30">
                 <Building2 size={22} className="text-white" strokeWidth={2.5} />
               </div>
               Arena Management
@@ -233,14 +233,14 @@ const ArenaManagementPanel = () => {
 
           {/* Arena Badge */}
           <div className="flex items-center gap-3 bg-white rounded-2xl border border-slate-200 px-4 py-3 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-[#eb483f]/10 flex items-center justify-center">
-              <MapPin size={16} className="text-[#eb483f]" />
+            <div className="w-9 h-9 rounded-xl bg-[#CE2029]/10 flex items-center justify-center">
+              <MapPin size={16} className="text-[#CE2029]" />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Active Arena</p>
-              <p className="font-black text-[#1a2b3c] text-sm">Amm Sports arena</p>
+              <p className="font-black text-[#36454F] text-sm">Amm Sports arena</p>
               <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1 mt-0.5">
-                <Phone size={9} className="text-[#eb483f]" /> +91 98765 43210
+                <Phone size={9} className="text-[#CE2029]" /> +91 98765 43210
               </p>
             </div>
             <div className="w-2.5 h-2.5 rounded-full bg-green-400 ml-2" />
@@ -276,7 +276,7 @@ const ArenaManagementPanel = () => {
                     className={`relative flex items-center gap-2.5 px-4 md:px-5 py-4 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 flex-1 justify-center md:justify-start whitespace-nowrap ${
                       isActive
                         ? 'text-white border-transparent'
-                        : 'text-slate-400 border-transparent hover:text-[#1a2b3c] hover:bg-slate-50'
+                        : 'text-slate-400 border-transparent hover:text-[#36454F] hover:bg-slate-50'
                     }`}
                     style={isActive ? { backgroundColor: tab.color, borderBottomColor: tab.color } : {}}>
                     <tab.icon size={15} strokeWidth={isActive ? 2.5 : 2} />

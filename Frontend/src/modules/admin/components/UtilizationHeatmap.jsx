@@ -4,10 +4,10 @@ const hours = ['6AM', '8AM', '10AM', '12PM', '2PM', '4PM', '6PM', '8PM', '10PM']
 const courts = ['Court 1', 'Court 2', 'Court 3', 'Court 4', 'Court 5', 'Court 6'];
 
 const getHeatColor = (value) => {
-  if (value > 80) return 'bg-[#eb483f] shadow-[0_0_10px_#eb483f]';
-  if (value > 60) return 'bg-[#eb483f]/70';
-  if (value > 40) return 'bg-[#eb483f]/40';
-  if (value > 20) return 'bg-[#eb483f]/20';
+  if (value > 80) return 'bg-[#CE2029] shadow-[0_0_10px_#CE2029]';
+  if (value > 60) return 'bg-[#CE2029]/70';
+  if (value > 40) return 'bg-[#CE2029]/40';
+  if (value > 20) return 'bg-[#CE2029]/20';
   return 'bg-white/5';
 };
 

@@ -9,7 +9,7 @@ const ArenaLayout = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="arena-panel flex h-screen overflow-hidden font-sans bg-[#FFF1F1] text-[#0A1F44]">
+    <div className="arena-panel flex h-screen overflow-hidden font-sans bg-[#FFF1F1] text-[#36454F]">
       {/* Background Gradient */}
       <div className="fixed inset-0 pointer-events-none -z-20 transition-opacity duration-500 bg-gradient-to-b from-[#FFF1F1] to-[#FFE4E4] opacity-100" />
       {/* Subtle grid background */}
@@ -24,7 +24,7 @@ const ArenaLayout = () => {
         }}
       />
       {/* Ambient glow - softer for light mode */}
-      <div className="fixed top-0 left-1/3 w-96 h-96 bg-[#eb483f]/[0.03] rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-0 left-1/3 w-96 h-96 bg-[#CE2029]/[0.03] rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Mobile Backdrop */}
       <AnimatePresence>

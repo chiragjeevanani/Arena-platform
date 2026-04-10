@@ -3,7 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Users, ClipboardCheck,
-  ChevronLeft, ChevronRight, CalendarDays, TrendingUp, LayoutDashboard
+  ChevronLeft, ChevronRight, CalendarDays, TrendingUp, LayoutDashboard,
+  Layers
 } from 'lucide-react';
 import Logo from '../../../assets/Logo (3).png';
 import { useTheme } from '../../user/context/ThemeContext';
@@ -14,6 +15,7 @@ const SIDEBAR_STRUCTURE = [
     items: [
       { path: '/coach', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/coach/schedule', icon: CalendarDays, label: 'Calendar' },
+      { path: '/coach/batches', icon: Layers, label: 'Batches' },
       { path: '/coach/students', icon: Users, label: 'Students' },
       { path: '/coach/attendance', icon: ClipboardCheck, label: 'Attendance' },
       { path: '/coach/progress', icon: TrendingUp, label: 'Progress' },
@@ -51,8 +53,8 @@ const CoachSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
         onClick={() => setIsCollapsed(!isCollapsed)}
         className={`absolute top-28 -right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors z-[110] shadow-[0_4px_12px_rgba(0,0,0,0.15)] ${
           isDark 
-            ? 'bg-[#1a1d24] border border-white/10 text-[#eb483f] hover:bg-[#eb483f] hover:text-white' 
-            : 'bg-white border border-[#D9E2EC] text-[#eb483f] hover:bg-[#eb483f] hover:text-white'
+            ? 'bg-[#1a1d24] border border-white/10 text-[#CE2029] hover:bg-[#CE2029] hover:text-white' 
+            : 'bg-white border border-[#D9E2EC] text-[#CE2029] hover:bg-[#CE2029] hover:text-white'
         }`}
       >
         {isCollapsed ? <ChevronRight size={16} strokeWidth={3} /> : <ChevronLeft size={16} strokeWidth={3} />}
@@ -73,8 +75,8 @@ const CoachSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                   className={({ isActive }) =>
                     `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
                       isActive 
-                        ? `bg-[#eb483f] text-white shadow-md shadow-[#eb483f]/30 font-bold` 
-                        : `${isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-[#243B53] hover:bg-white/60 hover:text-[#0A1F44]'} font-semibold`
+                        ? `bg-[#CE2029] text-white shadow-md shadow-[#CE2029]/30 font-bold` 
+                        : `${isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-[#243B53] hover:bg-white/60 hover:text-[#36454F]'} font-semibold`
                     }`
                   }
                 >
@@ -84,7 +86,7 @@ const CoachSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                         size={18}
                         strokeWidth={isActive ? 2.5 : 2}
                         className={`shrink-0 transition-all duration-300 ${
-                          isActive ? 'text-white' : `${isDark ? 'text-white/40' : 'text-[#627D98]'} group-hover:text-[#eb483f]`
+                          isActive ? 'text-white' : `${isDark ? 'text-white/40' : 'text-[#627D98]'} group-hover:text-[#CE2029]`
                         }`}
                       />
                       <AnimatePresence mode="popLayout">

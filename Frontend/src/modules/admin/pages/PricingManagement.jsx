@@ -15,9 +15,9 @@ const INITIAL_RULES = [
 ];
 
 const TYPE_META = {
-  base: { label: 'Base', color: '#1a2b3c', icon: Tag },
+  base: { label: 'Base', color: '#36454F', icon: Tag },
   weekend: { label: 'Weekend', color: '#6366f1', icon: Calendar },
-  peak: { label: 'Peak Hour', color: '#eb483f', icon: Zap },
+  peak: { label: 'Peak Hour', color: '#CE2029', icon: Zap },
   offpeak: { label: 'Off-Peak', color: '#22c55e', icon: Moon },
 };
 
@@ -95,10 +95,10 @@ const PricingManagement = () => {
           <motion.div
             initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
             className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-xl shadow-2xl border flex items-center gap-2.5 min-w-[260px] ${
-              toast.type === 'error' ? 'bg-red-600 border-red-500 text-white' : 'bg-[#1a2b3c] border-slate-700 text-white'
+              toast.type === 'error' ? 'bg-red-600 border-red-500 text-white' : 'bg-[#36454F] border-slate-700 text-white'
             }`}
           >
-            {toast.type === 'error' ? <Trash2 size={15} /> : <CheckCircle2 size={15} className="text-[#eb483f]" />}
+            {toast.type === 'error' ? <Trash2 size={15} /> : <CheckCircle2 size={15} className="text-[#CE2029]" />}
             <span className="text-[10px] font-bold uppercase tracking-widest">{toast.message}</span>
           </motion.div>
         )}
@@ -120,10 +120,10 @@ const PricingManagement = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#eb483f]/10 flex items-center justify-center">
-                    <DollarSign size={16} className="text-[#eb483f]" />
+                  <div className="w-8 h-8 rounded-xl bg-[#CE2029]/10 flex items-center justify-center">
+                    <DollarSign size={16} className="text-[#CE2029]" />
                   </div>
-                  <h3 className={`font-bold text-sm uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
+                  <h3 className={`font-bold text-sm uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
                     {editingRule ? 'Edit Rule' : 'New Pricing Rule'}
                   </h3>
                 </div>
@@ -135,13 +135,13 @@ const PricingManagement = () => {
               <div className="space-y-3">
                 {/* Name */}
                 <div>
-                  <label className="text-[8px] font-semibold uppercase tracking-widest text-[#eb483f] block mb-1">Rule Name</label>
+                  <label className="text-[8px] font-semibold uppercase tracking-widest text-[#CE2029] block mb-1">Rule Name</label>
                   <input
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     placeholder="e.g. Weekend Surge"
                     className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
-                      isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#eb483f]' : 'bg-slate-50 border-slate-300 text-[#1a2b3c] focus:border-[#eb483f]'
+                      isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#CE2029]' : 'bg-slate-50 border-slate-300 text-[#36454F] focus:border-[#CE2029]'
                     }`}
                   />
                 </div>
@@ -149,12 +149,12 @@ const PricingManagement = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {/* Type */}
                   <div>
-                    <label className="text-[8px] font-semibold uppercase tracking-widest text-[#eb483f] block mb-1">Type</label>
+                    <label className="text-[8px] font-semibold uppercase tracking-widest text-[#CE2029] block mb-1">Type</label>
                     <select
                       value={form.type}
                       onChange={e => setForm({ ...form, type: e.target.value })}
                       className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
-                        isDark ? 'bg-white/5 border-white/20 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-300 text-[#1a2b3c] focus:border-[#eb483f]'
+                        isDark ? 'bg-white/5 border-white/20 text-white focus:border-[#CE2029]' : 'bg-slate-50 border-slate-300 text-[#36454F] focus:border-[#CE2029]'
                       }`}
                     >
                       {Object.entries(TYPE_META).map(([val, { label }]) => (
@@ -165,7 +165,7 @@ const PricingManagement = () => {
 
                   {/* Price */}
                   <div>
-                    <label className="text-[8px] font-semibold uppercase tracking-widest text-[#eb483f] block mb-1">Price (OMR/hr)</label>
+                    <label className="text-[8px] font-semibold uppercase tracking-widest text-[#CE2029] block mb-1">Price (OMR/hr)</label>
                     <input
                       type="number"
                       step="0.001"
@@ -173,7 +173,7 @@ const PricingManagement = () => {
                       onChange={e => setForm({ ...form, price: e.target.value })}
                       placeholder="5.000"
                       className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
-                        isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#eb483f]' : 'bg-slate-50 border-slate-300 text-[#1a2b3c] focus:border-[#eb483f]'
+                        isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#CE2029]' : 'bg-slate-50 border-slate-300 text-[#36454F] focus:border-[#CE2029]'
                       }`}
                     />
                   </div>
@@ -182,13 +182,13 @@ const PricingManagement = () => {
 
                 {/* Time Range */}
                 <div>
-                  <label className="text-[8px] font-semibold uppercase tracking-widest text-[#eb483f] block mb-1">Time Range / Description</label>
+                  <label className="text-[8px] font-semibold uppercase tracking-widest text-[#CE2029] block mb-1">Time Range / Description</label>
                   <input
                     value={form.time}
                     onChange={e => setForm({ ...form, time: e.target.value })}
                     placeholder="e.g. Mon–Fri, 17:00–20:00"
                     className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
-                      isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#eb483f]' : 'bg-slate-50 border-slate-300 text-[#1a2b3c] focus:border-[#eb483f]'
+                      isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#CE2029]' : 'bg-slate-50 border-slate-300 text-[#36454F] focus:border-[#CE2029]'
                     }`}
                   />
                 </div>
@@ -199,7 +199,7 @@ const PricingManagement = () => {
                 <button
                   onClick={saveRule}
                   disabled={!form.name || !form.price}
-                  className="flex-1 py-2 rounded-xl bg-[#eb483f] text-white text-[9px] font-semibold uppercase tracking-widest hover:bg-[#1a2b3c] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-2 rounded-xl bg-[#CE2029] text-white text-[9px] font-semibold uppercase tracking-widest hover:bg-[#36454F] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {editingRule ? 'Update Rule' : 'Add Rule'}
                 </button>
@@ -212,14 +212,14 @@ const PricingManagement = () => {
       {/* Header */}
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
         <div>
-          <h2 className={`text-xl font-semibold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
-            <DollarSign className="text-[#eb483f]" size={22} /> Pricing Management
+          <h2 className={`text-xl font-semibold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
+            <DollarSign className="text-[#CE2029]" size={22} /> Pricing Management
           </h2>
           <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
             Configure dynamic pricing rules for base, peak, weekend, and holiday schedules. These rules apply to all courts.
           </p>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#eb483f] text-white text-[10px] font-bold uppercase tracking-widest shadow-md hover:bg-[#1a2b3c] transition-all">
+        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#CE2029] text-white text-[10px] font-bold uppercase tracking-widest shadow-md hover:bg-[#36454F] transition-all">
           <Plus size={16} /> New Rule
         </button>
       </div>
@@ -227,9 +227,9 @@ const PricingManagement = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total Rules', value: rules.length, color: '#1a2b3c' },
+          { label: 'Total Rules', value: rules.length, color: '#36454F' },
           { label: 'Active Rules', value: rules.filter(r => r.active).length, color: '#22c55e' },
-          { label: 'Avg Active Price', value: `OMR ${activePriceAvg}`, color: '#eb483f' },
+          { label: 'Avg Active Price', value: `OMR ${activePriceAvg}`, color: '#CE2029' },
           { label: 'Inactive Rules', value: rules.filter(r => !r.active).length, color: '#f59e0b' },
         ].map((s, i) => (
           <div key={i} className={`p-3.5 rounded-xl border shadow-sm ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-white border-slate-100'}`}>
@@ -244,13 +244,13 @@ const PricingManagement = () => {
         <div className="flex-1 relative group w-full">
           <Search size={13} className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-white/20' : 'text-slate-400'}`} />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search rules..."
-            className={`w-full pl-9 pr-4 py-1.5 rounded-lg text-[11px] border outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-[#eb483f]' : 'bg-white border-slate-200 text-[#1a2b3c] focus:border-[#eb483f]'}`} />
+            className={`w-full pl-9 pr-4 py-1.5 rounded-lg text-[11px] border outline-none transition-all ${isDark ? 'bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-[#CE2029]' : 'bg-white border-slate-200 text-[#36454F] focus:border-[#CE2029]'}`} />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           {['all', 'active', 'inactive', 'peak', 'weekend', 'base'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest border transition-all ${
-                filter === f ? 'bg-[#eb483f] text-white border-[#eb483f]' : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-white border-slate-200 text-slate-500 hover:border-[#eb483f]'
+                filter === f ? 'bg-[#CE2029] text-white border-[#CE2029]' : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-white border-slate-200 text-slate-500 hover:border-[#CE2029]'
               }`}
             >{f}</button>
           ))}
@@ -283,7 +283,7 @@ const PricingManagement = () => {
                     className={`group transition-colors ${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50/80'} ${!rule.active ? 'opacity-50' : ''}`}
                   >
                     <td className="px-5 py-3 whitespace-nowrap">
-                      <p className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{rule.name}</p>
+                      <p className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{rule.name}</p>
                     </td>
                     <td className="px-5 py-3">
                       <span className="flex items-center gap-1.5 w-fit px-2 py-0.5 rounded-lg text-[8px] font-bold uppercase tracking-widest border"
@@ -294,7 +294,7 @@ const PricingManagement = () => {
                     </td>
                     <td className="px-5 py-3">
                       <p className={`text-[10px] font-bold flex items-center gap-1 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                        <Clock size={10} className="text-[#eb483f]" /> {rule.time || '—'}
+                        <Clock size={10} className="text-[#CE2029]" /> {rule.time || '—'}
                       </p>
                     </td>
                     <td className="px-5 py-3 text-center">
@@ -303,14 +303,14 @@ const PricingManagement = () => {
                     <td className="px-5 py-3 text-center">
                       <button onClick={() => toggleRule(rule.id)} className="transition-transform hover:scale-105">
                         {rule.active
-                          ? <ToggleRight size={26} className="text-[#eb483f]" />
+                          ? <ToggleRight size={26} className="text-[#CE2029]" />
                           : <ToggleLeft size={26} className={isDark ? 'text-white/20' : 'text-slate-300'} />
                         }
                       </button>
                     </td>
                     <td className="px-5 py-3 text-right pr-6">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => openEdit(rule)} className={`p-1.5 rounded-lg border transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-[#eb483f] hover:text-[#eb483f]'}`}>
+                        <button onClick={() => openEdit(rule)} className={`p-1.5 rounded-lg border transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029]'}`}>
                           <Edit3 size={14} />
                         </button>
                         <button onClick={() => deleteRule(rule.id)} className={`p-1.5 rounded-lg border transition-all opacity-0 group-hover:opacity-100 ${isDark ? 'bg-white/5 border-white/10 text-red-400 hover:bg-red-500/10' : 'bg-white border-slate-200 text-red-400 hover:border-red-400'}`}>

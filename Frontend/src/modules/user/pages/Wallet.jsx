@@ -28,7 +28,7 @@ const TopUpModal = ({ onClose }) => {
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
       <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} className="relative w-full max-w-sm bg-white rounded-t-[32px] sm:rounded-[28px] shadow-2xl overflow-hidden border border-slate-100">
-        <div className="bg-[#1a2b3c] px-6 py-5 text-white flex items-center justify-between">
+        <div className="bg-[#36454F] px-6 py-5 text-white flex items-center justify-between">
           <div>
             <h3 className="text-lg font-black">Top Up Wallet</h3>
             <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest mt-0.5">Add OMR Balance</p>
@@ -42,7 +42,7 @@ const TopUpModal = ({ onClose }) => {
               <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle size={32} className="text-emerald-500" strokeWidth={2.5} />
               </div>
-              <h4 className="text-lg font-black text-[#1a2b3c]">Top Up Successful!</h4>
+              <h4 className="text-lg font-black text-[#36454F]">Top Up Successful!</h4>
               <p className="text-xs text-slate-500 mt-1">OMR {finalAmount?.toFixed(3)} added to your wallet.</p>
             </div>
           ) : (
@@ -53,7 +53,7 @@ const TopUpModal = ({ onClose }) => {
                 <div className="grid grid-cols-5 gap-2">
                   {TOP_UP_AMOUNTS.map(amt => (
                     <button key={amt} onClick={() => { setSelected(amt); setCustom(''); }}
-                      className={`py-2.5 rounded-2xl text-xs font-black border transition-all ${selected === amt && !custom ? 'bg-[#eb483f] text-white border-[#eb483f] shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-[#eb483f]/30'}`}>
+                      className={`py-2.5 rounded-2xl text-xs font-black border transition-all ${selected === amt && !custom ? 'bg-[#CE2029] text-white border-[#CE2029] shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-[#CE2029]/30'}`}>
                       {amt}
                     </button>
                   ))}
@@ -66,7 +66,7 @@ const TopUpModal = ({ onClose }) => {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400">OMR</span>
                   <input type="number" placeholder="0.000" value={custom} onChange={e => { setCustom(e.target.value); setSelected(null); }}
-                    className="w-full py-3.5 pl-14 pr-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#1a2b3c] outline-none focus:border-[#eb483f] focus:bg-white transition-all" />
+                    className="w-full py-3.5 pl-14 pr-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] outline-none focus:border-[#CE2029] focus:bg-white transition-all" />
                 </div>
               </div>
 
@@ -79,16 +79,16 @@ const TopUpModal = ({ onClose }) => {
                     { id: 'upi', label: 'UPI / Wallet', icon: Smartphone },
                   ].map(m => (
                     <button key={m.id} onClick={() => setMethod(m.id)}
-                      className={`flex items-center gap-2 p-3.5 rounded-2xl border text-left transition-all ${method === m.id ? 'border-[#eb483f] bg-[#eb483f]/5' : 'border-slate-200 bg-slate-50 hover:border-[#eb483f]/30'}`}>
-                      <m.icon size={16} className={method === m.id ? 'text-[#eb483f]' : 'text-slate-400'} />
-                      <span className={`text-[10px] font-black uppercase tracking-wider ${method === m.id ? 'text-[#eb483f]' : 'text-slate-500'}`}>{m.label}</span>
+                      className={`flex items-center gap-2 p-3.5 rounded-2xl border text-left transition-all ${method === m.id ? 'border-[#CE2029] bg-[#CE2029]/5' : 'border-slate-200 bg-slate-50 hover:border-[#CE2029]/30'}`}>
+                      <m.icon size={16} className={method === m.id ? 'text-[#CE2029]' : 'text-slate-400'} />
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${method === m.id ? 'text-[#CE2029]' : 'text-slate-500'}`}>{m.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <button onClick={handleTopUp} disabled={processing || !finalAmount}
-                className="w-full py-4 rounded-2xl bg-[#eb483f] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60 active:scale-95">
+                className="w-full py-4 rounded-2xl bg-[#CE2029] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60 active:scale-95">
                 {processing ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</> : `Add OMR ${(finalAmount || 0).toFixed ? (finalAmount || 0).toFixed(3) : '0.000'}`}
               </button>
             </>
@@ -120,7 +120,7 @@ const Wallet = () => {
       <AnimatePresence>{showTopUp && <TopUpModal onClose={() => setShowTopUp(false)} />}</AnimatePresence>
 
       {/* Header */}
-      <div className="px-4 md:px-6 pt-4 pb-4 md:pt-6 md:pb-6 bg-[#eb483f] rounded-b-3xl md:rounded-b-[2rem] shadow-[0_10px_30px_rgba(235,72,63,0.15)]">
+      <div className="px-4 md:px-6 pt-4 pb-4 md:pt-6 md:pb-6 bg-[#CE2029] rounded-b-3xl md:rounded-b-[2rem] shadow-[0_10px_30px_rgba(206, 32, 41,0.15)]">
         <div className="max-w-4xl mx-auto flex items-center gap-3 md:gap-4">
           <button onClick={() => navigate(-1)} className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-sm active:scale-95 transition-all">
             <ArrowLeft size={18} />
@@ -137,7 +137,7 @@ const Wallet = () => {
           className={`relative overflow-hidden p-5 md:p-7 rounded-[24px] shadow-lg ${isDark ? 'bg-slate-900 border border-white/5' : 'bg-[#151b29]'}`}
         >
           <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:18px_18px]" />
-          <div className="absolute -top-10 -right-10 w-48 h-48 bg-[#eb483f]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-10 -right-10 w-48 h-48 bg-[#CE2029]/20 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex items-end justify-between flex-wrap gap-4">
             <div>
@@ -153,7 +153,7 @@ const Wallet = () => {
             </div>
             <button
               onClick={() => setShowTopUp(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-[#eb483f] text-white font-black text-xs uppercase tracking-wider rounded-2xl hover:bg-[#d43b33] active:scale-95 transition-all shadow-lg shadow-[#eb483f]/30"
+              className="flex items-center gap-2 px-5 py-3 bg-[#CE2029] text-white font-black text-xs uppercase tracking-wider rounded-2xl hover:bg-[#d43b33] active:scale-95 transition-all shadow-lg shadow-[#CE2029]/30"
             >
               <Plus size={16} strokeWidth={3} /> Top Up
             </button>
@@ -191,7 +191,7 @@ const Wallet = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 + (idx * 0.06) }}
                 className={`p-4 md:p-5 rounded-2xl border flex items-center gap-4 transition-all cursor-pointer ${
-                  isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-[#eb483f]/10'
+                  isDark ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-[#CE2029]/10'
                 }`}
               >
                 <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${tx.type === 'received' ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-100 text-slate-500'}`}>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -20,8 +20,104 @@ const CAT = {
   individual:   { label: 'Individual', icon: Users,   color: '#22c55e', pill: 'bg-green-50 text-green-700 border-green-200' },
 };
 
+// ── Plan Details Modal ───────────────────────────────────────────────────────
+const PlanDetailsModal = ({ plan, isCurrent, onClose, onBuy }) => {
+  const meta = CAT[plan.category] || CAT['non-premium'];
+  const Icon = meta.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[300] flex items-center justify-center p-3 bg-slate-900/40 backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        className="relative w-full max-w-md bg-white rounded-[2rem] overflow-hidden shadow-2xl"
+      >
+        <div className="absolute top-5 right-5 z-10">
+          <button onClick={onClose} className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+            <ChevronDown size={14} />
+          </button>
+        </div>
+
+        <div className="p-6 sm:p-7">
+          <div className="flex items-center gap-3.5 mb-5 mt-1">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md border border-white" style={{ backgroundColor: `${meta.color}15` }}>
+              <Icon size={24} style={{ color: meta.color }} />
+            </div>
+            <div>
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border mb-1 ${meta.pill}`}>
+                {meta.label} Plan
+              </span>
+              <h3 className="text-xl font-black text-slate-900 leading-tight">{plan.name}</h3>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="p-3 px-4 rounded-2xl bg-slate-50 border border-slate-100/50">
+              <p className="text-[8px] font-black uppercase text-slate-400 tracking-[0.15em] mb-1">Duration</p>
+              <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
+                <Clock size={14} className="text-[#CE2029]" /> {plan.duration}
+              </div>
+            </div>
+            <div className="p-3 px-4 rounded-2xl bg-slate-50 border border-slate-100/50">
+              <p className="text-[8px] font-black uppercase text-slate-400 tracking-[0.15em] mb-1">Access</p>
+              <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
+                <Calendar size={14} className="text-[#CE2029]" /> {plan.access}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 mb-8">
+            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#CE2029]">Included Benefits</h4>
+            <div className="space-y-2">
+              {plan.benefits.map((b, i) => (
+                <motion.div 
+                  initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                  key={i} className="flex items-start gap-2.5"
+                >
+                  <div className="mt-1 w-3.5 h-3.5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={10} className="text-emerald-500" />
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-600 leading-tight">{b}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-slate-900 flex items-center justify-between gap-4 shadow-xl shadow-slate-900/20">
+            <div className="shrink-0">
+              <p className="text-[7px] font-black uppercase text-white/30 tracking-[0.2em] mb-0.5">Investment</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-[10px] font-bold text-white/50">OMR</span>
+                <span className="text-2xl font-black text-white tracking-tighter">{plan.price.toFixed(3)}</span>
+              </div>
+            </div>
+            <button
+              disabled={isCurrent}
+              onClick={() => {
+                onClose();
+                onBuy(plan);
+              }}
+              className={`flex-1 min-w-[140px] py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                isCurrent 
+                  ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5' 
+                  : 'bg-[#CE2029] text-white hover:bg-[#d83f36] shadow-lg shadow-[#CE2029]/30 active:scale-[0.98]'
+              }`}
+            >
+              {isCurrent ? 'Current Plan' : 'Buy Membership'}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 // ── Compact Plan Card ────────────────────────────────────────────────────────
-const PlanCard = ({ plan, isCurrent, onBuy }) => {
+const PlanCard = ({ plan, isCurrent, onBuy, onViewDetails }) => {
   const [open, setOpen] = useState(false);
   const meta = CAT[plan.category] || CAT['non-premium'];
   const Icon = meta.icon;
@@ -49,18 +145,18 @@ const PlanCard = ({ plan, isCurrent, onBuy }) => {
       {/* Current badge */}
       {isCurrent && (
         <div className="absolute top-2 right-2 z-10">
-          <span className="flex items-center gap-1 bg-[#eb483f] text-white text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
+          <span className="flex items-center gap-1 bg-[#CE2029] text-white text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
             <CheckCircle2 size={8} /> Active
           </span>
         </div>
       )}
 
       {/* Header */}
-      <div className={`px-4 pt-${plan.bestValue ? 6 : 3} pb-3 border-b border-slate-50`}>
+      <div className={`px-4 pt-${plan.bestValue ? 6 : 3} pb-3 border-b border-slate-50 cursor-pointer`} onClick={() => onViewDetails(plan)}>
         {/* Category + meta row */}
         <div className="flex items-center justify-between mb-2">
           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${meta.pill}`}>
-            <Icon size={9} /> {meta.label}
+            <Icon size={9} strokeWidth={3} /> {meta.label}
           </span>
           <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase">
             <Clock size={9} /> {plan.duration}
@@ -88,7 +184,7 @@ const PlanCard = ({ plan, isCurrent, onBuy }) => {
 
       {/* Benefits */}
       <div className="px-4 py-2.5 flex-1">
-        <div className={`space-y-1.5 overflow-hidden transition-all ${!open ? 'max-h-[54px]' : ''}`}>
+        <div className={`space-y-1.5 overflow-hidden transition-all duration-300 ${!open ? 'max-h-[50px]' : 'max-h-[400px]'}`}>
           {plan.benefits.map((b, i) => (
             <div key={i} className="flex items-start gap-1.5">
               <CheckCircle2 size={11} className="shrink-0 mt-0.5" style={{ color: meta.color }} />
@@ -96,15 +192,23 @@ const PlanCard = ({ plan, isCurrent, onBuy }) => {
             </div>
           ))}
         </div>
-        {plan.benefits.length > 2 && (
-          <button
-            onClick={() => setOpen(!open)}
-            className="flex items-center gap-0.5 mt-1.5 text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-wider"
+        <div className="flex justify-between items-center mt-2">
+          {plan.benefits.length > 2 && (
+            <button
+              onClick={() => setOpen(!open)}
+              className="flex items-center gap-0.5 text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-wider shadow-none bg-transparent"
+            >
+              {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+              {open ? 'Less' : `+${plan.benefits.length - 2} more`}
+            </button>
+          )}
+          <button 
+            onClick={() => onViewDetails(plan)}
+            className="text-[9px] font-black text-[#CE2029] uppercase tracking-widest hover:underline bg-transparent"
           >
-            {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-            {open ? 'Less' : `+${plan.benefits.length - 2} more`}
+            Full Details
           </button>
-        )}
+        </div>
       </div>
 
       {/* CTA */}
@@ -118,7 +222,7 @@ const PlanCard = ({ plan, isCurrent, onBuy }) => {
               ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
               : plan.bestValue
                 ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-md shadow-amber-100 hover:brightness-105'
-                : 'bg-[#eb483f] text-white hover:bg-[#d83f36] shadow-sm'
+                : 'bg-[#CE2029] text-white hover:bg-[#d83f36] shadow-sm'
           }`}
         >
           {isCurrent ? 'Current Plan' : 'Buy Now'}
@@ -145,7 +249,7 @@ const ConfirmModal = ({ plan, onClose, onConfirm }) => {
         initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
         className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
       >
-        <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, #eb483f, ${meta.color})` }} />
+        <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, #CE2029, ${meta.color})` }} />
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${meta.color}15` }}>
@@ -168,7 +272,7 @@ const ConfirmModal = ({ plan, onClose, onConfirm }) => {
           </div>
           <div className="flex gap-2.5">
             <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50">Cancel</button>
-            <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-[#eb483f] text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 hover:bg-[#d83f36]">
+            <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 hover:bg-[#d83f36]">
               Confirm <ArrowRight size={12} strokeWidth={3} />
             </button>
           </div>
@@ -229,6 +333,19 @@ const MembershipPlans = () => {
   const [filter, setFilter] = useState('all');
   const [buying, setBuying] = useState(null);
   const [cancelling, setCancelling] = useState(null);
+  const [viewingPlan, setViewingPlan] = useState(null);
+  const tabsRef = useRef(null);
+
+  useEffect(() => {
+    const activeBtn = tabsRef.current?.querySelector('[data-active="true"]');
+    if (activeBtn) {
+      activeBtn.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, [filter]);
   const [userMembership, setUserMembership] = useState(() => {
     const saved = localStorage.getItem('userMembership');
     return saved ? JSON.parse(saved) : USER_MEMBERSHIP;
@@ -265,7 +382,7 @@ const MembershipPlans = () => {
     <div className="min-h-screen bg-[#fafafa] pb-20">
 
       {/* Compact Hero */}
-      <div className="bg-[#eb483f] px-4 pt-5 pb-8 relative overflow-hidden">
+      <div className="bg-[#CE2029] px-4 pt-5 pb-8 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:18px_18px]" />
         <div className="relative z-10 max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-3">
@@ -313,23 +430,40 @@ const MembershipPlans = () => {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 -mt-4 relative z-10 space-y-4">
+      <div className="max-w-5xl mx-auto px-4 -mt-7 relative z-10 space-y-4">
 
-        {/* Filter tabs */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-1.5 inline-flex gap-1 overflow-x-auto max-w-full no-scrollbar">
-          {FILTERS.map(f => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-                filter === f.id
-                  ? 'bg-[#eb483f] text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        {/* Modern Segmented Control Filter - More Compact & Auto-scroll */}
+        <div 
+          className="py-2 overflow-x-auto no-scrollbar flex justify-start sm:justify-start px-12"
+          style={{ scrollSnapType: 'x mandatory' }}
+        >
+          <div 
+            ref={tabsRef}
+            className="bg-slate-100 p-0.5 rounded-xl flex gap-0.5 w-fit"
+          >
+            {FILTERS.map(f => (
+              <button
+                key={f.id}
+                data-active={filter === f.id}
+                onClick={() => setFilter(f.id)}
+                className="relative px-3.5 py-1.5 transition-all outline-none scroll-mx-10"
+                style={{ scrollSnapAlign: 'center' }}
+              >
+                {filter === f.id && (
+                  <motion.div
+                    layoutId="activeFilterPill"
+                    className="absolute inset-x-0 inset-y-0 bg-white rounded-lg shadow-sm border border-white/50"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                  />
+                )}
+                <span className={`relative z-10 text-[9px] font-black uppercase tracking-[0.1em] whitespace-nowrap transition-colors duration-300 ${
+                  filter === f.id ? 'text-[#CE2029]' : 'text-slate-500'
+                }`}>
+                  {f.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Plan stats summary row */}
@@ -340,7 +474,7 @@ const MembershipPlans = () => {
             { label: 'From', value: `OMR ${Math.min(...MEMBERSHIP_PLANS.map(p => p.price)).toFixed(3)}` },
           ].map((s, i) => (
             <div key={i} className="bg-white rounded-xl border border-slate-100 shadow-sm p-2.5 text-center">
-              <p className="text-base font-black text-[#eb483f]">{s.value}</p>
+              <p className="text-base font-black text-[#CE2029]">{s.value}</p>
               <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{s.label}</p>
             </div>
           ))}
@@ -355,6 +489,7 @@ const MembershipPlans = () => {
                 plan={plan}
                 isCurrent={isActive && userMembership.planId === plan.id}
                 onBuy={setBuying}
+                onViewDetails={setViewingPlan}
               />
             ))}
           </AnimatePresence>
@@ -367,6 +502,14 @@ const MembershipPlans = () => {
 
       {/* Modals */}
       <AnimatePresence>
+        {viewingPlan && (
+          <PlanDetailsModal 
+            plan={viewingPlan} 
+            isCurrent={isActive && userMembership.planId === viewingPlan.id}
+            onClose={() => setViewingPlan(null)} 
+            onBuy={setBuying} 
+          />
+        )}
         {buying && (
           <ConfirmModal plan={buying} onClose={() => setBuying(null)} onConfirm={handleConfirm} />
         )}

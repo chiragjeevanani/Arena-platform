@@ -12,98 +12,141 @@ const mockSchedule = [
 const CoachDashboard = () => {
   const { isDark } = useTheme();
 
+  const stats = [
+    { label: 'Today', value: '3', sub: 'Sessions', icon: Calendar, color: 'text-red-500' },
+    { label: 'Students', value: '35', sub: 'Active', icon: Users, color: 'text-blue-500' },
+    { label: 'Attendance', value: '92%', sub: 'Avg.', icon: ClipboardCheck, color: 'text-emerald-500' },
+  ];
+
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto">
-      {/* Header Section */}
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
-        <div>
-          <h2 className={`text-2xl font-bold tracking-tight flex items-center gap-3 ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
-            <Calendar className="text-[#eb483f]" size={24} /> Today's Agenda
-          </h2>
-          <p className={`text-sm mt-1 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-            You have <span className="text-[#eb483f] font-bold">3 sessions</span> scheduled for today.
+    <div className="space-y-5 max-w-[1600px] mx-auto pb-10 px-0.5">
+      {/* Welcome & Stats Section */}
+      <div className="space-y-4 pt-1">
+        <div className="px-1.5">
+          <h1 className={`text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-[#1a1d24]'}`} style={{ fontFamily: "'Outfit', sans-serif" }}>
+            Dashboard
+          </h1>
+          <p className={`text-[10px] font-bold uppercase tracking-wider opacity-50 ${isDark ? 'text-white' : 'text-slate-500'}`}>
+            Track your performance and sessions
           </p>
+        </div>
+
+        {/* Quick Stats Grid - More Compact & Icon Focused */}
+        <div className="grid grid-cols-3 gap-3 md:gap-4">
+          {stats.map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              className={`p-3 rounded-2xl border flex flex-col items-center text-center transition-all ${
+                isDark 
+                  ? 'bg-[#1a1d24] border-white/5 shadow-xl' 
+                  : 'bg-white border-slate-100 shadow-sm'
+              }`}
+            >
+              <div className="mb-2">
+                <stat.icon size={22} className={stat.color} strokeWidth={2.5} />
+              </div>
+              <p className={`text-lg font-black leading-none ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{stat.value}</p>
+              <p className={`text-[9px] font-bold uppercase tracking-widest mt-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{stat.label}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
 
-      {/* Schedule Grid */}
-      <div className="grid grid-cols-1 gap-4">
-        {mockSchedule.map((session, idx) => (
-          <motion.div
-            key={session.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className={`bg-white rounded-xl border shadow-sm transition-all hover:border-[#eb483f]/40 overflow-hidden group ${
-              isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-white border-slate-100'
-            }`}
-          >
-            <div className="flex flex-col lg:flex-row items-stretch">
-              {/* Type Indicator */}
-              <div className={`w-1.5 shrink-0 ${session.type === 'Online' ? 'bg-[#eb483f]' : 'bg-[#1a2b3c]'}`} />
+      {/* Schedule Section */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-1.5">
+          <h2 className={`text-sm font-bold tracking-tight uppercase opacity-60 flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
+            Today's <span className="text-[#CE2029]">Timeline</span>
+          </h2>
+          <Link to="/coach/schedule" className="text-[#CE2029] text-[9px] font-black tracking-widest uppercase hover:underline">Calendar</Link>
+        </div>
+
+        <div className="space-y-2.5">
+          {mockSchedule.map((session, idx) => (
+            <motion.div
+              key={session.id}
+              initial={{ opacity: 0, x: -5 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 + idx * 0.05 }}
+              className={`relative group rounded-xl border overflow-hidden transition-all ${
+                isDark 
+                  ? 'bg-[#1a1d24] border-white/5 shadow-lg' 
+                  : 'bg-white border-slate-100 shadow-sm'
+              }`}
+            >
+              {/* Thinner Top Accent Bar - Solid for all cards */}
+              <div className={`absolute top-0 left-0 right-0 h-[3px] bg-[#1a1d24]`}/>
               
-              <div className="flex-1 p-4 md:p-5 flex flex-col md:flex-row justify-between gap-4">
-                <div className="flex-1 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-3 md:p-4 flex flex-col md:flex-row gap-4">
+                {/* Compact Left Side */}
+                <div className="flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start md:border-r md:pr-5 border-slate-100 dark:border-white/5 gap-1.5">
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider ${
+                    isDark ? 'bg-white/5 text-white/50' : 'bg-slate-50 text-slate-400'
+                  }`}>
+                    <Clock size={10} className="text-[#CE2029]" />
+                    {session.time.split(' - ')[0]}
+                  </div>
+                  <div className={`px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest ${
+                    session.type === 'Online' 
+                      ? 'bg-blue-500/10 text-blue-500' 
+                      : 'bg-[#CE2029]/5 text-[#CE2029]'
+                  }`}>
+                    {session.type}
+                  </div>
+                </div>
+
+                {/* Compact Center Info */}
+                <div className="flex-1 space-y-2.5">
+                  <div className="flex items-start justify-between">
                     <div>
-                      <h3 className={`text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
+                      <h3 className={`text-sm font-black leading-tight ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
                         {session.batch}
                       </h3>
-                      <div className="flex gap-1.5 mt-1">
-                        <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border ${
-                          session.level === 'Advanced' ? 'bg-[#FF4B4B]/10 text-[#FF4B4B] border-[#FF4B4B]/20' : 
-                          'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20'
-                        }`}>
-                          {session.level}
-                        </span>
-                        <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border ${
-                          session.type === 'Online' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-slate-100 text-slate-600 border-slate-200'
-                        } ${isDark ? 'bg-white/5 border-white/10 text-white/40' : ''}`}>
-                          {session.type}
-                        </span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1 text-[9px] text-slate-400 font-bold uppercase tracking-tight">
+                          {session.type === 'Online' ? <Video size={11} className="text-[#CE2029]" /> : <MapPin size={11} className="text-[#CE2029]" />}
+                          <span className="truncate max-w-[100px] md:max-w-none">{session.arena}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-[9px] text-slate-400 font-bold border-l pl-2 dark:border-white/5 uppercase tracking-tight">
+                          <Users size={11} className="text-[#CE2029]" />
+                          <span>{session.students} Seats</span>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className={`flex items-center gap-2.5 px-4 py-2 rounded-lg border font-bold transition-all group-hover:bg-[#eb483f] group-hover:text-white group-hover:border-[#eb483f] ${
-                      isDark ? 'bg-white/5 border-white/10 text-[#eb483f]' : 'bg-slate-50 border-slate-200 text-[#1a2b3c]'
+                    <span className={`text-[7px] font-black px-1.5 py-0.5 rounded border tracking-widest uppercase ${
+                      session.level === 'Advanced' 
+                        ? 'border-red-500/20 text-red-500 bg-red-500/5' 
+                        : 'border-slate-500/20 text-slate-500 bg-slate-500/5'
                     }`}>
-                      <Clock size={16} />
-                      <span className="text-base">{session.time}</span>
-                    </div>
+                      {session.level}
+                    </span>
                   </div>
-                  
-                  <div className={`flex flex-wrap items-center gap-5 mt-3 pt-3 border-t ${isDark ? 'border-white/5' : 'border-slate-50'}`}>
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      {session.type === 'Online' ? <Video size={14} className="text-[#eb483f]" /> : <MapPin size={14} className="text-[#eb483f]" />}
-                      <span className={`${isDark ? 'text-white/60' : 'text-slate-600'}`}>{session.arena}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      <Users size={14} className="text-[#eb483f]" />
-                      <span className={`${isDark ? 'text-white/60' : 'text-slate-600'}`}>{session.students} Students</span>
-                    </div>
+
+                  {/* Actions - More Compact Buttons */}
+                  <div className="flex items-center gap-2">
+                    <Link 
+                      to="/coach/attendance"
+                      className="flex-1 flex items-center gap-1.5 justify-center py-2 rounded-lg bg-[#CE2029] text-white font-bold text-[9px] uppercase tracking-widest shadow shadow-[#CE2029]/10 active:scale-95 transition-all"
+                    >
+                      <ClipboardCheck size={12} /> Attendance
+                    </Link>
+                    <Link 
+                      to="/coach/students"
+                      className={`flex items-center justify-center h-[34px] w-[34px] rounded-lg border transition-all active:scale-95 ${
+                        isDark ? 'bg-white/5 border-white/5 text-white/30 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029]'
+                      }`}
+                    >
+                      <ChevronRight size={14} />
+                    </Link>
                   </div>
-                </div>
-                
-                <div className={`flex flex-col border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 shrink-0 justify-center gap-2 ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
-                  <Link 
-                    to="/coach/attendance"
-                    className="flex items-center gap-2 justify-center w-full lg:w-40 px-5 py-2.5 rounded-lg bg-[#eb483f] text-white hover:bg-[#1a2b3c] transition-all font-bold text-[10px] uppercase tracking-wider shadow-sm"
-                  >
-                    <ClipboardCheck size={16} /> Attendance
-                  </Link>
-                  <Link 
-                    to="/coach/students"
-                    className={`flex items-center gap-2 justify-center w-full px-5 py-2.5 rounded-lg border transition-all font-bold text-[10px] uppercase tracking-wider ${
-                      isDark ? 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-600 hover:border-[#eb483f] hover:text-[#eb483f]'
-                    }`}
-                  >
-                    Details <ChevronRight size={14} />
-                  </Link>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

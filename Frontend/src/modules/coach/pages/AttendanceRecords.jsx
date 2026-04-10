@@ -54,13 +54,13 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} 
         className={`relative w-full max-w-md rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${
-          isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-200 text-[#1a2b3c]'
+          isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
         }`}
       >
         <div className="p-6 border-b border-white/5 flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold tracking-tight">Log Attendance</h3>
-            <p className="text-[10px] font-black uppercase text-[#eb483f] tracking-widest mt-1">{batch} · {new Date().toLocaleDateString()}</p>
+            <p className="text-[10px] font-black uppercase text-[#CE2029] tracking-widest mt-1">{batch} · {new Date().toLocaleDateString()}</p>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><X size={20} /></button>
         </div>
@@ -69,18 +69,18 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
           {students.map((stu) => (
             <div key={stu.id} onClick={() => toggleStatus(stu.id)} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
               stu.present 
-                ? isDark ? 'bg-[#eb483f]/10 border-[#eb483f]/20 shadow-[0_0_15px_rgba(235,72,63,0.05)]' : 'bg-[#eb483f]/5 border-[#eb483f]/10'
+                ? isDark ? 'bg-[#CE2029]/10 border-[#CE2029]/20 shadow-[0_0_15px_rgba(206, 32, 41,0.05)]' : 'bg-[#CE2029]/5 border-[#CE2029]/10'
                 : isDark ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'
             }`}>
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${
-                  stu.present ? 'bg-[#eb483f] text-white' : isDark ? 'bg-white/5 text-white/20' : 'bg-white text-slate-300'
+                  stu.present ? 'bg-[#CE2029] text-white' : isDark ? 'bg-white/5 text-white/20' : 'bg-white text-slate-300'
                 }`}>
                   {stu.name.charAt(0)}
                 </div>
                 <div>
                   <p className={`text-sm font-bold ${stu.present ? '' : 'opacity-40'}`}>{stu.name}</p>
-                  <p className={`text-[8px] font-black uppercase tracking-widest ${stu.present ? 'text-[#eb483f]' : 'text-slate-500'}`}>{stu.id}</p>
+                  <p className={`text-[8px] font-black uppercase tracking-widest ${stu.present ? 'text-[#CE2029]' : 'text-slate-500'}`}>{stu.id}</p>
                 </div>
               </div>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
@@ -97,7 +97,7 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Class Summary</span>
             <span className="text-xs font-black">{students.filter(s => s.present).length} Present / {students.filter(s => !s.present).length} Absent</span>
           </div>
-          <button onClick={handleSave} disabled={saving} className="w-full py-4 rounded-2xl bg-[#eb483f] text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#1a2b3c] transition-all shadow-xl shadow-[#eb483f]/20 active:scale-[0.98] disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="w-full py-4 rounded-2xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#36454F] transition-all shadow-xl shadow-[#CE2029]/20 active:scale-[0.98] disabled:opacity-50">
             {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Finalize Session Log <CheckCircle2 size={18} /></>}
           </button>
         </div>
@@ -116,8 +116,13 @@ const AttendanceRecords = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   
-  // New modal state
+  // New modal & filter state
   const [showMarkModal, setShowMarkModal] = useState(null); // String: batch name
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: 'All',
+    batch: 'All'
+  });
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -131,8 +136,6 @@ const AttendanceRecords = () => {
       case 'Delete Record': setRecords(prev => prev.filter(r => r.id !== logId)); showToast(`Record for ${record.date} deleted`, 'error'); break;
       case 'View Details': setSelectedRecord(record); setIsEditMode(false); break;
       case 'Edit Log': setSelectedRecord(record); setIsEditMode(true); break;
-      case 'Notify Parent': showToast(`Notification sent to parents of ${record.batch}`); break;
-      case 'Report Issue': showToast(`Issue reported for ${record.batch} session`, 'warning'); break;
       default: break;
     }
   };
@@ -154,10 +157,14 @@ const AttendanceRecords = () => {
     document.body.removeChild(link); URL.revokeObjectURL(url);
   };
 
-  const filteredHistory = records.filter(log => 
-    log.batch.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    log.date.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredHistory = records.filter(log => {
+    const matchesSearch = log.batch.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         log.date.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filters.status === 'All' || log.status === filters.status;
+    const matchesBatch = filters.batch === 'All' || log.batch === filters.batch;
+    
+    return matchesSearch && matchesStatus && matchesBatch;
+  });
 
   return (
     <div className="space-y-4 max-w-[1600px] mx-auto relative">
@@ -167,7 +174,7 @@ const AttendanceRecords = () => {
             className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[150] px-6 py-3 rounded-xl shadow-2xl border flex items-center gap-3 min-w-[300px] ${
               toast.type === 'error' ? 'bg-red-600 border-red-500 text-white' : 
               toast.type === 'warning' ? 'bg-amber-500 border-amber-400 text-white' :
-              'bg-[#1a2b3c] border-slate-700 text-white'
+              'bg-[#36454F] border-slate-700 text-white'
             }`}>
             {toast.type === 'error' ? <Trash2 size={18} /> : toast.type === 'warning' ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
             <span className="text-xs font-bold uppercase tracking-wider">{toast.message}</span>
@@ -187,28 +194,28 @@ const AttendanceRecords = () => {
               className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[70] p-6 rounded-2xl border shadow-2xl ${isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'}`}>
               <div className="flex justify-between items-center mb-5">
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/5 text-[#eb483f]' : 'bg-[#eb483f]/10 text-[#eb483f]'}`}>{isEditMode ? <Edit3 size={18} /> : <Eye size={18} />}</div>
-                  <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{isEditMode ? 'Edit Attendance' : 'Record Details'}</h3>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isDark ? 'bg-white/5 text-[#CE2029]' : 'bg-[#CE2029]/10 text-[#CE2029]'}`}>{isEditMode ? <Edit3 size={18} /> : <Eye size={18} />}</div>
+                  <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{isEditMode ? 'Edit Attendance' : 'Record Details'}</h3>
                 </div>
                 <button onClick={() => setSelectedRecord(null)} className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5 text-white/20' : 'hover:bg-slate-100 text-slate-400'}`}><XCircle size={18} /></button>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className={`p-3 rounded-xl border transition-all ${isDark ? 'bg-white/[0.02] border-white/20' : 'bg-slate-50 border-slate-300'}`}>
-                    <label className="text-[8px] font-black uppercase text-[#eb483f] block mb-1 tracking-widest">Date</label>
-                    <p className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{selectedRecord.date}</p>
+                    <label className="text-[8px] font-black uppercase text-[#CE2029] block mb-1 tracking-widest">Date</label>
+                    <p className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{selectedRecord.date}</p>
                   </div>
                   <div className={`p-3 rounded-xl border transition-all ${isDark ? 'bg-white/[0.02] border-white/20' : 'bg-slate-50 border-slate-300'}`}>
-                    <label className="text-[8px] font-black uppercase text-[#eb483f] block mb-1 tracking-widest">Batch</label>
-                    <p className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{selectedRecord.batch}</p>
+                    <label className="text-[8px] font-black uppercase text-[#CE2029] block mb-1 tracking-widest">Batch</label>
+                    <p className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{selectedRecord.batch}</p>
                   </div>
                 </div>
                 <div className={`p-4 rounded-xl border transition-all ${isDark ? 'bg-white/[0.02] border-white/20' : 'bg-slate-50 border-slate-300'}`}>
-                  <label className="text-[8px] font-black uppercase text-[#eb483f] block mb-3 tracking-widest">Attendance Metric</label>
+                  <label className="text-[8px] font-black uppercase text-[#CE2029] block mb-3 tracking-widest">Attendance Metric</label>
                   <div className="flex items-center gap-6">
                     <div className="flex-1">
                       <p className="text-[8px] font-black text-green-500 uppercase mb-1 tracking-widest">Present</p>
-                      {isEditMode ? <input type="number" defaultValue={selectedRecord.present} className={`w-full py-2 px-3 rounded-lg font-black text-xl outline-none border transition-all ${isDark ? 'bg-black/40 border-white/20 text-white focus:border-[#eb483f]' : 'bg-white border-slate-300 text-[#1a2b3c] focus:border-[#eb483f]'}`} /> : <p className={`text-2xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{selectedRecord.present}</p>}
+                      {isEditMode ? <input type="number" defaultValue={selectedRecord.present} className={`w-full py-2 px-3 rounded-lg font-black text-xl outline-none border transition-all ${isDark ? 'bg-black/40 border-white/20 text-white focus:border-[#CE2029]' : 'bg-white border-slate-300 text-[#36454F] focus:border-[#CE2029]'}`} /> : <p className={`text-2xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{selectedRecord.present}</p>}
                     </div>
                     <div className={`w-px h-10 ${isDark ? 'bg-white/20' : 'bg-slate-300'}`} />
                     <div className="flex-1 text-right">
@@ -217,7 +224,7 @@ const AttendanceRecords = () => {
                     </div>
                   </div>
                 </div>
-                <button onClick={() => { if(isEditMode) showToast('Changes saved successfully'); setSelectedRecord(null); }} className={`w-full mt-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all active:scale-[0.98] ${isEditMode ? 'bg-[#eb483f] text-white shadow-[#eb483f]/20 hover:bg-[#1a2b3c]' : isDark ? 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10' : 'bg-slate-50 text-slate-400 border border-slate-200 hover:bg-slate-100'}`}>
+                <button onClick={() => { if(isEditMode) showToast('Changes saved successfully'); setSelectedRecord(null); }} className={`w-full mt-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all active:scale-[0.98] ${isEditMode ? 'bg-[#CE2029] text-white shadow-[#CE2029]/20 hover:bg-[#36454F]' : isDark ? 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10' : 'bg-slate-50 text-slate-400 border border-slate-200 hover:bg-slate-100'}`}>
                   {isEditMode ? 'Update Record' : 'Close Details'}
                 </button>
               </div>
@@ -229,28 +236,28 @@ const AttendanceRecords = () => {
       {/* Header Section */}
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
         <div>
-          <h2 className={`text-xl font-bold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
-            <ClipboardCheck className="text-[#eb483f]" size={22} /> Attendance Records
+          <h2 className={`text-xl font-bold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
+            <ClipboardCheck className="text-[#CE2029]" size={22} /> Attendance Records
           </h2>
           <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>Monitor and verify daily presence logs.</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setShowMarkModal('Morning Elite')} className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#eb483f] text-white transition-all text-[10px] font-black uppercase tracking-wider shadow-md hover:-translate-y-0.5"><Plus size={14} /> Mark New</button>
-          <button onClick={exportToCSV} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg border transition-all text-[10px] font-black uppercase tracking-wider ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-[#eb483f]' : 'bg-white border-slate-200 text-slate-600 hover:border-[#eb483f] hover:text-[#eb483f] shadow-sm'}`}><Download size={14} /> Export CSV</button>
+          <button onClick={() => setShowMarkModal('Morning Elite')} className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#CE2029] text-white transition-all text-[10px] font-black uppercase tracking-wider shadow-md hover:-translate-y-0.5"><Plus size={14} /> Mark New</button>
+          <button onClick={exportToCSV} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg border transition-all text-[10px] font-black uppercase tracking-wider ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-[#CE2029]' : 'bg-white border-slate-200 text-slate-600 hover:border-[#CE2029] hover:text-[#CE2029] shadow-sm'}`}><Download size={14} /> Export CSV</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: 'Avg Attendance', value: '94.2%', icon: CheckCircle2, color: '#eb483f' },
-          { label: 'Classes Logged', value: '42', icon: Clock, color: '#1a2b3c' },
+          { label: 'Avg Attendance', value: '94.2%', icon: CheckCircle2, color: '#CE2029' },
+          { label: 'Classes Logged', value: '42', icon: Clock, color: '#36454F' },
           { label: 'Absence Rate', value: '5.8%', icon: XCircle, color: '#FF4B4B' },
         ].map((stat, idx) => (
           <div key={idx} className={`p-4 rounded-xl border shadow-sm ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-white border-slate-100'}`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className={`text-[9px] font-bold uppercase tracking-widest mb-0.5 ${isDark ? 'text-white/20' : 'text-slate-400'}`}>{stat.label}</p>
-                <h3 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{stat.value}</h3>
+                <h3 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{stat.value}</h3>
               </div>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center border" style={{ backgroundColor: `${stat.color}10`, borderColor: `${stat.color}20`, color: stat.color }}><stat.icon size={18} /></div>
             </div>
@@ -258,12 +265,77 @@ const AttendanceRecords = () => {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-2">
+       <div className="flex flex-col sm:flex-row items-center gap-2 relative">
         <div className="w-full sm:flex-1 relative group">
-          <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#eb483f]' : 'text-slate-400 group-focus-within:text-[#eb483f]'}`} />
-          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Filter by batch or date..." className={`w-full py-1.5 pl-9 pr-4 rounded-lg text-[11px] transition-all shadow-sm outline-none border ${isDark ? 'bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-[#eb483f] focus:bg-white/10' : 'bg-white border-slate-200 text-[#1a2b3c] placeholder:text-slate-400 focus:border-[#eb483f]'}`} />
+          <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#CE2029]' : 'text-slate-400 group-focus-within:text-[#CE2029]'}`} />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Filter by batch or date..." className={`w-full py-1.5 pl-9 pr-4 rounded-lg text-[11px] transition-all shadow-sm outline-none border ${isDark ? 'bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-[#CE2029] focus:bg-white/10' : 'bg-white border-slate-200 text-[#36454F] placeholder:text-slate-400 focus:border-[#CE2029]'}`} />
         </div>
-        <button onClick={() => showToast('Filters applied')} className={`w-full sm:w-auto px-4 py-1.5 rounded-lg border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/60 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-[#eb483f] hover:text-[#eb483f]'}`}><Filter size={14} /> Full Filters</button>
+        
+        <div className="relative w-full sm:w-auto">
+          <button 
+            onClick={() => setShowFilters(!showFilters)} 
+            className={`w-full sm:w-auto px-4 py-1.5 rounded-lg border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all ${
+              showFilters || filters.status !== 'All' || filters.batch !== 'All'
+                ? 'bg-[#CE2029] border-[#CE2029] text-white' 
+                : isDark ? 'bg-white/5 border-white/10 text-white/60 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-[#CE2029] hover:text-[#CE2029]'
+            }`}
+          >
+            <Filter size={14} /> Full Filters
+          </button>
+
+          <AnimatePresence>
+            {showFilters && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowFilters(false)} />
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className={`absolute right-0 top-full mt-2 z-20 w-64 p-4 rounded-2xl border shadow-2xl ${isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'}`}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[9px] font-black uppercase text-slate-400 mb-2 tracking-widest">By Status</p>
+                      <div className="flex flex-wrap gap-2">
+                        {['All', 'Logged', 'Pending'].map(s => (
+                          <button 
+                            key={s}
+                            onClick={() => setFilters(prev => ({ ...prev, status: s }))}
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                              filters.status === s 
+                                ? 'bg-[#CE2029] border-[#CE2029] text-white' 
+                                : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-slate-50 border-slate-100 text-slate-500'
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black uppercase text-slate-400 mb-2 tracking-widest">By Batch</p>
+                      <select 
+                        value={filters.batch}
+                        onChange={(e) => setFilters(prev => ({ ...prev, batch: e.target.value }))}
+                        className={`w-full py-2 px-3 rounded-xl border text-[11px] font-bold outline-none ${isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-slate-50 border-slate-100 text-[#36454F]'}`}
+                      >
+                        {['All', 'Morning Elite', 'Junior Stars', 'Pro Analytics'].map(b => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button 
+                      onClick={() => { setFilters({ status: 'All', batch: 'All' }); setShowFilters(false); }}
+                      className="w-full py-2 rounded-xl bg-slate-100 text-slate-400 text-[9px] font-black uppercase tracking-widest hover:text-red-500 transition-colors"
+                    >
+                      Reset All
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       <div className={`bg-white rounded-xl border shadow-sm overflow-hidden ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-white border-slate-100'}`}>
@@ -277,17 +349,17 @@ const AttendanceRecords = () => {
             <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-slate-50'}`}>
               {filteredHistory.map((log, idx) => (
                 <motion.tr key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.05 }} className={`group transition-colors ${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50'}`}>
-                  <td className="px-5 py-3"><div className="flex items-center gap-2.5"><Calendar size={14} className="text-[#eb483f]" /><span className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>{log.date}</span></div></td>
+                  <td className="px-5 py-3"><div className="flex items-center gap-2.5"><Calendar size={14} className="text-[#CE2029]" /><span className={`font-bold text-xs ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{log.date}</span></div></td>
                   <td className="px-5 py-3"><p className={`font-medium text-xs ${isDark ? 'text-white/70' : 'text-slate-600'}`}>{log.batch}</p></td>
-                  <td className="px-5 py-3 text-center"><span className={`font-bold text-xs ${isDark ? 'text-white/80' : 'text-[#1a2b3c]'}`}>{log.present}</span></td>
+                  <td className="px-5 py-3 text-center"><span className={`font-bold text-xs ${isDark ? 'text-white/80' : 'text-[#36454F]'}`}>{log.present}</span></td>
                   <td className="px-5 py-3 text-center"><span className="text-[#FF4B4B] font-bold text-xs">{log.absent}</span></td>
-                  <td className="px-5 py-3 text-center"><span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border ${log.status === 'Logged' ? 'bg-[#eb483f]/10 text-[#eb483f] border-[#eb483f]/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>{log.status}</span></td>
+                  <td className="px-5 py-3 text-center"><span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border ${log.status === 'Logged' ? 'bg-[#CE2029]/10 text-[#CE2029] border-[#CE2029]/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>{log.status}</span></td>
                   <td className="px-5 py-3 text-right pr-8">
                     <div className="flex justify-end relative">
-                      <button onClick={() => setActiveMenu(activeMenu === log.id ? null : log.id)} className={`p-1.5 rounded-lg transition-all border ${activeMenu === log.id ? 'bg-[#eb483f] border-[#eb483f] text-white' : isDark ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-[#eb483f] hover:text-[#eb483f]'}`}><MoreVertical size={16} /></button>
+                      <button onClick={() => setActiveMenu(activeMenu === log.id ? null : log.id)} className={`p-1.5 rounded-lg transition-all border ${activeMenu === log.id ? 'bg-[#CE2029] border-[#CE2029] text-white' : isDark ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029]'}`}><MoreVertical size={16} /></button>
                       <AnimatePresence>
                         {activeMenu === log.id && (
-                          <><div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} /><motion.div initial={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} className={`absolute right-0 z-20 w-48 p-1.5 rounded-xl border shadow-2xl ${idx > filteredHistory.length - 3 ? 'bottom-full mb-2' : 'top-full mt-2'} ${isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'}`}><div className="space-y-1">{[{ label: 'View Details', icon: Eye }, { label: 'Edit Log', icon: Edit3 }, { label: 'Report Issue', icon: AlertTriangle }, { label: 'Notify Parent', icon: Bell }, { label: 'Delete Record', icon: Trash2, color: '#FF4B4B' }].map((opt, i) => (<button key={i} onClick={() => handleAction(opt.label, log.id)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all ${opt.color === '#FF4B4B' ? 'text-[#FF4B4B] hover:bg-[#FF4B4B]/5' : isDark ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-[#eb483f] hover:bg-slate-50'}`}><opt.icon size={14} />{opt.label}</button>))}</div></motion.div></>
+                          <><div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} /><motion.div initial={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} className={`absolute right-0 z-20 w-48 p-1.5 rounded-xl border shadow-2xl ${idx > filteredHistory.length - 3 ? 'bottom-full mb-2' : 'top-full mt-2'} ${isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'}`}><div className="space-y-1">{[{ label: 'View Details', icon: Eye }, { label: 'Edit Log', icon: Edit3 }, { label: 'Delete Record', icon: Trash2, color: '#FF4B4B' }].map((opt, i) => (<button key={i} onClick={() => handleAction(opt.label, log.id)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all ${opt.color === '#FF4B4B' ? 'text-[#FF4B4B] hover:bg-[#FF4B4B]/5' : isDark ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-[#CE2029] hover:bg-slate-50'}`}><opt.icon size={14} />{opt.label}</button>))}</div></motion.div></>
                         )}
                       </AnimatePresence>
                     </div>

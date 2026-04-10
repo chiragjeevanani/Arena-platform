@@ -22,8 +22,8 @@ const CoachCard = ({ batch, index = 0 }) => {
       transition={{ delay: index * 0.1, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
       className={`rounded-[20px] overflow-hidden group transition-all duration-400 border relative ${
         isDark 
-          ? 'glass-card border-white/10 bg-white/5 hover:border-[#eb483f]/40 shadow-xl shadow-black/20' 
-          : 'bg-white border-slate-100 shadow-md shadow-slate-200/40 hover:shadow-lg hover:shadow-[#eb483f]/10 translate-y-0 hover:-translate-y-1'
+          ? 'glass-card border-white/10 bg-white/5 hover:border-[#CE2029]/40 shadow-xl shadow-black/20' 
+          : 'bg-white border-slate-100 shadow-md shadow-slate-200/40 hover:shadow-lg hover:shadow-[#CE2029]/10 translate-y-0 hover:-translate-y-1'
       }`}
     >
       {/* Hero Section */}
@@ -37,8 +37,8 @@ const CoachCard = ({ batch, index = 0 }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
         {/* Pro Badge */}
-        <div className="absolute top-2 left-2 bg-white/20 backdrop-blur-md border border-white/30 px-2 py-0.5 rounded-md flex items-center gap-1.5 group-hover:bg-[#eb483f] group-hover:border-[#eb483f] transition-all duration-300">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f] group-hover:bg-white animate-pulse" />
+        <div className="absolute top-2 left-2 bg-white/20 backdrop-blur-md border border-white/30 px-2 py-0.5 rounded-md flex items-center gap-1.5 group-hover:bg-[#CE2029] group-hover:border-[#CE2029] transition-all duration-300">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] group-hover:bg-white animate-pulse" />
           <span className="text-[8px] font-black text-white uppercase tracking-[0.1em]">Elite Coach</span>
         </div>
 
@@ -63,7 +63,7 @@ const CoachCard = ({ batch, index = 0 }) => {
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1 space-y-0.5">
             <div className="flex items-center gap-1 text-slate-400 uppercase tracking-widest text-[8px] font-black">
-              <Clock size={8} className="text-[#eb483f]" />
+              <Clock size={8} className="text-[#CE2029]" />
               Timing
             </div>
             <p className="text-[10px] font-bold text-slate-700 leading-tight">{batch.timing}</p>
@@ -84,7 +84,7 @@ const CoachCard = ({ batch, index = 0 }) => {
               <span className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">Available:</span>
               <span className="text-[10px] font-black text-slate-800">{totalSeats - filledSeats} Slots</span>
             </div>
-            <span className="text-[8px] font-black text-[#eb483f] bg-[#eb483f]/10 px-1.5 py-0.5 rounded-md">
+            <span className="text-[8px] font-black text-[#CE2029] bg-[#CE2029]/10 px-1.5 py-0.5 rounded-md">
               {Math.round(seatPercent)}%
             </span>
           </div>
@@ -94,7 +94,7 @@ const CoachCard = ({ batch, index = 0 }) => {
               whileInView={{ width: `${seatPercent}%` }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.34, 1.56, 0.64, 1] }}
-              className="h-full rounded-full bg-gradient-to-r from-[#eb483f] to-[#ff6b6b] shadow-[0_0_5px_rgba(235,72,63,0.3)]"
+              className="h-full rounded-full bg-gradient-to-r from-[#CE2029] to-[#ff6b6b] shadow-[0_0_5px_rgba(206, 32, 41,0.3)]"
             />
           </div>
         </div>
@@ -112,7 +112,7 @@ const CoachCard = ({ batch, index = 0 }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/coaching-summary', { state: { batch } })}
-            className="flex items-center gap-1.5 bg-[#eb483f] text-white pl-3 pr-2 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider shadow-md shadow-[#eb483f]/20 transition-all group/btn"
+            className="flex items-center gap-1.5 bg-[#CE2029] text-white pl-3 pr-2 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider shadow-md shadow-[#CE2029]/20 transition-all group/btn"
           >
             Join Class
             <div className="w-5 h-5 bg-white/20 rounded-md flex items-center justify-center group-hover/btn:bg-white/40 transition-colors">

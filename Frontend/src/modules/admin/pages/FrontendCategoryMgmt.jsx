@@ -65,9 +65,9 @@ const FrontendCategoryMgmt = () => {
         {toast && (
           <motion.div 
             initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-white text-slate-900 px-5 py-2.5 rounded-xl shadow-2xl border border-[#eb483f]/20 flex items-center gap-2"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-white text-slate-900 px-5 py-2.5 rounded-xl shadow-2xl border border-[#CE2029]/20 flex items-center gap-2"
           >
-            <CheckCircle2 size={16} className="text-[#eb483f]" />
+            <CheckCircle2 size={16} className="text-[#CE2029]" />
             <span className="text-[10px] font-bold uppercase tracking-widest">{toast}</span>
           </motion.div>
         )}
@@ -75,12 +75,12 @@ const FrontendCategoryMgmt = () => {
 
       <div className="flex justify-between items-center pb-4 border-b border-slate-100">
         <div>
-           <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#eb483f] mb-1">
+           <div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#CE2029] mb-1">
               <Target size={12} /> Site Manager
            </div>
            <h1 className="text-xl font-semibold tracking-tight text-slate-900">Service Categories</h1>
         </div>
-        <button onClick={openAdd} className="bg-[#eb483f] text-white px-4 py-2 rounded-lg font-semibold text-[10px] uppercase tracking-widest shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2">
+        <button onClick={openAdd} className="bg-[#CE2029] text-white px-4 py-2 rounded-lg font-semibold text-[10px] uppercase tracking-widest shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2">
            <Plus size={14} /> Add Category
         </button>
       </div>
@@ -90,7 +90,7 @@ const FrontendCategoryMgmt = () => {
            <motion.div 
             key={cat.id} 
             layout 
-            className="group relative h-[220px] bg-[#eb483f] rounded-2xl overflow-hidden shadow-sm"
+            className="group relative h-[220px] bg-[#CE2029] rounded-2xl overflow-hidden shadow-sm"
            >
               <img src={cat.image} alt={cat.title} className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" />
               
@@ -103,7 +103,7 @@ const FrontendCategoryMgmt = () => {
 
               {/* Action Toolbar */}
               <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
-                 <button onClick={() => openEdit(cat)} className="w-8 h-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white flex items-center justify-center hover:bg-[#eb483f] transition-all">
+                 <button onClick={() => openEdit(cat)} className="w-8 h-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white flex items-center justify-center hover:bg-[#CE2029] transition-all">
                     <Edit3 size={14} />
                  </button>
                  <button onClick={() => deleteCat(cat.id)} className="w-8 h-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-red-300 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
@@ -115,7 +115,7 @@ const FrontendCategoryMgmt = () => {
       </div>
 
       <div className="mt-8 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
-         <h4 className="text-[10px] font-bold text-[#eb483f] mb-2 uppercase tracking-widest">Visual Guidelines</h4>
+         <h4 className="text-[10px] font-bold text-[#CE2029] mb-2 uppercase tracking-widest">Visual Guidelines</h4>
          <p className="max-w-2xl text-[11px] text-slate-400 font-medium leading-relaxed">Use high-quality imagery with consistent lighting. Landscape or square shots work best.</p>
       </div>
 
@@ -153,11 +153,11 @@ const FrontendCategoryMgmt = () => {
                   <div className="space-y-5">
                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#eb483f] ml-1">Display Title</label>
+                           <label className="text-[9px] font-bold uppercase tracking-widest text-[#CE2029] ml-1">Display Title</label>
                            <input 
                               type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})}
                               placeholder="e.g. Volleyball"
-                              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-slate-900 outline-none focus:border-[#eb483f] transition-all"
+                              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-slate-900 outline-none focus:border-[#CE2029] transition-all"
                            />
                         </div>
                         <div className="space-y-1.5">
@@ -165,7 +165,7 @@ const FrontendCategoryMgmt = () => {
                            <input 
                               type="text" value={form.link} onChange={e => setForm({...form, link: e.target.value})}
                               placeholder="/book/1/1"
-                              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-slate-900 outline-none focus:border-[#eb483f] transition-all"
+                              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-slate-900 outline-none focus:border-[#CE2029] transition-all"
                            />
                         </div>
                      </div>
@@ -185,7 +185,7 @@ const FrontendCategoryMgmt = () => {
                           <input 
                             type="text" value={form.image} onChange={e => setForm({...form, image: e.target.value})}
                             placeholder="Paste image URL here..."
-                            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-10 text-xs font-semibold text-slate-900 outline-none focus:border-[#eb483f] transition-all"
+                            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-10 text-xs font-semibold text-slate-900 outline-none focus:border-[#CE2029] transition-all"
                           />
                           <Cloud size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
                           
@@ -199,7 +199,7 @@ const FrontendCategoryMgmt = () => {
                   </div>
 
                   <div className="mt-10">
-                     <button onClick={saveCat} className="w-full py-4 bg-[#eb483f] text-white rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-[#eb483f]/10 hover:-translate-y-0.5 transition-all">
+                     <button onClick={saveCat} className="w-full py-4 bg-[#CE2029] text-white rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-[#CE2029]/10 hover:-translate-y-0.5 transition-all">
                         Update Category View
                      </button>
                   </div>

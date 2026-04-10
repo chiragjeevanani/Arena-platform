@@ -27,7 +27,7 @@ const ArenaListing = () => {
     <div className="min-h-screen pb-28">
       {/* Header â€” Hidden on Desktop */}
       <div className="md:hidden">
-        <div className={`px-4 pt-3 pb-3 sticky top-0 z-50 bg-[#eb483f] border-b border-white/10 rounded-b-3xl shadow-[0_8px_20px_rgba(235,72,63,0.15)]`}>
+        <div className={`px-4 pt-3 pb-3 sticky top-0 z-50 bg-[#CE2029] border-b border-white/10 rounded-b-3xl shadow-[0_8px_20px_rgba(206, 32, 41,0.15)]`}>
           <div className="flex items-center gap-2 mb-2">
             <button
               onClick={() => navigate(-1)}
@@ -57,7 +57,7 @@ const ArenaListing = () => {
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1 rounded-md text-[10px] uppercase tracking-wide font-bold whitespace-nowrap transition-all duration-300 ${selectedCategory === cat
-                  ? 'bg-white text-[#eb483f] shadow-sm'
+                  ? 'bg-white text-[#CE2029] shadow-sm'
                   : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'
                   }`}
               >
@@ -73,7 +73,7 @@ const ArenaListing = () => {
         {filteredArenas.map((arena, index) => (
           <div
             key={arena.id}
-            className={`rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 border bg-white border-slate-200 hover:border-[#eb483f]/30 shadow-sm hover:shadow-md`}
+            className={`rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 border bg-white border-slate-200 hover:border-[#CE2029]/30 shadow-sm hover:shadow-md`}
             onClick={() => navigate(`/arenas/${arena.id}`)}
           >
             {/* Image */}
@@ -83,7 +83,7 @@ const ArenaListing = () => {
                 alt={arena.name}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#eb483f] via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#CE2029] via-transparent to-transparent" />
 
               <div className="absolute top-4 right-4 glass px-3 py-1.5 rounded-xl flex items-center gap-1">
                 <Star size={13} className="text-[#FFD600] fill-[#FFD600]" />
@@ -103,14 +103,14 @@ const ArenaListing = () => {
             {/* Content */}
             <div className="p-5">
               <div className="flex justify-between items-start">
-                <h3 className={`text-lg font-bold font-display ${'text-[#eb483f]'}`}>{arena.name}</h3>
+                <h3 className={`text-lg font-bold font-display ${'text-[#CE2029]'}`}>{arena.name}</h3>
                 <div className="text-right">
-                  <p className="text-[#eb483f] font-bold text-lg font-display">OMR {Number(arena.pricePerHour).toFixed(3)}</p>
-                  <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-[#eb483f]/40'}`}>per hour</p>
+                  <p className="text-[#CE2029] font-bold text-lg font-display">OMR {Number(arena.pricePerHour).toFixed(3)}</p>
+                  <p className={`text-[9px] font-bold uppercase tracking-[0.15em] ${'text-[#CE2029]/40'}`}>per hour</p>
                 </div>
               </div>
 
-              <div className={`flex items-center text-xs mt-2 gap-1 ${'text-[#eb483f]/70'}`}>
+              <div className={`flex items-center text-xs mt-2 gap-1 ${'text-[#CE2029]/70'}`}>
                 <MapPin size={13} />
                 <span>{arena.location} • {arena.distance}</span>
               </div>
@@ -118,12 +118,12 @@ const ArenaListing = () => {
               {/* Stats + CTA */}
               <div className={`mt-5 flex justify-between items-center p-4 rounded-2xl border ${'bg-slate-50 border-slate-200'}`}>
                 <div className={`text-center flex-1 border-r ${'border-slate-200'}`}>
-                  <p className={`text-sm font-black ${'text-[#eb483f]'}`}>{arena.courtsCount}</p>
-                  <p className={`text-[9px] uppercase font-bold tracking-wider ${'text-[#eb483f]/50'}`}>Courts</p>
+                  <p className={`text-sm font-black ${'text-[#CE2029]'}`}>{arena.courtsCount}</p>
+                  <p className={`text-[9px] uppercase font-bold tracking-wider ${'text-[#CE2029]/50'}`}>Courts</p>
                 </div>
                 <div className={`text-center flex-1 border-r ${'border-slate-200'}`}>
-                  <p className={`text-sm font-black ${'text-[#eb483f]'}`}>{arena.reviews}</p>
-                  <p className={`text-[9px] uppercase font-bold tracking-wider ${'text-[#eb483f]/50'}`}>Reviews</p>
+                  <p className={`text-sm font-black ${'text-[#CE2029]'}`}>{arena.reviews}</p>
+                  <p className={`text-[9px] uppercase font-bold tracking-wider ${'text-[#CE2029]/50'}`}>Reviews</p>
                 </div>
                 <div className="flex-1 ml-3">
                   <ShuttleButton

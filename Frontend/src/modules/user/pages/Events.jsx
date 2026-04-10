@@ -47,12 +47,12 @@ const Events = () => {
   return (
     <div className="min-h-screen bg-[#FFF1F1] pb-24 relative overflow-hidden">
       {/* Background Decor */}
-      <div className="absolute top-[-5%] right-[-5%] w-[300px] h-[300px] bg-[#eb483f]/5 rounded-full blur-[80px]" />
-      <div className="absolute bottom-10 left-[-5%] w-[250px] h-[250px] bg-[#eb483f]/5 rounded-full blur-[80px]" />
+      <div className="absolute top-[-5%] right-[-5%] w-[300px] h-[300px] bg-[#CE2029]/5 rounded-full blur-[80px]" />
+      <div className="absolute bottom-10 left-[-5%] w-[250px] h-[250px] bg-[#CE2029]/5 rounded-full blur-[80px]" />
 
       {/* Mobile-Only Red Header */}
       <div className="md:hidden">
-        <div className={`px-4 pt-4 pb-4 backdrop-blur-2xl border-b border-white/10 bg-[#eb483f] rounded-b-3xl shadow-[0_10px_30px_rgba(235,72,63,0.15)]`}>
+        <div className={`px-4 pt-4 pb-4 backdrop-blur-2xl border-b border-white/10 bg-[#CE2029] rounded-b-3xl shadow-[0_10px_30px_rgba(206, 32, 41,0.15)]`}>
           <div className="max-w-5xl mx-auto flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
@@ -72,13 +72,13 @@ const Events = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-white flex items-center justify-center border border-slate-100 text-[#eb483f] shadow-[0_4px_20px_rgba(0,0,0,0.03)] active:scale-95 transition-all hover:shadow-md"
+              className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-white flex items-center justify-center border border-slate-100 text-[#CE2029] shadow-[0_4px_20px_rgba(0,0,0,0.03)] active:scale-95 transition-all hover:shadow-md"
             >
               <ArrowLeft size={18} />
             </button>
             <div>
-              <h1 className="text-xl md:text-2xl font-black text-[#eb483f] tracking-tight uppercase" style={{ fontFamily: "'Montserrat', 'Outfit', sans-serif" }}>OUR EVENTS</h1>
-              <p className="text-[9px] md:text-[10px] text-[#eb483f]/60 font-black tracking-[0.3em] uppercase mt-0.5">Explore Upcoming Activities</p>
+              <h1 className="text-xl md:text-2xl font-black text-[#CE2029] tracking-tight uppercase" style={{ fontFamily: "'Montserrat', 'Outfit', sans-serif" }}>OUR EVENTS</h1>
+              <p className="text-[9px] md:text-[10px] text-[#CE2029]/60 font-black tracking-[0.3em] uppercase mt-0.5">Explore Upcoming Activities</p>
             </div>
           </div>
 
@@ -90,8 +90,8 @@ const Events = () => {
                 onClick={() => setSelectedTag(tag)}
                 className={`px-4 py-2 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black tracking-tight transition-all active:scale-95 duration-300 ${
                   selectedTag === tag
-                    ? 'bg-[#eb483f] text-white shadow-lg shadow-[#eb483f]/20'
-                    : 'bg-white text-slate-500 border border-slate-100 font-bold hover:border-[#eb483f]/30 hover:text-[#eb483f]'
+                    ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
+                    : 'bg-white text-slate-500 border border-slate-100 font-bold hover:border-[#CE2029]/30 hover:text-[#CE2029]'
                 }`}
               >
                 {tag}
@@ -111,7 +111,7 @@ const Events = () => {
               onClick={() => setSelectedTag(tag)}
               className={`px-4 py-2 rounded-xl text-[9px] font-black tracking-tight transition-all active:scale-95 duration-300 ${
                 selectedTag === tag
-                  ? 'bg-[#eb483f] text-white shadow-lg shadow-[#eb483f]/20'
+                  ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
                   : 'bg-white text-slate-500 border border-slate-100 font-bold'
               }`}
             >
@@ -126,18 +126,18 @@ const Events = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8 w-full rounded-[20px] md:rounded-[32px] overflow-hidden relative shadow-xl shadow-[#eb483f]/10 border border-white bg-white backdrop-blur-md"
+            className="mb-8 w-full rounded-[20px] md:rounded-[32px] overflow-hidden relative shadow-xl shadow-[#CE2029]/10 border border-white bg-white backdrop-blur-md"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/10 rounded-full blur-[60px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#eb483f]/5 rounded-full blur-[60px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#CE2029]/5 rounded-full blur-[60px] pointer-events-none" />
             
             <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-8 items-center relative z-10">
               {/* Left Side: Event Title & Trophy */}
               <div className="flex-1 text-center md:text-left">
-                 <div className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-[14px] bg-[#eb483f]/10 text-[#eb483f] mb-2 md:mb-4">
+                 <div className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-[14px] bg-[#CE2029]/10 text-[#CE2029] mb-2 md:mb-4">
                     <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19,5h-2V3H7v2H5C3.9,5,3,5.9,3,7v1c0,2.5,1.7,4.6,4,5.3V15c0,1.1,0.9,2,2,2h2v4H9v2h6v-2h-2v-4h2c1.1,0,2-0.9,2-2v-1.7 c2.3-0.6,4-2.8,4-5.3V7C21,5.9,20.1,5,19,5z M5,8V7h2v3.8C5.8,10.4,5,9.3,5,8z M19,8c0,1.3-0.8,2.4-2,2.8V7h2V8z"/></svg>
                  </div>
-                 <p className="text-[#eb483f] font-black tracking-[0.2em] text-[9px] md:text-[10px] uppercase mb-0.5">Results Declared</p>
+                 <p className="text-[#CE2029] font-black tracking-[0.2em] text-[9px] md:text-[10px] uppercase mb-0.5">Results Declared</p>
                  <h2 className="text-xl md:text-3xl font-black text-slate-800 tracking-tight uppercase leading-tight mb-1.5 md:mb-2">Summer Badminton Smash 2026</h2>
                  <p className="text-[11px] md:text-sm font-semibold text-slate-500 max-w-[280px] mx-auto md:mx-0 leading-snug">The official leaderboard has been published by the administration.</p>
               </div>
@@ -180,7 +180,7 @@ const Events = () => {
                 transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                 className="relative group cursor-pointer"
               >
-                <div className="absolute inset-0 bg-[#eb483f]/20 rounded-[24px] md:rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
+                <div className="absolute inset-0 bg-[#CE2029]/20 rounded-[24px] md:rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
                 <div className="relative rounded-[24px] md:rounded-[32px] overflow-hidden shadow-2xl shadow-slate-200/50 border border-white bg-white/50 backdrop-blur-sm aspect-[4/5] md:aspect-square lg:aspect-[4/5]">
                   <img 
                     src={banner.image} 
@@ -188,10 +188,10 @@ const Events = () => {
                     className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
                   />
                   {/* Subtle glass overlay on image bottom */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#eb483f]/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#CE2029]/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   
                   {/* Category Badge on card */}
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#eb483f] shadow-sm border border-white/50 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#CE2029] shadow-sm border border-white/50 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                     {banner.category}
                   </div>
                 </div>

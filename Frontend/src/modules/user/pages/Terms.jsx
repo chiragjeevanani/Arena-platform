@@ -26,8 +26,8 @@ const Terms = () => {
       icon: ShieldAlert,
       title: '3. User Conduct & Liability',
       content: 'Users are expected to maintain sportsmanship and discipline inside the arenas. The management is not liable for any personal injuries sustained during play or loss of personal belongings.',
-      color: 'text-[#eb483f]',
-      bg: 'bg-[#eb483f]/10'
+      color: 'text-[#CE2029]',
+      bg: 'bg-[#CE2029]/10'
     }
   ];
 
@@ -38,7 +38,7 @@ const Terms = () => {
       {/* Premium Background Decorative Elements (Desktop) */}
       <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
         <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${
-          'bg-[#eb483f]/[0.08]'
+          'bg-[#CE2029]/[0.08]'
         }`} />
         <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${
           'bg-blue-50/30'
@@ -52,7 +52,7 @@ const Terms = () => {
       </div>
 
       {/* Header */}
-      <div className={`px-4 md:px-6 pt-4 pb-4 md:pt-6 md:pb-6 backdrop-blur-2xl border-b border-white/10 bg-[#eb483f] rounded-b-3xl md:rounded-b-[2rem] shadow-[0_10px_30px_rgba(235,72,63,0.15)] relative z-50`}>
+      <div className={`px-4 md:px-6 pt-4 pb-4 md:pt-6 md:pb-6 backdrop-blur-2xl border-b border-white/10 bg-[#CE2029] rounded-b-3xl md:rounded-b-[2rem] shadow-[0_10px_30px_rgba(206, 32, 41,0.15)] relative z-50`}>
         <div className="max-w-4xl mx-auto flex items-center gap-3 md:gap-4">
           <button
             onClick={() => navigate(-1)}
@@ -75,7 +75,7 @@ const Terms = () => {
               isDark ? 'bg-[#151b29] border-white/5' : 'bg-white border-blue-50'
             }`}
           >
-            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[28px] shrink-0 flex items-center justify-center shadow-lg ${'bg-[#eb483f]/10 text-[#eb483f]'}`}>
+            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[28px] shrink-0 flex items-center justify-center shadow-lg ${'bg-[#CE2029]/10 text-[#CE2029]'}`}>
               <FileText size={32} className="md:w-10 md:h-10" />
             </div>
             <div>
@@ -88,7 +88,7 @@ const Terms = () => {
 
           {/* Detailed Clauses */}
           <div className="flex-1 w-full space-y-4 md:space-y-6">
-            <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-2 md:mb-4 ${isDark ? 'text-[#eb483f]/40' : 'text-slate-400'}`}>
+            <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-2 md:mb-4 ${isDark ? 'text-[#CE2029]/40' : 'text-slate-400'}`}>
               Legal Policies
             </h3>
             

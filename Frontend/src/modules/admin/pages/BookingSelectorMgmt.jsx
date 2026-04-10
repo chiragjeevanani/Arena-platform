@@ -13,7 +13,7 @@ const INITIAL_CATEGORIES = [
     subtitle: 'CONNECT. CELEBRATE. PLAY', 
     imageUrl: 'https://images.unsplash.com/photo-1626225967045-944062402170?q=80&w=800&auto=format&fit=crop',
     active: true,
-    accentColor: '#eb483f'
+    accentColor: '#CE2029'
   },
   { 
     id: 2, 
@@ -21,7 +21,7 @@ const INITIAL_CATEGORIES = [
     subtitle: 'CONNECT. CELEBRATE. PLAY', 
     imageUrl: 'https://images.unsplash.com/photo-1534158914592-062992fbe900?q=80&w=800&auto=format&fit=crop',
     active: true,
-    accentColor: '#1a2b3c'
+    accentColor: '#36454F'
   },
 ];
 
@@ -31,7 +31,7 @@ const BookingSelectorMgmt = () => {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [form, setForm] = useState({ title: '', subtitle: '', imageUrl: '', accentColor: '#eb483f' });
+  const [form, setForm] = useState({ title: '', subtitle: '', imageUrl: '', accentColor: '#CE2029' });
   const [toast, setToast] = useState(null);
 
   const showToast = (message) => {
@@ -53,7 +53,7 @@ const BookingSelectorMgmt = () => {
 
   const openAdd = () => {
     setEditingCategory(null);
-    setForm({ title: '', subtitle: 'CONNECT. CELEBRATE. PLAY', imageUrl: '', accentColor: '#eb483f' });
+    setForm({ title: '', subtitle: 'CONNECT. CELEBRATE. PLAY', imageUrl: '', accentColor: '#CE2029' });
     setShowModal(true);
   };
 
@@ -86,9 +86,9 @@ const BookingSelectorMgmt = () => {
             initial={{ opacity: 0, y: 50 }} 
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] bg-[#1a2b3c] text-white px-5 py-2.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-2.5 min-w-[280px]"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] bg-[#36454F] text-white px-5 py-2.5 rounded-xl shadow-2xl border border-white/10 flex items-center gap-2.5 min-w-[280px]"
           >
-            <CheckCircle2 size={16} className="text-[#eb483f]" />
+            <CheckCircle2 size={16} className="text-[#CE2029]" />
             <span className="text-[11px] font-bold uppercase tracking-widest">{toast}</span>
           </motion.div>
         )}
@@ -97,14 +97,14 @@ const BookingSelectorMgmt = () => {
       {/* Header */}
       <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
         <div>
-          <h2 className={`text-xl font-semibold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
-            <LayoutGrid className="text-[#eb483f]" size={22} /> Booking Selection
+          <h2 className={`text-xl font-semibold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
+            <LayoutGrid className="text-[#CE2029]" size={22} /> Booking Selection
           </h2>
           <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
             Manage categories on the "What do you want to book?" screen.
           </p>
         </div>
-        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#eb483f] text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-[#eb483f]/20 hover:bg-[#1a2b3c] transition-all">
+        <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#CE2029] text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:bg-[#36454F] transition-all">
           <Plus size={16} /> Add Category
         </button>
       </div>
@@ -118,7 +118,7 @@ const BookingSelectorMgmt = () => {
             onChange={e => setSearch(e.target.value)} 
             placeholder="Search categories..."
             className={`w-full pl-10 pr-4 py-2 rounded-xl text-xs border outline-none transition-all ${
-              isDark ? 'bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-[#eb483f]' : 'bg-white border-slate-200 text-[#1a2b3c] focus:border-[#eb483f]'
+              isDark ? 'bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-[#CE2029]' : 'bg-white border-slate-200 text-[#36454F] focus:border-[#CE2029]'
             }`} 
           />
         </div>
@@ -157,11 +157,11 @@ const BookingSelectorMgmt = () => {
                     className="flex items-center gap-2 transition-opacity"
                   >
                     {cat.active ? (
-                      <Eye size={16} className="text-[#eb483f]" />
+                      <Eye size={16} className="text-[#CE2029]" />
                     ) : (
                       <EyeOff size={16} className="text-slate-400" />
                     )}
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${cat.active ? 'text-[#eb483f]' : 'text-slate-400'}`}>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${cat.active ? 'text-[#CE2029]' : 'text-slate-400'}`}>
                       {cat.active ? 'Visible' : 'Hidden'}
                     </span>
                   </button>
@@ -174,7 +174,7 @@ const BookingSelectorMgmt = () => {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => openEdit(cat)}
-                    className={`p-2 rounded-xl border transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-[#eb483f] hover:text-[#eb483f]'}`}
+                    className={`p-2 rounded-xl border transition-all ${isDark ? 'bg-white/5 border-white/10 text-white/40 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029]'}`}
                   >
                     <Edit3 size={15} />
                   </button>
@@ -210,10 +210,10 @@ const BookingSelectorMgmt = () => {
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-[#eb483f]/10 flex items-center justify-center">
-                      <ImageIcon size={20} className="text-[#eb483f]" />
+                    <div className="w-10 h-10 rounded-2xl bg-[#CE2029]/10 flex items-center justify-center">
+                      <ImageIcon size={20} className="text-[#CE2029]" />
                     </div>
-                    <h3 className={`font-bold text-base uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#1a2b3c]'}`}>
+                    <h3 className={`font-bold text-base uppercase tracking-tight ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
                       {editingCategory ? 'Edit Category' : 'New Category'}
                     </h3>
                   </div>
@@ -224,42 +224,42 @@ const BookingSelectorMgmt = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#eb483f] block mb-2">Display Title</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#CE2029] block mb-2">Display Title</label>
                     <input 
                       value={form.title}
                       onChange={e => setForm({ ...form, title: e.target.value })}
                       placeholder="e.g. BADMINTON ARENA"
                       className={`w-full px-4 py-3 rounded-2xl text-sm border outline-none transition-all font-bold ${
-                        isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-200 focus:border-[#eb483f]'
+                        isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#CE2029]' : 'bg-slate-50 border-slate-200 focus:border-[#CE2029]'
                       }`}
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#eb483f] block mb-2">Subtitle / Slogan</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#CE2029] block mb-2">Subtitle / Slogan</label>
                     <input 
                       value={form.subtitle}
                       onChange={e => setForm({ ...form, subtitle: e.target.value })}
                       className={`w-full px-4 py-3 rounded-2xl text-sm border outline-none transition-all font-bold ${
-                        isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-200 focus:border-[#eb483f]'
+                        isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#CE2029]' : 'bg-slate-50 border-slate-200 focus:border-[#CE2029]'
                       }`}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#eb483f] block mb-2">Image URL</label>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#CE2029] block mb-2">Image URL</label>
                       <input 
                         value={form.imageUrl}
                         onChange={e => setForm({ ...form, imageUrl: e.target.value })}
                         placeholder="https://images.unsplash.com/..."
                         className={`w-full px-4 py-3 rounded-2xl text-sm border outline-none transition-all font-bold ${
-                          isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#eb483f]' : 'bg-slate-50 border-slate-200 focus:border-[#eb483f]'
+                          isDark ? 'bg-white/5 border-white/15 text-white focus:border-[#CE2029]' : 'bg-slate-50 border-slate-200 focus:border-[#CE2029]'
                         }`}
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#eb483f] block mb-2 flex items-center gap-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#CE2029] block mb-2 flex items-center gap-2">
                         <Palette size={12} /> Color
                       </label>
                       <input 
@@ -279,7 +279,7 @@ const BookingSelectorMgmt = () => {
                   <button 
                     onClick={saveCategory}
                     disabled={!form.title || !form.imageUrl}
-                    className="flex-1 py-3 rounded-2xl bg-[#eb483f] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#1a2b3c] transition-all disabled:opacity-50 shadow-lg shadow-[#eb483f]/20 font-black"
+                    className="flex-1 py-3 rounded-2xl bg-[#CE2029] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#36454F] transition-all disabled:opacity-50 shadow-lg shadow-[#CE2029]/20 font-black"
                   >
                     {editingCategory ? 'Update' : 'Create'}
                   </button>

@@ -14,7 +14,7 @@ const ArenaIncome = () => {
       {/* Financial Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Main Wallet */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-[#1a2b3c] to-[#0f1115] p-8 rounded-3xl text-white relative overflow-hidden shadow-xl shadow-slate-200">
+        <div className="lg:col-span-2 bg-gradient-to-br from-[#36454F] to-[#0f1115] p-8 rounded-3xl text-white relative overflow-hidden shadow-xl shadow-slate-200">
            <div className="absolute top-0 right-0 p-8 opacity-10 blur-sm pointer-events-none">
               <Wallet size={180} />
            </div>
@@ -37,7 +37,7 @@ const ArenaIncome = () => {
                  </div>
                  <div className="space-y-1">
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/40">Platform Fee (18%)</p>
-                    <p className="text-xl font-black text-[#eb483f]">- OMR 284</p>
+                    <p className="text-xl font-black text-[#CE2029]">- OMR 284</p>
                  </div>
                  <div className="space-y-1">
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/40">Pending Payout</p>
@@ -52,12 +52,12 @@ const ArenaIncome = () => {
 
         {/* Breakdown Card */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
-           <div className="w-16 h-16 rounded-2xl bg-[#eb483f]/10 flex items-center justify-center text-[#eb483f] mb-4">
+           <div className="w-16 h-16 rounded-2xl bg-[#CE2029]/10 flex items-center justify-center text-[#CE2029] mb-4">
               <Activity size={32} />
            </div>
-           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-[#1a2b3c] mb-2">Payout Schedule</h3>
-           <p className="text-xs font-bold text-slate-400 leading-relaxed px-4">Your next payout is scheduled for <span className="text-[#eb483f]">April 01, 2024</span> directly to your linked bank account.</p>
-           <button className="mt-8 w-full py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-[#1a2b3c] transition-all">
+           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-[#36454F] mb-2">Payout Schedule</h3>
+           <p className="text-xs font-bold text-slate-400 leading-relaxed px-4">Your next payout is scheduled for <span className="text-[#CE2029]">April 01, 2024</span> directly to your linked bank account.</p>
+           <button className="mt-8 w-full py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-[#36454F] transition-all">
               Manage Bank Account
            </button>
         </div>
@@ -66,9 +66,9 @@ const ArenaIncome = () => {
       {/* Recent Transactions List */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-50 flex justify-between items-center">
-           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#1a2b3c]">Recent Transactions</h3>
+           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#36454F]">Recent Transactions</h3>
            <div className="flex items-center gap-2">
-              <button className="p-2 border border-slate-100 rounded-lg text-slate-400 hover:text-[#eb483f] transition-all"><Filter size={16} /></button>
+              <button className="p-2 border border-slate-100 rounded-lg text-slate-400 hover:text-[#CE2029] transition-all"><Filter size={16} /></button>
            </div>
         </div>
         <div className="overflow-x-auto">
@@ -86,16 +86,16 @@ const ArenaIncome = () => {
                {TRANSACTIONS.map(tx => (
                   <tr key={tx.id} className="hover:bg-slate-50/30 transition-colors">
                      <td className="px-6 py-5">
-                        <p className="text-sm font-black text-[#1a2b3c]">{tx.id}</p>
+                        <p className="text-sm font-black text-[#36454F]">{tx.id}</p>
                         <p className="text-[9px] font-bold text-slate-400">{tx.date}</p>
                      </td>
                      <td className="px-6 py-5">
-                        <span className="text-[11px] font-black text-[#1a2b3c] uppercase">{tx.type}</span>
+                        <span className="text-[11px] font-black text-[#36454F] uppercase">{tx.type}</span>
                      </td>
                      <td className="px-6 py-5">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{tx.method}</span>
                      </td>
-                     <td className="px-6 py-5 text-right font-black text-sm text-[#1a2b3c]">
+                     <td className="px-6 py-5 text-right font-black text-sm text-[#36454F]">
                         OMR {tx.amount.toFixed(3)}
                      </td>
                      <td className="px-6 py-5">

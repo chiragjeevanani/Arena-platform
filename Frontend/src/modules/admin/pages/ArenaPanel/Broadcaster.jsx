@@ -18,8 +18,8 @@ const Broadcaster = () => {
       {/* 1. Compose Notice */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-8">
         <div>
-          <h2 className="text-xl font-black tracking-tight text-[#1a2b3c] flex items-center gap-2">
-            <Megaphone size={22} className="text-[#eb483f]" /> Arena Broadcaster
+          <h2 className="text-xl font-black tracking-tight text-[#36454F] flex items-center gap-2">
+            <Megaphone size={22} className="text-[#CE2029]" /> Arena Broadcaster
           </h2>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Send arena-wide alerts & updates</p>
         </div>
@@ -29,7 +29,7 @@ const Broadcaster = () => {
              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Notice Category</label>
              <div className="grid grid-cols-3 gap-2">
                {['Maintenance', 'Events', 'Offers'].map(cat => (
-                 <button key={cat} className="flex-1 py-3 px-4 rounded-2xl border border-slate-100 hover:border-[#eb483f] transition-all text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#eb483f] bg-slate-50/50">
+                 <button key={cat} className="flex-1 py-3 px-4 rounded-2xl border border-slate-100 hover:border-[#CE2029] transition-all text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#CE2029] bg-slate-50/50">
                     {cat}
                  </button>
                ))}
@@ -41,7 +41,7 @@ const Broadcaster = () => {
              <select 
                value={targetType}
                onChange={(e) => setTargetType(e.target.value)}
-               className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm font-black text-[#1a2b3c] outline-none transition-all focus:border-[#eb483f]"
+               className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm font-black text-[#36454F] outline-none transition-all focus:border-[#CE2029]"
              >
                 <option>All Registered Players</option>
                 <option>Players Booked for Tomorrow</option>
@@ -56,7 +56,7 @@ const Broadcaster = () => {
                value={message}
                onChange={(e) => setMessage(e.target.value)}
                placeholder="Example: Facility will be closed tomorrow for floor maintenance. Sorry for the inconvenience!"
-               className="w-full h-32 bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold text-[#1a2b3c] outline-none transition-all focus:border-[#eb483f]"
+               className="w-full h-32 bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold text-[#36454F] outline-none transition-all focus:border-[#CE2029]"
              />
           </div>
 
@@ -68,7 +68,7 @@ const Broadcaster = () => {
               isSent
                 ? 'bg-green-500 text-white shadow-green-500/20'
                 : message
-                  ? 'bg-[#eb483f] text-white shadow-[#eb483f]/20 hover:shadow-[#eb483f]/40 hover:-translate-y-0.5'
+                  ? 'bg-[#CE2029] text-white shadow-[#CE2029]/20 hover:shadow-[#CE2029]/40 hover:-translate-y-0.5'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed text-white shadow-none'
             }`}
           >
@@ -93,7 +93,7 @@ const Broadcaster = () => {
                
                <div className="bg-white/5 rounded-2xl p-5 border border-white/10 italic">
                   <div className="flex items-center gap-3 mb-4">
-                     <div className="w-10 h-10 rounded-xl bg-[#eb483f] flex items-center justify-center text-white">
+                     <div className="w-10 h-10 rounded-xl bg-[#CE2029] flex items-center justify-center text-white">
                         <Megaphone size={16} />
                      </div>
                      <div>
@@ -110,10 +110,10 @@ const Broadcaster = () => {
 
          {/* History */}
          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#1a2b3c] mb-6">Recent Broadcasts</h3>
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#36454F] mb-6">Recent Broadcasts</h3>
             <div className="space-y-4">
                {[
-                 { title: 'Maintenance Notice', date: 'Mar 24', icon: AlertCircle, color: '#eb483f' },
+                 { title: 'Maintenance Notice', date: 'Mar 24', icon: AlertCircle, color: '#CE2029' },
                  { title: 'New Tournament Launch', date: 'Mar 20', icon: Info, color: '#6366f1' },
                  { title: 'Happy Hour Offer', date: 'Mar 15', icon: Info, color: '#22c55e' }
                ].map((item, i) => (
@@ -123,7 +123,7 @@ const Broadcaster = () => {
                           <item.icon size={16} />
                        </div>
                        <div>
-                          <p className="text-[11px] font-black text-[#1a2b3c] group-hover:text-[#eb483f] transition-all uppercase tracking-widest">{item.title}</p>
+                          <p className="text-[11px] font-black text-[#36454F] group-hover:text-[#CE2029] transition-all uppercase tracking-widest">{item.title}</p>
                           <p className="text-[9px] font-bold text-slate-400">{item.date} • Sent via App & SMS</p>
                        </div>
                     </div>

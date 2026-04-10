@@ -38,7 +38,7 @@ const Privacy = () => {
       {/* Premium Background Decorative Elements (Desktop) */}
       <div className="hidden md:block fixed inset-0 pointer-events-none z-0">
         <div className={`absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-1000 ${
-          'bg-[#eb483f]/[0.08]'
+          'bg-[#CE2029]/[0.08]'
         }`} />
         <div className={`absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full blur-[180px] transition-all duration-1000 ${
           'bg-blue-50/30'
@@ -56,11 +56,11 @@ const Privacy = () => {
         <div className="max-w-6xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${'bg-white border-blue-100 text-[#eb483f] shadow-sm'}`}
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center border active:scale-95 transition-all ${'bg-white border-blue-100 text-[#CE2029] shadow-sm'}`}
           >
             <ArrowLeft size={18} />
           </button>
-          <h1 className={`text-lg font-bold font-display uppercase tracking-tight ${'text-[#eb483f]'}`}>Privacy & Security</h1>
+          <h1 className={`text-lg font-bold font-display uppercase tracking-tight ${'text-[#CE2029]'}`}>Privacy & Security</h1>
         </div>
       </div>
 
@@ -73,11 +73,11 @@ const Privacy = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className={`p-5 md:p-8 rounded-2xl md:rounded-[40px] flex flex-col items-center text-center border shadow-2xl ${
-                'bg-[#eb483f] text-white'
+                'bg-[#CE2029] text-white'
               }`}
             >
               <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-[28px] flex items-center justify-center mb-4 md:mb-6 ${'bg-white/10 text-white shadow-inner'}`}>
-                <Shield size={28} className="md:w-10 md:h-10 drop-shadow-[0_0_15px_rgba(235, 72, 63,0.3)]" />
+                <Shield size={28} className="md:w-10 md:h-10 drop-shadow-[0_0_15px_rgba(206, 32, 41,0.3)]" />
               </div>
               <h2 className="text-xl md:text-2xl font-black font-display uppercase tracking-tight">Your data is safe</h2>
               <p className={`text-xs md:text-sm mt-3 md:mt-4 leading-relaxed opacity-60 ${'text-white/80'}`}>
@@ -99,7 +99,7 @@ const Privacy = () => {
                 >
                   <div className="flex items-center gap-3 md:gap-4">
                     <item.icon size={18} className={`md:w-5 md:h-5 ${item.color}`} />
-                    <span className={`font-bold text-xs md:text-sm ${'text-[#eb483f]/70'}`}>{item.title}</span>
+                    <span className={`font-bold text-xs md:text-sm ${'text-[#CE2029]/70'}`}>{item.title}</span>
                   </div>
                   <ArrowLeft size={16} className="rotate-180 opacity-20 md:w-[18px] md:h-[18px]" />
                 </button>
@@ -109,7 +109,7 @@ const Privacy = () => {
 
           {/* RIGHT COLUMN: Detailed Privacy Sections */}
           <div className="flex-1 w-full space-y-4 md:space-y-6">
-            <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-2 md:mb-4 ${'text-[#eb483f]/40'}`}>
+            <h3 className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-2 md:mb-4 ${'text-[#CE2029]/40'}`}>
               Detailed Policies & Security
             </h3>
             
@@ -129,10 +129,10 @@ const Privacy = () => {
                       <section.icon size={20} className="md:w-6 md:h-6" />
                     </div>
                     <div>
-                      <h3 className={`font-black text-base md:text-lg tracking-tight mb-1 md:mb-2 ${'text-[#eb483f]'}`}>
+                      <h3 className={`font-black text-base md:text-lg tracking-tight mb-1 md:mb-2 ${'text-[#CE2029]'}`}>
                         {section.title}
                       </h3>
-                      <p className={`text-xs md:text-sm leading-relaxed opacity-60 ${'text-[#eb483f]'}`}>
+                      <p className={`text-xs md:text-sm leading-relaxed opacity-60 ${'text-[#CE2029]'}`}>
                         {section.content}
                       </p>
                     </div>

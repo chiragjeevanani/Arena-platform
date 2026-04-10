@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   Box, Typography, Button, IconButton, Card, Grid,
   Stepper, Step, StepLabel, LinearProgress, Tab, Tabs,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -37,11 +37,13 @@ import {
   ChevronRight,
   Info,
   Close,
-  Add
+  Add,
+  CorporateFare,
+  AccountBalance
 } from '@mui/icons-material';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import decathlonLogo from '../../../assets/Sponsors/decathlon.png';
 import redbullLogo from '../../../assets/Sponsors/redbull.png';
@@ -50,42 +52,42 @@ import { useTheme } from '../../user/context/ThemeContext';
 
 // --- MOCK DATA ---
 const MOCK_EVENTS = [
-  { 
-    id: 1, 
-    name: 'Summer Badminton Smash 2026', 
-    type: 'Tournament', 
-    date: '2026-06-15', 
+  {
+    id: 1,
+    name: 'Summer Badminton Smash 2026',
+    type: 'Tournament',
+    date: '2026-06-15',
     time: '10:00 AM',
-    venue: 'Bawshar Main Court', 
-    status: 'Upcoming', 
+    venue: 'Bawshar Main Court',
+    status: 'Upcoming',
     participants: 128,
     maxParticipants: 256,
     revenue: 550,
     expenses: 120,
     banner: summerSmashBanner
   },
-  { 
-    id: 2, 
-    name: 'Junior Elite Coaching Camp', 
-    type: 'Camp', 
-    date: '2026-04-10', 
+  {
+    id: 2,
+    name: 'Junior Elite Coaching Camp',
+    type: 'Camp',
+    date: '2026-04-10',
     time: '08:00 AM',
-    venue: 'Amm Sports Academy Muscat', 
-    status: 'Active', 
+    venue: 'Amm Sports Academy Muscat',
+    status: 'Active',
     participants: 45,
     maxParticipants: 50,
     revenue: 350,
     expenses: 80,
     banner: 'https://images.unsplash.com/photo-1544033527-b192daee1f5b?q=80&w=800&auto=format&fit=crop'
   },
-  { 
-    id: 3, 
-    name: 'Winter TT Open House', 
-    type: 'Special Event', 
-    date: '2025-12-05', 
+  {
+    id: 3,
+    name: 'Winter TT Open House',
+    type: 'Special Event',
+    date: '2025-12-05',
     time: '11:00 AM',
-    venue: 'Sultan Qaboos Arena', 
-    status: 'Completed', 
+    venue: 'Sultan Qaboos Arena',
+    status: 'Completed',
     participants: 96,
     maxParticipants: 100,
     revenue: 250,
@@ -104,14 +106,53 @@ const MOCK_PARTICIPANTS = [
 
 // The mock constants are now handled inside the component state
 
-const COLORS = ['#eb483f', '#0A1121', '#627D98', '#1a2b3c'];
+const COLORS = ['#CE2029', '#36454F', '#627D98', '#36454F'];
+
+const PremiumCard = ({ children, sx, ...props }) => {
+  const { isDark } = useTheme();
+  return (
+    <Card
+      {...props}
+      sx={{
+        borderRadius: 4,
+        border: '1px solid',
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+        background: isDark
+          ? 'linear-gradient(145deg, rgba(26, 29, 36, 0.9) 0%, rgba(10, 17, 33, 0.9) 100%)'
+          : 'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%)',
+        backdropFilter: 'blur(12px)',
+        boxShadow: isDark
+          ? '0 8px 32px rgba(0, 0, 0, 0.4)'
+          : '0 8px 32px rgba(0, 0, 0, 0.05)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflow: 'hidden',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: isDark
+            ? '0 12px 40px rgba(0, 0, 0, 0.6)'
+            : '0 12px 40px rgba(0, 0, 0, 0.1)',
+          borderColor: '#CE202944',
+        },
+        ...sx,
+      }}
+    >
+      {children}
+    </Card>
+  );
+};
 
 // --- MAIN COMPONENT ---
 const EventBanners = () => {
   const { isDark } = useTheme();
-  const [view, setView] = useState('DASHBOARD'); // DASHBOARD, CALENDAR, FORM, DETAILS
+  const [view, setView] = useState('DASHBOARD');
   const [activeEvent, setActiveEvent] = useState(null);
   const [activeSubTab, setActiveSubTab] = useState(0);
+
+  // --- Events State (replaces static MOCK_EVENTS) ---
+  const [events, setEvents] = useState(MOCK_EVENTS);
+  const handleAddEvent = (newEvent) => {
+    setEvents(prev => [newEvent, ...prev]);
+  };
 
   // Results Management State
   const [resultWinner, setResultWinner] = useState('');
@@ -198,25 +239,47 @@ const EventBanners = () => {
   };
 
   const PageHeader = ({ title, subtitle, actionLabel, onAction }) => (
-    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid', borderColor: isDark ? 'white/10' : 'slate.200', pb: 1.5 }}>
+    <Box sx={{
+      mb: 4,
+      display: 'flex',
+      flexDirection: { xs: 'column', md: 'row' },
+      justifyContent: 'space-between',
+      alignItems: { xs: 'flex-start', md: 'flex-end' },
+      gap: 2,
+      position: 'relative'
+    }}>
       <Box>
-        <Typography variant="overline" sx={{ fontWeight: 600, color: '#eb483f', letterSpacing: 2, mb: 0, display: 'block', lineHeight: 1, fontSize: '0.9rem', letterSpacing: 3 }}>
-          Portfolio Management
-        </Typography>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: isDark ? 'white' : '#0A1121', textTransform: 'uppercase', mt: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+          <Box sx={{ width: 4, height: 24, bgcolor: '#CE2029', borderRadius: 1 }} />
+          <Typography variant="overline" sx={{ fontWeight: 500, color: '#CE2029', letterSpacing: 2, lineHeight: 1, fontSize: '0.75rem' }}>
+            Portfolio Management
+          </Typography>
+        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: isDark ? 'white' : '#0f172a', letterSpacing: '-0.04em' }}>
           {title}
         </Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, letterSpacing: 1, display: 'block' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.5, opacity: 0.8 }}>
           {subtitle}
         </Typography>
       </Box>
       {actionLabel && (
-        <Button 
-          variant="contained" 
-          size="small"
-          startIcon={<AddCircleOutline fontSize="small" />}
+        <Button
+          variant="contained"
           onClick={onAction}
-          sx={{ bgcolor: '#0A1121', color: 'white', px: 2, py: 0.5, borderRadius: 1.5, '&:hover': { bgcolor: 'black' }, textTransform: 'none', fontWeight: 500, fontSize: '0.95rem', letterSpacing: 0.5 }}
+          startIcon={<AddCircleOutline />}
+          sx={{
+            bgcolor: '#36454F',
+            color: 'white',
+            px: 2.5,
+            py: 0.75,
+            fontSize: '0.85rem',
+            borderRadius: 2.5,
+            '&:hover': { bgcolor: 'black', transform: 'scale(1.02)' },
+            textTransform: 'none',
+            fontWeight: 500,
+            boxShadow: '0 4px 14px 0 rgba(0,0,0,0.3)',
+            transition: 'all 0.2s'
+          }}
         >
           {actionLabel}
         </Button>
@@ -227,37 +290,43 @@ const EventBanners = () => {
   // --- DASHBOARD VIEW ---
   const DashboardView = () => (
     <Box>
-      <PageHeader 
-        title="Event Dashboard" 
-        subtitle="Growth & Operations Overview" 
+      <PageHeader
+        title="Event Dashboard"
+        subtitle="Growth & Operations Overview"
         actionLabel="Create New Event"
         onAction={() => setView('FORM')}
       />
 
       {/* Summary Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { label: 'Total Events', value: MOCK_EVENTS.length, icon: <EmojiEvents />, color: '#eb483f' },
-          { label: 'Upcoming', value: '08', icon: <CalendarMonth />, color: '#0A1121' },
-          { label: 'Athletes', value: '1.2K', icon: <Groups />, color: '#627D98' },
-          { label: 'Net Revenue', value: '4,500 OMR', icon: <MonetizationOn />, color: '#2ECC71' }
+          { label: 'Total Events', value: events.length, icon: <EmojiEvents sx={{ fontSize: 20 }} />, color: '#CE2029' },
+          { label: 'Upcoming', value: '08', icon: <CalendarMonth sx={{ fontSize: 20 }} />, color: '#3B82F6' },
+          { label: 'Athletes', value: '1.2K', icon: <Groups sx={{ fontSize: 20 }} />, color: '#10B981' },
+          { label: 'Net Revenue', value: '4,500 OMR', icon: <MonetizationOn sx={{ fontSize: 20 }} />, color: '#8B5CF6' }
         ].map((stat, i) => (
           <Grid item xs={12} sm={6} md={3} key={i}>
-            <Card sx={{ 
-              p: 2, borderRadius: 3, border: '1px solid', borderColor: isDark ? 'white/5' : 'slate.100',
-              background: isDark ? 'rgba(26, 29, 36, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-              position: 'relative', overflow: 'hidden'
-            }}>
-              <Box sx={{ position: 'relative', zIndex: 1 }}>
-                <Typography variant="overline" sx={{ fontWeight: 600, opacity: 0.85, fontSize: '0.95rem', lineHeight: 1, display: 'block' }}>{stat.label}</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5, color: isDark ? 'white' : '#0A1121' }}>{stat.value}</Typography>
-              </Box>
-              <Box sx={{ position: 'absolute', right: -10, bottom: -10, opacity: 0.1, color: stat.color, transform: 'scale(2.5)' }}>
+            <PremiumCard sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
+              <Box sx={{
+                width: 38, height: 38, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                bgcolor: `${stat.color}15`, color: stat.color, flexShrink: 0,
+                boxShadow: `0 8px 16px -4px ${stat.color}25`
+              }}>
                 {stat.icon}
               </Box>
-            </Card>
+              <Box sx={{ position: 'relative', zIndex: 1, flex: 1, overflow: 'hidden' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.25, display: 'block' }}>
+                  {stat.label}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: isDark ? 'white' : '#0f172a', letterSpacing: '-0.02em', lineHeight: 1, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                  {stat.value}
+                </Typography>
+              </Box>
+              <Box sx={{
+                position: 'absolute', top: -10, right: -10, width: 60, height: 60,
+                borderRadius: '50%', background: `radial-gradient(circle, ${stat.color}15 0%, transparent 70%)`, pointerEvents: 'none'
+              }} />
+            </PremiumCard>
           </Grid>
         ))}
       </Grid>
@@ -265,42 +334,89 @@ const EventBanners = () => {
       {/* Recent Events List */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1, textTransform: 'uppercase', color: 'text.secondary' }}>
-          <TrendingUp sx={{ color: '#eb483f', fontSize: 16 }} /> Recent Deployments
+          <TrendingUp sx={{ color: '#CE2029', fontSize: 16 }} /> Recent Deployments
         </Typography>
         <Grid container spacing={2}>
-          {MOCK_EVENTS.map((event) => (
+          {events.map((event) => (
             <Grid item xs={12} md={4} key={event.id}>
-              <Card sx={{ 
-                borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: isDark ? 'white/10' : 'slate.100',
-                transition: 'all 0.3s ease', '&:hover': { transform: 'translateY(-2px)', borderColor: '#eb483f' }
-              }}>
-                <Box sx={{ height: 100, position: 'relative' }}>
-                  <img src={event.banner} alt={event.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <PremiumCard
+                sx={{
+                  transition: 'all 0.3s ease',
+                  '&:hover img': { transform: 'scale(1.05)' }
+                }}
+              >
+                <Box sx={{ height: 120, position: 'relative', overflow: 'hidden' }}>
+                  <motion.img
+                    src={event.banner}
+                    alt={event.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                  />
                   <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
-                    <Chip label={event.status} size="small" sx={{ 
-                      bgcolor: event.status === 'Active' ? '#eb483f' : '#0A1121', 
-                      color: 'white', fontWeight: 600, fontSize: '0.65rem', height: 20, textTransform: 'uppercase' 
-                    }} />
+                    <Chip
+                      label={event.status}
+                      size="small"
+                      sx={{
+                        bgcolor: event.status === 'Active' ? '#CE2029' : '#36454F',
+                        color: 'white',
+                        height: 20,
+                        fontSize: '0.6rem',
+                        textTransform: 'uppercase',
+                        borderRadius: 1.5,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }}
+                    />
                   </Box>
+                  <Box sx={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    height: '50%', background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)'
+                  }} />
                 </Box>
-                <Box sx={{ p: 2 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#eb483f', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.85rem', opacity: 0.9 }}>{event.type}</Typography>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mt: 0, lineHeight: 1.2 }}>{event.name}</Typography>
-                  <Box sx={{ display: 'flex', gap: 2, mt: 1, opacity: 0.6 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}><Groups sx={{ fontSize: '0.9rem', letterSpacing: 3 }} /><Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.9rem', letterSpacing: 3 }}>{event.participants}</Typography></Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}><LocationOn sx={{ fontSize: '0.9rem', letterSpacing: 3 }} /><Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.9rem', letterSpacing: 3 }}>{event.venue}</Typography></Box>
+                <Box sx={{ p: 1.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.25 }}>
+                    <Typography variant="overline" sx={{ fontWeight: 600, color: '#CE2029', letterSpacing: 0.5, fontSize: '0.65rem' }}>
+                      {event.type}
+                    </Typography>
+                    <IconButton size="small" sx={{ mt: -0.5, mr: -0.5 }}>
+                      <MoreVert fontSize="small" />
+                    </IconButton>
                   </Box>
-                  <Button 
-                    fullWidth 
-                    size="small"
-                    variant="outlined" 
-                    sx={{ mt: 1.5, borderRadius: 1.5, borderColor: 'divider', color: 'text.primary', fontWeight: 600, textTransform: 'none', py: 0.5, fontSize: '0.95rem' }}
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, lineHeight: 1.2, height: 36, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', letterSpacing: '-0.01em', fontSize: '0.85rem' }}>
+                    {event.name}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, opacity: 0.7 }}>
+                      <Groups sx={{ fontSize: 15 }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600 }}>{event.participants}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, opacity: 0.7 }}>
+                      <LocationOn sx={{ fontSize: 15 }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600 }}>{event.venue.split(' ')[0]}</Typography>
+                    </Box>
+                  </Box>
+                  <Button
+                    fullWidth
+                    variant="contained"
                     onClick={() => { setActiveEvent(event); setView('DETAILS'); }}
+                    sx={{
+                      borderRadius: 2,
+                      bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9',
+                      color: isDark ? 'white' : '#36454F',
+                      py: 0.6,
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      boxShadow: 'none',
+                      '&:hover': {
+                        bgcolor: '#CE2029',
+                        color: 'white',
+                        boxShadow: '0 8px 20px -6px #CE202966'
+                      }
+                    }}
                   >
-                    Manage Module
+                    Manage Event
                   </Button>
                 </Box>
-              </Card>
+              </PremiumCard>
             </Grid>
           ))}
         </Grid>
@@ -317,108 +433,103 @@ const EventBanners = () => {
     return (
       <Box>
         <PageHeader title="Calendar View" subtitle="Event Schedule Management" onAction={() => setView('DASHBOARD')} actionLabel="Back to Dashboard" />
-        
-        <Card sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: isDark ? 'white/10' : 'slate.100' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+
+        <PremiumCard sx={{ p: 0, overflow: 'hidden' }}>
+          <Box sx={{ p: 1.5, px: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
             <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>Select a date to manage scheduled events</Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))}><ChevronLeft fontSize="small" /></IconButton>
-              <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))}><ChevronRight fontSize="small" /></IconButton>
+            <Box sx={{ display: 'flex', gap: 1, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9', p: 0.5, borderRadius: 2 }}>
+              <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} sx={{ borderRadius: 1.5 }}><ChevronLeft /></IconButton>
+              <Button size="small" onClick={() => setCurrentDate(new Date())} sx={{ fontWeight: 700, px: 2, color: 'text.primary' }}>Today</Button>
+              <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} sx={{ borderRadius: 1.5 }}><ChevronRight /></IconButton>
             </Box>
           </Box>
 
-          {/* Weekday Headers - 7-Column Grid */}
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(7, 1fr)', 
-            gap: 1, 
-            mb: 1.5,
-            borderBottom: '1px solid', 
-            borderColor: 'divider',
-            pb: 1
-          }}>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <Box key={day} sx={{ textAlign: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#eb483f', textTransform: 'uppercase', letterSpacing: 1.2, fontSize: '0.85rem', opacity: 0.9 }}>{day}</Typography>
-              </Box>
-            ))}
-          </Box>
-
-          {/* Days - 7-Column Grid */}
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(7, 1fr)', 
-            gap: 0.5 
-          }}>
-            {Array.from({ length: 42 }).map((_, i) => {
-              const day = i - firstDayOfMonth + 1;
-              const isCurrentMonth = day > 0 && day <= daysInMonth(currentDate.getMonth(), currentDate.getFullYear());
-              const eventThisDay = MOCK_EVENTS.find(e => {
-                const eventDate = new Date(e.date);
-                return eventDate.getDate() === day && eventDate.getMonth() === currentDate.getMonth() && eventDate.getFullYear() === currentDate.getFullYear();
-              });
-
-              return (
-                <Box key={i} sx={{ 
-                  aspectRatio: '1.8/1',
-                  minHeight: 36,
-                  border: '1px solid', 
-                  borderColor: isDark ? 'white/30' : '#cbd5e1',
-                  borderRadius: 2, 
-                  p: 0.35, 
-                  position: 'relative', 
-                  bgcolor: isCurrentMonth ? 'white' : 'action.hover',
-                  opacity: isCurrentMonth ? 1 : 0.2, 
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': { 
-                    borderColor: isCurrentMonth ? '#eb483f' : 'transparent',
-                    boxShadow: isCurrentMonth ? '0 4px 12px -5px rgba(235, 72, 63, 0.1)' : 'none',
-                    zIndex: 2
-                  },
-                }}>
-                  <Typography variant="caption" sx={{ 
-                    fontWeight: 700, 
-                    fontSize: '0.95rem', 
-                    color: isCurrentMonth ? 'text.primary' : 'text.disabled',
-                    display: 'block',
-                    lineHeight: 1
-                  }}>
-                    {isCurrentMonth ? day : ''}
-                  </Typography>
-
-                  {isCurrentMonth && eventThisDay && (
-                    <Box 
-                      onClick={() => { setActiveEvent(eventThisDay); setView('DETAILS'); }}
-                      sx={{ 
-                        mt: 0.25,
-                        p: 0.35, 
-                        bgcolor: '#eb483f', 
-                        borderRadius: 0.75, 
-                        color: 'white', 
-                        cursor: 'pointer', 
-                        transition: 'all 0.2s', 
-                        '&:hover': { bgcolor: '#0A1121' }
-                      }}
-                    >
-                      <Typography variant="inherit" sx={{ 
-                        fontSize: '0.45rem', 
-                        fontWeight: 800, 
-                        display: 'block', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis', 
-                        whiteSpace: 'nowrap' 
-                      }}>
-                        {eventThisDay.name}
-                      </Typography>
-                    </Box>
-                  )}
+          <Box sx={{ p: 1 }}>
+            {/* Weekday Headers */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 0.5 }}>
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <Box key={day} sx={{ textAlign: 'center', py: 0.5 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1 }}>{day}</Typography>
                 </Box>
-              );
-            })}
+              ))}
+            </Box>
+
+            {/* Days Grid */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}>
+              {Array.from({ length: 42 }).map((_, i) => {
+                const day = i - firstDayOfMonth + 1;
+                const isCurrentMonth = day > 0 && day <= daysInMonth(currentDate.getMonth(), currentDate.getFullYear());
+                const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+                const eventThisDay = MOCK_EVENTS.find(e => {
+                  const eventDate = new Date(e.date);
+                  return eventDate.getDate() === day && eventDate.getMonth() === currentDate.getMonth() && eventDate.getFullYear() === currentDate.getFullYear();
+                });
+
+                return (
+                  <Box key={i} sx={{
+                    minHeight: 55,
+                    borderRadius: 1.5,
+                    p: 1,
+                    position: 'relative',
+                    bgcolor: isCurrentMonth ? (isDark ? 'rgba(255,255,255,0.03)' : '#fff') : 'transparent',
+                    border: '1px solid',
+                    borderColor: isToday ? '#CE2029' : (isCurrentMonth ? (isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0') : 'transparent'),
+                    opacity: isCurrentMonth ? 1 : 0.3,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: isCurrentMonth ? 'pointer' : 'default',
+                    '&:hover': isCurrentMonth ? {
+                      transform: 'scale(1.02)',
+                      borderColor: '#CE2029',
+                      boxShadow: '0 8px 24px -10px rgba(206, 32, 41, 0.3)',
+                      zIndex: 1,
+                      bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#fff'
+                    } : {},
+                  }}>
+                    <Typography variant="body2" sx={{
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      color: isToday ? '#CE2029' : (isCurrentMonth ? 'text.primary' : 'text.disabled'),
+                      lineHeight: 1
+                    }}>
+                      {isCurrentMonth ? day : ''}
+                    </Typography>
+
+                    {isCurrentMonth && eventThisDay && (
+                      <Box
+                        onClick={(e) => { e.stopPropagation(); setActiveEvent(eventThisDay); setView('DETAILS'); }}
+                        sx={{
+                          position: 'absolute', bottom: 4, left: 4, right: 4,
+                          p: 0.25, px: 0.5,
+                          bgcolor: '#CE2029',
+                          borderRadius: 1.5,
+                          color: 'white',
+                          boxShadow: '0 4px 12px -2px rgba(206, 32, 41, 0.4)',
+                          transition: 'all 0.2s',
+                          '&:hover': { bgcolor: '#36454F' }
+                        }}
+                      >
+                        <Typography variant="caption" sx={{
+                          fontSize: '0.65rem',
+                          fontWeight: 800,
+                          display: 'block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          textTransform: 'uppercase'
+                        }}>
+                          {eventThisDay.name}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
-        </Card>
+        </PremiumCard>
       </Box>
     );
   };
@@ -426,132 +537,417 @@ const EventBanners = () => {
   // --- MULTI-STEP FORM (Stepper) ---
   const EventFormView = () => {
     const [step, setStep] = useState(0);
-    const steps = ['Identity', 'Logistics', 'Financials'];
+    const steps = ['General Info', 'Date & Venue', 'Pricing & Rules'];
+    const [bannerPreview, setBannerPreview] = useState(null);
+
+    // Form fields state
+    const [formData, setFormData] = useState({
+      name: '',
+      type: 'Tournament',
+      description: '',
+      date: '',
+      time: '',
+      venue: 'Main Court',
+      maxParticipants: '',
+      entryFee: '',
+      rules: ''
+    });
+
+    const handleField = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.value }));
+
+    const handleSubmit = () => {
+      if (!formData.name) return;
+      const newEvent = {
+        id: Date.now(),
+        name: formData.name,
+        type: formData.type || 'Tournament',
+        date: formData.date || new Date().toISOString().split('T')[0],
+        time: formData.time || '',
+        venue: formData.venue || 'Main Court',
+        status: 'Upcoming',
+        participants: 0,
+        maxParticipants: parseInt(formData.maxParticipants) || 100,
+        revenue: 0,
+        expenses: 0,
+        banner: bannerPreview || 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=800&auto=format&fit=crop'
+      };
+      handleAddEvent(newEvent);
+      setView('DASHBOARD');
+    };
 
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-        <PageHeader title="Draft Framework" subtitle="Event Architecture Definition" />
-        <Stepper activeStep={step} sx={{ mb: 4 }} alternativeLabel>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel sx={{ '& .MuiStepLabel-label': { fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3, textTransform: 'uppercase' } }}>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+      <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+        <PageHeader title="Create New Event" subtitle="Fill in the details to construct and launch a new event" />
 
-        <Card sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: isDark ? 'white/10' : 'slate.100' }}>
+        <Box sx={{ mb: 6 }}>
+          <Stepper activeStep={step} alternativeLabel>
+            {steps.map((label, index) => (
+              <Step key={label}>
+                <StepLabel
+                  StepIconProps={{
+                    sx: {
+                      '&.Mui-active': { color: '#CE2029' },
+                      '&.Mui-completed': { color: '#10B981' }
+                    }
+                  }}
+                  sx={{
+                    '& .MuiStepLabel-label': {
+                      fontWeight: 800,
+                      fontSize: '0.75rem',
+                      letterSpacing: 2,
+                      textTransform: 'uppercase',
+                      mt: 1,
+                      color: step >= index ? (step === index ? '#CE2029' : '#10B981') : 'text.disabled'
+                    }
+                  }}
+                >
+                  {label}
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
+
+        <PremiumCard sx={{ p: 4 }}>
           {step === 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <TextField size="small" fullWidth label="Event Nomenclature" placeholder="Enter title..." InputProps={{ startIcon: <Description fontSize="small" /> }} />
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Event Typology</InputLabel>
-                    <Select label="Event Typology">
-                      <MenuItem value="Tournament">Tournament</MenuItem>
-                      <MenuItem value="Coaching">Coaching</MenuItem>
-                      <MenuItem value="Camp">Training Camp</MenuItem>
-                    </Select>
-                  </FormControl>
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <TextField
+                  fullWidth
+                  label="Event Name"
+                  variant="filled"
+                  placeholder="e.g. Summer Badminton Smash 2026"
+                  value={formData.name}
+                  onChange={handleField('name')}
+                  InputProps={{
+                    startAdornment: <Description sx={{ mr: 1, opacity: 0.5 }} />,
+                    disableUnderline: true,
+                    sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc', p: 1 }
+                  }}
+                  InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+                />
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth variant="filled">
+                      <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Type</InputLabel>
+                      <Select
+                        label="Event Type"
+                        disableUnderline
+                        value={formData.type}
+                        onChange={handleField('type')}
+                        sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                      >
+                        <MenuItem value="Tournament">Tournament</MenuItem>
+                        <MenuItem value="Coaching">Coaching</MenuItem>
+                        <MenuItem value="Camp">Training Camp</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    {bannerPreview ? (
+                      <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', height: 56, border: '2px solid #10B981' }}>
+                        <img src={bannerPreview} alt="Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Box sx={{
+                          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          px: 2, bgcolor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)'
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CheckCircle sx={{ color: '#10B981', fontSize: 18 }} />
+                            <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>Banner uploaded</Typography>
+                          </Box>
+                          <Button
+                            component="label"
+                            size="small"
+                            sx={{ color: 'white', textTransform: 'none', fontSize: '0.7rem', fontWeight: 600,
+                              bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 2, px: 1.5,
+                              '&:hover': { bgcolor: '#CE2029' } }}
+                          >
+                            Change
+                            <input type="file" hidden accept="image/*"
+                              onChange={(e) => e.target.files?.[0] && setBannerPreview(URL.createObjectURL(e.target.files[0]))} />
+                          </Button>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        fullWidth
+                        startIcon={<CloudUpload />}
+                        sx={{
+                          height: 56, borderRadius: 3, borderStyle: 'dashed', borderWidth: 2,
+                          textTransform: 'none', fontWeight: 700, borderColor: 'divider',
+                          '&:hover': { borderColor: '#CE2029', bgcolor: 'rgba(206, 32, 41, 0.05)' }
+                        }}
+                      >
+                        Upload Banner (16:9)
+                        <input type="file" hidden accept="image/*"
+                          onChange={(e) => e.target.files?.[0] && setBannerPreview(URL.createObjectURL(e.target.files[0]))} />
+                      </Button>
+                    )}
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <Button variant="outlined" component="label" fullWidth startIcon={<CloudUpload />} sx={{ height: 40, borderRadius: 2, borderStyle: 'dashed', textTransform: 'none' }}>
-                    Upload Artwork
-                    <input type="file" hidden />
-                  </Button>
-                </Grid>
-              </Grid>
-              <TextField size="small" fullWidth multiline rows={3} label="Program Descriptor" />
-            </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
+                    Event Description
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    variant="outlined"
+                    placeholder="Describe the event goals and highlights..."
+                    value={formData.description}
+                    onChange={handleField('description')}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 3,
+                        bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                        '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
+                        '&:hover fieldset': { borderColor: '#CE202966' },
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                      }
+                    }}
+                  />
+                </Box>
+              </Box>
+            </motion.div>
           )}
 
           {step === 1 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}><TextField size="small" fullWidth type="date" label="Chronological Date" InputLabelProps={{ shrink: true }} /></Grid>
-                <Grid item xs={12} md={6}><TextField size="small" fullWidth type="time" label="Temporal Node" InputLabelProps={{ shrink: true }} /></Grid>
-              </Grid>
-              <FormControl fullWidth size="small">
-                <InputLabel>Locus Point (Venue)</InputLabel>
-                <Select label="Locus Point (Venue)">
-                  <MenuItem value="Main Court">Sector 62 Main Court</MenuItem>
-                  <MenuItem value="Academy">Amm Sports Academy</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField size="small" fullWidth type="number" label="Athlete Quota (Max Participants)" />
-            </Box>
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Event Date"
+                      variant="filled"
+                      value={formData.date}
+                      onChange={handleField('date')}
+                      InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+                      InputProps={{
+                        disableUnderline: true,
+                        sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      type="time"
+                      label="Event Time"
+                      variant="filled"
+                      value={formData.time}
+                      onChange={handleField('time')}
+                      InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+                      InputProps={{
+                        disableUnderline: true,
+                        sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+                <FormControl fullWidth variant="filled">
+                  <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Venue</InputLabel>
+                  <Select
+                    disableUnderline
+                    value={formData.venue}
+                    onChange={handleField('venue')}
+                    sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                  >
+                    <MenuItem value="Main Court">Sector 62 Main Court</MenuItem>
+                    <MenuItem value="Academy">Amm Sports Academy</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Max Participants"
+                  variant="filled"
+                  value={formData.maxParticipants}
+                  onChange={handleField('maxParticipants')}
+                  InputLabelProps={{ sx: { fontWeight: 700, color: '#CE2029' } }}
+                  InputProps={{
+                    startAdornment: <Groups sx={{ mr: 1, opacity: 0.5 }} />,
+                    disableUnderline: true,
+                    sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                  }}
+                />
+              </Box>
+            </motion.div>
           )}
 
           {step === 2 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <TextField size="small" fullWidth type="number" label="Access Fee (OMR)" InputProps={{ endAdornment: <InputAdornment position="end">OMR</InputAdornment> }} />
-              <TextField size="small" fullWidth multiline rows={4} label="Protocols & Mandates (Rules)" />
-            </Box>
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Entry Fee (OMR)"
+                  variant="filled"
+                  placeholder="e.g. 5.000"
+                  value={formData.entryFee}
+                  onChange={handleField('entryFee')}
+                  InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end" sx={{ fontWeight: 800 }}>OMR</InputAdornment>,
+                    disableUnderline: true,
+                    sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                  }}
+                />
+                <Box>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
+                    Event Rules & Guidelines
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={6}
+                    variant="outlined"
+                    placeholder="List the event rules, eligibility, and guidelines..."
+                    value={formData.rules}
+                    onChange={handleField('rules')}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 3,
+                        bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                        '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
+                        '&:hover fieldset': { borderColor: '#CE202966' },
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                      }
+                    }}
+                  />
+                </Box>
+              </Box>
+            </motion.div>
           )}
 
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-            <Button size="small" disabled={step === 0} onClick={() => setStep(step - 1)} sx={{ fontWeight: 600 }}>Previous</Button>
-            <Button 
-              size="small"
-              variant="contained" 
-              onClick={() => step === 2 ? setView('DASHBOARD') : setStep(step + 1)}
-              sx={{ bgcolor: '#0A1121', px: 4, fontWeight: 600 }}
+          <Box sx={{ mt: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button
+              disabled={step === 0}
+              onClick={() => setStep(step - 1)}
+              sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'none', fontSize: '1rem' }}
             >
-              {step === 2 ? 'Deploy Framework' : 'Continue'}
+              Back
             </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={() => setView('DASHBOARD')}
+                sx={{ borderRadius: 2.5, px: 3, fontWeight: 700, textTransform: 'none', border: '2px solid' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => step === 2 ? handleSubmit() : setStep(step + 1)}
+                sx={{
+                  bgcolor: '#CE2029',
+                  px: 5,
+                  py: 1.5,
+                  borderRadius: 2.5,
+                  fontWeight: 800,
+                  textTransform: 'none',
+                  boxShadow: '0 8px 20px -4px rgba(206, 32, 41, 0.4)',
+                  '&:hover': { bgcolor: '#d43d35', transform: 'translateY(-2px)' }
+                }}
+              >
+                {step === 2 ? 'Create Event' : 'Continue'}
+              </Button>
+            </Box>
           </Box>
-        </Card>
+        </PremiumCard>
       </Box>
     );
   };
 
-  // --- EVENT DETAILS SUB-MODULES ---
-  
   const ParticipantRegistration = () => (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Athlete Registry</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <TextField size="small" placeholder="Search athletes..." 
-            InputProps={{ startAdornment: <Search sx={{ fontSize: 16, mr: 0.5, opacity: 0.5 }} />, sx: { fontSize: '0.85rem', opacity: 0.9, height: 32 } }} 
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+      <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Athlete Registry</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>{MOCK_PARTICIPANTS.length} confirmed entries</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1.5, width: { xs: '100%', sm: 'auto' } }}>
+          <TextField
+            size="small"
+            placeholder="Search roster..."
+            InputProps={{
+              startAdornment: <Search sx={{ fontSize: 20, mr: 1, opacity: 0.5 }} />,
+              sx: { borderRadius: 2.5, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+            }}
+            sx={{ flex: 1 }}
           />
-          <Button size="small" variant="contained" startIcon={<FilterList fontSize="small" />} sx={{ bgcolor: '#0A1121', borderRadius: 1.5, textTransform: 'none', fontWeight: 500 }}>Filters</Button>
+          <IconButton sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc', borderRadius: 2 }}>
+            <FilterList />
+          </IconButton>
         </Box>
       </Box>
-      <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
-        <Table size="small">
-          <TableHead sx={{ bgcolor: 'action.hover' }}>
+
+      <TableContainer component={Paper} sx={{
+        borderRadius: 4,
+        overflow: 'hidden',
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: 'none',
+        bgcolor: 'transparent'
+      }}>
+        <Table>
+          <TableHead sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.02)' : '#f8fafc' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Athlete</TableCell>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Category</TableCell>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Contact</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9, py: 1 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5, py: 2 }}>Athlete Identity</TableCell>
+              <TableCell sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5, py: 2 }}>Category</TableCell>
+              <TableCell sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5, py: 2 }}>Status</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5, py: 2 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {MOCK_PARTICIPANTS.map((row) => (
-              <TableRow key={row.id} hover>
-                <TableCell sx={{ py: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar sx={{ width: 24, height: 24, bgcolor: '#eb483f', fontWeight: 600, fontSize: '0.85rem', opacity: 0.9 }}>{row.name[0]}</Avatar>
+              <TableRow key={row.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar
+                      sx={{
+                        width: 40, height: 40,
+                        bgcolor: '#CE202922', color: '#CE2029',
+                        fontWeight: 800, fontSize: '1rem',
+                        border: '2px solid', borderColor: '#CE202944'
+                      }}
+                    >
+                      {row.name[0]}
+                    </Avatar>
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, lineHeight: 1.1 }}>{row.name}</Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.6, fontSize: '0.9rem', letterSpacing: 3 }}>Age: {row.age}</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{row.name}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>{row.contact}</Typography>
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, fontSize: '0.95rem', py: 1 }}>{row.category}</TableCell>
-                <TableCell sx={{ py: 1 }}>
-                  <Chip label={row.status} size="small" color={row.status === 'Approved' ? 'success' : row.status === 'Pending' ? 'warning' : 'error'} 
-                    sx={{ fontWeight: 600, fontSize: '0.85rem', height: 18, textTransform: 'uppercase' }} 
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary' }}>{row.category}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={row.status}
+                    size="small"
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: '0.65rem',
+                      textTransform: 'uppercase',
+                      borderRadius: 1.5,
+                      bgcolor: row.status === 'Approved' ? '#10B98115' : (row.status === 'Pending' ? '#F59E0B15' : '#EF444415'),
+                      color: row.status === 'Approved' ? '#10B981' : (row.status === 'Pending' ? '#F59E0B' : '#EF4444'),
+                      border: '1px solid',
+                      borderColor: 'currentColor'
+                    }}
                   />
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem', opacity: 0.7, py: 1 }}>{row.contact}</TableCell>
-                <TableCell align="right" sx={{ py: 0.5 }}>
-                  <IconButton size="small" sx={{ p: 0.5 }}><CheckCircle sx={{ color: 'success.main', fontSize: 16 }} /></IconButton>
-                  <IconButton size="small" sx={{ p: 0.5 }}><Cancel sx={{ color: 'error.main', fontSize: 16 }} /></IconButton>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Tooltip title="Approve"><IconButton size="small" sx={{ color: '#10B981', '&:hover': { bgcolor: '#10B98110' } }}><CheckCircle fontSize="small" /></IconButton></Tooltip>
+                    <Tooltip title="Reject"><IconButton size="small" sx={{ color: '#EF4444', '&:hover': { bgcolor: '#EF444410' } }}><Cancel fontSize="small" /></IconButton></Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
@@ -563,33 +959,88 @@ const EventBanners = () => {
 
   const SponsorManagement = () => (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Partner Portfolio</Typography>
-        <Button size="small" variant="contained" startIcon={<Add fontSize="small" />} sx={{ bgcolor: '#eb483f', borderRadius: 1.5, textTransform: 'none' }} onClick={() => setIsSponsorDialogOpen(true)}>Add Sponsor</Button>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Partner Portfolio</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>Manage event sponsors and branding assets</Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          sx={{
+            bgcolor: '#CE2029',
+            borderRadius: 2.5,
+            textTransform: 'none',
+            fontWeight: 700,
+            px: 3,
+            '&:hover': { bgcolor: '#d43d35' }
+          }}
+          onClick={() => setIsSponsorDialogOpen(true)}
+        >
+          Add Partner
+        </Button>
       </Box>
-      <Grid container spacing={2}>
+
+      <Grid container spacing={3}>
         {sponsors.map((sponsor) => (
           <Grid item xs={12} sm={6} key={sponsor.id}>
-            <Card sx={{ p: 1.5, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-              <Avatar src={sponsor.logo} variant="rounded" sx={{ width: 44, height: 44, bgcolor: 'white', border: '1px solid', borderColor: 'divider' }} />
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{sponsor.name}</Typography>
-                <Typography variant="caption" sx={{ color: '#eb483f', fontWeight: 500, textTransform: 'uppercase', fontSize: '0.85rem', opacity: 0.9 }}>{sponsor.type}</Typography>
-                <Link href={sponsor.website} target="_blank" sx={{ display: 'block', fontSize: '0.95rem', mt: 0.5, opacity: 0.6 }}>{sponsor.website}</Link>
+            <PremiumCard sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Box sx={{
+                width: 64, height: 64,
+                borderRadius: 3,
+                p: 1,
+                bgcolor: 'white',
+                border: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <img src={sponsor.logo} alt={sponsor.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
               </Box>
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{sponsor.name}</Typography>
+                <Chip
+                  label={sponsor.type}
+                  size="small"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    mb: 1,
+                    bgcolor: sponsor.type === 'Main Sponsor' ? '#CE202915' : 'rgba(0,0,0,0.05)',
+                    color: sponsor.type === 'Main Sponsor' ? '#CE2029' : 'text.secondary'
+                  }}
+                />
+                <Link
+                  href={sponsor.website}
+                  target="_blank"
+                  sx={{
+                    display: 'block',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    color: 'text.secondary',
+                    textDecoration: 'none',
+                    '&:hover': { color: '#CE2029' }
+                  }}
+                >
+                  {sponsor.website.replace('https://', '')}
+                </Link>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 <IconButton size="small" onClick={() => {
                   setSponsorForm({ name: sponsor.name, type: sponsor.type, website: sponsor.website, logo: sponsor.logo });
                   setEditingSponsor(sponsor);
                   setIsSponsorDialogOpen(true);
                 }}>
-                  <Edit sx={{ fontSize: 20 }} />
+                  <Edit fontSize="small" />
                 </IconButton>
                 <IconButton size="small" color="error" onClick={() => setSponsors(sponsors.filter(s => s.id !== sponsor.id))}>
-                  <Delete sx={{ fontSize: 20 }} />
+                  <Delete fontSize="small" />
                 </IconButton>
               </Box>
-            </Card>
+            </PremiumCard>
           </Grid>
         ))}
       </Grid>
@@ -598,198 +1049,202 @@ const EventBanners = () => {
 
   const ResultsManagement = () => (
     <Box>
-      <Box sx={{ mb: 3, textAlign: 'center' }}>
-        <MilitaryTech sx={{ fontSize: 40, color: isPublished ? (isPubliclyVisible ? '#2ECC71' : 'warning.main') : '#eb483f', mb: 0 }} />
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+      <Box sx={{ mb: 4, textAlign: 'center' }}>
+        <Box sx={{
+          display: 'inline-flex', p: 2, borderRadius: '50%',
+          bgcolor: isPublished ? '#10B98115' : '#CE202915', mb: 2
+        }}>
+          <MilitaryTech sx={{ fontSize: 48, color: isPublished ? '#10B981' : '#CE2029' }} />
+        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 800 }}>
           {isPublished ? (isPubliclyVisible ? 'Tournament Concluded' : 'Results Archived') : 'Tournament Outcome'}
         </Typography>
-        <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>
-          {isPublished ? (isPubliclyVisible ? 'Official results are live on the User App' : 'Results are hidden from the public UI') : 'Declare winners and publish leaderboard'}
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+          {isPublished
+            ? (isPubliclyVisible ? 'Official results are live for all participants' : 'Results are preserved but hidden from public')
+            : 'Declare winners and certify the final leaderboard'}
         </Typography>
       </Box>
 
       {isPublished ? (
-        <Grid container spacing={3}>
-           <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#2ECC71', fontSize: '0.95rem' }}>Official Podium</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                 {[
-                   { rank: 'Gold Medalist - Winner', color: '#FFD700', id: resultWinner },
-                   { rank: 'Silver Medalist - Runner Up', color: '#C0C0C0', id: resultRunnerUp }
-                 ].map((pos, i) => (
-                   <Card key={i} sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2, border: '1px solid', borderColor: pos.color, boxShadow: 'none', bgcolor: isDark ? 'white/5' : pos.color + '10' }}>
-                     <Avatar sx={{ width: 44, height: 44, bgcolor: pos.color, fontWeight: 700, fontSize: '1.2rem', color: isDark ? '#0A1121' : 'white' }}>
-                        {MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name[0]}
-                     </Avatar>
-                     <Box sx={{ flex: 1 }}>
-                       <Typography variant="caption" sx={{ fontWeight: 700, color: pos.color, fontSize: '0.9rem', letterSpacing: 3, textTransform: 'uppercase' }}>{pos.rank}</Typography>
-                       <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name || 'N/A'}</Typography>
-                     </Box>
-                     <EmojiEvents sx={{ color: pos.color, fontSize: 32, opacity: 0.5 }} />
-                   </Card>
-                 ))}
-              </Box>
-           </Grid>
-           <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.95rem' }}>Official Scorecard</Typography>
-              <Box sx={{ 
-                height: 160, border: '1px solid', borderColor: 'divider', borderRadius: 3, 
-                position: 'relative', overflow: 'hidden'
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="overline" sx={{ fontWeight: 800, color: '#10B981', letterSpacing: 2, mb: 2, display: 'block' }}>Official Podium</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[
+                { rank: 'Gold Medalist', color: '#FFD700', id: resultWinner, label: 'Winner' },
+                { rank: 'Silver Medalist', color: '#C0C0C0', id: resultRunnerUp, label: 'Runner Up' }
+              ].map((pos, i) => (
+                <PremiumCard key={i} sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 3, borderLeft: `4px solid ${pos.color}` }}>
+                  <Avatar sx={{ width: 56, height: 56, bgcolor: `${pos.color}20`, color: pos.color, fontWeight: 900, border: '2px solid' }}>
+                    {MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name[0]}
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: pos.color, textTransform: 'uppercase', letterSpacing: 1.5 }}>{pos.rank}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800 }}>{MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name || 'N/A'}</Typography>
+                  </Box>
+                  <EmojiEvents sx={{ color: pos.color, fontSize: 32, opacity: 0.3 }} />
+                </PremiumCard>
+              ))}
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 2, mb: 2, display: 'block' }}>Certified Scorecard</Typography>
+            <PremiumCard sx={{
+              height: 240, position: 'relative', overflow: 'hidden', cursor: 'zoom-in',
+              '&:hover img': { transform: 'scale(1.05)' }
+            }}>
+              <img src={scorecardImage} alt="Final Scorecard" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s' }} />
+              <Box sx={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)',
+                display: 'flex', alignItems: 'flex-end', p: 3
               }}>
-                 <img src={scorecardImage} alt="Final Scorecard" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                 <Button size="small" variant="contained" startIcon={<CloudUpload />} sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.7)', textTransform: 'none', fontSize: '0.9rem', letterSpacing: 3 }}>View Full Document</Button>
+                <Button variant="contained" size="small" startIcon={<Visibility />} sx={{ bgcolor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', textTransform: 'none', fontWeight: 700 }}>
+                  View Full Resolution
+                </Button>
               </Box>
-           </Grid>
-           <Grid item xs={12}>
-             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 2 }}>
-               <Chip label={`Auto-archives in: ${publishDuration === 'forever' ? 'Never' : publishDuration + ' Days'}`} size="small" sx={{ fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3, bgcolor: 'divider' }} />
-               <Chip label={hideEventBanner ? "Event Banner: Removed" : "Event Banner: Active"} size="small" color={hideEventBanner ? "warning" : "success"} variant="outlined" sx={{ fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3 }} />
-             </Box>
-           </Grid>
-           <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-             <Button 
-               variant="contained" 
-               color={isPubliclyVisible ? "warning" : "success"}
-               size="small" 
-               onClick={() => setIsPubliclyVisible(!isPubliclyVisible)} 
-               sx={{ borderRadius: 1.5, fontWeight: 600, px: 3 }}
-             >
-               {isPubliclyVisible ? 'Hide from Public UI' : 'Restore to Public UI'}
-             </Button>
-             <Button variant="outlined" color="error" size="small" onClick={() => setIsPublished(false)} sx={{ borderRadius: 1.5, fontWeight: 600 }}>Retract Results</Button>
-           </Grid>
+            </PremiumCard>
+          </Grid>
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
+            <Button
+              variant="outlined"
+              color={isPubliclyVisible ? "warning" : "success"}
+              onClick={() => setIsPubliclyVisible(!isPubliclyVisible)}
+              sx={{ borderRadius: 2.5, fontWeight: 800, px: 4, py: 1, textTransform: 'none', border: '2px solid' }}
+            >
+              {isPubliclyVisible ? 'Conceal Results' : 'Broadcast Results'}
+            </Button>
+            <Button variant="text" color="error" onClick={() => setIsPublished(false)} sx={{ fontWeight: 800, textTransform: 'none' }}>Re-evaluate Outcome</Button>
+          </Grid>
         </Grid>
       ) : (
-        <>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#eb483f', fontSize: '0.95rem' }}>Podium Standings</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {[
-                  { rank: 'Winner', color: '#FFD700', icon: <EmojiEvents fontSize="small" />, value: resultWinner, setter: setResultWinner },
-                  { rank: 'Runner Up', color: '#C0C0C0', icon: <EmojiEvents fontSize="small" />, value: resultRunnerUp, setter: setResultRunnerUp }
-                ].map((pos, i) => (
-                  <Card key={i} sx={{ p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid', borderColor: pos.color, boxShadow: 'none' }}>
-                    <Box sx={{ color: pos.color }}>{pos.icon}</Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.6, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase' }}>{pos.rank}</Typography>
-                      <Select fullWidth variant="standard" displayEmpty sx={{ fontWeight: 600, fontSize: '0.9rem', letterSpacing: 3 }} value={pos.value} onChange={(e) => pos.setter(e.target.value)}>
-                        <MenuItem value="" disabled>Select Athlete...</MenuItem>
-                        {MOCK_PARTICIPANTS.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
-                      </Select>
-                    </Box>
-                    {pos.value && (
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: pos.color, fontWeight: 700, fontSize: '0.95rem', color: isDark ? '#0A1121' : 'white' }}>
-                          {MOCK_PARTICIPANTS.find(p => p.id === pos.value)?.name[0]}
-                      </Avatar>
-                    )}
-                  </Card>
-                ))}
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.95rem' }}>Scorecard Upload</Typography>
-              <Box sx={{ 
-                height: 120, border: '2px dashed', borderColor: scorecardImage ? '#eb483f' : 'divider', borderRadius: 3, 
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
-                position: 'relative', overflow: 'hidden',
-                transition: 'all 0.3s', '&:hover': { borderColor: '#eb483f', bgcolor: 'action.hover' }
-              }}>
-                {scorecardImage ? (
-                    <>
-                      <img src={scorecardImage} alt="Scorecard preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <IconButton size="small" onClick={() => setScorecardImage(null)} sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(0,0,0,0.5)', color: 'white', '&:hover': { bgcolor: 'red' } }}><Close fontSize="small" /></IconButton>
-                    </>
-                ) : (
-                    <>
-                      <CloudUpload sx={{ fontSize: 32, opacity: 0.3 }} />
-                      <Typography variant="caption" sx={{ fontWeight: 500 }}>Drop result documents here</Typography>
-                      <Button size="small" variant="outlined" component="label" sx={{ borderRadius: 1.5, textTransform: 'none', py: 0.25 }}>
-                        Browse local
-                        <input type="file" accept="image/*" hidden onChange={(e) => {
-                          if (e.target.files?.[0]) {
-                            setScorecardImage(URL.createObjectURL(e.target.files[0]));
-                          }
-                        }} />
-                      </Button>
-                    </>
-                )}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, textTransform: 'uppercase', color: '#0A1121', fontSize: '0.95rem' }}>Publication Preferences</Typography>
-               <Card sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none', display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'center' }}>
-                  <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                     <InputLabel sx={{ fontSize: '0.85rem', opacity: 0.9, fontWeight: 600 }}>Auto-Archive Results</InputLabel>
-                     <Select value={publishDuration} onChange={(e) => setPublishDuration(e.target.value)} sx={{ fontSize: '0.9rem', letterSpacing: 3, fontWeight: 600 }}>
-                        <MenuItem value="1">After 1 Day</MenuItem>
-                        <MenuItem value="3">After 3 Days</MenuItem>
-                        <MenuItem value="5">After 5 Days</MenuItem>
-                        <MenuItem value="7">After 1 Week</MenuItem>
-                        <MenuItem value="forever">Never (Permanent)</MenuItem>
-                     </Select>
-                  </FormControl>
-                  
-                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'action.hover', p: 1.5, borderRadius: 2 }}>
-                     <Box>
-                       <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9 }}>Remove Event Banner</Typography>
-                       <Typography variant="caption" sx={{ opacity: 0.6, fontSize: '0.85rem', opacity: 0.9 }}>Hide the promotional registering banner from the User app.</Typography>
-                     </Box>
-                     <Button size="small" variant={hideEventBanner ? 'contained' : 'outlined'} color={hideEventBanner ? "error" : "primary"} onClick={() => setHideEventBanner(!hideEventBanner)} sx={{ borderRadius: 1.5, fontWeight: 600, textTransform: 'none' }}>
-                        {hideEventBanner ? 'Yes, Remove Banner' : 'Keep Banner Active'}
-                     </Button>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="overline" sx={{ fontWeight: 800, color: '#CE2029', letterSpacing: 2, mb: 2, display: 'block' }}>Define Standings</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[
+                { rank: 'Tournament Winner', color: '#FFD700', value: resultWinner, setter: setResultWinner },
+                { rank: 'Runner Up', color: '#C0C0C0', value: resultRunnerUp, setter: setResultRunnerUp }
+              ].map((pos, i) => (
+                <PremiumCard key={i} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase' }}>{pos.rank}</Typography>
+                    <Select
+                      fullWidth variant="standard" disableUnderline displayEmpty
+                      value={pos.value} onChange={(e) => pos.setter(e.target.value)}
+                      sx={{ fontWeight: 800, fontSize: '1.1rem', color: pos.color }}
+                    >
+                      <MenuItem value="" disabled>Select Athlete...</MenuItem>
+                      {MOCK_PARTICIPANTS.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+                    </Select>
                   </Box>
-               </Card>
-            </Grid>
+                  {pos.value && (
+                    <Avatar sx={{ width: 44, height: 44, bgcolor: `${pos.color}20`, color: pos.color, border: '2px solid' }}>
+                      {MOCK_PARTICIPANTS.find(p => p.id === pos.value)?.name[0]}
+                    </Avatar>
+                  )}
+                </PremiumCard>
+              ))}
+            </Box>
           </Grid>
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-            <Button 
-              size="small" 
-              variant="contained" 
-              onClick={handlePublishResults}
-              disabled={publishStatus === 'PUBLISHING'}
-              sx={{ 
-                bgcolor: publishStatus === 'SUCCESS' ? '#2ECC71' : '#0A1121', 
-                px: 6, py: 1, borderRadius: 1.5, fontWeight: 600,
-                transition: 'all 0.3s'
+          <Grid item xs={12} md={6}>
+            <Typography variant="overline" sx={{ fontWeight: 800, color: 'text.secondary', letterSpacing: 2, mb: 2, display: 'block' }}>Scorecard Artifact</Typography>
+            <Box
+              sx={{
+                height: 180, border: '2px dashed', borderColor: scorecardImage ? '#CE2029' : 'divider',
+                borderRadius: 4, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', gap: 2, overflow: 'hidden', position: 'relative',
+                bgcolor: isDark ? 'rgba(255,255,255,0.02)' : '#f8fafc',
+                transition: 'all 0.3s', '&:hover': { borderColor: '#CE2029' }
               }}
             >
-              {publishStatus === 'PUBLISHING' ? 'Publishing...' : publishStatus === 'SUCCESS' ? '✓ Published successfully' : 'Publish Results'}
+              {scorecardImage ? (
+                <>
+                  <img src={scorecardImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <IconButton
+                    size="small" onClick={() => setScorecardImage(null)}
+                    sx={{ position: 'absolute', top: 12, right: 12, bgcolor: 'rgba(0,0,0,0.5)', color: 'white', '&:hover': { bgcolor: '#CE2029' } }}
+                  >
+                    <Close />
+                  </IconButton>
+                </>
+              ) : (
+                <>
+                  <CloudUpload sx={{ fontSize: 40, opacity: 0.2 }} />
+                  <Button variant="outlined" component="label" sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}>
+                    Upload Results
+                    <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && setScorecardImage(URL.createObjectURL(e.target.files[0]))} />
+                  </Button>
+                </>
+              )}
+            </Box>
+          </Grid>
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handlePublishResults}
+              disabled={publishStatus === 'PUBLISHING'}
+              sx={{
+                bgcolor: '#36454F', px: 8, py: 1.5, borderRadius: 3, fontWeight: 900,
+                fontSize: '1rem', textTransform: 'none',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                '&:hover': { bgcolor: 'black', transform: 'translateY(-2px)' }
+              }}
+            >
+              {publishStatus === 'PUBLISHING' ? 'Certifying...' : 'Finalize & Publish Results'}
             </Button>
-          </Box>
-        </>
+          </Grid>
+        </Grid>
       )}
     </Box>
   );
 
   const ExpenseTracker = () => (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Disbursement Log</Typography>
-        <Button size="small" variant="contained" startIcon={<Receipt fontSize="small" />} sx={{ bgcolor: '#0A1121', borderRadius: 1.5, textTransform: 'none' }} onClick={() => setIsExpenseDialogOpen(true)}>Log Expense</Button>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Disbursement Log</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>Track all operational expenditures for this event</Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Receipt />}
+          sx={{ bgcolor: '#36454F', borderRadius: 2.5, textTransform: 'none', fontWeight: 700, px: 3 }}
+          onClick={() => setIsExpenseDialogOpen(true)}
+        >
+          New Entry
+        </Button>
       </Box>
-      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-        <Table size="small">
-          <TableHead sx={{ bgcolor: 'action.hover' }}>
+
+      <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 'none', bgcolor: 'transparent' }}>
+        <Table>
+          <TableHead sx={{ bgcolor: isDark ? 'rgba(255,255,255,0.02)' : '#f8fafc' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Description</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Amount</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Date</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase', py: 1 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5 }}>Description</TableCell>
+              <TableCell sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5 }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5 }}>Chronology</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: 1.5 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {expenses.map((row) => (
               <TableRow key={row.id}>
-                <TableCell sx={{ py: 1 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.85rem', opacity: 1, lineHeight: 1.1 }}>{row.title}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.85, fontSize: '0.85rem', letterSpacing: 1 }}>{row.notes}</Typography>
+                <TableCell>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{row.title}</Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>{row.notes}</Typography>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: 'error.main', fontSize: '0.9rem', letterSpacing: 3, py: 1 }}>{row.amount} OMR</TableCell>
-                <TableCell sx={{ fontSize: '0.95rem', fontWeight: 600, py: 1 }}>{row.date}</TableCell>
-                <TableCell align="right" sx={{ py: 0.5 }}>
-                  <IconButton size="small" onClick={() => alert('Edit feature coming soon')}><Edit sx={{ fontSize: 16 }} /></IconButton>
-                  <IconButton size="small" onClick={() => setExpenses(expenses.filter(e => e.id !== row.id))}><Delete sx={{ fontSize: 16 }} /></IconButton>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#EF4444' }}>{row.amount} OMR</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>{row.date}</Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    <IconButton size="small"><Edit fontSize="small" /></IconButton>
+                    <IconButton size="small" color="error" onClick={() => setExpenses(expenses.filter(e => e.id !== row.id))}><Delete fontSize="small" /></IconButton>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
@@ -808,90 +1263,81 @@ const EventBanners = () => {
 
     return (
       <Box sx={{ width: '100%' }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: isDark ? 'white' : '#0A1121' }}>Fiscal Overlook</Typography>
-        <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>Real-time revenue metrics and tournament disbursements.</Typography>
-        
-        <Grid container spacing={3} alignItems="stretch">
-          {/* Summary Performance Card */}
-          <Grid item xs={12} md={4}>
-             <Card sx={{ 
-                p: { xs: 3, md: 4 }, 
-                borderRadius: 4, 
-                bgcolor: '#0A1121', 
-                color: 'white', 
-                boxShadow: isDark ? 'none' : '0 20px 40px -10px rgba(0,0,0,0.15)', 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                justifyContent: 'center',
-                position: 'relative',
-                overflow: 'hidden'
-             }}>
-                {/* Decorative background glows */}
-                <Box sx={{ position: 'absolute', top: -50, right: -50, width: 150, height: 150, bgcolor: 'rgba(46, 204, 113, 0.1)', borderRadius: '50%', filter: 'blur(40px)' }} />
-                <Box sx={{ position: 'absolute', bottom: -50, left: -50, width: 150, height: 150, bgcolor: 'rgba(235, 72, 63, 0.1)', borderRadius: '50%', filter: 'blur(40px)' }} />
-                
-                <Box sx={{ position: 'relative', zIndex: 1 }}>
-                  <Typography variant="overline" sx={{ opacity: 0.7, letterSpacing: 1.5, fontSize: '0.95rem' }}>Summary Performance</Typography>
-                  <Box sx={{ mt: 2, mb: 4 }}>
-                     <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-1px' }}>{(activeEvent?.revenue || 0) - (activeEvent?.expenses || 0)} OMR</Typography>
-                     <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(46, 204, 113, 0.1)', px: 1.5, py: 0.5, borderRadius: 2 }}>
-                       <TrendingUp sx={{ color: '#2ECC71', fontSize: 14 }} />
-                       <Typography variant="caption" sx={{ color: '#2ECC71', fontWeight: 700, fontSize: '0.95rem' }}>NET SURPLUS GAIN</Typography>
-                     </Box>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800 }}>Fiscal Overlook</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>Real-time revenue metrics vs operational disbursements</Typography>
+        </Box>
+
+        <Grid container spacing={4} alignItems="stretch">
+          <Grid item xs={12} md={5}>
+            <PremiumCard sx={{
+              p: 4, height: '100%', background: '#36454F', color: 'white', position: 'relative',
+              '&::after': {
+                content: '""', position: 'absolute', top: 0, right: 0, width: '100%', height: '100%',
+                background: 'radial-gradient(circle at top right, rgba(206, 32, 41, 0.15), transparent 75%)',
+                pointerEvents: 'none'
+              }
+            }}>
+              <Box sx={{ position: 'relative', zIndex: 1 }}>
+                <Typography variant="overline" sx={{ opacity: 0.8, letterSpacing: 2.5, fontWeight: 600 }}>Current Net Surplus</Typography>
+                <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, letterSpacing: '-0.04em', display: 'flex', alignItems: 'baseline', gap: 1.5 }}>
+                  {(activeEvent?.revenue || 0) - (activeEvent?.expenses || 0)} 
+                  <Typography component="span" variant="h5" sx={{ opacity: 0.5, fontWeight: 400 }}>OMR</Typography>
+                </Typography>
+                <Chip
+                  icon={<TrendingUp style={{ color: '#10B981', fontSize: 16 }} />}
+                  label="PROFESSIONAL TIERS"
+                  size="small"
+                  sx={{ bgcolor: 'rgba(16, 185, 129, 0.15)', color: '#10B981', fontWeight: 700, px: 1, border: '1px solid rgba(16, 185, 129, 0.2)' }}
+                />
+                <Box sx={{ mt: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 500 }}>Gross Collections</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>{activeEvent?.revenue || 0} OMR</Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                     <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 1 }}>
-                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.85rem', opacity: 0.9 }}>Gross Collection</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{activeEvent?.revenue || 0} OMR</Typography>
-                     </Box>
-                     <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 1 }}>
-                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.85rem', opacity: 0.9 }}>Total Disbursement</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#EF4444' }}>-{activeEvent?.expenses || 0} OMR</Typography>
-                     </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 500 }}>Total Disbursements</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#CE2029', letterSpacing: '-0.01em' }}>{activeEvent?.expenses || 0} OMR</Typography>
                   </Box>
                 </Box>
-             </Card>
+              </Box>
+            </PremiumCard>
           </Grid>
-          
-          {/* Chart Wrapper */}
-          <Grid item xs={12} md={8} sx={{ minWidth: 0 }}>
-             <Card sx={{ 
-                p: { xs: 2.5, md: 4 }, 
-                borderRadius: 4, 
-                border: '1px solid', 
-                borderColor: 'divider', 
-                boxShadow: isDark ? 'none' : '0 10px 30px -10px rgba(0,0,0,0.05)', 
-                height: '100%', 
-                width: '100%',
-                minHeight: 320, 
-                display: 'flex', 
-                flexDirection: 'column' 
-             }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, textTransform: 'uppercase', color: isDark ? 'white' : '#0A1121', fontSize: '0.85rem', opacity: 0.9, letterSpacing: 1 }}>Fiscal Breakdown</Typography>
-                  <Tooltip title="Data is simulated based on participant fees and event logistics."><Info sx={{ fontSize: 16, opacity: 0.3 }} /></Tooltip>
-                </Box>
-                <Box sx={{ flex: 1, minHeight: 250, width: '100%', minWidth: 0, position: 'relative' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "#E5E7EB"} />
-                      <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 600, fill: isDark ? '#9CA3AF' : '#6B7280' }} axisLine={false} tickLine={false} dy={15} />
-                      <YAxis tick={{ fontSize: 11, fontWeight: 600, fill: isDark ? '#9CA3AF' : '#6B7280' }} axisLine={false} tickLine={false} dx={-10} tickFormatter={(val) => `₹${val}`} />
-                      <RechartsTooltip 
-                        cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : '#F9FAFB' }} 
-                        contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '12px 16px', fontWeight: 600, backgroundColor: isDark ? '#1F2937' : 'white', color: isDark ? 'white' : '#111827' }} 
-                        formatter={(value) => [`₹${value}`, 'Amount']}
-                      />
-                      <Bar dataKey="value" radius={[8, 8, 0, 0]} maxBarSize={140} barSize={80}>
-                        {data.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </Box>
-             </Card>
+          <Grid item xs={12} md={7}>
+            <PremiumCard sx={{ p: 4, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5, mb: 4, color: 'text.secondary' }}>Revenue Allocation</Typography>
+              <Box sx={{ flex: 1, minHeight: 280 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "#E5E7EB"} />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'text.secondary', fontWeight: 700, fontSize: 11 }}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'text.secondary', fontWeight: 700, fontSize: 11 }}
+                    />
+                    <RechartsTooltip
+                      cursor={{ fill: 'transparent' }}
+                      contentStyle={{
+                        borderRadius: 16, border: 'none',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                        bgcolor: isDark ? '#1a1d24' : '#fff'
+                      }}
+                    />
+                    <Bar dataKey="value" radius={[12, 12, 12, 12]} barSize={60}>
+                      {data.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </PremiumCard>
           </Grid>
         </Grid>
       </Box>
@@ -900,37 +1346,50 @@ const EventBanners = () => {
 
   // --- RENDER CONTROLLER ---
   return (
-    <Box sx={{ 
-      minHeight: '100vh', bgcolor: isDark ? '#0A1121' : '#F9FAFB', 
-      color: isDark ? 'white' : '#1a2b3c', p: 1.5 
+    <Box sx={{
+      minHeight: '100vh', bgcolor: isDark ? '#36454F' : '#F9FAFB',
+      color: isDark ? 'white' : '#36454F', p: 1.5,
+      '& .MuiTypography-root': { fontFamily: "'Inter', sans-serif" },
+      '& .MuiButton-root, & input, & textarea, & select': { fontFamily: "'Inter', sans-serif" }
     }}>
       <Container maxWidth="xl">
         {/* View Switcher Tabs (Only if not in details view) */}
         {view !== 'DETAILS' && (
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-            <Tabs 
-              value={view === 'DASHBOARD' ? 0 : view === 'CALENDAR' ? 1 : 2} 
-              textColor="inherit"
-              onChange={(e, val) => {
-                if (val === 0) setView('DASHBOARD');
-                if (val === 1) setView('CALENDAR');
-                if (val === 2) setView('FORM');
-              }}
-              sx={{ 
-                bgcolor: isDark ? 'white/5' : 'white', p: 0.5, borderRadius: 2, minHeight: 36,
-                '& .MuiTabs-indicator': { bgcolor: '#eb483f', height: '100%', borderRadius: 1.5, zIndex: 0 },
-                '& .MuiTab-root': { 
-                  zIndex: 1, minHeight: 36, py: 0.5, transition: 'all 0.3s', 
-                  fontWeight: 800, fontSize: '0.9rem', letterSpacing: 3, textTransform: 'uppercase', 
-                  letterSpacing: 1.3, color: isDark ? 'rgba(255,255,255,0.4)' : '#64748b',
-                  '&.Mui-selected': { color: 'white' }
-                }
-              }}
-            >
-              <Tab label="Dashboard" />
-              <Tab label="Calendar Overlay" />
-              <Tab label="Deployment" />
-            </Tabs>
+          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{
+              p: 0.75,
+              bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'white',
+              borderRadius: 4,
+              boxShadow: isDark ? 'none' : '0 10px 25px -5px rgba(0,0,0,0.05)',
+              border: '1px solid',
+              borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'divider',
+              display: 'flex',
+              gap: 1
+            }}>
+              {[
+                { label: 'Dashboard', id: 'DASHBOARD' },
+                { label: 'Calendar Grid', id: 'CALENDAR' },
+                { label: 'Create Event', id: 'FORM' }
+              ].map((tab) => (
+                <Button
+                  key={tab.id}
+                  onClick={() => setView(tab.id)}
+                  sx={{
+                    px: 2.5, py: 0.75, borderRadius: 2.5,
+                    textTransform: 'none', fontWeight: 600, fontSize: '0.8rem',
+                    bgcolor: view === tab.id ? '#CE2029' : 'transparent',
+                    color: view === tab.id ? 'white' : 'text.secondary',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      bgcolor: view === tab.id ? '#CE2029' : 'rgba(0,0,0,0.03)',
+                      transform: view === tab.id ? 'none' : 'translateY(-1px)'
+                    }
+                  }}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </Box>
           </Box>
         )}
 
@@ -940,37 +1399,51 @@ const EventBanners = () => {
           {view === 'FORM' && <EventFormView />}
           {view === 'DETAILS' && (
             <Box>
-              <PageHeader 
-                title={activeEvent?.name} 
-                subtitle={`Management Module | ${activeEvent?.status}`} 
+              <PageHeader
+                title={activeEvent?.name}
+                subtitle={`Management Module | ${activeEvent?.status}`}
                 onAction={() => setView('DASHBOARD')}
                 actionLabel="Terminate Session"
               />
-              
-              <Box sx={{ mb: 2, display: 'flex', gap: 1, overflowX: 'auto', pb: 0.5, scrollbarWidth: 'none' }}>
-                {['Participants', 'Sponsors', 'Results', 'Expenses', 'Financials'].map((tab, i) => (
-                  <Button 
-                    size="small"
-                    key={tab} 
+
+              <Box sx={{
+                mb: 4, display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, scrollbarWidth: 'none',
+                '&::-webkit-scrollbar': { display: 'none' }
+              }}>
+                {[
+                  { label: 'Roster', icon: <Groups sx={{ fontSize: 20 }} /> },
+                  { label: 'Partners', icon: <CorporateFare sx={{ fontSize: 20 }} /> },
+                  { label: 'Outcome', icon: <EmojiEvents sx={{ fontSize: 20 }} /> },
+                  { label: 'Logistics', icon: <Receipt sx={{ fontSize: 20 }} /> },
+                  { label: 'Treasury', icon: <AccountBalance sx={{ fontSize: 20 }} /> }
+                ].map((tab, i) => (
+                  <Button
+                    key={tab.label}
                     onClick={() => setActiveSubTab(i)}
-                    variant={activeSubTab === i ? 'contained' : 'outlined'}
-                    sx={{ 
-                      borderRadius: 2, px: 2, py: 0.5, flexShrink: 0,
-                      bgcolor: activeSubTab === i ? '#eb483f' : 'transparent',
-                      borderColor: activeSubTab === i ? '#eb483f' : 'divider',
-                      color: activeSubTab === i ? 'white' : 'text.primary',
-                      fontWeight: 600, fontSize: '0.85rem', opacity: 0.9, textTransform: 'uppercase',
-                      '&:hover': { bgcolor: activeSubTab === i ? '#eb483f' : 'action.hover' }
+                    startIcon={tab.icon}
+                    sx={{
+                      borderRadius: 3, px: 3, py: 1.25, flexShrink: 0,
+                      textTransform: 'none', fontWeight: 800, fontSize: '0.85rem',
+                      bgcolor: activeSubTab === i ? (isDark ? 'white' : '#36454F') : 'transparent',
+                      color: activeSubTab === i ? (isDark ? '#36454F' : 'white') : 'text.secondary',
+                      border: '1px solid',
+                      borderColor: activeSubTab === i ? 'transparent' : 'divider',
+                      boxShadow: activeSubTab === i ? '0 10px 20px -5px rgba(0,0,0,0.2)' : 'none',
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        bgcolor: activeSubTab === i ? undefined : 'rgba(0,0,0,0.03)',
+                        borderColor: activeSubTab === i ? 'transparent' : '#CE202944'
+                      }
                     }}
                   >
-                    {tab}
+                    {tab.label}
                   </Button>
                 ))}
               </Box>
 
               <Card sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: isDark ? 'white/10' : 'slate.100', width: '100%' }}>
                 <AnimatePresence mode="wait">
-                  <motion.div 
+                  <motion.div
                     key={activeSubTab} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
                     style={{ width: '100%' }}
                   >
@@ -991,20 +1464,20 @@ const EventBanners = () => {
       <Dialog open={isSponsorDialogOpen} onClose={() => { setIsSponsorDialogOpen(false); setEditingSponsor(null); setSponsorForm({ name: '', type: 'Main Sponsor', website: '', logo: '' }); }} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 700 }}>{editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField 
-            label="Sponsor Name" fullWidth size="small" sx={{ mt: 1 }} 
+          <TextField
+            label="Sponsor Name" fullWidth size="small" sx={{ mt: 1 }}
             value={sponsorForm.name} onChange={(e) => setSponsorForm({ ...sponsorForm, name: e.target.value })}
           />
-          <TextField 
-            label="Sponsorship Type" fullWidth size="small" select 
+          <TextField
+            label="Sponsorship Type" fullWidth size="small" select
             value={sponsorForm.type} onChange={(e) => setSponsorForm({ ...sponsorForm, type: e.target.value })}
           >
-             <MenuItem value="Main Sponsor">Main Sponsor</MenuItem>
-             <MenuItem value="Co-Sponsor">Co-Sponsor</MenuItem>
-             <MenuItem value="Partner">Partner</MenuItem>
+            <MenuItem value="Main Sponsor">Main Sponsor</MenuItem>
+            <MenuItem value="Co-Sponsor">Co-Sponsor</MenuItem>
+            <MenuItem value="Partner">Partner</MenuItem>
           </TextField>
-          <TextField 
-            label="Website URL" fullWidth size="small" 
+          <TextField
+            label="Website URL" fullWidth size="small"
             value={sponsorForm.website} onChange={(e) => setSponsorForm({ ...sponsorForm, website: e.target.value })}
           />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
@@ -1012,16 +1485,16 @@ const EventBanners = () => {
               <Avatar src={sponsorForm.logo} variant="rounded" sx={{ width: 44, height: 44, bgcolor: 'divider' }} />
             )}
             <Button variant="outlined" component="label" fullWidth startIcon={<CloudUpload />} sx={{ height: 44, textTransform: 'none' }}>
-               {sponsorForm.logo ? 'Change Logo' : 'Upload Logo'}
-               <input type="file" hidden accept="image/*" onChange={handleSponsorLogoUpload} />
+              {sponsorForm.logo ? 'Change Logo' : 'Upload Logo'}
+              <input type="file" hidden accept="image/*" onChange={handleSponsorLogoUpload} />
             </Button>
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setIsSponsorDialogOpen(false)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            sx={{ bgcolor: '#eb483f', textTransform: 'none', fontWeight: 600 }} 
+          <Button
+            variant="contained"
+            sx={{ bgcolor: '#CE2029', textTransform: 'none', fontWeight: 600 }}
             onClick={handleAddSponsor}
           >
             {editingSponsor ? 'Save Changes' : 'Add Sponsor'}
@@ -1032,28 +1505,28 @@ const EventBanners = () => {
       <Dialog open={isExpenseDialogOpen} onClose={() => setIsExpenseDialogOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 700 }}>Log New Expense</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField 
-            label="Description" placeholder="e.g. Catering, Equipment" fullWidth size="small" sx={{ mt: 1 }} 
+          <TextField
+            label="Description" placeholder="e.g. Catering, Equipment" fullWidth size="small" sx={{ mt: 1 }}
             value={expenseForm.title} onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
           />
-          <TextField 
-            label="Amount (OMR)" type="number" fullWidth size="small" 
+          <TextField
+            label="Amount (OMR)" type="number" fullWidth size="small"
             value={expenseForm.amount} onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
           />
-          <TextField 
-            label="Date" type="date" fullWidth size="small" InputLabelProps={{ shrink: true }} 
+          <TextField
+            label="Date" type="date" fullWidth size="small" InputLabelProps={{ shrink: true }}
             value={expenseForm.date} onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
           />
-          <TextField 
-            label="Context/Notes" multiline rows={2} fullWidth size="small" 
+          <TextField
+            label="Context/Notes" multiline rows={2} fullWidth size="small"
             value={expenseForm.notes} onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setIsExpenseDialogOpen(false)}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            sx={{ bgcolor: '#0A1121', textTransform: 'none', fontWeight: 600 }} 
+          <Button
+            variant="contained"
+            sx={{ bgcolor: '#36454F', textTransform: 'none', fontWeight: 600 }}
             onClick={handleAddExpense}
           >
             Create Log

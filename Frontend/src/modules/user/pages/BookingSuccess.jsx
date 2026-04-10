@@ -19,7 +19,7 @@ const ShuttleParticle = ({ delay, x, y, isDark }) => (
       rotate: [0, 360],
     }}
     transition={{ duration: 2, delay, ease: 'easeOut' }}
-    className={`absolute top-1/2 left-1/2 ${isDark ? 'text-[#eb483f]/30' : 'text-[#eb483f]/20'}`}
+    className={`absolute top-1/2 left-1/2 ${isDark ? 'text-[#CE2029]/30' : 'text-[#CE2029]/20'}`}
   >
     <ShuttlecockIcon size={16} />
   </motion.div>
@@ -129,8 +129,8 @@ const BookingSuccess = () => {
       {/* Background Decorative Glows */}
       {!isDark && (
         <>
-          <div className="absolute top-24 -right-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-24 -right-24 w-80 h-80 bg-[#CE2029]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#CE2029]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
@@ -151,16 +151,16 @@ const BookingSuccess = () => {
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-              className={`w-14 h-14 md:w-16 md:h-16 rounded-[20px] md:rounded-[24px] mx-auto flex items-center justify-center relative z-10 ${isDark ? 'bg-[#eb483f]/10 border-2 border-[#eb483f] shadow-lg shadow-[#eb483f]/20' : 'bg-white border-4 border-[#eb483f]/10 shadow-xl shadow-[#eb483f]/20'}`}
+              className={`w-14 h-14 md:w-16 md:h-16 rounded-[20px] md:rounded-[24px] mx-auto flex items-center justify-center relative z-10 ${isDark ? 'bg-[#CE2029]/10 border-2 border-[#CE2029] shadow-lg shadow-[#CE2029]/20' : 'bg-white border-4 border-[#CE2029]/10 shadow-xl shadow-[#CE2029]/20'}`}
             >
-              <Check size={28} strokeWidth={3} className={'text-[#eb483f]'} />
+              <Check size={28} strokeWidth={3} className={'text-[#CE2029]'} />
             </motion.div>
 
             {/* Pulsing ring */}
             <motion.div
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className={`absolute inset-0 rounded-[24px] md:rounded-[28px] -m-1.5 md:-m-2.5 border-2 ${isDark ? 'border-[#eb483f]/30' : 'border-[#eb483f]/20'}`}
+              className={`absolute inset-0 rounded-[24px] md:rounded-[28px] -m-1.5 md:-m-2.5 border-2 ${isDark ? 'border-[#CE2029]/30' : 'border-[#CE2029]/20'}`}
             />
           </div>
 
@@ -187,26 +187,25 @@ const BookingSuccess = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start max-w-3xl mx-auto">
           {/* Success Ticket Card - Left/Center */}
           <motion.div
+            id="print-area"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, type: 'spring', stiffness: 100 }}
-            className={`lg:col-span-8 rounded-[32px] p-5 md:p-6 border shadow-2xl relative overflow-hidden transition-all group ${isDark ? 'bg-[#1a1d24] border-white/5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]' : 'bg-white border-[#eb483f]/10 shadow-[0_20px_60px_rgba(235,72,63,0.08)]'}`}
+            className={`lg:col-span-8 rounded-[32px] p-5 md:p-6 border shadow-2xl relative overflow-hidden transition-all group ${isDark ? 'bg-[#1a1d24] border-white/5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]' : 'bg-white border-[#CE2029]/10 shadow-[0_20px_60px_rgba(206, 32, 41,0.08)]'}`}
           >
             {/* Subtle court lines */}
             <div className={`absolute inset-0 court-lines ${isDark ? 'opacity-[0.03]' : 'opacity-5'} transition-opacity group-hover:opacity-10`} />
-
-            {/* Accent Banner */}
-            <div className={`absolute top-0 left-0 right-0 h-1.5 ${isDark ? 'bg-gradient-to-r from-[#eb483f] to-[#d43b33]' : 'bg-gradient-to-r from-[#eb483f] to-[#d43b33]'}`} />
+            <div className={`absolute top-0 left-0 right-0 h-1.5 ${isDark ? 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]' : 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]'}`} />
 
             <div className="space-y-5 md:space-y-6 relative z-10 pt-2">
               {/* Ticket Header */}
               <div className={`flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                 <div className="flex items-center gap-2">
-                  <Receipt size={14} className={isDark ? 'text-[#eb483f]/80' : 'text-[#eb483f]'} />
+                  <Receipt size={14} className={isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'} />
                   <span>Verified E-Ticket</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#eb483f] animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] animate-pulse" />
                   <span className="font-mono">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
                 </div>
               </div>
@@ -214,12 +213,12 @@ const BookingSuccess = () => {
               {/* Arena Info */}
               <div className="space-y-1">
                 <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                  {state?.type === 'membership' ? 'Membership Active' : state?.batch ? 'Academic Program' : 'Arena Details'}
+                  {state?.type === 'membership' ? 'Membership Active' : state?.batch ? 'Academic Program' : state?.type === 'event' ? 'Official Enrollment' : 'Arena Details'}
                 </p>
                 <h3 className={`text-xl md:text-2xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {state?.type === 'membership' ? state.plan?.name : state?.batch ? state.batch.coachName : state?.arena?.name}
-                  <span className={`block text-lg md:text-xl mt-0.5 ${isDark ? 'text-[#eb483f]/80' : 'text-[#eb483f]'}`}>
-                    {state?.type === 'membership' ? 'Tier ' + state.plan?.category : state?.batch ? state.batch.level + ' Batch' : state?.court?.name}
+                  {state?.type === 'membership' ? state.plan?.name : state?.batch ? state.batch.coachName : state?.type === 'event' ? state.eventTitle : state?.arena?.name}
+                  <span className={`block text-lg md:text-xl mt-0.5 ${isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'}`}>
+                    {state?.type === 'membership' ? 'Tier ' + state.plan?.category : state?.batch ? state.batch.level + ' Batch' : state?.type === 'event' ? state.eventCategory : state?.court?.name}
                   </span>
                 </h3>
               </div>
@@ -244,20 +243,20 @@ const BookingSuccess = () => {
 
               {/* Bottom Notch Separator */}
               <div className="relative h-px flex items-center pt-2">
-                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#eb483f]/10 shadow-inner'}`} />
+                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
                 <div className={`w-full border-t-[2px] border-dashed ${isDark ? 'border-white/10' : 'border-slate-200'}`} />
-                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#eb483f]/10 shadow-inner'}`} />
+                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
               </div>
 
               {/* Total Paid Section */}
               <div className="flex items-center justify-between pt-2">
                 <div>
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Grand Total Paid</p>
-                  <p className={`text-2xl md:text-3xl font-black font-display leading-none ${isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'}`}>OMR {amount.toFixed(3)}</p>
+                  <p className={`text-2xl md:text-3xl font-black font-display leading-none ${isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'}`}>OMR {amount.toFixed(3)}</p>
                 </div>
                 <div className={`px-3 py-1.5 rounded-[12px] font-black text-[8px] md:text-[9px] uppercase tracking-widest border transition-all ${isDark
-                    ? 'bg-[#eb483f]/10 border-[#eb483f]/20 text-[#eb483f]'
-                    : 'bg-[#eb483f] text-white border-[#eb483f] shadow-lg shadow-[#eb483f]/20'
+                    ? 'bg-[#CE2029]/10 border-[#CE2029]/20 text-[#CE2029]'
+                    : 'bg-[#CE2029] text-white border-[#CE2029] shadow-lg shadow-[#CE2029]/20'
                   }`}>
                   Securely Paid
                 </div>
@@ -270,23 +269,83 @@ const BookingSuccess = () => {
             <div className="space-y-2">
               <h4 className={`text-[9px] font-black uppercase tracking-[0.25em] ml-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Actions</h4>
               <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
-                <button className={`h-12 rounded-[20px] font-black text-[10px] border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-[#eb483f]/10 shadow-lg shadow-[#eb483f]/5 text-[#eb483f] hover:border-[#eb483f]/30'
+                <button 
+                  onClick={() => {
+                    const shareData = {
+                      title: 'Arena Booking Confirmation',
+                      text: `I just booked ${state?.court?.name || 'a session'} at ${state?.arena?.name || 'the arena'} for ${state?.date} at ${state?.slot?.time || 'requested slot'}. Join me!`,
+                      url: window.location.href,
+                    };
+                    if (navigator.share) {
+                      navigator.share(shareData).catch(console.error);
+                    } else {
+                      navigator.clipboard.writeText(shareData.text).then(() => {
+                        alert('Booking details copied to clipboard!');
+                      });
+                    }
+                  }}
+                  className={`h-12 rounded-[20px] font-black text-[10px] border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-[#CE2029]/10 shadow-lg shadow-[#CE2029]/5 text-[#CE2029] hover:border-[#CE2029]/30'
                   }`}>
-                  <Share2 size={16} className={isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'} />
+                  <Share2 size={16} className={isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'} />
                   <span className="uppercase tracking-widest mt-0.5">Share</span>
                 </button>
-                <button className={`h-12 rounded-[20px] font-black text-[10px] border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-[#eb483f]/10 shadow-lg shadow-[#eb483f]/5 text-[#eb483f] hover:border-[#eb483f]/30'
+                <button 
+                  onClick={() => window.print()}
+                  className={`h-12 rounded-[20px] font-black text-[10px] border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-[#CE2029]/10 shadow-lg shadow-[#CE2029]/5 text-[#CE2029] hover:border-[#CE2029]/30'
                   }`}>
-                  <Download size={16} className={isDark ? 'text-[#eb483f]' : 'text-[#eb483f]'} />
+                  <Download size={16} className={isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'} />
                   <span className="uppercase tracking-widest mt-0.5">Download</span>
                 </button>
               </div>
             </div>
+            
+            {/* Simple Print Styles */}
+            <style dangerouslySetInnerHTML={{ __html: `
+              @media print {
+                @page { margin: 0; size: auto; }
+                body { background: white !important; margin: 0 !important; padding: 0 !important; }
+                
+                /* Hide clutter */
+                nav, footer, .lg\\:hidden, .lg\\:col-span-4, 
+                .text-center.space-y-3, button, 
+                .relative.h-14, .fixed.bottom-0 { 
+                  display: none !important; 
+                }
+                
+                /* Reset containers to avoid layout shifts in print */
+                .min-h-screen, .max-w-3xl, .grid, .lg\\:grid-cols-12 {
+                   display: block !important;
+                   position: static !important;
+                   margin: 0 !important;
+                   padding: 0 !important;
+                   max-width: none !important;
+                   border: none !important;
+                   box-shadow: none !important;
+                }
 
-            <div className={`p-5 rounded-[24px] border hidden lg:block ${isDark ? 'bg-gradient-to-br from-[#eb483f]/20 to-[#d43b33]/10 border-[#eb483f]/20' : 'bg-gradient-to-br from-[#eb483f] to-[#d43b33] shadow-xl shadow-[#eb483f]/30 text-white border-[#eb483f]'}`}>
+                #print-area {
+                  display: block !important;
+                  position: absolute !important;
+                  top: 50% !important;
+                  left: 50% !important;
+                  transform: translate(-50%, -50%) scale(1.1) !important;
+                  width: 500px !important;
+                  margin: 0 !important;
+                  border: 1px solid #f1f5f9 !important;
+                  background: white !important;
+                  box-shadow: none !important;
+                  visibility: visible !important;
+                  z-index: 9999 !important;
+                }
+
+                * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+              }
+            `}} />
+
+            <div className={`p-5 rounded-[24px] border hidden lg:block ${isDark ? 'bg-gradient-to-br from-[#CE2029]/20 to-[#d43b33]/10 border-[#CE2029]/20' : 'bg-gradient-to-br from-[#CE2029] to-[#d43b33] shadow-xl shadow-[#CE2029]/30 text-white border-[#CE2029]'}`}>
               <div className="flex flex-col items-center text-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border ${isDark ? 'bg-[#eb483f]/10 border-[#eb483f]/20' : 'bg-white/10 border-white/20'}`}>
-                  <Home size={20} className={isDark ? 'text-[#eb483f]' : 'text-white'} />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border ${isDark ? 'bg-[#CE2029]/10 border-[#CE2029]/20' : 'bg-white/10 border-white/20'}`}>
+                  <Home size={20} className={isDark ? 'text-[#CE2029]' : 'text-white'} />
                 </div>
                 <div className="space-y-0.5">
                   <h4 className={`text-base font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-white'}`}>Ready for more?</h4>
@@ -297,7 +356,7 @@ const BookingSuccess = () => {
                   size="sm"
                   fullWidth
                   onClick={() => navigate('/home')}
-                  className={`!rounded-[16px] py-3 transition-all shadow-lg text-[11px] ${isDark ? '!bg-[#eb483f] !text-white' : '!bg-white !text-[#eb483f] hover:scale-105'}`}
+                  className={`!rounded-[16px] py-3 transition-all shadow-lg text-[11px] ${isDark ? '!bg-[#CE2029] !text-white' : '!bg-white !text-[#CE2029] hover:scale-105'}`}
                 >
                   Dashboard
                 </ShuttleButton>
@@ -308,7 +367,7 @@ const BookingSuccess = () => {
       </div>
 
       {/* Dashboard Sticky Footer - Mobile/Tablet Only */}
-      <div className={`fixed bottom-0 left-0 right-0 p-3 z-[60] lg:hidden border-t backdrop-blur-xl transition-all rounded-t-3xl ${isDark ? 'bg-[#0f1115]/90 border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]' : 'bg-white/95 border-[#eb483f]/10 shadow-[0_-5px_30px_rgba(235,72,63,0.05)]'
+      <div className={`fixed bottom-0 left-0 right-0 p-3 z-[60] lg:hidden border-t backdrop-blur-xl transition-all rounded-t-3xl ${isDark ? 'bg-[#0f1115]/90 border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]' : 'bg-white/95 border-[#CE2029]/10 shadow-[0_-5px_30px_rgba(206, 32, 41,0.05)]'
         }`}>
         <ShuttleButton
           variant="primary"
@@ -316,7 +375,7 @@ const BookingSuccess = () => {
           fullWidth
           icon={<Home size={16} />}
           onClick={() => navigate('/home')}
-          className="shadow-md shadow-[#eb483f]/20 !rounded-2xl active:scale-95 transition-all py-3 text-xs"
+          className="shadow-md shadow-[#CE2029]/20 !rounded-2xl active:scale-95 transition-all py-3 text-xs"
         >
           Back to Dashboard
         </ShuttleButton>

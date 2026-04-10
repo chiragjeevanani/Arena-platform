@@ -37,14 +37,14 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-[#FFF1F1] md:bg-white flex items-center justify-center px-6 relative overflow-hidden">
       {/* Background Decor */}
-      <div className="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-[#eb483f]/10 rounded-full blur-[80px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-[#eb483f]/10 rounded-full blur-[80px]" />
+      <div className="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-[#CE2029]/10 rounded-full blur-[80px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-[#CE2029]/10 rounded-full blur-[80px]" />
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full md:max-w-[320px] bg-transparent md:bg-white md:p-8 md:rounded-3xl rounded-[40px] md:shadow-[0_20px_60px_rgba(235,72,63,0.08)] md:border md:border-slate-100"
+        className="relative z-10 w-full md:max-w-[320px] bg-transparent md:bg-white md:p-8 md:rounded-3xl rounded-[40px] md:shadow-[0_20px_60px_rgba(206, 32, 41,0.08)] md:border md:border-slate-100"
       >
         <div className="space-y-6">
         <div className="text-center">
@@ -82,7 +82,7 @@ const Login = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Email className="text-slate-400 group-focus-within:text-[#eb483f] transition-colors" />
+                  <Email className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                 </InputAdornment>
               ),
             }}
@@ -92,13 +92,13 @@ const Login = () => {
                 borderRadius: '12px',
                 backgroundColor: 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(10px)',
-                '&.Mui-focused fieldset': { borderColor: '#eb483f', borderWidth: '2px' },
+                '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
                 '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
               },
               '& .MuiOutlinedInput-input': {
                 paddingY: '8px', // More compact height
               },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#eb483f' },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
               '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
             }}
           />
@@ -112,7 +112,7 @@ const Login = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Lock className="text-slate-400 group-focus-within:text-[#eb483f] transition-colors" />
+                  <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                 </InputAdornment>
               ),
               endAdornment: (
@@ -129,18 +129,18 @@ const Login = () => {
                 borderRadius: '12px',
                 backgroundColor: 'rgba(255,255,255,0.7)',
                 backdropFilter: 'blur(10px)',
-                '&.Mui-focused fieldset': { borderColor: '#eb483f', borderWidth: '2px' },
+                '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
                 '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
               },
               '& .MuiOutlinedInput-input': {
                 paddingY: '8px', // More compact height
               },
-              '& .MuiInputLabel-root.Mui-focused': { color: '#eb483f' }
+              '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
             }}
           />
 
           <div className="text-right">
-            <button type="button" className="text-[#eb483f] font-bold text-xs tracking-wide hover:underline transition-all">Forgot Password?</button>
+            <button type="button" className="text-[#CE2029] font-bold text-xs tracking-wide hover:underline transition-all">Forgot Password?</button>
           </div>
 
           <Button
@@ -148,14 +148,14 @@ const Login = () => {
             type="submit"
             variant="contained"
             size="large"
-            className="bg-[#eb483f] hover:bg-[#eb483f]/90 py-3 shadow-xl shadow-[#eb483f]/30 active:scale-95 transition-all"
+            className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-3 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all"
             sx={{
               borderRadius: '14px',
               textTransform: 'none',
               fontSize: '1rem',
               fontWeight: 'bold',
               letterSpacing: '0.02em',
-              backgroundColor: '#eb483f'
+              backgroundColor: '#CE2029'
             }}
           >
             Login
@@ -165,10 +165,10 @@ const Login = () => {
         <div className="text-center space-y-3 pt-2">
           <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
             Don't have an account? {' '}
-            <Link to="/signup" className="text-[#eb483f] font-black underline underline-offset-4">Sign Up</Link>
+            <Link to="/signup" className="text-[#CE2029] font-black underline underline-offset-4">Sign Up</Link>
           </p>
           <div className="pt-4 border-t border-slate-50">
-            <Link to="/coach/login" className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] hover:text-[#eb483f] transition-all">
+            <Link to="/coach/login" className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] hover:text-[#CE2029] transition-all">
               Staff & Coach Portal
             </Link>
           </div>

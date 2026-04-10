@@ -7,7 +7,7 @@ export const ARENAS = [
   {
     id: 1,
     name: "Amm Sports arena",
-    location: "Sector 62, Noida",
+    location: "AMM sports arena muscat , oman",
     distance: "1.2 km",
     rating: 4.8,
     reviews: 120,
@@ -67,7 +67,7 @@ export const USER_BOOKINGS = [
     id: "BK-10293",
     arenaName: "Amm Sports arena",
     arenaImage: AmmArena1,
-    location: "Sector 62, Noida",
+    location: "AMM sports arena muscat , oman",
     courtName: "Court 2",
     date: "2024-03-20",
     slot: "07:00 PM - 08:00 PM",

@@ -18,7 +18,7 @@ const ArenaAnalytics = () => {
         {[
           { label: 'Total Revenue', value: 'OMR 1,951.500', trend: '+12.5%', icon: DollarSign, color: '#22c55e' },
           { label: 'Avg Occupancy', value: '76.4%', trend: '+5.2%', icon: Activity, color: '#6366f1' },
-          { label: 'Total Bookings', value: '181', trend: '+18', icon: Users, color: '#eb483f' },
+          { label: 'Total Bookings', value: '181', trend: '+18', icon: Users, color: '#CE2029' },
           { label: 'Top Court', value: 'Court 3', trend: 'OMR 520', icon: Target, color: '#f59e0b' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
@@ -32,7 +32,7 @@ const ArenaAnalytics = () => {
               </div>
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{stat.label}</p>
-            <p className="text-xl font-black text-[#1a2b3c] mt-1">{stat.value}</p>
+            <p className="text-xl font-black text-[#36454F] mt-1">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -42,7 +42,7 @@ const ArenaAnalytics = () => {
         {/* Court Revenue Bar Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#1a2b3c]">Revenue by Court</h3>
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#36454F]">Revenue by Court</h3>
             <select className="text-[10px] font-black uppercase tracking-widest bg-slate-50 border-none outline-none rounded-lg px-2 py-1">
               <option>Last 30 Days</option>
               <option>This Week</option>
@@ -59,7 +59,7 @@ const ArenaAnalytics = () => {
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-[#1a2b3c] p-3 rounded-xl shadow-xl border border-white/10">
+                        <div className="bg-[#36454F] p-3 rounded-xl shadow-xl border border-white/10">
                           <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
                           <p className="text-sm font-black text-white">OMR {payload[0].value.toFixed(3)}</p>
                         </div>
@@ -70,7 +70,7 @@ const ArenaAnalytics = () => {
                 />
                 <Bar dataKey="revenue" radius={[6, 6, 0, 0]} barSize={40}>
                   {COURT_REVENUE.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#eb483f' : '#1a2b3c'} />
+                    <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#CE2029' : '#36454F'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -80,13 +80,13 @@ const ArenaAnalytics = () => {
 
         {/* Occupancy Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#1a2b3c] mb-6">Court Occupancy %</h3>
+           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#36454F] mb-6">Court Occupancy %</h3>
            <div className="space-y-5">
               {COURT_REVENUE.map((court, i) => (
                 <div key={i} className="space-y-1.5">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{court.name}</span>
-                    <span className="text-[10px] font-black text-[#1a2b3c]">{court.occupancy}%</span>
+                    <span className="text-[10px] font-black text-[#36454F]">{court.occupancy}%</span>
                   </div>
                   <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <motion.div 

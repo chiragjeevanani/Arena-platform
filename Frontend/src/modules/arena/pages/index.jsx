@@ -10,11 +10,11 @@ import RetailPOS from '../../admin/pages/RetailPOS';
 import AccountSettings from './AccountSettings';
 
 // Helper: wraps a light-theme page inside the dark arena layout content area
-const PageShell = ({ title, subtitle, component: Component, color = '#eb483f' }) => (
+const PageShell = ({ title, subtitle, component: Component, color = '#CE2029' }) => (
   <div className="min-h-full bg-transparent">
     {/* Page Header Bar */}
     <div className="px-4 py-4 md:px-8 bg-transparent">
-      <h2 className="text-2xl font-bold text-[#1a2b3c]">{title}</h2>
+      <h2 className="text-2xl font-bold text-[#36454F]">{title}</h2>
       <p className="text-[12px] text-slate-500 font-semibold mt-1">{subtitle}</p>
     </div>
     {/* Light content area */}
@@ -29,7 +29,7 @@ export const ArenaDetailsPage = () => (
     title="Arena Details"
     subtitle="Configure basic info, amenities, gallery and banner images"
     component={ArenaDetails}
-    color="#eb483f"
+    color="#CE2029"
   />
 );
 
@@ -74,7 +74,7 @@ export const InventoryPage = () => (
     title="Inventory Management"
     subtitle="Track stadium equipment, shuttlecocks, and consumables"
     component={Inventory}
-    color="#eb483f"
+    color="#CE2029"
   />
 );
 
@@ -92,7 +92,7 @@ export const RetailPOSPage = () => (
     title="Retail Hub"
     subtitle="Sell products, drinks and equipment to walk-in players"
     component={RetailPOS}
-    color="#eb483f"
+    color="#CE2029"
   />
 );
 

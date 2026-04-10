@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Receipt, GraduationCap, Download, Calendar, ShieldCheck, X, MapPin, Clock, Printer, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Receipt, GraduationCap, Download, Calendar, ShieldCheck, X, MapPin, Clock, Printer, CheckCircle2, AlertOctagon } from 'lucide-react';
 import { USER_BOOKINGS } from '../../../data/mockData';
+import { RESOLVED_CONFLICT_BOOKINGS } from '../../../data/conflictMockData';
 import { motion, AnimatePresence } from 'framer-motion';
 import BookingTimelineCard from '../components/BookingTimeline';
+import BookingCard from '../components/BookingCard';
+import NotificationToast, { useConflictToasts } from '../components/NotificationToast';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
 
@@ -13,10 +16,10 @@ const ReceiptModal = ({ receipt, onClose }) => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
     <motion.div initial={{ scale: 0.93, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.93, opacity: 0, y: 20 }} className="relative w-full max-w-sm bg-white rounded-[28px] shadow-2xl overflow-hidden border border-slate-100">
       {/* Header */}
-      <div className="bg-[#1a2b3c] px-6 py-5 text-white">
+      <div className="bg-[#36454F] px-6 py-5 text-white">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#eb483f] flex items-center justify-center"><Receipt size={16} strokeWidth={2.5} /></div>
+            <div className="w-8 h-8 rounded-xl bg-[#CE2029] flex items-center justify-center"><Receipt size={16} strokeWidth={2.5} /></div>
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">{receipt.type === 'Coaching' ? 'Academy Fee Receipt' : 'Court Booking Receipt'}</span>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"><X size={16} /></button>
@@ -37,18 +40,18 @@ const ReceiptModal = ({ receipt, onClose }) => (
         ].filter(Boolean).map((row, i) => (
           <div key={i} className="flex items-center justify-between py-2 border-b border-dashed border-slate-100 last:border-0">
             <div className="flex items-center gap-2 text-slate-500">
-              <row.icon size={13} className="text-[#eb483f]" strokeWidth={2.5} />
+              <row.icon size={13} className="text-[#CE2029]" strokeWidth={2.5} />
               <span className="text-[10px] font-black uppercase tracking-widest">{row.label}</span>
             </div>
-            <span className="text-[12px] font-black text-[#1a2b3c]">{row.value}</span>
+            <span className="text-[12px] font-black text-[#36454F]">{row.value}</span>
           </div>
         ))}
 
         {/* Total */}
-        <div className="mt-2 p-4 rounded-2xl bg-[#eb483f]/5 border border-[#eb483f]/10 flex items-center justify-between">
+        <div className="mt-2 p-4 rounded-2xl bg-[#CE2029]/5 border border-[#CE2029]/10 flex items-center justify-between">
           <div>
             <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total Paid</p>
-            <p className="text-2xl font-black text-[#1a2b3c] mt-0.5">OMR {Number(receipt.price).toFixed(3)}</p>
+            <p className="text-2xl font-black text-[#36454F] mt-0.5">OMR {Number(receipt.price).toFixed(3)}</p>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -59,7 +62,7 @@ const ReceiptModal = ({ receipt, onClose }) => (
         {/* Print Button */}
         <button
           onClick={() => window.print()}
-          className="w-full py-3.5 rounded-2xl bg-[#1a2b3c] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#eb483f] transition-all active:scale-95"
+          className="w-full py-3.5 rounded-2xl bg-[#36454F] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#CE2029] transition-all active:scale-95"
         >
           <Printer size={16} strokeWidth={2.5} /> Print Receipt
         </button>
@@ -84,19 +87,19 @@ const ReceiptItem = ({ receipt }) => {
 
         <div className="flex justify-between items-start relative z-10">
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${receipt.type === 'Coaching' ? 'bg-[#eb483f]/5 text-[#eb483f]' : 'bg-indigo-50 text-indigo-600'}`}>
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${receipt.type === 'Coaching' ? 'bg-[#CE2029]/5 text-[#CE2029]' : 'bg-indigo-50 text-indigo-600'}`}>
                <Receipt size={22} strokeWidth={2.5} />
             </div>
             <div>
-               <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${receipt.type === 'Coaching' ? 'text-[#eb483f]' : 'text-indigo-500'}`}>
+               <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${receipt.type === 'Coaching' ? 'text-[#CE2029]' : 'text-indigo-500'}`}>
                   {receipt.type === 'Coaching' ? 'Academy Fee Receipt' : 'Court Booking Receipt'}
                </p>
-               <h4 className="text-[15px] font-black text-[#1a2b3c]">{receipt.arenaName}</h4>
+               <h4 className="text-[15px] font-black text-[#36454F]">{receipt.arenaName}</h4>
             </div>
           </div>
           <div className="text-right">
              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Receipt ID</p>
-             <span className="text-[11px] font-black text-[#1a2b3c] bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">#{receipt.id}</span>
+             <span className="text-[11px] font-black text-[#36454F] bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">#{receipt.id}</span>
           </div>
         </div>
 
@@ -114,11 +117,11 @@ const ReceiptItem = ({ receipt }) => {
         <div className="mt-6 flex items-center justify-between">
            <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Total Amount</p>
-              <p className="text-lg font-black text-[#1a2b3c]">OMR {Number(receipt.price).toFixed(3)}</p>
+              <p className="text-lg font-black text-[#36454F]">OMR {Number(receipt.price).toFixed(3)}</p>
            </div>
            <button
              onClick={() => setShowModal(true)}
-             className="w-10 h-10 rounded-2xl bg-[#1a2b3c] text-white flex items-center justify-center hover:bg-[#eb483f] hover:-translate-y-1 transition-all shadow-lg shadow-[#1a2b3c]/20"
+             className="w-10 h-10 rounded-2xl bg-[#36454F] text-white flex items-center justify-center hover:bg-[#CE2029] hover:-translate-y-1 transition-all shadow-lg shadow-[#36454F]/20"
            >
               <Download size={18} strokeWidth={2.5} />
            </button>
@@ -134,6 +137,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const { toggleTheme } = useTheme();
   const isDark = false;
+  const { toasts, dismiss } = useConflictToasts(RESOLVED_CONFLICT_BOOKINGS);
   const [allBookings, setAllBookings] = useState([]);
 
   useEffect(() => {
@@ -150,22 +154,24 @@ const Dashboard = () => {
     { id: 'past', name: 'Past' },
     { id: 'coaching', name: 'Coaching' },
     { id: 'payments', name: 'Receipts' },
+    { id: 'conflicts', name: 'Conflicts', badge: RESOLVED_CONFLICT_BOOKINGS.length },
   ];
 
   return (
     <div className={`min-h-screen pb-32 relative overflow-hidden ${'bg-[#F8FAFC]'}`}>
+      <NotificationToast toasts={toasts} onDismiss={dismiss} />
       {/* Premium Background Decorative Elements */}
       {!isDark && (
         <>
           <div className="absolute top-40 -right-24 w-80 h-80 bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#eb483f]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-[600px] -left-24 w-80 h-80 bg-[#CE2029]/10 rounded-full blur-[100px] pointer-events-none" />
         </>
       )}
 
       {/* Header - Premium Dark Style */}
       {/* Header - Desktop Hidden Logo/Nav Row */}
       <div className="md:hidden">
-        <div className={`px-4 pt-4 pb-4 bg-[#eb483f] rounded-b-3xl shadow-[0_10px_30px_rgba(235,72,63,0.15)] border-b border-white/10`}>
+        <div className={`px-4 pt-4 pb-4 bg-[#CE2029] rounded-b-3xl shadow-[0_10px_30px_rgba(206, 32, 41,0.15)] border-b border-white/10`}>
           <div className="max-w-5xl mx-auto flex justify-between items-center mb-0">
             <div className="flex items-center gap-3">
               <button
@@ -181,8 +187,8 @@ const Dashboard = () => {
       </div>
 
       {/* Tabs Row - Visible on both but styled for desktop consistency */}
-      <div className="px-6 py-4 md:pt-6 md:pb-2 z-[50] transition-all">
-        <div className={`max-w-md mx-auto flex gap-1.5 p-1.5 rounded-[22px] backdrop-blur-md relative overflow-hidden border transition-all ${
+      <div className="px-6 pt-4 pb-2 md:pt-6 md:pb-1 z-[50] transition-all overflow-x-auto no-scrollbar">
+        <div className={`min-w-fit max-w-5xl mx-auto flex gap-1.5 p-1.5 rounded-[22px] backdrop-blur-md relative overflow-hidden border transition-all ${
           isDark 
             ? 'bg-white/5 border-white/10' 
             : 'bg-white border-blue-100 shadow-sm'
@@ -191,18 +197,25 @@ const Dashboard = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2.5 px-1 rounded-[16px] text-[9px] font-black uppercase tracking-wider transition-all duration-500 relative z-10 ${activeTab === tab.id
-                  ? 'bg-gradient-to-br from-[#eb483f] to-[#eb483f] text-white shadow-[0_5px_15px_rgba(235, 72, 63, 0.3)]'
-                  : 'text-[#eb483f]/40 hover:text-[#eb483f]/70 hover:bg-slate-50'
+              className={`flex-none min-w-[80px] py-2.5 px-3 rounded-[16px] text-[10px] font-black uppercase tracking-wider transition-all duration-500 relative z-10 ${activeTab === tab.id
+                  ? 'bg-gradient-to-br from-[#CE2029] to-[#CE2029] text-white shadow-[0_5px_15px_rgba(206, 32, 41, 0.3)]'
+                  : 'text-[#36454F]/40 hover:text-[#CE2029]/70 hover:bg-slate-50'
                 }`}
             >
-              {tab.name}
+              <span className="relative">
+                {tab.name}
+                {tab.badge > 0 && (
+                  <span className="absolute -top-1.5 -right-2.5 w-3.5 h-3.5 rounded-full bg-orange-500 text-white text-[6px] font-black flex items-center justify-center leading-none">
+                    {tab.badge}
+                  </span>
+                )}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="px-6 py-6 md:pt-2 md:pb-8 space-y-6 relative z-10">
+      <div className="px-6 py-3 md:pt-1 md:pb-8 space-y-4 relative z-10">
         <AnimatePresence mode="wait">
           {activeTab === 'upcoming' && (
             <motion.div
@@ -221,10 +234,10 @@ const Dashboard = () => {
               ) : (
                 <div className="text-center py-20 px-10">
                   <div className="w-20 h-20 rounded-[32px] bg-white/5 border border-white/10 mx-auto flex items-center justify-center mb-6">
-                    <Receipt size={32} className="text-[#eb483f]/20" />
+                    <Receipt size={32} className="text-[#CE2029]/20" />
                   </div>
-                  <h3 className={`text-lg font-black font-display ${'text-[#0F172A]'}`}>No upcoming slots</h3>
-                  <p className={`text-xs mt-2 font-bold opacity-30 ${'text-[#0F172A]'}`}>Explore arenas and book your favorite court today!</p>
+              <h3 className={`text-xl font-black font-display ${'text-[#36454F]'}`}>No upcoming slots</h3>
+              <p className={`text-sm mt-2 font-bold opacity-30 ${'text-[#36454F]'}`}>Explore arenas and book your favorite court today!</p>
                 </div>
               )}
             </motion.div>
@@ -275,6 +288,46 @@ const Dashboard = () => {
             </motion.div>
           )}
 
+          {activeTab === 'conflicts' && (
+            <motion.div
+              key="conflicts"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-4"
+            >
+              {/* Banner */}
+              <div className="max-w-5xl mx-auto rounded-2xl bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 border border-orange-200 p-4 flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
+                  <AlertOctagon size={18} className="text-orange-500" strokeWidth={2} />
+                </div>
+                <div>
+                  <p className="text-xs font-black text-orange-700">Event Conflict Notice</p>
+                  <p className="text-[10px] font-bold text-orange-500 mt-0.5 leading-relaxed">
+                    {RESOLVED_CONFLICT_BOOKINGS.length} of your booking{RESOLVED_CONFLICT_BOOKINGS.length !== 1 ? 's are' : ' is'} affected by upcoming events.
+                    Your plans have been extended automatically — no action needed.
+                  </p>
+                </div>
+              </div>
+
+              {RESOLVED_CONFLICT_BOOKINGS.length > 0 ? (
+                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {RESOLVED_CONFLICT_BOOKINGS.map((booking, index) => (
+                    <BookingCard key={booking.id} booking={booking} index={index} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20">
+                  <div className="w-20 h-20 rounded-[32px] bg-emerald-50 border border-emerald-100 mx-auto flex items-center justify-center mb-6">
+                    <Calendar size={32} className="text-emerald-400" />
+                  </div>
+                  <h3 className="text-lg font-black text-[#36454F]">No Conflicts</h3>
+                  <p className="text-xs font-bold text-slate-400 mt-2">All your bookings are clear of event conflicts.</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {activeTab === 'payments' && (
             <motion.div
               key="payments"
@@ -291,9 +344,9 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="max-w-5xl mx-auto text-center py-24 px-10">
-                  <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative bg-white border-blue-100 shadow-[0_10px_30px_rgba(235, 72, 63, 0.05)]`}>
+                  <div className={`w-24 h-24 mx-auto rounded-[40px] flex items-center justify-center mb-8 border-[3px] shadow-2xl relative bg-white border-blue-100 shadow-[0_10px_30px_rgba(206, 32, 41, 0.05)]`}>
                     <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                    <Receipt size={40} className={`opacity-20 text-[#eb483f]`} />
+                    <Receipt size={40} className={`opacity-20 text-[#CE2029]`} />
                   </div>
                   <div>
                     <h3 className={`text-xl font-black font-display tracking-tight ${'text-[#0F172A]'}`}>No receipts found</h3>

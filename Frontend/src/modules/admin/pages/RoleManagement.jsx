@@ -62,20 +62,20 @@ const RoleManagement = () => {
   };
 
   return (
-    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#1a2b3c]">
+    <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#36454F]">
       <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200">
           <div>
-            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#1a2b3c]">
-              <Shield className="text-[#eb483f] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Authorization Hub
+            <h2 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2 md:gap-3 text-[#36454F]">
+              <Shield className="text-[#CE2029] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Authorization Hub
             </h2>
             <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Define RBAC (Role-Based Access Control) and security boundaries.</p>
           </div>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#eb483f]/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white hover:shadow-md hover:-translate-y-0.5 transition-all text-xs font-bold uppercase tracking-widest shadow-sm shadow-[#CE2029]/20"
           >
             <Plus size={16} strokeWidth={3} /> Define Role
           </button>
@@ -84,8 +84,8 @@ const RoleManagement = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Roles Navigation */}
           <div className="lg:col-span-1 space-y-4">
-             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sticky top-24 overflow-hidden group hover:border-[#eb483f]/40 transition-all">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#eb483f] mb-4 px-1 flex items-center gap-2">
+             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sticky top-24 overflow-hidden group hover:border-[#CE2029]/40 transition-all">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] mb-4 px-1 flex items-center gap-2">
                    <Settings size={12} strokeWidth={2.5} /> Roles Directory
                 </p>
                 <div className="space-y-2 flex lg:flex-col overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide">
@@ -95,21 +95,21 @@ const RoleManagement = () => {
                       onClick={() => setSelectedRole(role)}
                       className={`text-left p-4 rounded-xl transition-all border w-full flex-shrink-0 lg:flex-shrink-1 min-w-[160px] lg:min-w-0 flex flex-col justify-between h-24 lg:h-auto ${
                         selectedRole.id === role.id 
-                          ? 'bg-slate-50 border-[#eb483f] shadow-sm' 
+                          ? 'bg-slate-50 border-[#CE2029] shadow-sm' 
                           : 'bg-transparent border-transparent hover:bg-slate-50 text-slate-400'
                       }`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className={`font-black text-[13px] tracking-tight ${selectedRole.id === role.id ? 'text-[#1a2b3c]' : 'text-slate-500'}`}>
+                          <h3 className={`font-black text-[13px] tracking-tight ${selectedRole.id === role.id ? 'text-[#36454F]' : 'text-slate-500'}`}>
                             {role.name}
                           </h3>
-                          <p className={`text-[10px] font-bold mt-0.5 uppercase tracking-widest leading-none ${selectedRole.id === role.id ? 'text-[#eb483f]' : 'text-slate-300'}`}>
+                          <p className={`text-[10px] font-bold mt-0.5 uppercase tracking-widest leading-none ${selectedRole.id === role.id ? 'text-[#CE2029]' : 'text-slate-300'}`}>
                              {role.users} Members
                           </p>
                         </div>
                         {role.isSystem && (
-                          <Shield size={14} className="text-[#eb483f] opacity-30" strokeWidth={2.5} />
+                          <Shield size={14} className="text-[#CE2029] opacity-30" strokeWidth={2.5} />
                         )}
                       </div>
                     </button>
@@ -120,17 +120,17 @@ const RoleManagement = () => {
 
           {/* Matrix Area */}
           <div className="lg:col-span-3 space-y-6">
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-10 transition-all hover:border-[#eb483f]/40">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-10 transition-all hover:border-[#CE2029]/40">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                  <h3 className="text-xl font-black font-display tracking-tight text-[#1a2b3c]">
-                    Permission Matrix: <span className="text-[#eb483f] font-sans">{selectedRole.name}</span>
+                  <h3 className="text-xl font-black font-display tracking-tight text-[#36454F]">
+                    Permission Matrix: <span className="text-[#CE2029] font-sans">{selectedRole.name}</span>
                   </h3>
                   <p className="text-sm font-bold text-slate-500 mt-1 italic">{selectedRole.description}</p>
                 </div>
                 
                 <div className="flex gap-2 w-full md:w-auto">
-                  <button className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 hover:text-[#1a2b3c] transition-all flex items-center justify-center gap-2">
+                  <button className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 hover:text-[#36454F] transition-all flex items-center justify-center gap-2">
                     <Edit2 size={14} strokeWidth={2.5} /> Rename
                   </button>
                   {!selectedRole.isSystem && (
@@ -148,7 +148,7 @@ const RoleManagement = () => {
                 <div className="overflow-x-auto scrollbar-hide">
                   <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead>
-                      <tr className="text-[10px] font-black uppercase tracking-widest border-b border-slate-100 text-[#1a2b3c] bg-slate-50">
+                      <tr className="text-[10px] font-black uppercase tracking-widest border-b border-slate-100 text-[#36454F] bg-slate-50">
                         <th className="px-8 py-6">Operational Module</th>
                         <th className="px-8 py-6 text-center">Root</th>
                         <th className="px-8 py-6 text-center">Create</th>
@@ -161,8 +161,8 @@ const RoleManagement = () => {
                         <tr key={module} className="group hover:bg-white transition-colors">
                           <td className="px-8 py-6">
                             <div className="flex items-center gap-4">
-                              <div className="w-2 h-2 rounded-full bg-[#eb483f]/40 group-hover:bg-[#eb483f] transition-all" />
-                              <span className="text-sm font-black text-[#1a2b3c] tracking-tight">{module} Management</span>
+                              <div className="w-2 h-2 rounded-full bg-[#CE2029]/40 group-hover:bg-[#CE2029] transition-all" />
+                              <span className="text-sm font-black text-[#36454F] tracking-tight">{module} Management</span>
                             </div>
                           </td>
                           {['view', 'create', 'edit', 'delete'].map((action) => {
@@ -177,7 +177,7 @@ const RoleManagement = () => {
                                   className={`transition-all ${isSuper ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110 active:opacity-60'}`}
                                 >
                                   {hasAccess ? (
-                                    <CheckSquare size={22} className="text-[#eb483f] inline-block" strokeWidth={2.5} />
+                                    <CheckSquare size={22} className="text-[#CE2029] inline-block" strokeWidth={2.5} />
                                   ) : (
                                     <Square size={22} className="text-slate-200 inline-block" strokeWidth={2} />
                                   )}
@@ -193,11 +193,11 @@ const RoleManagement = () => {
               </div>
               
               <div className="mt-8 p-5 rounded-2xl flex items-center gap-4 bg-slate-50 border border-slate-100">
-                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#eb483f] group">
+                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#CE2029] group">
                   <Info size={18} strokeWidth={2.5} />
                 </div>
                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Global Policy Enforcement: <span className="text-[#1a2b3c]">Authorization updates propagate across all network instances instantly.</span>
+                  Global Policy Enforcement: <span className="text-[#36454F]">Authorization updates propagate across all network instances instantly.</span>
                 </p>
               </div>
             </div>
@@ -221,12 +221,12 @@ const RoleManagement = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white text-[#1a2b3c] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-xl rounded-3xl border border-slate-200 bg-white text-[#36454F] shadow-2xl overflow-hidden"
             >
               <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
                   <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-3">
-                    <Shield className="text-[#eb483f]" size={24} strokeWidth={3} /> Role Initialization
+                    <Shield className="text-[#CE2029]" size={24} strokeWidth={3} /> Role Initialization
                   </h3>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Define new authority parameters</p>
                 </div>
@@ -247,7 +247,7 @@ const RoleManagement = () => {
                       value={newRole.name}
                       onChange={(e) => setNewRole({...newRole, name: e.target.value})}
                       placeholder="e.g. Content Moderator"
-                      className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c]"
+                      className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white transition-all text-[#36454F]"
                     />
                   </div>
 
@@ -258,12 +258,12 @@ const RoleManagement = () => {
                       value={newRole.description}
                       onChange={(e) => setNewRole({...newRole, description: e.target.value})}
                       placeholder="Briefly describe the responsibilities of this role..."
-                      className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#eb483f] focus:bg-white transition-all text-[#1a2b3c] resize-none"
+                      className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white transition-all text-[#36454F] resize-none"
                     />
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#eb483f] shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#CE2029] shadow-sm">
                        <Users size={18} strokeWidth={2.5} />
                     </div>
                     <div className="flex-1">
@@ -278,7 +278,7 @@ const RoleManagement = () => {
                   disabled={!newRole.name.trim()}
                   className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 transition-all font-black text-[13px] uppercase tracking-widest shadow-lg ${
                     newRole.name.trim() 
-                      ? 'bg-[#eb483f] border border-[#eb483f] text-white hover:shadow-[#eb483f]/30 hover:-translate-y-0.5' 
+                      ? 'bg-[#CE2029] border border-[#CE2029] text-white hover:shadow-[#CE2029]/30 hover:-translate-y-0.5' 
                       : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed shadow-none'
                   }`}
                 >

@@ -70,12 +70,12 @@ const CourtSlotsAdmin = () => {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate(-1)}
-              className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-[#eb483f] hover:border-[#eb483f]/20 transition-all shadow-sm"
+              className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-[#CE2029] hover:border-[#CE2029]/20 transition-all shadow-sm"
             >
               <ArrowLeft size={18} />
             </button>
             <div>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#eb483f] mb-1">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">
                 <Building2 size={12} /> Arena Management Portal
               </div>
               <h1 className="text-2xl font-black tracking-tight text-slate-900">
@@ -92,7 +92,7 @@ const CourtSlotsAdmin = () => {
                   <span className="text-[11px] font-bold text-slate-900 uppercase">Operational</span>
                </div>
             </div>
-            <button className="bg-white p-3 border border-slate-100 text-slate-400 hover:text-[#eb483f] transition-all shadow-sm">
+            <button className="bg-white p-3 border border-slate-100 text-slate-400 hover:text-[#CE2029] transition-all shadow-sm">
                 <Settings2 size={18} />
             </button>
           </div>
@@ -106,7 +106,7 @@ const CourtSlotsAdmin = () => {
               onClick={() => setSelectedDay(day)}
               className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap ${
                 selectedDay === day 
-                ? 'bg-[#eb483f] text-white shadow-lg shadow-[#eb483f]/20' 
+                ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' 
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -150,7 +150,7 @@ const CourtSlotsAdmin = () => {
                 <div className="flex gap-1">
                   <button 
                     onClick={() => setEditingSlot(slot)}
-                    className="p-1.5 bg-slate-50 text-slate-400 hover:text-[#eb483f] hover:bg-white border border-transparent hover:border-slate-100 transition-all"
+                    className="p-1.5 bg-slate-50 text-slate-400 hover:text-[#CE2029] hover:bg-white border border-transparent hover:border-slate-100 transition-all"
                   >
                     <Edit3 size={12} />
                   </button>
@@ -188,7 +188,7 @@ const CourtSlotsAdmin = () => {
                   {slot.time}
                 </h3>
                 {slot.price ? (
-                  <div className="flex items-center gap-1 text-[#eb483f] pt-1 mt-1">
+                  <div className="flex items-center gap-1 text-[#CE2029] pt-1 mt-1">
                     <BadgeDollarSign size={12} strokeWidth={3} />
                     <span className="text-[12px] font-black uppercase">{slot.price}</span>
                   </div>
@@ -205,9 +205,9 @@ const CourtSlotsAdmin = () => {
           {/* New Slot Creation Card */}
           <button 
             onClick={openAddModal}
-            className="aspect-[4/3] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 text-slate-300 hover:border-[#eb483f]/30 hover:text-[#eb483f] hover:bg-[#eb483f]/[0.02] transition-all group"
+            className="aspect-[4/3] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 text-slate-300 hover:border-[#CE2029]/30 hover:text-[#CE2029] hover:bg-[#CE2029]/[0.02] transition-all group"
           >
-            <div className="w-10 h-10 bg-slate-50 rounded-none flex items-center justify-center group-hover:bg-[#eb483f]/10 transition-all mb-1">
+            <div className="w-10 h-10 bg-slate-50 rounded-none flex items-center justify-center group-hover:bg-[#CE2029]/10 transition-all mb-1">
               <Plus size={24} />
             </div>
             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Add New Time Slot</span>
@@ -243,11 +243,11 @@ const CourtSlotsAdmin = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 50 }} 
                 animate={{ opacity: 1, scale: 1, y: 0 }} 
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
-                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] w-[400px] max-w-[95%] bg-white p-8 shadow-2xl border-t-8 border-[#eb483f]"
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] w-[400px] max-w-[95%] bg-white p-8 shadow-2xl border-t-8 border-[#CE2029]"
               >
                 <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
                    <div>
-                     <p className="text-[9px] font-black uppercase tracking-widest text-[#eb483f] mb-1">Configuration Terminal</p>
+                     <p className="text-[9px] font-black uppercase tracking-widest text-[#CE2029] mb-1">Configuration Terminal</p>
                      <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase">Edit Schedule Slot</h2>
                    </div>
                    <button onClick={() => setEditingSlot(null)} className="p-2 text-slate-400 hover:text-slate-600 transition-all">
@@ -261,7 +261,7 @@ const CourtSlotsAdmin = () => {
                     <input 
                       type="text" value={editingSlot.time} 
                       onChange={e => setEditingSlot({...editingSlot, time: e.target.value})}
-                      className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white"
+                      className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white"
                     />
                   </div>
                   
@@ -271,7 +271,7 @@ const CourtSlotsAdmin = () => {
                       <input 
                         type="text" value={editingSlot.price || '0.000'} 
                         onChange={e => setEditingSlot({...editingSlot, price: e.target.value})}
-                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white"
+                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white"
                       />
                     </div>
                     <div className="space-y-2">
@@ -279,7 +279,7 @@ const CourtSlotsAdmin = () => {
                       <select 
                         value={editingSlot.type}
                         onChange={e => setEditingSlot({...editingSlot, type: e.target.value})}
-                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f] focus:bg-white appearance-none"
+                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white appearance-none"
                       >
                         <option>Normal</option>
                         <option>Peak</option>
@@ -342,7 +342,7 @@ const CourtSlotsAdmin = () => {
 
                   <button 
                     onClick={() => saveSlot(editingSlot)}
-                    className="w-full py-4 bg-[#eb483f] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#eb483f]/20 hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#CE2029]/20 hover:brightness-110 transition-all flex items-center justify-center gap-2"
                   >
                     <Save size={18} /> Update Configuration
                   </button>
@@ -365,11 +365,11 @@ const CourtSlotsAdmin = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 50 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
-                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] w-[420px] max-w-[95%] bg-white p-8 shadow-2xl border-t-8 border-[#eb483f]"
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] w-[420px] max-w-[95%] bg-white p-8 shadow-2xl border-t-8 border-[#CE2029]"
               >
                 <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-[#eb483f] mb-1">Configuration Terminal</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-[#CE2029] mb-1">Configuration Terminal</p>
                     <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase">Define New Slot</h2>
                   </div>
                   <button onClick={() => setShowAddModal(false)} className="p-2 text-slate-400 hover:text-slate-600">
@@ -384,13 +384,13 @@ const CourtSlotsAdmin = () => {
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-700">Start Time</label>
                       <input type="time" value={addForm.startTime}
                         onChange={e => setAddForm(p => ({ ...p, startTime: e.target.value }))}
-                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f]" />
+                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029]" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-700">End Time</label>
                       <input type="time" value={addForm.endTime}
                         onChange={e => setAddForm(p => ({ ...p, endTime: e.target.value }))}
-                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#eb483f]" />
+                        className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029]" />
                     </div>
                   </div>
 
@@ -432,7 +432,7 @@ const CourtSlotsAdmin = () => {
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-black text-xs">OMR</span>
                       <input type="number" step="0.001" value={addForm.price}
                         onChange={e => setAddForm(p => ({ ...p, price: e.target.value }))}
-                        className="w-full bg-slate-50 border border-slate-100 py-3 pl-12 pr-4 text-sm font-black text-slate-900 outline-none focus:border-[#eb483f]" />
+                        className="w-full bg-slate-50 border border-slate-100 py-3 pl-12 pr-4 text-sm font-black text-slate-900 outline-none focus:border-[#CE2029]" />
                     </div>
                   </div>
 
@@ -456,7 +456,7 @@ const CourtSlotsAdmin = () => {
 
                   <button
                     onClick={confirmAddSlot}
-                    className="w-full py-4 bg-[#eb483f] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#eb483f]/20 hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-[#CE2029]/20 hover:brightness-110 transition-all flex items-center justify-center gap-2"
                   >
                     <Plus size={18} /> Create Slot
                   </button>

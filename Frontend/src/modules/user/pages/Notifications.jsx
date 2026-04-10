@@ -21,7 +21,7 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([
     { id: 1, type: 'booking',  read: false, title: 'Booking Confirmed!',          message: 'Court 2 · Mar 20, 07:00–08:00 PM · OMR 4.500', time: '2h ago',  icon: Calendar,      color: '#22c55e', bg: '#22c55e' },
     { id: 2, type: 'reminder', read: false, title: 'Slot Reminder — 1 Hour Left', message: 'Amm Sports Arena · Court 2 · 07:00 PM',              time: '45m ago', icon: Clock,          color: '#3b82f6', bg: '#3b82f6' },
-    { id: 3, type: 'coaching', read: false, title: 'Coaching Session Tomorrow',   message: 'Vikram Singh · Morning Elite · 06:00 AM',             time: '3h ago',  icon: GraduationCap,  color: '#eb483f', bg: '#eb483f' },
+    { id: 3, type: 'coaching', read: false, title: 'Coaching Session Tomorrow',   message: 'Vikram Singh · Morning Elite · 06:00 AM',             time: '3h ago',  icon: GraduationCap,  color: '#CE2029', bg: '#CE2029' },
     { id: 4, type: 'wallet',   read: true,  title: 'Low Wallet Balance',          message: 'Balance: OMR 1.450 — Top up to keep booking',         time: '5h ago',  icon: Wallet,         color: '#f59e0b', bg: '#f59e0b' },
     { id: 5, type: 'offer',    read: true,  title: 'Weekend Deal — 20% Off!',     message: 'Sat & Sun courts · Code: WEEKEND20 · Till Nov 30',    time: '1d ago',  icon: Tag,            color: '#a855f7', bg: '#a855f7' },
     { id: 6, type: 'system',   read: true,  title: 'Profile Updated',             message: 'Your photo & contact details were updated',           time: '2d ago',  icon: CheckCircle,    color: '#64748b', bg: '#64748b' },
@@ -36,7 +36,7 @@ const Notifications = () => {
     <div className={`min-h-screen pb-28 ${isDark ? 'bg-[#0f1115]' : 'bg-[#f8fafc]'}`}>
 
       {/* ── Compact Header ── */}
-      <div className="bg-[#eb483f] px-4 pt-4 pb-4 shadow-[0_4px_20px_rgba(235,72,63,0.25)]">
+      <div className="bg-[#CE2029] px-4 pt-4 pb-4 shadow-[0_4px_20px_rgba(206, 32, 41,0.25)]">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -49,7 +49,7 @@ const Notifications = () => {
             <div className="flex items-center gap-2">
               <h1 className="text-[17px] font-black text-white tracking-tight leading-none">Notifications</h1>
               {unreadCount > 0 && (
-                <span className="w-[18px] h-[18px] rounded-full bg-white text-[#eb483f] text-[9px] font-black flex items-center justify-center shrink-0">
+                <span className="w-[18px] h-[18px] rounded-full bg-white text-[#CE2029] text-[9px] font-black flex items-center justify-center shrink-0">
                   {unreadCount}
                 </span>
               )}
@@ -96,12 +96,12 @@ const Notifications = () => {
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-left transition-all active:scale-[0.98] relative ${
                     n.read
                       ? isDark ? 'bg-white/3 opacity-55' : 'bg-white/60 opacity-70'
-                      : isDark ? 'bg-white/8 border border-white/8 shadow-sm' : 'bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[#eb483f]/15'
+                      : isDark ? 'bg-white/8 border border-white/8 shadow-sm' : 'bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[#CE2029]/15'
                   }`}
                 >
                   {/* Unread dot */}
                   {!n.read && (
-                    <div className="absolute top-3.5 right-3.5 w-[7px] h-[7px] rounded-full bg-[#eb483f]" />
+                    <div className="absolute top-3.5 right-3.5 w-[7px] h-[7px] rounded-full bg-[#CE2029]" />
                   )}
 
                   {/* Icon */}
@@ -115,7 +115,7 @@ const Notifications = () => {
                   {/* Text */}
                   <div className="flex-1 min-w-0 pr-5">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className={`text-[13px] leading-tight font-black truncate ${isDark ? 'text-white' : 'text-[#1a2b3c]'} ${n.read ? 'font-semibold opacity-70' : ''}`}>
+                      <span className={`text-[13px] leading-tight font-black truncate ${isDark ? 'text-white' : 'text-[#36454F]'} ${n.read ? 'font-semibold opacity-70' : ''}`}>
                         {n.title}
                       </span>
                       <span className="text-[9px] font-bold text-slate-400 shrink-0">{n.time}</span>
