@@ -148,6 +148,23 @@ const EventBanners = () => {
   const [activeEvent, setActiveEvent] = useState(null);
   const [activeSubTab, setActiveSubTab] = useState(0);
 
+  // --- Card kebab-menu state ---
+  const [activeCardMenu, setActiveCardMenu] = useState(null);
+
+  // --- Edit Event modal state ---
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [editFormData, setEditFormData] = useState({ name: '', type: '', status: '', banner: '' });
+
+  const handleUpdateEvent = () => {
+    if (!editingEvent) return;
+    setEvents(prev =>
+      prev.map(e => e.id === editingEvent.id ? { ...e, ...editFormData } : e)
+    );
+    setIsEditModalOpen(false);
+    setEditingEvent(null);
+  };
+
   // --- Events State (replaces static MOCK_EVENTS) ---
   const [events, setEvents] = useState(MOCK_EVENTS);
   const handleAddEvent = (newEvent) => {
@@ -238,7 +255,7 @@ const EventBanners = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
-  const PageHeader = ({ title, subtitle, actionLabel, onAction }) => (
+  const PageHeader = ({ title, subtitle, actionLabel, onAction, onBack }) => (
     <Box sx={{
       mb: 4,
       display: 'flex',
@@ -248,36 +265,53 @@ const EventBanners = () => {
       gap: 2,
       position: 'relative'
     }}>
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-          <Box sx={{ width: 4, height: 24, bgcolor: '#CE2029', borderRadius: 1 }} />
-          <Typography variant="overline" sx={{ fontWeight: 500, color: '#CE2029', letterSpacing: 2, lineHeight: 1, fontSize: '0.75rem' }}>
-            Portfolio Management
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        {onBack && (
+          <IconButton 
+            onClick={onBack}
+            sx={{ 
+              width: 44, h: 44, 
+              border: '1px solid', 
+              borderColor: 'divider',
+              bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'white',
+              color: '#36454F',
+              '&:hover': { bgcolor: '#CE2029', color: 'white', borderColor: '#CE2029' }
+            }}
+          >
+            <ChevronLeft />
+          </IconButton>
+        )}
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+            <Box sx={{ width: 4, height: 24, bgcolor: '#CE2029', borderRadius: 1 }} />
+            <Typography variant="overline" sx={{ fontWeight: 500, color: '#CE2029', letterSpacing: 2, lineHeight: 1, fontSize: '0.75rem' }}>
+              Portfolio Management
+            </Typography>
+          </Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: isDark ? 'white' : '#1e293b', letterSpacing: '-0.04em' }}>
+            {title}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.5, opacity: 0.8 }}>
+            {subtitle}
           </Typography>
         </Box>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: isDark ? 'white' : '#0f172a', letterSpacing: '-0.04em' }}>
-          {title}
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.5, opacity: 0.8 }}>
-          {subtitle}
-        </Typography>
       </Box>
       {actionLabel && (
         <Button
           variant="contained"
           onClick={onAction}
-          startIcon={<AddCircleOutline />}
+          startIcon={onBack ? <DashboardIcon sx={{ fontSize: 18 }} /> : <AddCircleOutline />}
           sx={{
-            bgcolor: '#36454F',
+            bgcolor: onBack ? '#334155' : '#36454F',
             color: 'white',
-            px: 2.5,
-            py: 0.75,
+            px: 3,
+            py: 1.25,
             fontSize: '0.85rem',
-            borderRadius: 2.5,
-            '&:hover': { bgcolor: 'black', transform: 'scale(1.02)' },
+            borderRadius: 3,
+            '&:hover': { bgcolor: onBack ? '#0f172a' : 'black', transform: 'translateY(-2px)' },
             textTransform: 'none',
-            fontWeight: 500,
-            boxShadow: '0 4px 14px 0 rgba(0,0,0,0.3)',
+            fontWeight: 700,
+            boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
             transition: 'all 0.2s'
           }}
         >
@@ -376,9 +410,84 @@ const EventBanners = () => {
                     <Typography variant="overline" sx={{ fontWeight: 600, color: '#CE2029', letterSpacing: 0.5, fontSize: '0.65rem' }}>
                       {event.type}
                     </Typography>
-                    <IconButton size="small" sx={{ mt: -0.5, mr: -0.5 }}>
-                      <MoreVert fontSize="small" />
-                    </IconButton>
+                    <Box sx={{ position: 'relative' }}>
+                      <IconButton
+                        size="small"
+                        id={`event-menu-btn-${event.id}`}
+                        sx={{ mt: -0.5, mr: -0.5, color: activeCardMenu === event.id ? '#CE2029' : 'inherit' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveCardMenu(activeCardMenu === event.id ? null : event.id);
+                        }}
+                      >
+                        <MoreVert fontSize="small" />
+                      </IconButton>
+
+                      <AnimatePresence>
+                        {activeCardMenu === event.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                            transition={{ duration: 0.15 }}
+                            style={{
+                              position: 'absolute', right: 0, top: '110%', zIndex: 1000,
+                              background: isDark ? '#1a1d24' : '#ffffff',
+                              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
+                              borderRadius: 10, boxShadow: '0 12px 40px rgba(0,0,0,0.18)',
+                              minWidth: 160, overflow: 'hidden'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Box
+                              id={`menu-view-${event.id}`}
+                              onClick={() => {
+                                setActiveEvent(event);
+                                setView('DETAILS');
+                                setActiveCardMenu(null);
+                              }}
+                              sx={{
+                                display: 'flex', alignItems: 'center', gap: 1.5,
+                                px: 2, py: 1.25, cursor: 'pointer',
+                                fontSize: '0.8rem', fontWeight: 600,
+                                color: isDark ? 'white' : '#36454F',
+                                '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9' },
+                                transition: 'background 0.15s'
+                              }}
+                            >
+                              <Visibility sx={{ fontSize: 16 }} />
+                              View Details
+                            </Box>
+                            <Box sx={{ height: '1px', bgcolor: isDark ? 'rgba(255,255,255,0.07)' : '#f1f5f9' }} />
+                            <Box
+                              id={`menu-edit-event-${event.id}`}
+                              onClick={() => {
+                                setEditingEvent(event);
+                                setEditFormData({
+                                  name: event.name,
+                                  type: event.type,
+                                  status: event.status,
+                                  banner: event.banner
+                                });
+                                setIsEditModalOpen(true);
+                                setActiveCardMenu(null);
+                              }}
+                              sx={{
+                                display: 'flex', alignItems: 'center', gap: 1.5,
+                                px: 2, py: 1.25, cursor: 'pointer',
+                                fontSize: '0.8rem', fontWeight: 600,
+                                color: isDark ? 'white' : '#36454F',
+                                '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9' },
+                                transition: 'background 0.15s'
+                              }}
+                            >
+                              <Edit sx={{ fontSize: 16 }} />
+                              Edit Event Details
+                            </Box>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Box>
                   </Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, lineHeight: 1.2, height: 36, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', letterSpacing: '-0.01em', fontSize: '0.85rem' }}>
                     {event.name}
@@ -1402,8 +1511,9 @@ const EventBanners = () => {
               <PageHeader
                 title={activeEvent?.name}
                 subtitle={`Management Module | ${activeEvent?.status}`}
+                onBack={() => setView('DASHBOARD')}
                 onAction={() => setView('DASHBOARD')}
-                actionLabel="Terminate Session"
+                actionLabel="Exit Management"
               />
 
               <Box sx={{
@@ -1533,9 +1643,116 @@ const EventBanners = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* ── Edit Event Details Modal ── */}
+      <Dialog
+        open={isEditModalOpen}
+        onClose={() => { setIsEditModalOpen(false); }}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{ sx: { borderRadius: 4, overflow: 'hidden' } }}
+      >
+        <Box sx={{ p: 3, bgcolor: '#36454F', color: 'white', display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Edit sx={{ color: '#CE2029' }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1 }}>Edit Event Details</Typography>
+            <Typography variant="caption" sx={{ opacity: 0.6 }}>Construct and Refine: {editingEvent?.name}</Typography>
+          </Box>
+        </Box>
+
+        <DialogContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <TextField
+            fullWidth
+            label="Event Name"
+            variant="filled"
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+            InputProps={{ disableUnderline: true, sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc', p: 0.5 } }}
+            InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+          />
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="filled">
+                <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Type</InputLabel>
+                <Select
+                  value={editFormData.type}
+                  onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
+                  disableUnderline
+                  sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                >
+                  <MenuItem value="Tournament">Tournament</MenuItem>
+                  <MenuItem value="Camp">Training Camp</MenuItem>
+                  <MenuItem value="Special Event">Special Event</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth variant="filled">
+                <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Deployment Status</InputLabel>
+                <Select
+                  value={editFormData.status}
+                  onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                  disableUnderline
+                  sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                >
+                  <MenuItem value="Upcoming">Upcoming</MenuItem>
+                  <MenuItem value="Active">Active</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'text.secondary', display: 'block', mb: 1.5 }}>
+              Visual Identity (Banner)
+            </Typography>
+            <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden', height: 160, border: '1px solid', borderColor: 'divider' }}>
+              <img src={editFormData.banner} alt="banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <Box sx={{ position: 'absolute', bottom: 12, right: 12 }}>
+                <Button
+                  component="label"
+                  variant="contained"
+                  size="small"
+                  startIcon={<CloudUpload />}
+                  sx={{ bgcolor: 'rgba(54, 69, 79, 0.8)', backdropFilter: 'blur(8px)', textTransform: 'none', fontWeight: 700, borderRadius: 2, '&:hover': { bgcolor: '#CE2029' } }}
+                >
+                  Swap Image
+                  <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && setEditFormData({ ...editFormData, banner: URL.createObjectURL(e.target.files[0]) })} />
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2.5, px: 3, bgcolor: isDark ? 'rgba(255,255,255,0.02)' : '#f8fafc', gap: 1.5 }}>
+          <Button
+            onClick={() => setIsEditModalOpen(false)}
+            sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary', borderRadius: 2 }}
+          >
+            Discard
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleUpdateEvent}
+            sx={{
+              bgcolor: '#CE2029', textTransform: 'none', fontWeight: 800,
+              borderRadius: 2.5, px: 4,
+              boxShadow: '0 8px 20px -6px rgba(206,32,41,0.4)',
+              '&:hover': { bgcolor: '#b01c23', transform: 'translateY(-1px)' }
+            }}
+          >
+            Apply Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
+
 
 const Container = ({ children, maxWidth }) => (
   <Box sx={{ maxWidth: maxWidth === 'xl' ? 1400 : 800, mx: 'auto' }}>{children}</Box>
