@@ -114,8 +114,8 @@ const CoachSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       <div className="absolute bottom-0 left-0 right-0 h-48 sm:h-64 z-10 pointer-events-none overflow-hidden rounded-br-2xl md:rounded-b-none">
         <div className={`absolute inset-0 bg-gradient-to-t via-transparent to-transparent ${isDark ? 'from-[#0f1115]' : 'from-black/80'}`} />
         <img 
-          src="https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?q=80&w=600&auto=format&fit=crop" 
-          alt="Badminton Arena" 
+          src="https://images.unsplash.com/photo-1595435934249-5df7ed86eb8c?q=80&w=600&auto=format&fit=crop" 
+          alt="Badminton Shuttlecocks" 
           className="w-full h-full object-cover"
         />
       </div>

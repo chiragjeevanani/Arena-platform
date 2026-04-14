@@ -248,8 +248,8 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       <div className="absolute bottom-0 left-0 right-0 h-48 sm:h-64 z-10 pointer-events-none overflow-hidden rounded-br-2xl md:rounded-b-none">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <img 
-          src="https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?q=80&w=600&auto=format&fit=crop" 
-          alt="Badminton Arena" 
+          src="https://images.unsplash.com/photo-1626225967045-2c390b347f71?q=80&w=800&auto=format&fit=crop" 
+          alt="Badminton Action" 
           className="w-full h-full object-cover opacity-60"
         />
       </div>
