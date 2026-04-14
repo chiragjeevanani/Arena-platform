@@ -457,7 +457,7 @@ const MembershipPlans = () => {
                   />
                 )}
                 <span className={`relative z-10 text-[9px] font-black uppercase tracking-[0.1em] whitespace-nowrap transition-colors duration-300 ${
-                  filter === f.id ? 'text-[#CE2029]' : 'text-slate-500'
+                  filter === f.id ? 'text-[#CE2029]' : 'text-[#36454F]'
                 }`}>
                   {f.label}
                 </span>

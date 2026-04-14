@@ -194,7 +194,7 @@ const UserHome = () => {
                   <div className="relative z-10">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#CE2029]/10 text-[#CE2029] border border-[#CE2029]/20 mb-4">
                       <Zap size={12} className="fill-[#CE2029]" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Premium Wooden Courts</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">Premium Courts</span>
                     </div>
                     
                     <h3 className={`text-3xl font-black font-display tracking-tight leading-tight mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>{ARENAS[0].name}</h3>

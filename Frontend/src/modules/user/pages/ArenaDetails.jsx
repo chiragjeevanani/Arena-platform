@@ -4,6 +4,8 @@ import { ARENAS, COURTS } from '../../../data/mockData';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import AmmArena1 from '../../../assets/Arenas/AmmArena1.jpeg';
+import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
+import CourtImage from '../../../assets/court.jpeg';
 
 import { useTheme } from '../context/ThemeContext';
 
@@ -33,7 +35,7 @@ const ArenaDetails = () => {
       <div className={`absolute top-[800px] -left-24 w-64 h-64 rounded-full blur-[100px] pointer-events-none bg-[#CE2029]/[0.03]`} />
 
       <div className="relative h-[380px] overflow-hidden">
-        <img src={arena.image} alt={arena.name} className="w-full h-full object-cover" />
+        <img src={ArenaProfile} alt={arena.name} className="w-full h-full object-cover" />
         <div className={`absolute inset-0 bg-gradient-to-t ${'from-black/60 via-transparent'} to-transparent`} />
         <div className={`absolute inset-0 bg-gradient-to-b ${'from-black/40'} via-transparent to-transparent`} />
 
@@ -47,18 +49,18 @@ const ArenaDetails = () => {
         </div>
 
         {/* Bottom Info Card */}
-        <div className={`absolute bottom-6 left-6 right-6 backdrop-blur-xl rounded-3xl p-5 border shadow-2xl bg-white border-white/20 shadow-[0_15px_35px_rgba(206, 32, 41, 0.15)]`}>
-          <div className="flex justify-between items-start">
+        <div className={`absolute bottom-4 left-4 right-4 backdrop-blur-xl rounded-xl p-3.5 border shadow-xl bg-white/95 border-white/40 shadow-[0_10px_25px_rgba(0,0,0,0.08)]`}>
+          <div className="flex justify-between items-center">
             <div>
-              <h1 className={`text-xl font-bold font-display text-[#CE2029]`}>{arena.name}</h1>
-              <div className={`flex items-center text-xs mt-1 gap-1 text-[#CE2029]/50`}>
-                <MapPin size={13} strokeWidth={2.5} />
+              <h1 className={`text-lg font-black font-display text-[#CE2029] tracking-tight uppercase leading-none`}>{arena.name}</h1>
+              <div className={`flex items-center text-[10px] mt-1.5 gap-1 text-[#CE2029]/60 font-bold tracking-tight`}>
+                <MapPin size={11} strokeWidth={3} />
                 {arena.location}
               </div>
             </div>
-            <div className="px-3 py-1.5 rounded-xl flex items-center gap-1.5 bg-[#FFD600]/10 border border-[#FFD600]/20">
-              <Star size={13} className="text-[#FFD600] fill-[#FFD600]" />
-              <span className="text-sm font-black text-[#CE2029]">{arena.rating}</span>
+            <div className="px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 bg-amber-50 border border-amber-100/50">
+              <Star size={11} className="text-[#FFD600] fill-[#FFD600]" />
+              <span className="text-xs font-black text-[#CE2029]">{arena.rating}</span>
             </div>
           </div>
         </div>
@@ -115,7 +117,7 @@ const ArenaDetails = () => {
                 {/* Court Thumbnail */}
                 <div className={`w-16 h-16 flex-shrink-0 rounded-[20px] overflow-hidden border transition-transform duration-500 group-hover:scale-105 ${'border-slate-100 shadow-inner'}`}>
                     <img
-                      src={AmmArena1}
+                      src={CourtImage}
                       alt=""
                       className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500"
                     />
@@ -126,8 +128,8 @@ const ArenaDetails = () => {
                   <h4 className={`font-bold text-base transition-colors ${'text-[#CE2029] group-hover:text-[#CE2029]'}`}>{court.name}</h4>
                   <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider mt-2 transition-colors ${'bg-[#CE2029]/5 text-[#CE2029]/60 border border-[#CE2029]/10 group-hover:bg-[#CE2029]/10 group-hover:text-[#CE2029] group-hover:border-transparent'
                     }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${court.type === 'Wooden' ? 'bg-amber-400' : 'bg-[#CE2029]'}`} />
-                    {court.type}
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    Match Ready
                   </div>
                 </div>
 

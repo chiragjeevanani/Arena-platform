@@ -54,11 +54,11 @@ const AdminDashboard = () => {
               <div className="flex items-center bg-white border border-slate-200 rounded-lg p-1">
                 <button 
                   onClick={() => setCalendarView('Week')}
-                  className={`px-6 py-1.5 text-[15px] font-medium rounded-md transition-colors ${calendarView === 'Week' ? 'text-[#243B53] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:bg-slate-50'}`}
+                  className={`px-6 py-1.5 text-[15px] font-medium rounded-md transition-colors ${calendarView === 'Week' ? 'text-[#243B53] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-[#36454F] hover:bg-slate-50'}`}
                 >Week</button>
                 <button 
                   onClick={() => setCalendarView('Month')}
-                  className={`px-6 py-1.5 text-[15px] font-medium rounded-md transition-colors ${calendarView === 'Month' ? 'text-[#CE2029] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:bg-slate-50'}`}
+                  className={`px-6 py-1.5 text-[15px] font-medium rounded-md transition-colors ${calendarView === 'Month' ? 'text-[#CE2029] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-[#36454F] hover:bg-slate-50'}`}
                 >Month</button>
               </div>
             </div>

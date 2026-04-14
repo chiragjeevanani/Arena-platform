@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Users, Search, Filter, MoreHorizontal, MessageSquare, 
-  Star, GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck 
+  Star, GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck, Target
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
@@ -322,12 +322,20 @@ const MyStudents = () => {
                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                    <button 
                     onClick={() => setSelectedStudent(student)}
-                    className="py-1.5 rounded-lg bg-[#CE2029] text-white flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider hover:bg-[#36454F] transition-all"
+                    className="py-1.5 rounded-lg bg-[#CE2029] text-white flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider hover:bg-[#36454F] transition-all"
                    >
-                      <GraduationCap size={12} /> View Student Profile
+                      <GraduationCap size={12} /> Profile
+                   </button>
+                   <button 
+                    onClick={() => navigate(`/coach/students/${student.id}/performance`)}
+                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider transition-all border ${
+                      isDark ? 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                   >
+                      <Target size={12} className="text-[#CE2029]" /> Matrix
                    </button>
                 </div>
               </div>

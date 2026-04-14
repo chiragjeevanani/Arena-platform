@@ -337,7 +337,7 @@ const CoachingAdmin = () => {
               className={`flex items-center gap-2.5 px-6 py-3 rounded-[22px] text-[11px] font-black uppercase tracking-widest transition-all ${
                 view === tab.id 
                   ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' 
-                  : 'text-slate-400 hover:text-[#CE2029] hover:bg-[#CE2029]/5'
+                  : 'text-[#36454F] hover:text-[#CE2029] hover:bg-[#CE2029]/5'
               }`}
             >
               <tab.icon size={14} />

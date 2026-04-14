@@ -106,6 +106,125 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
   );
 };
 
+// ── Attendance Detail Modal ──────────────────────────────────────
+const AttendanceDetailModal = ({ record, onClose, isDark }) => {
+  // Generate student list that matches the record counts
+  const generateStudents = () => {
+    const total = record.present + record.absent;
+    const list = [];
+    
+    // Names for generated students
+    const extraNames = ['Rahul J.', 'Siddharth M.', 'Ishita K.', 'Zain A.', 'Meera P.', 'Varun D.', 'Kritika B.', 'Armaan S.', 'Saira V.', 'Aditya K.', 'Tanvi R.', 'Yash G.', 'Preeti S.', 'Manish T.'];
+
+    for (let i = 0; i < total; i++) {
+        const isPresent = i < record.present;
+        let baseStudent = MOCK_STUDENTS[i % MOCK_STUDENTS.length];
+        
+        list.push({
+            id: `STU-${101 + i}`,
+            name: i < MOCK_STUDENTS.length ? baseStudent.name : extraNames[i - MOCK_STUDENTS.length] || `Student ${i + 1}`,
+            present: isPresent
+        });
+    }
+    return list;
+  };
+
+  const [students] = useState(generateStudents());
+
+  const presentStudents = students.filter(s => s.present);
+  const absentStudents = students.filter(s => !s.present);
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} 
+        className={`relative w-full max-w-md rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${
+          isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
+        }`}
+      >
+        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-[#CE2029]/5">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20`}>
+              <ClipboardCheck size={20} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold tracking-tight">Attendance Detail</h3>
+              <p className="text-[10px] font-black uppercase text-[#CE2029] tracking-widest mt-0.5">{record.batch} · {record.date}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><X size={20} /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-hide">
+          {/* Present Section */}
+          <section>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Present ({presentStudents.length})</h4>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {presentStudents.map((stu) => (
+                <div key={stu.id} className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                  isDark ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-emerald-50/50 border-emerald-500/10'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xs">
+                      {stu.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">{stu.name}</p>
+                      <p className="text-[8px] font-black uppercase tracking-widest opacity-40">{stu.id}</p>
+                    </div>
+                  </div>
+                  <CheckCircle2 size={16} className="text-emerald-500" />
+                </div>
+              ))}
+              {presentStudents.length === 0 && <p className="text-[10px] text-center py-4 opacity-40 italic">No students present</p>}
+            </div>
+          </section>
+
+          {/* Absent Section */}
+          <section>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Absent ({absentStudents.length})</h4>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {absentStudents.map((stu) => (
+                <div key={stu.id} className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                  isDark ? 'bg-red-500/5 border-red-500/10' : 'bg-red-50/50 border-red-500/10'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-500 flex items-center justify-center font-bold text-xs">
+                      {stu.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold opacity-70">{stu.name}</p>
+                      <p className="text-[8px] font-black uppercase tracking-widest opacity-30">{stu.id}</p>
+                    </div>
+                  </div>
+                  <XCircle size={16} className="text-red-500" />
+                </div>
+              ))}
+              {absentStudents.length === 0 && <p className="text-[10px] text-center py-4 opacity-40 italic">No absences reported</p>}
+            </div>
+          </section>
+        </div>
+
+        <div className="p-5 border-t border-white/5 bg-slate-50/50">
+           <button onClick={onClose} className="w-full py-3 rounded-xl bg-[#36454F] text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#CE2029] transition-all">
+             Acknowledged Detail
+           </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // ── Main Component ──────────────────────────────────────────────
 const AttendanceRecords = () => {
   const { isDark } = useTheme();
@@ -115,6 +234,7 @@ const AttendanceRecords = () => {
   const [toast, setToast] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showAttendanceDetail, setShowAttendanceDetail] = useState(null); // Record object
   
   // New modal & filter state
   const [showMarkModal, setShowMarkModal] = useState(null); // String: batch name
@@ -136,6 +256,7 @@ const AttendanceRecords = () => {
       case 'Delete Record': setRecords(prev => prev.filter(r => r.id !== logId)); showToast(`Record for ${record.date} deleted`, 'error'); break;
       case 'View Details': setSelectedRecord(record); setIsEditMode(false); break;
       case 'Edit Log': setSelectedRecord(record); setIsEditMode(true); break;
+      case 'Attendance Detail': setShowAttendanceDetail(record); break;
       default: break;
     }
   };
@@ -184,6 +305,10 @@ const AttendanceRecords = () => {
 
       <AnimatePresence>
         {showMarkModal && <MarkAttendanceModal batch={showMarkModal} onSave={handleNewAttendance} onClose={() => setShowMarkModal(null)} isDark={isDark} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAttendanceDetail && <AttendanceDetailModal record={showAttendanceDetail} onClose={() => setShowAttendanceDetail(null)} isDark={isDark} />}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -304,7 +429,7 @@ const AttendanceRecords = () => {
                             className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-all ${
                               filters.status === s 
                                 ? 'bg-[#CE2029] border-[#CE2029] text-white' 
-                                : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-slate-50 border-slate-100 text-slate-500'
+                                : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-slate-50 border-slate-100 text-[#36454F]'
                             }`}
                           >
                             {s}
@@ -359,7 +484,14 @@ const AttendanceRecords = () => {
                       <button onClick={() => setActiveMenu(activeMenu === log.id ? null : log.id)} className={`p-1.5 rounded-lg transition-all border ${activeMenu === log.id ? 'bg-[#CE2029] border-[#CE2029] text-white' : isDark ? 'bg-white/5 border-white/5 text-white/40 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029]'}`}><MoreVertical size={16} /></button>
                       <AnimatePresence>
                         {activeMenu === log.id && (
-                          <><div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} /><motion.div initial={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} className={`absolute right-0 z-20 w-48 p-1.5 rounded-xl border shadow-2xl ${idx > filteredHistory.length - 3 ? 'bottom-full mb-2' : 'top-full mt-2'} ${isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'}`}><div className="space-y-1">{[{ label: 'View Details', icon: Eye }, { label: 'Edit Log', icon: Edit3 }, { label: 'Delete Record', icon: Trash2, color: '#FF4B4B' }].map((opt, i) => (<button key={i} onClick={() => handleAction(opt.label, log.id)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all ${opt.color === '#FF4B4B' ? 'text-[#FF4B4B] hover:bg-[#FF4B4B]/5' : isDark ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-[#CE2029] hover:bg-slate-50'}`}><opt.icon size={14} />{opt.label}</button>))}</div></motion.div></>
+                          <><div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} /><motion.div initial={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: idx > filteredHistory.length - 3 ? -10 : 10 }} className={`absolute right-0 z-20 w-48 p-1.5 rounded-xl border shadow-2xl ${idx > filteredHistory.length - 3 ? 'bottom-full mb-2' : 'top-full mt-2'} ${isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'}`}>                                   <div className="space-y-1">
+                                    {[
+                                      { label: 'Attendance Detail', icon: ClipboardCheck },
+                                      { label: 'View Details', icon: Eye }, 
+                                      { label: 'Edit Log', icon: Edit3 }, 
+                                      { label: 'Delete Record', icon: Trash2, color: '#FF4B4B' }
+                                    ].map((opt, i) => (
+<button key={i} onClick={() => handleAction(opt.label, log.id)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all ${opt.color === '#FF4B4B' ? 'text-[#FF4B4B] hover:bg-[#FF4B4B]/5' : isDark ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-[#CE2029] hover:bg-slate-50'}`}><opt.icon size={14} />{opt.label}</button>))}</div></motion.div></>
                         )}
                       </AnimatePresence>
                     </div>

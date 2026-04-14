@@ -214,7 +214,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                           `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
                             isActive 
                               ? `bg-[#CE2029] text-white shadow-md shadow-[#CE2029]/30 font-bold` 
-                              : `text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold`
+                              : `text-[#36454F] hover:bg-white/60 hover:text-[#36454F] font-semibold`
                           }`
                         }
                       >
@@ -224,7 +224,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                               size={18}
                               strokeWidth={isActive ? 2.5 : 2}
                               className={`shrink-0 transition-all duration-300 ${
-                                isActive ? 'text-white' : 'text-[#627D98] group-hover:text-[#CE2029]'
+                                isActive ? 'text-white' : 'text-[#36454F] group-hover:text-[#CE2029]'
                               }`}
                             />
                             {!isCollapsed && (

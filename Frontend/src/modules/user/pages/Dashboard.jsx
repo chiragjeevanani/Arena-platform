@@ -199,7 +199,7 @@ const Dashboard = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-none min-w-[80px] py-2.5 px-3 rounded-[16px] text-[10px] font-black uppercase tracking-wider transition-all duration-500 relative z-10 ${activeTab === tab.id
                   ? 'bg-gradient-to-br from-[#CE2029] to-[#CE2029] text-white shadow-[0_5px_15px_rgba(206, 32, 41, 0.3)]'
-                  : 'text-[#36454F]/40 hover:text-[#CE2029]/70 hover:bg-slate-50'
+                  : 'text-[#36454F] hover:text-[#CE2029] hover:bg-slate-50'
                 }`}
             >
               <span className="relative">

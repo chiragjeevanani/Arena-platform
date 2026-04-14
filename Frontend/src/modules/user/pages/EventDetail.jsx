@@ -293,13 +293,12 @@ const EventDetail = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-0 lg:divide-x lg:divide-slate-100"
+              className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-0 lg:divide-x lg:divide-slate-100"
             >
               {[
                 { icon: CalendarDays, label: 'Date', value: event.date },
                 { icon: Clock, label: 'Time', value: event.time },
                 { icon: MapPin, label: 'Venue', value: event.location },
-                { icon: Tag, label: 'Fee', value: event.price },
               ].map(({ icon: Icon, label, value }) => (
                 <div
                   key={label}
@@ -424,7 +423,6 @@ const EventDetail = () => {
                     </h3>
                     <div className="flex items-center gap-2 mt-2">
                        <div className="h-1 w-8 bg-[#CE2029] rounded-full" />
-                       <p className="text-xs font-bold text-slate-400">Operational Fee: <span className="text-[#CE2029] font-black italic uppercase">{event.price}</span></p>
                     </div>
                   </div>
 

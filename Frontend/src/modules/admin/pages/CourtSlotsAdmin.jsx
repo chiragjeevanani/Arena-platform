@@ -107,7 +107,7 @@ const CourtSlotsAdmin = () => {
               className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap ${
                 selectedDay === day 
                 ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' 
-                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                : 'text-[#36454F] hover:text-[#CE2029] hover:bg-slate-50'
               }`}
             >
               {day}

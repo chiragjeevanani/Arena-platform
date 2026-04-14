@@ -70,7 +70,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
       disabled={slot.status !== 'Available'}
       onClick={handleSelect}
       className={`
-        relative py-4 px-3 rounded-2xl text-center font-bold border
+        relative py-2.5 px-2 rounded-xl text-center font-bold border
         transition-all duration-300 overflow-hidden
         ${isSelected ? selectedStyles : `${config.bg} ${config.border}`}
         ${slot.status !== 'Available' ? 'cursor-not-allowed' : 'cursor-pointer hover:border-[#CE2029]/30'}
@@ -78,13 +78,13 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
     >
       {/* Prime / Non-Prime Badge — top left */}
       {slot.status === 'Available' && (
-        <div className={`absolute top-2 left-2 flex items-center gap-0.5 ${isPrime ? 'text-amber-500' : 'text-slate-400'
+        <div className={`absolute top-1.5 left-1.5 flex items-center gap-0.5 ${isPrime ? 'text-amber-500' : 'text-slate-400'
           }`}>
           {isPrime
-            ? <Star size={9} fill="currentColor" />
-            : <CalendarDays size={9} />
+            ? <Star size={7} fill="currentColor" />
+            : <CalendarDays size={7} />
           }
-          <span className={`text-[7px] font-black uppercase tracking-wide leading-none ${isPrime ? 'text-amber-600' : 'text-slate-400'
+          <span className={`text-[6px] font-black uppercase tracking-wide leading-none ${isPrime ? 'text-amber-600' : 'text-slate-400'
             }`}>
             {isPrime ? 'Prime' : 'Std'}
           </span>
@@ -92,29 +92,29 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
       )}
 
       {/* Time */}
-      <span className={`text-[12px] font-black block mt-3 ${isSelected ? 'text-[#CE2029]' : config.text}`}>
+      <span className={`text-[10px] font-black block mt-2 ${isSelected ? 'text-[#CE2029]' : config.text}`}>
         {slot.time.split(' - ')[0]}
       </span>
-      <span className={`text-[9px] font-bold block opacity-60 ${isSelected ? 'text-[#CE2029]' : config.text}`}>
+      <span className={`text-[7px] font-bold block opacity-60 ${isSelected ? 'text-[#CE2029]' : config.text}`}>
         {slot.time.split(' - ')[1]}
       </span>
 
       {/* Status Label (for non-available) */}
       {config.label && (
-        <span className={`block text-[8px] mt-1 uppercase tracking-wider ${config.text} opacity-70`}>
+        <span className={`block text-[7px] mt-0.5 uppercase tracking-wider ${config.text} opacity-70`}>
           {config.label}
         </span>
       )}
 
       {/* Price */}
       {slot.status === 'Available' && (
-        <div className="mt-2">
-          <span className={`block text-xs font-black ${isSelected ? 'text-[#CE2029]' : isPrime ? 'text-amber-600' : 'text-[#CE2029]/60'
+        <div className="mt-1">
+          <span className={`block text-[9px] font-black ${isSelected ? 'text-[#CE2029]' : isPrime ? 'text-amber-600' : 'text-[#CE2029]/60'
             }`}>
             OMR {Number(slot.price).toFixed(3)}
           </span>
           {isPrime && (
-            <span className="block text-[7.5px] font-bold text-amber-500/70 uppercase tracking-widest mt-0.5">
+            <span className="block text-[6px] font-bold text-amber-500/70 uppercase tracking-widest mt-0.5">
               Prime Rate
             </span>
           )}
@@ -126,7 +126,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#CE2029]"
+          className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#CE2029]"
         />
       )}
     </motion.button>

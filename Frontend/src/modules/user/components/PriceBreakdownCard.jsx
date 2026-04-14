@@ -56,17 +56,18 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col"
       >
-        <p className="text-[8px] font-black uppercase tracking-[0.2em] mb-0 text-[#CE2029]/40">
+        <p className="text-[7px] font-black uppercase tracking-[0.2em] mb-0 text-[#CE2029]/40 leading-none">
           {isOverridden ? 'Override Price' : isMember ? 'Member Price' : 'Total Amount'}
         </p>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-black font-display tracking-tight text-[#CE2029]">
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="text-xl font-black font-display tracking-tight text-[#CE2029] leading-none">
             OMR {finalPrice.toFixed(3)}
           </span>
           {isMember && !isOverridden && discountAmount > 0 && (
-            <span className="text-[9px] font-bold text-green-500 line-through-none ml-1">
-              saved {discountAmount.toFixed(3)}
-            </span>
+            <div className="flex flex-col">
+               <span className="text-[6px] font-black text-green-500/50 uppercase leading-none">saved</span>
+               <span className="text-[8px] font-bold text-green-600 leading-none tracking-tight">{discountAmount.toFixed(3)}</span>
+            </div>
           )}
         </div>
       </motion.div>

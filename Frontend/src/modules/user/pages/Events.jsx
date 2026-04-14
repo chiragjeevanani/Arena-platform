@@ -91,7 +91,7 @@ const Events = () => {
                 className={`px-4 py-2 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black tracking-tight transition-all active:scale-95 duration-300 ${
                   selectedTag === tag
                     ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
-                    : 'bg-white text-slate-500 border border-slate-100 font-bold hover:border-[#CE2029]/30 hover:text-[#CE2029]'
+                    : 'bg-white border border-slate-100 text-[#36454F] hover:border-[#CE2029]/30 hover:text-[#CE2029]'
                 }`}
               >
                 {tag}
@@ -112,7 +112,7 @@ const Events = () => {
               className={`px-4 py-2 rounded-xl text-[9px] font-black tracking-tight transition-all active:scale-95 duration-300 ${
                 selectedTag === tag
                   ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
-                  : 'bg-white text-slate-500 border border-slate-100 font-bold'
+                  : 'bg-white text-slate-800 border border-slate-100 font-bold'
               }`}
             >
               {tag}

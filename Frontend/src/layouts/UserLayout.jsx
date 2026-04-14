@@ -70,13 +70,13 @@ const UserLayout = () => {
                     )}
                     <div className={`p-1 rounded-xl transition-all duration-300 ${isActive
                       ? 'text-[#CE2029]'
-                      : 'text-slate-400 group-hover:text-[#CE2029]/70'
+                      : 'text-[#36454F] group-hover:text-[#CE2029]/70'
                       }`}>
                       <Icon size={20} />
                     </div>
                     <span className={`text-[8px] font-bold uppercase tracking-[0.1em] mt-0.5 transition-colors duration-300 ${isActive
                       ? 'text-[#CE2029]'
-                      : 'text-slate-400 group-hover:text-[#CE2029]/70'
+                      : 'text-[#36454F] group-hover:text-[#CE2029]/70'
                       }`}>
                       {item.label}
                     </span>

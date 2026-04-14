@@ -9,10 +9,10 @@ import {
 import { useTheme } from '../../user/context/ThemeContext';
 
 const BATCHES = [
-  { id: 1, name: 'Morning Elite', level: 'Advanced', students: 12, maxStudents: 15, schedule: 'Mon, Wed, Fri', time: '06:00 AM - 08:00 AM', arena: 'Olympic Smash', court: 'Court 1', color: '#CE2029', type: 'Offline' },
+  { id: 1, name: 'Morning Elite', level: 'Advanced', students: 12, maxStudents: 15, schedule: 'Mon, Wed, Fri', time: '06:00 AM - 08:00 AM', arena: 'AMM Sports Arena', court: 'Court 1', color: '#CE2029', type: 'Offline' },
   { id: 2, name: 'Junior Stars', level: 'Beginner', students: 8, maxStudents: 20, schedule: 'Tue, Thu, Sat', time: '08:00 AM - 09:30 AM', arena: 'Badminton Hub', court: 'Court 3', color: '#36454F', type: 'Offline' },
   { id: 3, name: 'Pro Analytics', level: 'Intermediate', students: 15, maxStudents: 15, schedule: 'Wed, Sat', time: '01:00 PM - 02:30 PM', arena: 'Online', court: 'Zoom', color: '#6366f1', type: 'Online' },
-  { id: 4, name: 'Evening Drill', level: 'Intermediate', students: 10, maxStudents: 18, schedule: 'Mon, Fri', time: '11:00 AM - 01:00 PM', arena: 'Olympic Smash', court: 'Court 2', color: '#f59e0b', type: 'Offline' }
+  { id: 4, name: 'Evening Drill', level: 'Intermediate', students: 10, maxStudents: 18, schedule: 'Mon, Fri', time: '11:00 AM - 01:00 PM', arena: 'AMM Sports Arena', court: 'Court 2', color: '#f59e0b', type: 'Offline' }
 ];
 const CoachBatches = () => {
   const { isDark } = useTheme();
@@ -46,7 +46,7 @@ const CoachBatches = () => {
          maxStudents: 20,
          schedule: 'TBD',
          time: newBatch.time || '09:00 AM - 11:00 AM',
-         arena: 'Olympic Smash',
+         arena: 'AMM Sports Arena',
          court: 'Court 1',
          color: randomColor,
          type: 'Offline'
@@ -262,6 +262,11 @@ const CoachBatches = () => {
                  <span className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${
                      isDark ? 'border-white/10 text-white/30' : 'border-slate-200 text-slate-400'
                  } mt-1.5 inline-block`}>{batch.level}</span>
+                 {batch.type !== 'Online' && (
+                    <span className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ml-2 ${
+                        isDark ? 'bg-[#CE2029]/10 border-[#CE2029]/20 text-[#CE2029]' : 'bg-[#CE2029]/5 border-[#CE2029]/10 text-[#CE2029]'
+                    } mt-1.5 inline-block`}>{batch.court}</span>
+                 )}
               </div>
 
               {/* Bottom: Adaptive Actions */}

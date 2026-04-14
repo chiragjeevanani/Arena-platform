@@ -250,7 +250,7 @@ const PricingManagement = () => {
           {['all', 'active', 'inactive', 'peak', 'weekend', 'base'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest border transition-all ${
-                filter === f ? 'bg-[#CE2029] text-white border-[#CE2029]' : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-white border-slate-200 text-slate-500 hover:border-[#CE2029]'
+                filter === f ? 'bg-[#CE2029] text-white border-[#CE2029]' : isDark ? 'bg-white/5 border-white/10 text-white/40' : 'bg-white border-slate-200 text-[#36454F] hover:border-[#CE2029]'
               }`}
             >{f}</button>
           ))}

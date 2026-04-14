@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Clock, DollarSign, CalendarX2, Activity, Layers, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -24,11 +25,12 @@ const COURTS = ['Court 1', 'Court 2', 'Court 3', 'Court 4', 'Court 5'];
 
 const ArenaDashboard = () => {
   const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   return (
     <div className="min-h-screen bg-[#fffafa] p-4 md:p-6 lg:px-12 lg:py-6 space-y-4 text-[#36454F]">
       {/* High-Impact Header */}
-      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-2">
+      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-1.5 mb-0.5">
             <span className="w-5 h-[2.5px]" style={{ backgroundColor: BRAND_RED }} />
@@ -38,9 +40,24 @@ const ArenaDashboard = () => {
             Good <span style={{ color: BRAND_RED }}>Evening</span> 👋
           </h1>
         </div>
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-white border border-slate-100 shadow-sm rounded-md">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-[9px] font-black uppercase tracking-widest text-[#36454F]">System Ready</p>
+
+        {/* Date Selector */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative group">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#CE2029]">
+              <CalendarX2 size={14} />
+            </div>
+            <input 
+              type="date" 
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#36454F] outline-none focus:ring-2 focus:ring-[#CE2029]/20 transition-all shadow-sm"
+            />
+          </div>
+          <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-white border border-slate-100 shadow-sm rounded-xl">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[9px] font-black uppercase tracking-widest text-[#36454F]">System Live</p>
+          </div>
         </div>
       </div>
 
@@ -69,11 +86,21 @@ const ArenaDashboard = () => {
 
       {/* Booking Schedule - Sharp & Brand Aligned */}
       <div className="max-w-[1440px] mx-auto space-y-4 pb-12">
-        {['WEEKDAYS BOOKING', 'WEEKEND BOOKING'].map((title, sIdx) => (
+        {['WEEKDAYS (MON - FRI)', 'WEEKEND (SAT - SUN)'].map((title, sIdx) => (
           <div key={sIdx} className="bg-white rounded-xl overflow-hidden shadow-[0_5px_20px_rgba(0,0,0,0.02)] border border-slate-100">
             <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: sIdx === 0 ? '#36454F' : BRAND_RED }}>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90">{title}</h2>
-              <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">LIVE</p>
+              <div className="flex flex-col">
+                <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-white/90">{title}</h2>
+                <p className="text-[7px] font-black text-white/40 uppercase tracking-[0.15em] mt-0.5">
+                  {sIdx === 0 ? 'Regular Session Schedule' : 'Premium Rates & High Demand'}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[8px] font-black text-white/30 uppercase tracking-widest leading-none">LIVE REPORT</p>
+                <p className="text-[7px] font-black text-white/50 uppercase tracking-tight mt-1">
+                  {new Date(selectedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
             </div>
             
             <div className="overflow-x-auto scrollbar-hide">

@@ -10,10 +10,10 @@ import {
 import { useTheme } from '../../user/context/ThemeContext';
 
 const BATCHES = [
-  { id: 1, name: 'Morning Elite', level: 'Advanced', students: 12, maxStudents: 15, schedule: 'Mon, Wed, Fri', time: '06:00 AM - 08:00 AM', arena: 'Olympic Smash', court: 'Court 1', color: '#CE2029', type: 'Offline' },
+  { id: 1, name: 'Morning Elite', level: 'Advanced', students: 12, maxStudents: 15, schedule: 'Mon, Wed, Fri', time: '06:00 AM - 08:00 AM', arena: 'AMM Sports Arena', court: 'Court 1', color: '#CE2029', type: 'Offline' },
   { id: 2, name: 'Junior Stars', level: 'Beginner', students: 8, maxStudents: 20, schedule: 'Tue, Thu, Sat', time: '08:00 AM - 09:30 AM', arena: 'Badminton Hub', court: 'Court 3', color: '#36454F', type: 'Offline' },
   { id: 3, name: 'Pro Analytics', level: 'Intermediate', students: 15, maxStudents: 15, schedule: 'Wed, Sat', time: '01:00 PM - 02:30 PM', arena: 'Online', court: 'Zoom', color: '#6366f1', type: 'Online' },
-  { id: 4, name: 'Evening Drill', level: 'Intermediate', students: 10, maxStudents: 18, schedule: 'Mon, Fri', time: '11:00 AM - 01:00 PM', arena: 'Olympic Smash', court: 'Court 2', color: '#f59e0b', type: 'Offline' }
+  { id: 4, name: 'Evening Drill', level: 'Intermediate', students: 10, maxStudents: 18, schedule: 'Mon, Fri', time: '11:00 AM - 01:00 PM', arena: 'AMM Sports Arena', court: 'Court 2', color: '#f59e0b', type: 'Offline' }
 ];
 
 const BatchDetails = () => {
@@ -102,7 +102,9 @@ const BatchDetails = () => {
                 <div className="grid grid-cols-2 gap-3">
                     {[
                         { icon: Calendar, val: batch.schedule, label: 'Schedule', color: '#CE2029' },
-                        { icon: Clock, val: batch.time, label: 'Duration', color: '#f59e0b' }
+                        { icon: Clock, val: batch.time, label: 'Duration', color: '#f59e0b' },
+                        { icon: MapPin, val: batch.arena, label: 'Arena Location', color: '#3b82f6' },
+                        { icon: Activity, val: batch.court, label: 'Court Name', color: '#10b981' }
                     ].map((item, i) => (
                         <div key={i} className={`p-4 rounded-xl border ${isDark ? 'bg-[#1a1c1e] border-white/5' : 'bg-[#F8FBFF] border-[#3b82f6]/5 shadow-sm'}`}>
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: `${item.color}15`, color: item.color }}>

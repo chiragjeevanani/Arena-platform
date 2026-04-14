@@ -2,6 +2,7 @@ import Arena1 from '../assets/Arenas/Arena1.jpg';
 import Arena2 from '../assets/Arenas/Arena2.jpg';
 import Arena3 from '../assets/Arenas/Arena3.jpg';
 import AmmArena1 from '../assets/Arenas/AmmArena1.jpeg';
+import CourtImage from '../assets/court.jpeg';
 
 export const ARENAS = [
   {
@@ -13,7 +14,7 @@ export const ARENAS = [
     reviews: 120,
     pricePerHour: 4.5,
     courtsCount: 5,
-    image: AmmArena1,
+    image: CourtImage,
     category: 'Badminton',
     amenities: ["Parking", "Shower", "Locker", "Cafe"],
     description: "Premium wooden flooring courts with professional lighting and gallery seating."
@@ -66,7 +67,7 @@ export const USER_BOOKINGS = [
   {
     id: "BK-10293",
     arenaName: "Amm Sports arena",
-    arenaImage: AmmArena1,
+    arenaImage: CourtImage,
     location: "AMM sports arena muscat , oman",
     courtName: "Court 2",
     date: "2024-03-20",

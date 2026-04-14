@@ -75,7 +75,7 @@ const Coaching = () => {
                   className={`relative py-1 text-[9px] font-black uppercase tracking-[0.2em] transition-all ${
                     activeTab === tab 
                       ? 'text-[#CE2029]' 
-                      : 'text-slate-300 hover:text-slate-500'
+                      : 'text-[#36454F] hover:text-[#36454F]/80'
                   }`}
                 >
                   {tab}
