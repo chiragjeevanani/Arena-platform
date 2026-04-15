@@ -34,6 +34,7 @@ import Help from './modules/user/pages/Help';
 import Terms from './modules/user/pages/Terms';
 import CoachingSummary from './modules/user/pages/CoachingSummary';
 import MembershipPlans from './modules/user/pages/MembershipPlans';
+import MyAttendance from './modules/user/pages/MyAttendance';
 
 // Admin Pages
 import AdminDashboard from './modules/admin/pages/Dashboard';
@@ -141,6 +142,7 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="profile/edit" element={<EditProfile />} />
             <Route path="profile/wallet" element={<Wallet />} />
+            <Route path="profile/attendance" element={<MyAttendance />} />
             <Route path="profile/notifications" element={<Notifications />} />
             <Route path="profile/privacy" element={<Privacy />} />
             <Route path="profile/help" element={<Help />} />

@@ -98,15 +98,7 @@ const CoachBatches = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
-            <button 
-              onClick={() => {
-                setNewBatch({ name: '', level: 'Beginner', time: '' });
-                setShowAddModal(true);
-              }}
-              className="w-11 h-11 rounded-xl bg-[#CE2029] text-white flex items-center justify-center shadow-lg shadow-[#CE2029]/20 hover:scale-[1.05] active:scale-95 transition-all"
-            >
-                <Plus size={20} />
-            </button>
+
         </div>
       </div>
 

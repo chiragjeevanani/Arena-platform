@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
+import SidebarImage from '../../../assets/sidebarImage.png';
 
 const SIDEBAR_STRUCTURE = [
   {
@@ -213,7 +214,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                         className={({ isActive }) =>
                           `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
                             isActive 
-                              ? `bg-[#CE2029] text-white shadow-md shadow-[#CE2029]/30 font-bold` 
+                              ? `bg-white text-[#CE2029] shadow-md shadow-black/5 font-bold` 
                               : `text-[#36454F] hover:bg-white/60 hover:text-[#36454F] font-semibold`
                           }`
                         }
@@ -224,7 +225,7 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                               size={18}
                               strokeWidth={isActive ? 2.5 : 2}
                               className={`shrink-0 transition-all duration-300 ${
-                                isActive ? 'text-white' : 'text-[#36454F] group-hover:text-[#CE2029]'
+                                isActive ? 'text-[#CE2029]' : 'text-[#36454F] group-hover:text-[#CE2029]'
                               }`}
                             />
                             {!isCollapsed && (
@@ -248,8 +249,8 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       <div className="absolute bottom-0 left-0 right-0 h-48 sm:h-64 z-10 pointer-events-none overflow-hidden rounded-br-2xl md:rounded-b-none">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <img 
-          src="https://images.unsplash.com/photo-1626225967045-2c390b347f71?q=80&w=800&auto=format&fit=crop" 
-          alt="Badminton Action" 
+          src={SidebarImage} 
+          alt="Badminton Arena" 
           className="w-full h-full object-cover opacity-60"
         />
       </div>

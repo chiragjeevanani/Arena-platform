@@ -261,7 +261,7 @@ const SlotSelection = () => {
                 return (
                   <motion.div 
                     key={selectedDate} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-2"
+                    className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 gap-1.5"
                   >
                     {filteredSlots.length === 0 ? (
                       <div className="col-span-full text-center py-10 text-slate-400"><p className="text-[10px] font-black uppercase tracking-widest">No slots in this category</p></div>
@@ -272,15 +272,27 @@ const SlotSelection = () => {
                 );
               })()}
 
-              {/* Status Guide */}
-              <div className="mt-8 flex flex-wrap gap-y-2 gap-x-4">
+              {/* Color Legend */}
+              <div className="mt-8 pt-4 border-t border-slate-50 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#CE2029]" />
-                  <span className="text-[8px] font-black uppercase tracking-wider text-slate-600">Selected</span>
+                  <div className="w-2.5 h-2.5 rounded-sm bg-[#CE2029] shadow-sm" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Selected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-slate-200" />
-                  <span className="text-[8px] font-black uppercase tracking-wider text-slate-600">Booked</span>
+                  <div className="w-2.5 h-2.5 rounded-sm bg-emerald-100 border border-emerald-300" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Standard</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-amber-100 border border-amber-300" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Prime</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-slate-200 border border-slate-300" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Booked</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-red-100 border border-red-200" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Service</span>
                 </div>
               </div>
             </div>

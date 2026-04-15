@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../../assets/Logo (3).png';
+import SidebarImage from '../../../assets/sidebarImage.png';
 
 const NAV_ITEMS = [
   { path: '/arena', icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -109,11 +110,11 @@ const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
 
       {/* Background Image at Bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-48 sm:h-64 z-10 pointer-events-none overflow-hidden rounded-br-2xl md:rounded-b-none">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
         <img 
-          src="https://images.unsplash.com/photo-1534158914592-062992fbe900?q=80&w=800&auto=format&fit=crop" 
-          alt="Table Tennis" 
-          className="w-full h-full object-cover"
+          src={SidebarImage} 
+          alt="Badminton Arena" 
+          className="w-full h-full object-cover opacity-60"
         />
       </div>
     </motion.aside>

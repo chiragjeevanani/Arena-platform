@@ -1,20 +1,25 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, Plus, Edit2, Trash2, X, CheckCircle2, 
   XCircle, ArrowRight, Layers, Settings, Activity,
-  ShieldCheck, Share2, MoreHorizontal, Layout, Grid3X3
+  ShieldCheck, Share2, MoreHorizontal, Layout, Grid3X3, Camera, ImagePlus
 } from 'lucide-react';
+import CourtImg1 from '../../../../assets/Courts/court1.jpeg';
+import CourtImg2 from '../../../../assets/Courts/court2.jpeg';
+import CourtImg3 from '../../../../assets/Courts/court3.jpeg';
+
+const COURT_IMAGES = [CourtImg1, CourtImg2, CourtImg3];
 
 const INITIAL_COURTS = [
-  { id: 'c1', arenaId: 'arena-1', name: 'Court 1', type: 'Indoor', status: 'Active' },
-  { id: 'c2', arenaId: 'arena-1', name: 'Court 2', type: 'Indoor', status: 'Active' },
-  { id: 'c3', arenaId: 'arena-1', name: 'Court 3', type: 'Indoor', status: 'Active' },
-  { id: 'c4', arenaId: 'arena-1', name: 'Court 4', type: 'Indoor', status: 'Active' },
-  { id: 'c5', arenaId: 'arena-1', name: 'Court 5', type: 'Indoor', status: 'Active' },
+  { id: 'c1', arenaId: 'arena-1', name: 'Court 1', type: 'Indoor', status: 'Active', image: CourtImg1 },
+  { id: 'c2', arenaId: 'arena-1', name: 'Court 2', type: 'Indoor', status: 'Active', image: CourtImg2 },
+  { id: 'c3', arenaId: 'arena-1', name: 'Court 3', type: 'Indoor', status: 'Active', image: CourtImg3 },
+  { id: 'c4', arenaId: 'arena-1', name: 'Court 4', type: 'Indoor', status: 'Active', image: CourtImg1 },
+  { id: 'c5', arenaId: 'arena-1', name: 'Court 5', type: 'Indoor', status: 'Active', image: CourtImg2 },
 ];
 
-const emptyForm = { name: '', type: 'Indoor', status: 'Active' };
+const emptyForm = { name: '', type: 'Indoor', status: 'Active', image: null };
 
 const CourtMgmt = () => {
   const [courts, setCourts] = useState(INITIAL_COURTS);
@@ -22,16 +27,37 @@ const CourtMgmt = () => {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState(null);
+  const fileInputRef = useRef(null);
+  const cardFileInputRef = useRef(null);
+  const [cardImageCourtId, setCardImageCourtId] = useState(null);
+
+  const handleImageUpload = (e, target = 'form') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (target === 'form') {
+        setForm(p => ({ ...p, image: ev.target.result }));
+      } else {
+        // Direct card image change
+        setCourts(p => p.map(c => c.id === target ? { ...c, image: ev.target.result } : c));
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const openAdd = () => { setEditId(null); setForm(emptyForm); setShowModal(true); };
-  const openEdit = (c) => { setEditId(c.id); setForm({ name: c.name, type: c.type, status: c.status }); setShowModal(true); };
+  const openEdit = (c) => { setEditId(c.id); setForm({ name: c.name, type: c.type, status: c.status, image: c.image || null }); setShowModal(true); };
 
   const save = () => {
     if (!form.name.trim()) return;
     if (editId) {
       setCourts(p => p.map(c => c.id === editId ? { ...c, ...form } : c));
     } else {
-      setCourts(p => [...p, { id: `c${Date.now()}`, arenaId: 'arena-1', ...form }]);
+      const newIdx = courts.length;
+      const defaultImage = form.image || COURT_IMAGES[newIdx % COURT_IMAGES.length];
+      setCourts(p => [...p, { id: `c${Date.now()}`, arenaId: 'arena-1', ...form, image: defaultImage }]);
     }
     setShowModal(false);
   };
@@ -113,12 +139,24 @@ const CourtMgmt = () => {
                      </span>
                   </div>
 
-                  {/* Center: HIGH VISIBILITY LOGO-ICON */}
-                  <div className="py-4 flex flex-col items-center justify-center space-y-4 relative z-10">
-                     <div className="w-16 h-16 rounded-[4px] bg-[#F8FAFC] border border-slate-100 flex items-center justify-center text-[#94A3B8] group-hover:bg-[#36454F] group-hover:border-[#36454F] group-hover:text-white transition-all duration-300 shadow-sm relative">
-                        <Grid3X3 size={32} strokeWidth={1.5} className="relative z-10" />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-[#CE2029]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[4px]" />
-                     </div>
+                  {/* Center: Court Image */}
+                  <div className="flex flex-col items-center justify-center space-y-3 relative z-10">
+                      <div className="w-full h-32 rounded-[4px] overflow-hidden border border-slate-100 shadow-sm relative cursor-pointer"
+                        onClick={() => { setCardImageCourtId(court.id); setTimeout(() => cardFileInputRef.current?.click(), 50); }}
+                      >
+                         <img 
+                           src={court.image || COURT_IMAGES[idx % COURT_IMAGES.length]} 
+                           alt={court.name} 
+                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                         {/* Camera overlay on hover */}
+                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                           <div className="w-8 h-8 rounded-full bg-white/90 shadow-lg flex items-center justify-center">
+                             <Camera size={14} className="text-[#36454F]" />
+                           </div>
+                         </div>
+                      </div>
                      <div>
                         <h3 className="text-[13px] font-bold text-[#36454F] uppercase tracking-wide text-center">{court.name}</h3>
                         <div className="mt-1 flex justify-center">
@@ -169,6 +207,34 @@ const CourtMgmt = () => {
               </div>
 
               <div className="p-6 space-y-5 bg-[#F9FAFB]/30">
+                {/* Court Image Upload */}
+                <div className="space-y-1.5">
+                  <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Court Image</label>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-36 rounded-sm border-2 border-dashed border-slate-200 hover:border-[#CE2029] bg-slate-50 hover:bg-red-50/30 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
+                  >
+                    {form.image ? (
+                      <>
+                        <img src={form.image} alt="Court preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="flex items-center gap-2 text-white">
+                            <Camera size={16} />
+                            <span className="text-[9px] font-bold uppercase tracking-widest">Change Image</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <ImagePlus size={24} className="text-slate-300 mb-2" />
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Click to upload</span>
+                        <span className="text-[7px] text-slate-400 mt-0.5">JPG, PNG up to 5MB</span>
+                      </>
+                    )}
+                  </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'form')} />
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Designation (Title)</label>
                   <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
@@ -225,6 +291,8 @@ const CourtMgmt = () => {
           </div>
         )}
       </AnimatePresence>
+      {/* Hidden file input for direct card image change */}
+      <input ref={cardFileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { handleImageUpload(e, cardImageCourtId); setCardImageCourtId(null); }} />
     </div>
   );
 };

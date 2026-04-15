@@ -30,8 +30,8 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
   const [students, setStudents] = useState(MOCK_STUDENTS);
   const [saving, setSaving] = useState(false);
 
-  const toggleStatus = (id) => {
-    setStudents(prev => prev.map(s => s.id === id ? { ...s, present: !s.present } : s));
+  const updateStatus = (id, isPresent) => {
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, present: isPresent } : s));
   };
 
   const handleSave = () => {
@@ -57,47 +57,62 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
           isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
         }`}
       >
-        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+        <div className="p-4 border-b border-white/5 flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold tracking-tight">Log Attendance</h3>
             <p className="text-[10px] font-black uppercase text-[#CE2029] tracking-widest mt-1">{batch} · {new Date().toLocaleDateString()}</p>
           </div>
-          <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><X size={20} /></button>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><X size={18} /></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-hide">
           {students.map((stu) => (
-            <div key={stu.id} onClick={() => toggleStatus(stu.id)} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
-              stu.present 
-                ? isDark ? 'bg-[#CE2029]/10 border-[#CE2029]/20 shadow-[0_0_15px_rgba(206, 32, 41,0.05)]' : 'bg-[#CE2029]/5 border-[#CE2029]/10'
-                : isDark ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'
+            <div key={stu.id} className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
+              isDark ? 'bg-white/[0.02] border-white/5' : 'bg-white border-slate-100'
             }`}>
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${
-                  stu.present ? 'bg-[#CE2029] text-white' : isDark ? 'bg-white/5 text-white/20' : 'bg-white text-slate-300'
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                  stu.present ? 'bg-green-500 text-white shadow-md' : 'bg-red-500 text-white shadow-md'
                 }`}>
                   {stu.name.charAt(0)}
                 </div>
                 <div>
-                  <p className={`text-sm font-bold ${stu.present ? '' : 'opacity-40'}`}>{stu.name}</p>
-                  <p className={`text-[8px] font-black uppercase tracking-widest ${stu.present ? 'text-[#CE2029]' : 'text-slate-500'}`}>{stu.id}</p>
+                  <p className="text-xs font-bold font-display">{stu.name}</p>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">{stu.id}</p>
                 </div>
               </div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                stu.present ? 'bg-green-500 text-white' : 'bg-red-500/20 text-red-500'
-              }`}>
-                {stu.present ? <UserCheck size={16} /> : <UserMinus size={16} />}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => updateStatus(stu.id, true)}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                    stu.present 
+                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/20 scale-105' 
+                      : isDark ? 'bg-white/5 text-white/20 border border-white/10 hover:bg-green-500/10 hover:text-green-500' : 'bg-slate-50 text-slate-300 border border-slate-200 hover:bg-green-50'
+                  }`}
+                >
+                  <CheckCircle2 size={16} />
+                </button>
+                <button 
+                  onClick={() => updateStatus(stu.id, false)}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                    !stu.present 
+                      ? 'bg-red-500 text-white shadow-lg shadow-red-500/20 scale-105' 
+                      : isDark ? 'bg-white/5 text-white/20 border border-white/10 hover:bg-red-500/10 hover:text-red-500' : 'bg-slate-50 text-slate-300 border border-slate-200 hover:bg-red-50'
+                  }`}
+                >
+                  <XCircle size={16} />
+                </button>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="p-6 border-t border-white/5">
-          <div className="flex justify-between items-center mb-4 px-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Class Summary</span>
-            <span className="text-xs font-black">{students.filter(s => s.present).length} Present / {students.filter(s => !s.present).length} Absent</span>
+        <div className="p-4 border-t border-white/5">
+          <div className="flex justify-between items-center mb-3 px-1">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Class Summary</span>
+            <span className="text-[10px] font-black">{students.filter(s => s.present).length} P / {students.filter(s => !s.present).length} A</span>
           </div>
-          <button onClick={handleSave} disabled={saving} className="w-full py-4 rounded-2xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#36454F] transition-all shadow-xl shadow-[#CE2029]/20 active:scale-[0.98] disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="w-full py-3 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#36454F] transition-all shadow-xl shadow-[#CE2029]/20 active:scale-[0.98] disabled:opacity-50">
             {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Finalize Session Log <CheckCircle2 size={18} /></>}
           </button>
         </div>
@@ -367,7 +382,7 @@ const AttendanceRecords = () => {
           <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>Monitor and verify daily presence logs.</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setShowMarkModal('Morning Elite')} className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#CE2029] text-white transition-all text-[10px] font-black uppercase tracking-wider shadow-md hover:-translate-y-0.5"><Plus size={14} /> Mark New</button>
+          <button onClick={() => setShowMarkModal('Morning Elite')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#CE2029] text-white transition-all text-[10px] font-black uppercase tracking-wider shadow-md hover:-translate-y-0.5 border border-[#CE2029]"><Plus size={14} /> Mark Attendance</button>
           <button onClick={exportToCSV} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg border transition-all text-[10px] font-black uppercase tracking-wider ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-[#CE2029]' : 'bg-white border-slate-200 text-slate-600 hover:border-[#CE2029] hover:text-[#CE2029] shadow-sm'}`}><Download size={14} /> Export CSV</button>
         </div>
       </div>

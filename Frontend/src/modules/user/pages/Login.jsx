@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../context/AuthContext';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
+import Logo from '../../../assets/Logo (3).png';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF1F1] md:bg-white flex items-center justify-center px-6 relative overflow-hidden">
+
       {/* Background Decor */}
       <div className="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-[#CE2029]/10 rounded-full blur-[80px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-[#CE2029]/10 rounded-full blur-[80px]" />
@@ -48,6 +50,10 @@ const Login = () => {
       >
         <div className="space-y-6">
         <div className="text-center">
+          {/* Logo */}
+          <div className="flex justify-center mb-2">
+            <img src={Logo} alt="AMM Sports" className="w-20 h-20 object-contain" />
+          </div>
           <div className="w-full max-w-[140px] aspect-square mx-auto mb-2 overflow-hidden pointer-events-none mix-blend-multiply bg-transparent">
             <Lottie 
               animationData={badmintonLottie} 

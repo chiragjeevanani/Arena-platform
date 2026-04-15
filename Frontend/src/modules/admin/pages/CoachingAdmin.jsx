@@ -1,6 +1,16 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Settings, Award } from 'lucide-react';
+import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Settings, Award, UserCheck, TrendingUp, Activity, LayoutGrid } from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  AreaChart, Area, Cell, PieChart, Pie
+} from 'recharts';
+
+import Court1 from '../../../assets/Courts/court1.jpeg';
+import Court2 from '../../../assets/Courts/court2.jpeg';
+import Court3 from '../../../assets/Courts/court3.jpeg';
+
+
 
 const COACHES_DATA = [
   { id: 1, name: 'Vikram Singh', role: 'Head Coach', specialty: 'Elite Training', students: 48, rating: 4.9, image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=150&auto=format&fit=crop', plan: 'Elite Partner', court: 'Court 01 - Main Arena', timing: '06:00 AM - 12:00 PM', salary: 45000, experience: '8 Years', status: 'Active', reviews: [{ user: 'Rahul A.', rating: 5, comment: 'Excellent technical skills.', date: '2 days ago' }] },
@@ -64,19 +74,93 @@ const OFFICIAL_PROGRAMS = {
   ]
 };
 
+const STUDENT_ATTENDANCE_STATS = {
+    daily: [
+        { 
+          court: 'Court 1', 
+          batch: 'Elite Performance', 
+          present: 14, 
+          total: 18, 
+          time: '06:00 AM', 
+          image: Court1,
+          presentStudents: ['Ria G Sebastian', 'Ian George', 'Atharv Parsekar', 'Nakshathra', 'Rahul A.', 'Siddharth R.', 'Vikram S.', 'Anjali S.', 'Divya K.', 'Karan M.', 'Sonia L.', 'Amit P.', 'Neha J.', 'Rohit S.'],
+          absentStudents: ['Gineeth S.', 'Sudhin G.', 'Parsekar D.', 'Anand P.']
+        },
+        { 
+          court: 'Court 2', 
+          batch: 'Morning Stars', 
+          present: 8, 
+          total: 12, 
+          time: '07:30 AM', 
+          image: Court2,
+          presentStudents: ['Arjun V.', 'Meera B.', 'Sahil T.', 'Pooja R.', 'Varun D.', 'Simran K.', 'Ishaan G.', 'Rhea M.'],
+          absentStudents: ['Kunal Z.', 'Sneha W.', 'Prateek L.', 'Ishita V.']
+        },
+        { 
+          court: 'Court 3', 
+          batch: 'Junior Academy', 
+          present: 18, 
+          total: 22, 
+          time: '04:00 PM', 
+          image: Court3,
+          presentStudents: ['Kavya S.', 'Rohan J.', 'Ananya P.', 'Aryan K.', 'Saanvi M.', 'Advik G.', 'Prisha T.', 'Vivaan R.', 'Shanaya B.', 'Aarav V.', 'Myra D.', 'Reyansh S.', 'Kiara L.', 'Zoya K.', 'Kabir H.', 'Ishani F.', 'Samaira N.', 'Ahaan C.'],
+          absentStudents: ['Naira G.', 'Zaid P.', 'Inaya R.', 'Yuvraj B.']
+        },
+        { 
+          court: 'Court 4', 
+          batch: 'Pro Drillers', 
+          present: 12, 
+          total: 15, 
+          time: '06:00 PM', 
+          image: Court1,
+          presentStudents: ['Devansh Q.', 'Tia W.', 'Ranveer E.', 'Anika Y.', 'Hrithik U.', 'Sanya I.', 'Abhimanyu O.', 'Tara K.', 'Vedant A.', 'Ishita S.', 'Yuvraj M.', 'Anya D.'],
+          absentStudents: ['Manish P.', 'Radhika S.', 'Tushar K.']
+        },
+        { 
+          court: 'Court 5', 
+          batch: 'Evening Smashers', 
+          present: 10, 
+          total: 14, 
+          time: '08:00 PM', 
+          image: Court2,
+          presentStudents: ['Aditya G.', 'Bhavna K.', 'Chaitanya R.', 'Deepika S.', 'Eshaan V.', 'Farhan M.', 'Gitanjali P.', 'Harshita D.', 'Inder J.', 'Jasmine K.'],
+          absentStudents: ['Kartik R.', 'Lavanya S.', 'Manav B.', 'Nupur K.']
+        },
+    ],
+
+
+
+    monthly: [
+        { day: '01', present: 85 }, { day: '05', present: 92 }, { day: '10', present: 78 },
+        { day: '15', present: 95 }, { day: '20', present: 88 }, { day: '25', present: 94 },
+        { day: '30', present: 91 },
+    ],
+    yearly: [
+        { month: 'Jan', rate: 88 }, { month: 'Feb', rate: 92 }, { month: 'Mar', rate: 95 },
+        { month: 'Apr', rate: 91 }, { month: 'May', rate: 89 }, { month: 'Jun', rate: 85 },
+        { month: 'Jul', rate: 82 }, { month: 'Aug', rate: 88 }, { month: 'Sep', rate: 94 },
+        { month: 'Oct', rate: 96 }, { month: 'Nov', rate: 93 }, { month: 'Dec', rate: 90 },
+    ]
+};
+
 const BOOKINGS_DATA = [
-  { id: 'BK-1001', customer: 'Amit Sharma', court: 'Court 1', arena: 'Amm Sports', date: '12-03-2026', time: '7:00 AM', amount: 4.5, status: 'Completed', payment: 'Paid' },
-  { id: 'BK-1002', customer: 'Rajesh Kumar', court: 'Court 3', arena: 'Amm Sports', date: '12-03-2026', time: '9:00 AM', amount: 3.5, status: 'Upcoming', payment: 'Pending' },
-  { id: 'BK-1003', customer: 'Sanya Mirza', court: 'Court 2', arena: 'Amm Sports', date: '12-03-2026', time: '4:00 PM', amount: 5, status: 'Upcoming', payment: 'Paid' },
-  { id: 'BK-1004', customer: 'Vikram Singh', court: 'Court 1', arena: 'Amm Sports', date: '12-03-2026', time: '5:00 PM', amount: 4, status: 'Cancelled', payment: 'Refunded' },
-  { id: 'BK-1005', customer: 'Neha Malik', court: 'Court 4', arena: 'Amm Sports', date: '13-03-2026', time: '6:00 AM', amount: 4.5, status: 'Upcoming', payment: 'Paid' },
+  { id: 'BK-1001', customer: 'Ahmed Al Rashid', court: 'Court 01', arena: 'Olympic Smash Arena', date: '15-Apr-26', time: '06:00 AM - 07:00 AM', amount: 30.00, status: 'Completed', payment: 'Paid' },
+  { id: 'BK-1002', customer: 'Sara Al Balushi', court: 'Court 03', arena: 'Badminton Hub', date: '15-Apr-26', time: '07:30 AM - 09:00 AM', amount: 20.00, status: 'Completed', payment: 'Paid' },
+  { id: 'BK-1003', customer: 'Mohammed Farhan', court: 'Court 02', arena: 'Pro Arena', date: '15-Apr-26', time: '04:00 PM - 05:30 PM', amount: 25.00, status: 'Upcoming', payment: 'Paid' },
+  { id: 'BK-1004', customer: 'Nadia Hassan', court: 'Court 01', arena: 'Olympic Smash Arena', date: '14-Apr-26', time: '06:00 PM - 07:00 PM', amount: 30.00, status: 'Completed', payment: 'Cash' },
+  { id: 'BK-1005', customer: 'Khalid Al Amri', court: 'Court 04', arena: 'Smash Zone', date: '14-Apr-26', time: '08:00 PM - 09:00 PM', amount: 35.00, status: 'Cancelled', payment: 'Refunded' },
 ];
 
 const CoachingAdmin = () => {
-  const [view, setView] = useState('students'); // students | batches | coaches | attendance | programs | bookings
+  const [view, setView] = useState('students'); // students | batches | coaches | attendance | programs | bookings | student-attendance
+  const [studentAttendanceMode, setStudentAttendanceMode] = useState('daily'); // daily | monthly | yearly
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showAttendanceStudentsModal, setShowAttendanceStudentsModal] = useState(false);
+  const [selectedStatStudents, setSelectedStatStudents] = useState({ court: '', present: [], absent: [] });
+
+
   const [editingBatch, setEditingBatch] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [editingBooking, setEditingBooking] = useState(null);
@@ -100,6 +184,9 @@ const CoachingAdmin = () => {
   const salaryRef = useRef();
   const experienceRef = useRef();
   const statusRef = useRef();
+  const batchNameRef = useRef();
+  const batchCoachRef = useRef();
+  const batchCapacityRef = useRef();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -164,6 +251,41 @@ const CoachingAdmin = () => {
   const handleNewBatch = () => {
     setEditingBatch(null);
     setShowNewBatchModal(true);
+  };
+
+  const handleSaveBatch = () => {
+    const name = batchNameRef.current.value;
+    const coach = batchCoachRef.current.value;
+    const capacity = Number(batchCapacityRef.current.value);
+
+    if (!name || !coach) return;
+
+    if (editingBatch) {
+      setBatches(prev => prev.map(b => b.id === editingBatch.id ? {
+        ...b,
+        name,
+        coach,
+        capacity
+      } : b));
+      setToast('Batch updated successfully');
+    } else {
+      const newBatchObj = {
+        id: `B-${Math.floor(10 + Math.random() * 90)}`,
+        name,
+        coach,
+        capacity,
+        enrolled: 0,
+        fee: 30,
+        frequency: 'Mon-Wed-Fri',
+        time: '07:30 AM',
+        arena: 'Amm Sports Arena'
+      };
+      setBatches(prev => [newBatchObj, ...prev]);
+      setToast('New batch created successfully');
+    }
+
+    setShowNewBatchModal(false);
+    setTimeout(() => setToast(null), 3000);
   };
 
   const handleEditCoach = (coach) => {
@@ -328,7 +450,8 @@ const CoachingAdmin = () => {
             { id: 'batches', label: 'Batch Control', icon: Zap },
             { id: 'coaches', label: 'Coaching Staff', icon: Award },
             { id: 'bookings', label: 'Booking Registry', icon: Calendar },
-            { id: 'attendance', label: 'Attendance', icon: Fingerprint },
+            { id: 'student-attendance', label: 'Academy Attendance', icon: UserCheck },
+            { id: 'attendance', label: 'Staff Logs', icon: Fingerprint },
             { id: 'programs', label: 'Master Catalog', icon: Settings }
           ].map(tab => (
             <button
@@ -433,8 +556,25 @@ const CoachingAdmin = () => {
           )}
 
           {view === 'batches' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch content-start">
-              {filteredBatches.map((batch, idx) => (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-[32px] shadow-sm">
+                <div>
+                  <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Batch Control Center</h3>
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                     <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] animate-pulse" />
+                     Schedule & Load Monitoring
+                  </div>
+                </div>
+                <button 
+                  onClick={handleNewBatch}
+                  className="px-6 py-3 bg-[#CE2029] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:-translate-y-1 transition-all"
+                >
+                  Create New Batch
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch content-start">
+                {filteredBatches.map((batch, idx) => (
                 <motion.div
                   layout
                   key={batch.id}
@@ -479,7 +619,8 @@ const CoachingAdmin = () => {
                       Manage Batch
                     </button>
                 </motion.div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
@@ -517,6 +658,197 @@ const CoachingAdmin = () => {
                 </motion.div>
               ))}
             </div>
+          )}
+
+          {view === 'student-attendance' && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+               <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-white border border-slate-100 rounded-[32px] shadow-sm gap-4">
+                  <div>
+                    <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Academy Attendance Dashboard</h3>
+                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                       <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] animate-pulse" />
+                       Real-time Student Footprint Monitoring
+                    </div>
+                  </div>
+                  <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-100 w-full md:w-auto overflow-x-auto">
+                    {['daily', 'monthly', 'yearly'].map(mode => (
+                      <button
+                        key={mode}
+                        onClick={() => setStudentAttendanceMode(mode)}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                          studentAttendanceMode === mode ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' : 'text-slate-400 hover:text-[#CE2029]'
+                        }`}
+                      >
+                        {mode}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+
+               {studentAttendanceMode === 'daily' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                     {STUDENT_ATTENDANCE_STATS.daily.map((stat, i) => (
+                        <motion.div 
+                          key={i} 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="rounded-[28px] bg-white border border-slate-100 shadow-sm hover:border-[#CE2029] transition-all group overflow-hidden flex flex-col"
+                        >
+                           <div className="h-28 w-full overflow-hidden relative">
+                              <img src={stat.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={stat.court} />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                              <div className="absolute bottom-3 left-4">
+                                 <h4 className="font-black text-white text-[15px] uppercase tracking-tighter leading-none">{stat.court}</h4>
+                                 <p className="text-[9px] font-black text-white/70 uppercase tracking-widest mt-1">{stat.batch}</p>
+                              </div>
+                              <div className="absolute top-3 right-4 px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-[9px] font-black text-white uppercase tracking-widest">
+                                 {stat.time}
+                              </div>
+                           </div>
+                           
+                           <div className="p-5 flex-1 flex flex-col justify-between">
+                              <div className="flex items-center gap-3 mb-4">
+                                 <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-[#CE2029] border border-slate-100 shadow-inner group-hover:bg-[#CE2029] group-hover:text-white transition-all">
+                                    <LayoutGrid size={18} />
+                                 </div>
+                                 <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <motion.div 
+                                       initial={{ width: 0 }}
+                                       animate={{ width: `${(stat.present / stat.total) * 100}%` }}
+                                       className="h-full bg-[#CE2029] rounded-full"
+                                    />
+                                 </div>
+                              </div>
+
+                              <div className="flex items-end justify-between">
+                                 <div 
+                                    onClick={() => {
+                                       setSelectedStatStudents({ 
+                                          court: stat.court, 
+                                          present: stat.presentStudents, 
+                                          absent: stat.absentStudents 
+                                       });
+                                       setShowAttendanceStudentsModal(true);
+                                    }}
+                                    className="cursor-pointer hover:scale-105 transition-transform origin-left group/count"
+                                 >
+
+                                    <p className="text-2xl font-black tracking-tighter text-[#1e293b] leading-none group-hover/count:text-[#CE2029] flex items-baseline gap-1">
+                                       {stat.present}
+                                       <span className="text-[10px] text-slate-300 font-black">/ {stat.total}</span>
+                                    </p>
+                                    <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5 leading-none">
+                                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                       Present Now
+                                    </p>
+                                 </div>
+                                 <div className="text-right">
+                                    <p className="text-lg font-black text-[#CE2029] leading-none tracking-tighter">
+                                       {((stat.present / stat.total) * 100).toFixed(0)}%
+                                    </p>
+                                    <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mt-1.5 leading-none">Court Load</p>
+                                 </div>
+                              </div>
+                           </div>
+                        </motion.div>
+                     ))}
+                  </div>
+               )}
+
+               {(studentAttendanceMode === 'monthly' || studentAttendanceMode === 'yearly') && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                     <div className="lg:col-span-2 p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm h-[420px] relative">
+                        <div className="flex items-center justify-between mb-8">
+                           <div>
+                              <h4 className="text-[12px] font-black uppercase text-[#1e293b] italic tracking-tighter flex items-center gap-2">
+                                 <TrendingUp size={16} className="text-[#CE2029]" />
+                                 {studentAttendanceMode === 'monthly' ? 'Attendance Volume (30 Days)' : 'Yearly Performance Matrix'}
+                              </h4>
+                              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">Academy-wide activity index</p>
+                           </div>
+                        </div>
+                        <div className="h-[280px] w-full">
+                           <ResponsiveContainer width="100%" height="100%">
+                              {studentAttendanceMode === 'monthly' ? (
+                                 <AreaChart data={STUDENT_ATTENDANCE_STATS.monthly}>
+                                    <defs>
+                                       <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="#CE2029" stopOpacity={0.1}/>
+                                          <stop offset="95%" stopColor="#CE2029" stopOpacity={0}/>
+                                       </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 900, fill: '#94A3B8'}} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 900, fill: '#94A3B8'}} />
+                                    <Tooltip 
+                                       contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)', fontWeight: 'bold', fontSize: '10px'}}
+                                       cursor={{stroke: '#CE2029', strokeWidth: 2}}
+                                    />
+                                    <Area type="monotone" dataKey="present" stroke="#CE2029" strokeWidth={4} fillOpacity={1} fill="url(#colorPresent)" />
+                                 </AreaChart>
+                              ) : (
+                                 <BarChart data={STUDENT_ATTENDANCE_STATS.yearly}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 900, fill: '#94A3B8'}} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 900, fill: '#94A3B8'}} domain={[0, 100]} />
+                                    <Tooltip 
+                                       contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)', fontWeight: 'bold', fontSize: '10px'}}
+                                       cursor={{fill: '#f8fafc'}}
+                                    />
+                                    <Bar dataKey="rate" radius={[8, 8, 0, 0]} barSize={32}>
+                                       {STUDENT_ATTENDANCE_STATS.yearly.map((entry, index) => (
+                                          <Cell key={`cell-${index}`} fill={index === 9 ? '#CE2029' : '#36454F'} />
+                                       ))}
+                                    </Bar>
+                                 </BarChart>
+                              )}
+                           </ResponsiveContainer>
+                        </div>
+                     </div>
+
+                     <div className="space-y-4">
+                        <div className="p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm group hover:border-[#CE2029] transition-all relative overflow-hidden">
+                           <div className="relative z-10">
+                              <Activity className="text-[#CE2029] mb-4" size={28} />
+                              <h5 className="text-[10px] font-black uppercase text-slate-300 tracking-[0.2em] mb-1">Peak Attendance</h5>
+                              <p className="text-4xl font-black text-[#1e293b] tracking-tighter italic leading-none">96.8%</p>
+                              <div className="text-[9px] font-black text-slate-400 uppercase mt-3 flex items-center gap-2">
+                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                 Recorded in October 2025
+                              </div>
+                           </div>
+                           <TrendingUp className="absolute -right-4 -bottom-4 opacity-[0.03] text-[#CE2029]" size={140} />
+                        </div>
+                        
+                        <div className="p-8 bg-[#36454F] rounded-[32px] border border-white/5 shadow-2xl relative overflow-hidden group">
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                           <div className="relative z-10">
+                              <Users className="text-white/30 mb-4" size={28} />
+                              <h5 className="text-[10px] font-black uppercase text-white/30 tracking-[0.2em] mb-1">Total Impact</h5>
+                              <p className="text-4xl font-black text-white tracking-tighter italic leading-none">1.2K+</p>
+                              <p className="text-[9px] font-black text-white/20 uppercase mt-3">Active Student Sessions</p>
+                           </div>
+                        </div>
+
+                        <div className="p-6 bg-slate-50/50 rounded-[32px] border border-slate-100">
+                           <div className="space-y-4">
+                              {[
+                                 { label: 'Retention Rate', val: '92.4%', color: 'text-emerald-500' },
+                                 { label: 'Court Efficiency', val: '88.1%', color: 'text-[#CE2029]' },
+                                 { label: 'Quarterly Growth', val: '+12.5%', color: 'text-blue-500' }
+                              ].map((item, i) => (
+                                 <div key={i} className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{item.label}</span>
+                                    <span className={`text-[12px] font-black ${item.color}`}>{item.val}</span>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+            </motion.div>
           )}
 
           {view === 'attendance' && (
@@ -721,24 +1053,24 @@ const CoachingAdmin = () => {
               </div>
               <div className="p-6 space-y-4">
                  <div className="space-y-4">
-                    <div className="group">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Program Name</label>
-                      <input type="text" defaultValue={editingBatch?.name || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
                        <div>
-                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Coach</label>
-                         <select className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold">
-                            {coaches.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                         </select>
+                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Program Name</label>
+                         <input ref={batchNameRef} type="text" defaultValue={editingBatch?.name || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
                        </div>
-                       <div>
-                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Capacity</label>
-                         <input type="number" defaultValue="15" className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
+                       <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Coach</label>
+                            <select ref={batchCoachRef} defaultValue={editingBatch?.coach || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold">
+                               {coaches.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Capacity</label>
+                            <input ref={batchCapacityRef} type="number" defaultValue={editingBatch?.capacity || "15"} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
+                          </div>
                        </div>
-                    </div>
                     <button 
-                      onClick={() => setShowNewBatchModal(false)}
+                      onClick={handleSaveBatch}
                       className="w-full py-4 rounded-xl bg-[#CE2029] text-white text-[13px] font-black uppercase tracking-widest hover:shadow-lg transition-all"
                     >
                       {editingBatch ? 'Save Changes' : 'Launch Program'}
@@ -1111,6 +1443,79 @@ const CoachingAdmin = () => {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Attendance Students Modal */}
+      <AnimatePresence>
+        {showAttendanceStudentsModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAttendanceStudentsModal(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-md rounded-[32px] border-2 border-slate-200 bg-white shadow-2xl overflow-hidden"
+            >
+               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                  <div>
+                    <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">{selectedStatStudents.court}</h3>
+                    <p className="text-[9px] font-black text-[#CE2029] uppercase tracking-[0.2em] mt-2 leading-none">Attendance Registry</p>
+                  </div>
+                  <button onClick={() => setShowAttendanceStudentsModal(false)} className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 shadow-sm transition-all"><X size={20} /></button>
+               </div>
+               
+               <div className="p-6 max-h-[400px] overflow-y-auto space-y-6">
+                  {/* Present Students */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[#CE2029]">In Attendance ({selectedStatStudents.present.length})</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                       {selectedStatStudents.present.map((name, i) => (
+                          <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100/50 group hover:border-emerald-500 transition-all">
+                             <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white shadow-emerald-500/20 shadow-lg">
+                                <CheckCircle2 size={14} />
+                             </div>
+                             <span className="text-[11px] font-black text-[#36454F] uppercase group-hover:text-[#1e293b] transition-colors">{name}</span>
+                          </div>
+                       ))}
+                    </div>
+                  </div>
+
+                  {/* Absent Students */}
+                  {selectedStatStudents.absent.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3 px-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Marked Absent ({selectedStatStudents.absent.length})</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2">
+                         {selectedStatStudents.absent.map((name, i) => (
+                            <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-red-400 opacity-60 hover:opacity-100 transition-all">
+                               <div className="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 group-hover:bg-red-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-red-500/20 transition-all">
+                                  <X size={14} />
+                               </div>
+                               <span className="text-[11px] font-black text-slate-400 uppercase group-hover:text-[#1e293b] transition-colors line-through italic">{name}</span>
+                            </div>
+                         ))}
+                      </div>
+                    </div>
+                  )}
+               </div>
+
+               <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Live Session Sync Active</p>
+                  <p className="text-[11px] font-black text-[#1e293b] uppercase tracking-tighter">Total Batch Strength: {selectedStatStudents.present.length + selectedStatStudents.absent.length}</p>
+               </div>
+
             </motion.div>
           </div>
         )}

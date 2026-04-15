@@ -4,7 +4,7 @@ import Card2 from '../assets/Cards/Card2.jpg';
 import Card3 from '../assets/Cards/Card3.jpg';
 
 import BadmintonCard from '../assets/Category/BadmintonCard.png';
-import TableTennisCard from '../assets/Category/TableTennisCard.png';
+import TennisCard from '../assets/Category/TennisCard.png';
 
 import Event1 from '../assets/Events/Events1 .jpeg';
 import Event2 from '../assets/Events/Events2.jpeg';
@@ -42,13 +42,13 @@ export const HOME_CONFIG = {
       id: 1,
       title: 'Badminton',
       image: BadmintonCard,
-      link: '/book/1/1'
+      link: '/arenas'
     },
     {
       id: 2,
       title: 'Table Tennis',
-      image: TableTennisCard,
-      link: '/book/1/1'
+      image: TennisCard,
+      link: '/arenas'
     }
   ],
   events: [

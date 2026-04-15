@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X } from 'lucide-react';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X, Calendar, BarChart3 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { ARENAS, USER_BOOKINGS, COACHING_BATCHES, USER_MEMBERSHIP } from '../../../data/mockData';
@@ -147,6 +147,7 @@ const Profile = () => {
 
   const menuItems = [
     { icon: History, label: 'Booking History', path: '/bookings' },
+    { icon: Calendar, label: 'My Attendance', path: '/profile/attendance' },
     { icon: Wallet, label: 'My Wallet Tracker', path: '/profile/wallet' },
     { icon: Crown, label: 'My Membership Plan', path: '/membership' },
     { icon: Shield, label: 'Privacy & Security', path: '/profile/privacy' },

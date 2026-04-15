@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Users, Search, Filter, MoreHorizontal, MessageSquare, 
-  Star, GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck, Target
+  Star, GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck, Target,
+  Calendar, TrendingUp, BarChart3, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
@@ -22,6 +23,7 @@ const MyStudents = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [toast, setToast] = useState(null);
+  const [attendanceTab, setAttendanceTab] = useState('daily'); // 'daily' | 'monthly' | 'yearly'
   
   // Filter States
   const [showFilters, setShowFilters] = useState(false);
@@ -88,7 +90,7 @@ const MyStudents = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-[70] p-6 rounded-2xl border shadow-2xl ${
+              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-[70] p-6 rounded-2xl border shadow-2xl overflow-y-auto max-h-[85vh] ${
                 isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'
               }`}
             >
@@ -99,12 +101,14 @@ const MyStudents = () => {
                 </button>
               </div>
               
-              <div className="flex flex-col items-center mb-6">
-                <div className="w-20 h-20 rounded-2xl bg-[#CE2029]/10 border-2 border-[#CE2029]/20 flex items-center justify-center text-[#CE2029] font-bold text-3xl mb-3">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-[#CE2029]/10 border-2 border-[#CE2029]/20 flex items-center justify-center text-[#CE2029] font-bold text-2xl flex-shrink-0">
                   {selectedStudent.name.charAt(0)}
                 </div>
-                <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{selectedStudent.name}</h4>
-                <p className="text-[10px] font-bold text-[#CE2029] uppercase tracking-widest">{selectedStudent.id}</p>
+                <div className="flex-1">
+                  <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{selectedStudent.name}</h4>
+                  <p className="text-[10px] font-bold text-[#CE2029] uppercase tracking-widest">{selectedStudent.id}</p>
+                </div>
               </div>
 
               <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/5">
@@ -119,6 +123,154 @@ const MyStudents = () => {
                 <div className="flex justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Attendance</span>
                   <span className="text-[11px] font-bold text-green-500">{selectedStudent.attendance}</span>
+                </div>
+              </div>
+
+              {/* Attendance Reporting Section */}
+              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
+                <h4 className={`text-sm font-bold mb-3 flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
+                  <Calendar size={16} className="text-[#CE2029]" /> Attendance Reports
+                </h4>
+                
+                {/* Report Type Tabs */}
+                <div className="flex gap-2 mb-4">
+                  {[
+                    { id: 'daily', label: 'Daily', icon: Calendar },
+                    { id: 'monthly', label: 'Monthly', icon: BarChart3 },
+                    { id: 'yearly', label: 'Yearly', icon: TrendingUp }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setAttendanceTab(tab.id)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                        attendanceTab === tab.id
+                          ? 'bg-[#CE2029] text-white shadow-md'
+                          : isDark
+                            ? 'bg-white/5 text-white/60 hover:bg-white/10'
+                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                      }`}
+                    >
+                      <tab.icon size={12} />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Report Content */}
+                <div className={`p-4 rounded-xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                  {attendanceTab === 'daily' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">This Week</h5>
+                        <div className="flex gap-1">
+                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
+                            <ChevronLeft size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
+                          </button>
+                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
+                            <ChevronRight size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
+                          </button>
+                        </div>
+                      </div>
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
+                        <div key={day} className="flex items-center justify-between">
+                          <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{day}</span>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                            [0, 2, 3, 4, 6].includes(idx) 
+                              ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400' 
+                              : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
+                          }`}>
+                            {[0, 2, 3, 4, 6].includes(idx) ? 'Present' : 'Absent'}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Weekly Rate</span>
+                        <span className="text-[11px] font-bold text-[#CE2029]">71.4%</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {attendanceTab === 'monthly' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">April 2026</h5>
+                        <div className="flex gap-1">
+                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
+                            <ChevronLeft size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
+                          </button>
+                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
+                            <ChevronRight size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { week: 'Week 1', present: 5, total: 6 },
+                          { week: 'Week 2', present: 6, total: 6 },
+                          { week: 'Week 3', present: 4, total: 6 },
+                          { week: 'Week 4', present: 5, total: 6 },
+                        ].map((week) => (
+                          <div key={week.week} className="flex items-center justify-between">
+                            <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{week.week}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-[#CE2029] rounded-full transition-all"
+                                  style={{ width: `${(week.present / week.total) * 100}%` }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-bold text-[#CE2029]">{week.present}/{week.total}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Monthly Rate</span>
+                        <span className="text-[11px] font-bold text-[#CE2029]">83.3%</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {attendanceTab === 'yearly' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">2026</h5>
+                        <div className="flex gap-1">
+                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
+                            <ChevronLeft size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
+                          </button>
+                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
+                            <ChevronRight size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { month: 'Jan', rate: 92 },
+                          { month: 'Feb', rate: 88 },
+                          { month: 'Mar', rate: 95 },
+                          { month: 'Apr', rate: 83 },
+                        ].map((month) => (
+                          <div key={month.month} className="flex items-center justify-between">
+                            <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{month.month}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-[#CE2029] rounded-full transition-all"
+                                  style={{ width: `${month.rate}%` }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-bold text-[#CE2029]">{month.rate}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Yearly Average</span>
+                        <span className="text-[11px] font-bold text-[#CE2029]">89.5%</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

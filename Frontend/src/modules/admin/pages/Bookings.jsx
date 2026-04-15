@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Receipt, Search, Download, Filter, MoreHorizontal, Clock, ArrowUpRight,
-  Eye, CalendarRange, RefreshCw, Trash2, X, CheckCircle, AlertTriangle, Calendar, MapPin
+  Eye, CalendarRange, RefreshCw, Trash2, X, CheckCircle, AlertTriangle, Calendar, MapPin,
+  Banknote, Wallet, CreditCard, User, Target
 } from 'lucide-react';
 
 const mockBookings = [
-  { id: 'BK-1001', customer: 'Amit Sharma', court: 'Court 1', arena: 'Amm Sports Arena', date: '2026-03-12', time: '07:00 AM', amount: 4.500, status: 'Completed', payment: 'Paid', statusBg: '#76A87A', statusText: '#ffffff' },
-  { id: 'BK-1002', customer: 'Rajesh Kumar', court: 'Court 3', arena: 'Amm Sports Arena', date: '2026-03-12', time: '09:00 AM', amount: 3.500, status: 'Upcoming', payment: 'Pending', statusBg: '#E88E3E', statusText: '#ffffff' },
-  { id: 'BK-1003', customer: 'Sanya Mirza', court: 'Court 2', arena: 'Amm Sports Arena', date: '2026-03-12', time: '04:00 PM', amount: 5.000, status: 'Upcoming', payment: 'Paid', statusBg: '#E88E3E', statusText: '#ffffff' },
-  { id: 'BK-1004', customer: 'Vikram Singh', court: 'Court 1', arena: 'Amm Sports Arena', date: '2026-03-12', time: '05:00 PM', amount: 4.000, status: 'Cancelled', payment: 'Refunded', statusBg: '#ff6b6b', statusText: '#ffffff' },
-  { id: 'BK-1005', customer: 'Neha Malik', court: 'Court 4', arena: 'Amm Sports Arena', date: '2026-03-13', time: '06:00 AM', amount: 4.500, status: 'Upcoming', payment: 'Paid', statusBg: '#E88E3E', statusText: '#ffffff' },
+  { id: 'BK-1001', customer: 'Amit Sharma', court: 'Court 1', arena: 'Amm Sports Arena', date: '2026-03-12', time: '07:00 AM', amount: 4.500, status: 'Completed', payment: 'Paid', paymentMethod: 'Online', statusBg: '#76A87A', statusText: '#ffffff' },
+  { id: 'BK-1002', customer: 'Rajesh Kumar', court: 'Court 3', arena: 'Amm Sports Arena', date: '2026-03-12', time: '09:00 AM', amount: 3.500, status: 'Upcoming', payment: 'Pending', paymentMethod: 'Online', statusBg: '#E88E3E', statusText: '#ffffff' },
+  { id: 'BK-1003', customer: 'Sanya Mirza', court: 'Court 2', arena: 'Amm Sports Arena', date: '2026-03-12', time: '04:00 PM', amount: 5.000, status: 'Upcoming', payment: 'Paid', paymentMethod: 'Online', statusBg: '#E88E3E', statusText: '#ffffff' },
+  { id: 'BK-1004', customer: 'Vikram Singh', court: 'Court 1', arena: 'Amm Sports Arena', date: '2026-03-12', time: '05:00 PM', amount: 4.000, status: 'Cancelled', payment: 'Refunded', paymentMethod: 'Online', statusBg: '#ff6b6b', statusText: '#ffffff' },
+  { id: 'BK-1005', customer: 'Neha Malik', court: 'Court 4', arena: 'Amm Sports Arena', date: '2026-03-13', time: '06:00 AM', amount: 4.500, status: 'Upcoming', payment: 'Paid', paymentMethod: 'Cash', statusBg: '#E88E3E', statusText: '#ffffff' },
 ];
 
 // ── View Details Modal ──────────────────────────────────────────
@@ -157,6 +158,98 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
   );
 };
 
+// ── Cash Payment Modal ──────────────────────────────────────────
+const CashPaymentModal = ({ onClose, onConfirm }) => {
+  const [form, setForm] = useState({ customer: '', court: 'Court 1', date: new Date().toISOString().split('T')[0], time: '07:00 AM', amount: '' });
+  const [done, setDone] = useState(false);
+  const handleConfirm = () => {
+    if (!form.customer.trim() || !form.amount) return;
+    setDone(true);
+    setTimeout(() => { onConfirm(form); onClose(); }, 1200);
+  };
+  const timeSlots = ['06:00 AM','07:00 AM','08:00 AM','09:00 AM','10:00 AM','11:00 AM','12:00 PM','01:00 PM','02:00 PM','03:00 PM','04:00 PM','05:00 PM','06:00 PM','07:00 PM','08:00 PM','09:00 PM','10:00 PM'];
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+      <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-[#36454F] px-6 py-5 text-white flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-green-500/20 flex items-center justify-center">
+              <Banknote size={20} className="text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-black">Record Cash Payment</h3>
+              <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Offline Transaction Entry</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"><X size={16} /></button>
+        </div>
+
+        {/* Form */}
+        <div className="p-6 space-y-4">
+          {/* Customer Name */}
+          <div>
+            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Customer Name</label>
+            <div className="relative">
+              <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="text" value={form.customer} onChange={e => setForm(p => ({ ...p, customer: e.target.value }))}
+                placeholder="Enter customer name" className="w-full py-3 pl-11 pr-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] placeholder:text-slate-400 outline-none focus:border-[#CE2029] focus:bg-white transition-all" />
+            </div>
+          </div>
+
+          {/* Court & Time */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Court</label>
+              <select value={form.court} onChange={e => setForm(p => ({ ...p, court: e.target.value }))}
+                className="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] outline-none focus:border-[#CE2029] cursor-pointer transition-all">
+                {['Court 1','Court 2','Court 3','Court 4','Court 5'].map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Time Slot</label>
+              <select value={form.time} onChange={e => setForm(p => ({ ...p, time: e.target.value }))}
+                className="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] outline-none focus:border-[#CE2029] cursor-pointer transition-all">
+                {timeSlots.map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Date */}
+          <div>
+            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Booking Date</label>
+            <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
+              className="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] outline-none focus:border-[#CE2029] focus:bg-white transition-all" />
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1.5">Amount (OMR)</label>
+            <div className="relative">
+              <Wallet size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="number" step="0.001" min="0" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))}
+                placeholder="0.000" className="w-full py-3 pl-11 pr-4 rounded-2xl border border-slate-200 bg-slate-50 text-sm font-bold text-[#36454F] placeholder:text-slate-400 outline-none focus:border-[#CE2029] focus:bg-white transition-all" />
+            </div>
+          </div>
+
+          {/* Info Banner */}
+          <div className="p-3 rounded-2xl bg-green-50 border border-green-100 flex items-start gap-2">
+            <Banknote size={14} className="text-green-600 mt-0.5 shrink-0" />
+            <p className="text-[10px] font-bold text-green-700 leading-relaxed">This booking will be recorded as a <strong>Cash Payment</strong>. No online transaction will be processed.</p>
+          </div>
+
+          {/* Submit */}
+          <button onClick={handleConfirm} disabled={done || !form.customer.trim() || !form.amount}
+            className="w-full py-3.5 rounded-2xl bg-green-600 text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-green-700 transition-all disabled:opacity-60 shadow-lg shadow-green-600/20">
+            {done ? <><CheckCircle size={14} /> Payment Recorded!</> : <><Banknote size={14} /> Record Cash Payment</>}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 // ── Main Component ──────────────────────────────────────────────
 const Bookings = () => {
   const [bookings, setBookings] = useState(mockBookings);
@@ -170,6 +263,7 @@ const Bookings = () => {
   const [rescheduleModal, setRescheduleModal] = useState(null);
   const [refundModal, setRefundModal] = useState(null);
   const [cancelModal, setCancelModal] = useState(null);
+  const [cashModal, setCashModal] = useState(false);
 
   const filteredBookings = bookings.filter(booking => {
     const matchesSearch = booking.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -184,6 +278,24 @@ const Bookings = () => {
 
   const handleRefund = (id) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, payment: 'Refunded', status: 'Cancelled', statusBg: '#ff6b6b' } : b));
+  };
+
+  const handleCashPayment = (form) => {
+    const newBooking = {
+      id: `BK-${1000 + bookings.length + 1}`,
+      customer: form.customer,
+      court: form.court,
+      arena: 'Amm Sports Arena',
+      date: form.date,
+      time: form.time,
+      amount: parseFloat(form.amount) || 0,
+      status: 'Completed',
+      payment: 'Paid',
+      paymentMethod: 'Cash',
+      statusBg: '#76A87A',
+      statusText: '#ffffff',
+    };
+    setBookings(prev => [newBooking, ...prev]);
   };
 
   const handleCancel = (id) => {
@@ -214,6 +326,7 @@ const Bookings = () => {
         {rescheduleModal && <RescheduleModal booking={rescheduleModal} onClose={() => setRescheduleModal(null)} onConfirm={handleReschedule} />}
         {refundModal && <RefundModal booking={refundModal} onClose={() => setRefundModal(null)} onConfirm={handleRefund} />}
         {cancelModal && <CancelModal booking={cancelModal} onClose={() => setCancelModal(null)} onConfirm={handleCancel} />}
+        {cashModal && <CashPaymentModal onClose={() => setCashModal(false)} onConfirm={handleCashPayment} />}
       </AnimatePresence>
 
       {/* Filter Drawer */}
@@ -252,9 +365,14 @@ const Bookings = () => {
             </h2>
             <p className="text-xs md:text-sm mt-1 font-medium text-slate-500">Manage all facility reservations and transactions.</p>
           </div>
-          <button onClick={exportToCSV} className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-[#CE2029] hover:border-[#CE2029] transition-all shadow-sm font-bold text-xs uppercase tracking-wider">
-            <Download size={14} /> Export CSV
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setCashModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all shadow-md shadow-green-600/20 font-bold text-xs uppercase tracking-wider">
+              <Banknote size={14} /> Record Cash Payment
+            </button>
+            <button onClick={exportToCSV} className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-[#CE2029] hover:border-[#CE2029] transition-all shadow-sm font-bold text-xs uppercase tracking-wider">
+              <Download size={14} /> Export CSV
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -324,7 +442,19 @@ const Bookings = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <p className="font-bold text-[#36454F] text-sm">OMR {booking.amount.toFixed(3)}</p>
-                      <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${booking.payment === 'Paid' ? 'text-[#76A87A]' : booking.payment === 'Pending' ? 'text-[#E88E3E]' : 'text-[#ff6b6b]'}`}>{booking.payment}</p>
+                      <div className="flex items-center justify-center gap-1.5 mt-1">
+                        <p className={`text-[10px] font-bold uppercase tracking-wider ${booking.payment === 'Paid' ? 'text-[#76A87A]' : booking.payment === 'Pending' ? 'text-[#E88E3E]' : 'text-[#ff6b6b]'}`}>{booking.payment}</p>
+                        {booking.paymentMethod && (
+                          <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                            booking.paymentMethod === 'Cash' 
+                              ? 'bg-green-50 text-green-600 border-green-200' 
+                              : 'bg-blue-50 text-blue-500 border-blue-200'
+                          }`}>
+                            {booking.paymentMethod === 'Cash' ? <Banknote size={8} /> : <CreditCard size={8} />}
+                            {booking.paymentMethod}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-md" style={{ backgroundColor: booking.statusBg, color: booking.statusText }}>{booking.status}</span>

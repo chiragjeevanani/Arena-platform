@@ -7,6 +7,7 @@ import {
   Layers
 } from 'lucide-react';
 import Logo from '../../../assets/Logo (3).png';
+import SidebarImage from '../../../assets/sidebarImage.png';
 import { useTheme } from '../../user/context/ThemeContext';
 
 const SIDEBAR_STRUCTURE = [
@@ -75,7 +76,7 @@ const CoachSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                   className={({ isActive }) =>
                     `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
                       isActive 
-                        ? `bg-[#CE2029] text-white shadow-md shadow-[#CE2029]/30 font-bold` 
+                        ? `${isDark ? 'bg-white/10 text-[#CE2029]' : 'bg-white text-[#CE2029] shadow-md shadow-black/5'} font-bold` 
                         : `${isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-[#36454F] hover:bg-white/60 hover:text-[#CE2029]'} font-semibold`
                     }`
                   }
@@ -86,7 +87,7 @@ const CoachSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                         size={18}
                         strokeWidth={isActive ? 2.5 : 2}
                         className={`shrink-0 transition-all duration-300 ${
-                          isActive ? 'text-white' : `${isDark ? 'text-white/40' : 'text-[#36454F]'} group-hover:text-[#CE2029]`
+                          isActive ? 'text-[#CE2029]' : `${isDark ? 'text-white/40' : 'text-[#36454F]'} group-hover:text-[#CE2029]`
                         }`}
                       />
                       <AnimatePresence mode="popLayout">
@@ -114,9 +115,9 @@ const CoachSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
       <div className="absolute bottom-0 left-0 right-0 h-48 sm:h-64 z-10 pointer-events-none overflow-hidden rounded-br-2xl md:rounded-b-none">
         <div className={`absolute inset-0 bg-gradient-to-t via-transparent to-transparent ${isDark ? 'from-[#0f1115]' : 'from-black/80'}`} />
         <img 
-          src="https://images.unsplash.com/photo-1595435934249-5df7ed86eb8c?q=80&w=600&auto=format&fit=crop" 
-          alt="Badminton Shuttlecocks" 
-          className="w-full h-full object-cover"
+          src={SidebarImage} 
+          alt="Badminton Arena" 
+          className="w-full h-full object-cover opacity-60"
         />
       </div>
 

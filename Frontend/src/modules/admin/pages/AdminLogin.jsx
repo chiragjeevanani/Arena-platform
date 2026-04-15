@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Lock, Mail, ArrowRight, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Shield } from 'lucide-react';
+import Lottie from 'lottie-react';
 import { useAuth } from '../../user/context/AuthContext';
-import { ShuttlecockIcon } from '../../user/components/BadmintonIcons';
+import Logo from '../../../assets/Logo (3).png';
+import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 
 const AdminLogin = () => {
   const { login } = useAuth();
@@ -31,7 +33,7 @@ const AdminLogin = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -42,7 +44,6 @@ const AdminLogin = () => {
         role: formData.role,
         assignedArena: formData.role === 'ARENA_ADMIN' ? 'arena-1' : 'all' 
       });
-      // Role-specific navigation
       if (formData.role === 'ARENA_ADMIN') {
         navigate('/arena');
       } else {
@@ -52,162 +53,96 @@ const AdminLogin = () => {
   };
 
   const roles = [
-    { id: 'ARENA_ADMIN', label: 'Arena Manager', desc: 'Regional' },
-    { id: 'SUPER_ADMIN', label: 'Admin', desc: 'Central' },
+    { id: 'ARENA_ADMIN', label: 'Arena Manager' },
+    { id: 'SUPER_ADMIN', label: 'System Admin' },
   ];
 
+  const inputCls = "w-full bg-slate-50/80 border border-slate-200 rounded-2xl py-3 pl-11 pr-4 text-sm font-bold text-[#36454F] placeholder:text-slate-400 outline-none transition-all focus:bg-white focus:border-[#CE2029]/50";
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#F4F7F6] font-sans relative overflow-hidden">
-      {/* Decorative Blurs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#CE2029]/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#36454F]/5 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-[#FFF1F1] md:bg-[#F8FAFC] flex items-center justify-center px-6 relative overflow-hidden font-sans">
+      {/* Background Decor */}
+      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-[#CE2029]/5 rounded-full blur-[100px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-[#36454F]/5 rounded-full blur-[100px]" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[850px] bg-white rounded-[2rem] border border-slate-100 shadow-2xl flex flex-col lg:flex-row overflow-hidden relative z-10"
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full md:max-w-[380px] bg-transparent md:bg-white md:p-7 md:rounded-[2rem] rounded-[40px] md:shadow-[0_40px_100px_rgba(15,23,42,0.08)] md:border md:border-slate-100"
       >
-        {/* Left Section: Branding & Visuals */}
-        <div className="hidden lg:flex flex-col flex-1 bg-[#36454F] p-10 relative overflow-hidden text-white">
-          {/* Subtle Grid Pattern Overlay */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none" 
-               style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-          
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 rounded-2xl bg-[#CE2029] flex items-center justify-center shadow-lg shadow-[#CE2029]/20">
-                <ShuttlecockIcon size={24} className="text-white" />
-              </div>
-              <span className="font-black font-display tracking-tight text-xl uppercase">Arena<span className="text-[#CE2029]">Central</span></span>
+        <div className="space-y-5">
+          <div className="text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-1">
+              <img src={Logo} alt="AMM Sports" className="w-28 h-28 object-contain" />
             </div>
-
-            <div className="space-y-4 mt-6">
-              <h1 className="text-4xl font-black font-display leading-tight tracking-tight">
-                Empowering <br />
-                <span className="text-[#CE2029]">Modern Sports</span> <br />
-                Infrastructure.
-              </h1>
-              <p className="text-slate-400 text-sm font-bold leading-relaxed max-w-[280px]">
-                The authoritative command center for stadium operations and athlete management.
-              </p>
+            <div className="w-full max-w-[110px] aspect-square mx-auto mb-1 overflow-hidden pointer-events-none mix-blend-multiply bg-transparent">
+              <Lottie 
+                animationData={badmintonLottie} 
+                loop={true} 
+                className="w-full h-full"
+              />
             </div>
+            <h1 className="mt-1 text-2xl font-black text-[#0F172A] tracking-tight">Admin Terminal</h1>
+            <p className="text-slate-500 mt-1 text-[10px] font-bold uppercase tracking-wider">Initialize secure administrative session</p>
           </div>
 
-          <div className="mt-auto grid grid-cols-2 gap-6 relative z-10">
-            {[
-              { icon: CheckCircle2, text: 'Neural Analytics' },
-              { icon: CheckCircle2, text: 'POS Integration' },
-              { icon: CheckCircle2, text: 'Asset Tracking' },
-              { icon: CheckCircle2, text: 'Cloud Security' },
-            ].map((f, i) => (
-              <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                <f.icon size={16} className="text-[#CE2029]" strokeWidth={3} /> {f.text}
-              </div>
-            ))}
-          </div>
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* Right Section: Form */}
-        <div className="w-full lg:w-[360px] p-8 lg:p-10 flex flex-col justify-center bg-white border-l border-slate-50">
-          <div className="mb-6 text-center lg:text-left">
-            <h2 className="text-2xl font-black font-display text-[#36454F] tracking-tight">Staff Authentication</h2>
-            <p className="text-xs font-bold text-slate-400 mt-1.5">Initialize your administrative session terminal.</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              {/* Role Selection */}
-              <div className="flex p-1 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
-                {roles.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => handleRoleChange(r.id)}
-                    className={`flex-1 py-3 px-1 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      formData.role === r.id 
-                        ? 'bg-[#CE2029] text-white shadow-lg' 
-                        : 'text-slate-400 hover:text-[#36454F]'
-                    }`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="group relative">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1 transition-colors group-focus-within:text-[#CE2029]">Access Identifier</label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#CE2029] transition-all" size={16} />
-                  <input
-                    type="email"
-                    required
-                    placeholder="Enter official email"
-                    className="w-full py-3.5 pl-10 pr-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs font-bold text-[#36454F] outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner focus:shadow-none"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="group relative">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1 transition-colors group-focus-within:text-[#CE2029]">Passkey Token</label>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#CE2029] transition-all" size={16} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder="Enter passkey"
-                    className="w-full py-3.5 pl-10 pr-12 rounded-2xl bg-slate-50 border border-slate-100 text-xs font-bold text-[#36454F] outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner focus:shadow-none"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#CE2029] transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={16} strokeWidth={2.5} /> : <Eye size={16} strokeWidth={2.5} />}
-                  </button>
-                </div>
+            {/* Email */}
+            <div className="group">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">Access Identifier</label>
+              <div className="relative">
+                <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#CE2029] transition-colors" />
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
+                  placeholder="admin@example.com"
+                  className={inputCls}
+                />
               </div>
             </div>
 
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-[#CE2029] focus:ring-[#CE2029]" />
-                  <span className="text-[11px] font-black uppercase text-slate-400 group-hover:text-[#36454F] transition-colors tracking-widest">Persist Session</span>
-              </label>
-              <button type="button" className="text-[11px] font-black text-[#CE2029] uppercase tracking-widest hover:underline">Revoke Access?</button>
+            {/* Password */}
+            <div className="group">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">Passkey Token</label>
+              <div className="relative">
+                <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#CE2029] transition-colors" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={e => setFormData(p => ({ ...p, password: e.target.value }))}
+                  placeholder="••••••••"
+                  className={inputCls + " pr-12"}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
             </div>
 
-            <button
+            {/* Submit */}
+            <motion.button
               type="submit"
+              whileTap={{ scale: 0.97 }}
               disabled={isLoading}
-              className={`w-full py-3.5 rounded-2xl bg-[#CE2029] text-white font-black text-[11px] uppercase tracking-[0.25em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-[#CE2029]/20 hover:shadow-[#CE2029]/40 ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'
-              }`}
+              className="w-full py-3.5 rounded-2xl bg-[#CE2029] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60 shadow-lg shadow-[#CE2029]/20 mt-2"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <>Establish Session <ArrowRight size={18} strokeWidth={3} /></>
+                <>Login <ArrowRight size={14} strokeWidth={2.5} /></>
               )}
-            </button>
+            </motion.button>
           </form>
 
-          {error && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600 text-[11px] font-black uppercase tracking-widest shadow-sm"
-            >
-              <AlertCircle size={16} /> {error}
-            </motion.div>
-          )}
-
-          <div className="mt-8 text-center border-t border-slate-50 pt-6">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-200 flex items-center justify-center gap-2">
-              <Shield size={12} strokeWidth={2.5} /> Military-Grade Session Guard
+          <div className="text-center pt-3 border-t border-slate-50">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300 flex items-center justify-center gap-2">
+              <Shield size={12} strokeWidth={2.5} className="text-[#CE2029]" /> 
+              Secure Access Node · AMM Sports © 2026
             </p>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../user/context/AuthContext';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
+import Logo from '../../../assets/Logo (3).png';
 
 const CoachLogin = () => {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ const CoachLogin = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF1F1] md:bg-[#F8FAFC] flex items-center justify-center px-6 relative overflow-hidden font-sans">
+
       {/* Background Decor - Same as User Login but subtle variant */}
       <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-[#CE2029]/5 rounded-full blur-[100px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-[#243B53]/5 rounded-full blur-[100px]" />
@@ -57,27 +59,26 @@ const CoachLogin = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full md:max-w-[400px] bg-transparent md:bg-white md:p-10 md:rounded-[2.5rem] rounded-[40px] md:shadow-[0_40px_100px_rgba(15,23,42,0.08)] md:border md:border-slate-100"
+        className="relative z-10 w-full md:max-w-[380px] bg-transparent md:bg-white md:p-7 md:rounded-[2rem] rounded-[40px] md:shadow-[0_40px_100px_rgba(15,23,42,0.08)] md:border md:border-slate-100"
       >
-        <div className="space-y-8">
+        <div className="space-y-5">
           <div className="text-center">
-            {/* Coach Label */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#CE2029]/10 border border-[#CE2029]/20 mb-4">
-               <span className="text-[10px] font-black text-[#CE2029] uppercase tracking-widest">Official Coach Entry</span>
+            {/* Logo */}
+            <div className="flex justify-center mb-1">
+              <img src={Logo} alt="AMM Sports" className="w-14 h-14 object-contain" />
             </div>
-
-            <div className="w-full max-w-[160px] aspect-square mx-auto mb-2 overflow-hidden pointer-events-none mix-blend-multiply bg-transparent">
+            <div className="w-full max-w-[110px] aspect-square mx-auto mb-1 overflow-hidden pointer-events-none mix-blend-multiply bg-transparent">
               <Lottie 
                 animationData={badmintonLottie} 
                 loop={true} 
                 className="w-full h-full"
               />
             </div>
-            <h1 className="mt-2 text-3xl font-black text-[#0F172A] tracking-tight">Coach Terminals</h1>
-            <p className="text-slate-500 mt-2 text-[11px] font-bold uppercase tracking-wider">Authentication required for dashboard access</p>
+            <h1 className="mt-1 text-2xl font-black text-[#0F172A] tracking-tight">Coach Terminals</h1>
+            <p className="text-slate-500 mt-1 text-[10px] font-bold uppercase tracking-wider">Authentication required for dashboard access</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <TextField
               fullWidth
               size="small"
@@ -169,7 +170,7 @@ const CoachLogin = () => {
             </Button>
           </form>
 
-          <div className="text-center space-y-4 pt-4 border-t border-slate-50">
+          <div className="text-center space-y-3 pt-3 border-t border-slate-50">
              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
                New to coaching? {' '}
                <button onClick={() => navigate('/coach/signup')} className="text-[#CE2029] font-black underline underline-offset-4">Join Panel</button>
