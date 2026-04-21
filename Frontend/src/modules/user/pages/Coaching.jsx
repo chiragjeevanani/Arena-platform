@@ -1,16 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { COACHING_BATCHES } from '../../../data/mockData';
 import CoachCard from '../components/CoachCard';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { fetchPublicCoachingBatches } from '../../../services/coachingPublicApi';
+import { mapPublicBatchToCoachCard } from '../../../utils/coachingBatchAdapter';
 
 const Coaching = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState('Weekdays');
+  const [batches, setBatches] = useState([]);
+
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { arenas } = await fetchPublicArenas();
+        const out = [];
+        for (const a of arenas || []) {
+          try {
+            const data = await fetchPublicCoachingBatches(a.id);
+            const name = a.name || '';
+            for (const b of data.batches || []) {
+              out.push(mapPublicBatchToCoachCard(b, name));
+            }
+          } catch {
+            /* skip */
+          }
+        }
+        if (!cancelled) setBatches(out);
+      } catch {
+        if (!cancelled) setBatches([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen pb-20 relative overflow-hidden bg-[#F8FAFC]">
@@ -90,52 +122,9 @@ const Coaching = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-2">
-            <AnimatePresence mode="wait">
-              {PROGRAMS[activeTab].map((prog, i) => (
-                <motion.div 
-                  key={`${activeTab}-${prog.id}`}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: i * 0.01 }}
-                  className="group bg-white rounded-[14px] p-2.5 border border-slate-100 hover:border-[#CE2029] hover:shadow-sm transition-all duration-300 relative"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="w-5 h-5 rounded-md bg-slate-50 flex items-center justify-center text-[7px] font-black text-slate-300 group-hover:bg-[#CE2029]/10 group-hover:text-[#CE2029] transition-colors">
-                      {prog.id}
-                    </span>
-                    <span className="text-[5px] font-black text-slate-300 uppercase tracking-[0.2em]">{prog.type}</span>
-                  </div>
-
-                  <h4 className="text-[9px] font-black text-[#1e293b] leading-tight mb-3 tracking-tight group-hover:text-[#CE2029] transition-colors uppercase">
-                    {prog.title}
-                  </h4>
-                  
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="flex items-baseline gap-0.5">
-                      <span className="text-[6px] font-black text-[#CE2029]">OMR</span>
-                      <span className="text-sm font-black text-[#1e293b] tracking-tighter">{prog.fee.toFixed(2)}</span>
-                    </div>
-                    <div className="w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 group-hover:bg-[#CE2029] group-hover:text-white transition-all">
-                       <ArrowLeft size={8} className="rotate-180" />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-          
-          <div className="mt-5 p-3 bg-slate-50 rounded-[14px] border border-slate-100 flex items-center justify-center">
-            <button 
-              onClick={() => {
-                window.location.href = 'tel:+96812345678';
-              }}
-              className="px-8 py-2.5 bg-[#1e293b] text-white rounded-lg font-black text-[8px] uppercase tracking-widest hover:bg-[#CE2029] transition-all shadow-md text-center"
-            >
-              Enquire Via Contact
-            </button>
-          </div>
+          <p className="text-[11px] text-slate-500 font-medium leading-relaxed mb-4">
+            Published coaching batches from your arenas appear below. Program matrices here are removed in favor of live API data.
+          </p>
         </div>
 
         {/* BATCH SECTION */}
@@ -145,33 +134,18 @@ const Coaching = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          {COACHING_BATCHES.map((batch, index) => (
+          {batches.length === 0 && (
+            <p className="col-span-full text-center text-sm text-slate-500 py-12">
+              No published coaching batches yet. Publish batches in the admin and set <span className="font-mono">VITE_API_URL</span>.
+            </p>
+          )}
+          {batches.map((batch, index) => (
             <CoachCard key={batch.id} batch={batch} index={index} />
           ))}
         </div>
       </div>
     </div>
   );
-};
-
-const PROGRAMS = {
-  Weekdays: [
-    { id: 1, type: 'CORE', title: 'WEEKDAYS 4DW / WEEK', fee: 30.00 },
-    { id: 2, type: 'SIBLING', title: 'WEEKDAYS 4DW / WEEK SIB', fee: 25.00 },
-    { id: 3, type: 'CORE', title: 'WEEKDAYS 3DW / WEEK', fee: 20.00 },
-    { id: 4, type: 'FLEX', title: 'WEEKDAYS 15 DAYS / MONTH', fee: 15.00 },
-  ],
-  Weekends: [
-    { id: 5, type: 'CORE', title: 'WEEKEND SESSIONS', fee: 30.00 },
-    { id: 6, type: 'SIBLING', title: 'WEEKEND SIBLING', fee: 25.00 },
-  ],
-  Special: [
-    { id: 7, type: 'ADULT', title: 'ADULT TRAINING', fee: 30.00 },
-    { id: 8, type: 'PRO', title: 'SPECIAL SINGLE', fee: 7.00 },
-    { id: 9, type: 'PRO', title: 'SPECIAL DOUBLE', fee: 5.00 },
-    { id: 10, type: 'FAMILY', title: 'SPECIAL SIBLING', fee: 3.00 },
-    { id: 11, type: 'ELITE', title: 'SPECIAL MONTHLY', fee: 80.00 },
-  ]
 };
 
 export default Coaching;

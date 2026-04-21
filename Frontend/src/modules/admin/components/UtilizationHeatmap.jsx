@@ -34,8 +34,7 @@ const UtilizationHeatmap = () => {
               </div>
               <div className="flex-1 flex gap-1.5">
                 {hours.map((_, colIdx) => {
-                  // random utilization % 0-100
-                  const utilization = Math.floor(Math.random() * 100);
+                  const utilization = 0;
                   return (
                     <div key={colIdx} className="flex-1 group relative">
                       <motion.div

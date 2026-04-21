@@ -1,19 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CalendarDays, ChevronLeft, ChevronRight, X, Wrench, Trophy, 
   UsersRound, PenLine, Plus, ArrowRight, Activity, Clock,
-  Trash2, Hash
+  Trash2, Hash, Loader2
 } from 'lucide-react';
 import { format, addDays, startOfToday, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay } from 'date-fns';
-
-const COURTS = [
-  { id: 'c1', name: 'Court 1' },
-  { id: 'c2', name: 'Court 2' },
-  { id: 'c3', name: 'Court 3' },
-  { id: 'c4', name: 'Court 4' },
-  { id: 'c5', name: 'Court 5' },
-];
+import { useArenaPanel } from '../../context/ArenaPanelContext';
+import { listMyBlocks, listMyBookings, createMyBlock, deleteMyBlock, getBlockSummary, listMyCourtSlots } from '../../../../services/arenaStaffApi';
+import { showToast } from '../../../../utils/toast';
 
 const BLOCK_TYPES = [
   { id: 'maintenance', label: 'Maintenance', color: '#f59e0b', icon: Wrench },
@@ -22,40 +17,136 @@ const BLOCK_TYPES = [
   { id: 'custom', label: 'Custom', color: '#64748b', icon: PenLine },
 ];
 
-const TIME_SLOTS = ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+const timeToMinutes = (t) => {
+  if (!t) return 0;
+  const parts = t.trim().split(' ');
+  const [h, m] = parts[0].split(':').map(Number);
+  let finalH = h;
+  if (parts.length > 1) {
+    const period = parts[1].toUpperCase();
+    if (period === 'PM' && h !== 12) finalH += 12;
+    if (period === 'AM' && h === 12) finalH = 0;
+  }
+  return finalH * 60 + (m || 0);
+};
 
-const INITIAL_BLOCKS = [
-  { id: 'b1', courtId: 'c1', date: format(addDays(startOfToday(), 1), 'yyyy-MM-dd'), startTime: '09:00', endTime: '11:00', reason: 'maintenance' },
-  { id: 'b2', courtId: 'c2', date: format(addDays(startOfToday(), 3), 'yyyy-MM-dd'), startTime: '14:00', endTime: '17:00', reason: 'event' },
-  { id: 'b3', courtId: 'c3', date: format(startOfToday(), 'yyyy-MM-dd'), startTime: '07:00', endTime: '09:00', reason: 'coaching' },
-];
-
-const MOCK_BOOKINGS = [
-  { courtId: 'c1', date: format(startOfToday(), 'yyyy-MM-dd'), startTime: '18:00' },
-  { courtId: 'c2', date: format(startOfToday(), 'yyyy-MM-dd'), startTime: '19:00' },
-  { courtId: 'c3', date: format(addDays(startOfToday(), 1), 'yyyy-MM-dd'), startTime: '17:00' },
-];
+const timeTo24h = (t) => {
+  if (!t) return '00:00';
+  if (!t.includes(' ')) return t; // Already 24h or near it
+  const parts = t.trim().split(' ');
+  let [h, m] = parts[0].split(':').map(Number);
+  const period = parts[1].toUpperCase();
+  if (period === 'PM' && h !== 12) h += 12;
+  if (period === 'AM' && h === 12) h = 0;
+  return `${String(h).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+};
 
 const AvailabilityControl = () => {
+  const { arena, courts, loading: contextLoading } = useArenaPanel();
   const [currentMonth, setCurrentMonth] = useState(startOfToday());
   const [selectedDate, setSelectedDate] = useState(startOfToday());
-  const [blocks, setBlocks] = useState(INITIAL_BLOCKS);
+  const [blocks, setBlocks] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [courtSlots, setCourtSlots] = useState({}); // { courtId: [slots] }
+  const [summary, setSummary] = useState({}); // { '2025-04-20': count }
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ courtId: 'c1', startTime: '09:00', endTime: '10:00', reason: 'maintenance' });
+  const [form, setForm] = useState({ courtId: '', startTime: '09:00', endTime: '10:00', reason: 'maintenance', note: '' });
 
   const monthDays = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
-  const getSlotState = (courtId, time) => {
-    const dateStr = selectedDateStr;
-    const block = blocks.find(b => b.courtId === courtId && b.date === dateStr && b.startTime <= time && b.endTime > time);
+  const fetchData = useCallback(async () => {
+    if (!arena || !courts) return;
+    setLoading(true);
+    try {
+      const dayName = format(selectedDate, 'eee'); // 'Mon', 'Tue' etc
+      const [blockRes, bookingRes, ...slotRes] = await Promise.all([
+        listMyBlocks({ date: selectedDateStr }),
+        listMyBookings({ date: selectedDateStr, arenaId: arena.id }),
+        ...courts.map(c => listMyCourtSlots(c.id, dayName))
+      ]);
+      
+      setBlocks(blockRes.blocks || []);
+      setBookings(bookingRes.bookings || []);
+      
+      const slotMap = {};
+      courts.forEach((c, i) => {
+        slotMap[c.id] = slotRes[i].slots || [];
+      });
+      setCourtSlots(slotMap);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      showToast('Failed to sync availability data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [arena, selectedDateStr, courts]);
+
+  const fetchSummary = useCallback(async () => {
+    if (!arena) return;
+    try {
+      const monthStr = format(currentMonth, 'yyyy-MM');
+      const res = await getBlockSummary(monthStr);
+      const counts = {};
+      (res.summary || []).forEach(s => {
+        counts[s.date] = s.count;
+      });
+      setSummary(counts);
+    } catch (err) {
+      console.error('Summary error:', err);
+    }
+  }, [arena, currentMonth]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
+
+  useEffect(() => {
+    if (courts?.length > 0 && !form.courtId) {
+      setForm(prev => ({ ...prev, courtId: courts[0].id }));
+    }
+  }, [courts]);
+
+  const DYNAMIC_TIME_SLOTS = useMemo(() => {
+    const all = new Set();
+    Object.values(courtSlots).forEach(slots => {
+      slots.forEach(s => {
+        const start = s.timeSlot.split(' - ')[0];
+        all.add(start);
+      });
+    });
+    return Array.from(all).sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+  }, [courtSlots]);
+
+  const getSlotState = (courtId, startTime) => {
+    const daySlots = courtSlots[courtId] || [];
+    const config = daySlots.find(s => s.timeSlot.startsWith(startTime));
+    
+    if (!config) return { type: 'closed' };
+
+    const time24 = timeTo24h(startTime);
+
+    // Check Blocks
+    const block = blocks.find(b => 
+      b.courtId === courtId && 
+      b.startTime <= time24 && 
+      b.endTime > time24
+    );
     if (block) return { type: 'blocked', reason: block.reason, id: block.id };
 
-    const booking = MOCK_BOOKINGS.find(b => b.courtId === courtId && b.date === dateStr && b.startTime === time);
-    if (booking) return { type: 'booked' };
-
-    const hour = parseInt(time);
-    if (hour >= 17 && hour < 20) return { type: 'coaching' };
+    // Check Bookings
+    const booking = bookings.find(b => 
+      b.courtId === courtId && 
+      b.timeSlot === config.timeSlot &&
+      (b.status === 'confirmed' || b.status === 'pending')
+    );
+    if (booking) return { type: 'booked', id: booking.id };
 
     return { type: 'available' };
   };
@@ -63,8 +154,8 @@ const AvailabilityControl = () => {
   const getSlotStyle = (state) => {
     switch (state.type) {
       case 'booked': return 'bg-red-50 text-red-600 border-red-200';
-      case 'coaching': return 'bg-slate-50 text-slate-500 border-slate-300';
       case 'blocked': return 'bg-gray-50 text-gray-400 border-gray-200';
+      case 'closed': return 'bg-slate-50 text-slate-300 border-slate-100 opacity-60';
       default: return 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100 transition-colors cursor-pointer';
     }
   };
@@ -72,34 +163,56 @@ const AvailabilityControl = () => {
   const getSlotLabel = (state) => {
     switch (state.type) {
       case 'booked': return 'Booked';
-      case 'coaching': return 'Coaching';
       case 'blocked': return BLOCK_TYPES.find(b => b.id === state.reason)?.label || 'Blocked';
+      case 'closed': return 'NA';
       default: return 'Free';
     }
   };
 
-  const getDayBlocks = (day) => {
-    const str = format(day, 'yyyy-MM-dd');
-    return blocks.filter(b => b.date === str).length;
+  const handleAddBlock = async () => {
+    if (!form.courtId || !form.startTime || !form.endTime) return;
+    setSaving(true);
+    try {
+      await createMyBlock({ ...form, date: selectedDateStr });
+      showToast('Availability block initiated', 'success');
+      setShowModal(false);
+      fetchData();
+      fetchSummary();
+    } catch (err) {
+      showToast(err.message || 'Failed to block slot', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const addBlock = () => {
-    setBlocks(prev => [...prev, { id: `b${Date.now()}`, ...form, date: selectedDateStr }]);
-    setShowModal(false);
+  const handleRemoveBlock = async (id) => {
+    try {
+      await deleteMyBlock(id);
+      showToast('Slot block released', 'success');
+      fetchData();
+      fetchSummary();
+    } catch (err) {
+      showToast('Failed to release block', 'error');
+    }
   };
-
-  const removeBlock = (id) => setBlocks(prev => prev.filter(b => b.id !== id));
 
   const inputCls = "w-full py-3 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white transition-all text-[#36454F]";
+
+  if (contextLoading && !arena) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-10 h-10 text-[#CE2029] animate-spin" />
+        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Loading Grid Matrix...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="font-sans text-[#36454F] max-w-[1600px] mx-auto tracking-tight">
       <div className="mx-auto space-y-6 py-6 px-1 md:px-0">
-        
-        {/* Modular Grid Layout */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
 
-          {/* Calendar Picker (Original Rounded 2XL Design) */}
+          {/* Calendar Picker */}
           <div className="xl:col-span-4 bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
               <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 transition-all"><ChevronLeft size={18} strokeWidth={2.5} /></button>
@@ -118,7 +231,8 @@ const AvailabilityControl = () => {
               {monthDays.map(day => {
                 const isToday = isSameDay(day, startOfToday());
                 const isSelected = isSameDay(day, selectedDate);
-                const blocksCount = getDayBlocks(day);
+                const dayStr = format(day, 'yyyy-MM-dd');
+                const hasBlocks = summary[dayStr] > 0;
                 return (
                   <button key={day.toISOString()} onClick={() => setSelectedDate(day)}
                     className={`relative aspect-square flex flex-col items-center justify-center text-[11px] font-bold transition-all rounded-xl active:scale-95 duration-300 ${
@@ -127,7 +241,7 @@ const AvailabilityControl = () => {
                       'hover:bg-slate-50 text-[#36454F]'
                     }`}>
                     {format(day, 'd')}
-                    {blocksCount > 0 && (
+                    {hasBlocks && (
                       <div className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-[#CE2029]'}`} />
                     )}
                   </button>
@@ -138,9 +252,9 @@ const AvailabilityControl = () => {
             <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
                {[
                  { color: 'bg-green-400', label: 'Available' },
-                 { color: 'bg-red-400', label: 'Booked' },
-                 { color: 'bg-yellow-400', label: 'Coaching' },
-                 { color: 'bg-gray-400', label: 'Blocked' },
+                 { color: 'bg-red-400', label: 'Occupied' },
+                 { color: 'bg-gray-400', label: 'Staff Block' },
+                 { color: 'bg-slate-200', label: 'Not Configured' },
                ].map(l => (
                  <div key={l.label} className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${l.color}`} />
@@ -150,19 +264,25 @@ const AvailabilityControl = () => {
             </div>
           </div>
 
-          {/* Availability Grid Card (Original Rounded 2XL Design - WITH 5 COURTS) */}
-          <div className="xl:col-span-8 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col h-full">
+          {/* Availability Grid Card */}
+          <div className="xl:col-span-8 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col h-full relative">
+            {loading && (
+              <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] z-[20] flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#CE2029]" size={24} />
+              </div>
+            )}
+            
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <div>
                  <h3 className="font-bold text-[#36454F] flex items-center gap-2 uppercase tracking-wide text-xs">
                    <CalendarDays size={16} className="text-[#CE2029]" />
                    {format(selectedDate, 'EEEE, MMM dd yyyy')}
                  </h3>
-                 <p className="text-[9px] font-medium text-slate-600 mt-0.5 uppercase tracking-wider">Slot availability by court</p>
+                 <p className="text-[9px] font-medium text-slate-600 mt-0.5 uppercase tracking-wider">Locus occupancy matrix</p>
               </div>
               <button onClick={() => setShowModal(true)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#CE2029] text-white text-[9px] font-semibold uppercase tracking-widest hover:shadow-md transition-all active:translate-y-0.5">
-                <Plus size={14} strokeWidth={2.5} /> Block Slot
+                <Plus size={14} strokeWidth={2.5} /> Deploy Block
               </button>
             </div>
 
@@ -173,7 +293,7 @@ const AvailabilityControl = () => {
                   <div className="w-20 shrink-0 py-4 border-r border-slate-100 flex items-center justify-center">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-700">Time</span>
                   </div>
-                  {COURTS.map(c => (
+                  {courts?.map(c => (
                     <div key={c.id} className="flex-1 py-4 text-center">
                       <p className="text-[10px] font-bold text-[#36454F] uppercase tracking-widest">{c.name}</p>
                     </div>
@@ -182,12 +302,12 @@ const AvailabilityControl = () => {
 
                 {/* Time Rows */}
                 <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto scrollbar-hide">
-                  {TIME_SLOTS.map(time => (
+                  {DYNAMIC_TIME_SLOTS.map(time => (
                     <div key={time} className="flex items-stretch min-h-[52px]">
-                      <div className="w-20 shrink-0 border-r border-slate-100 flex items-center justify-center bg-slate-50/50 hover:bg-slate-100 transition-colors">
+                      <div className="w-20 shrink-0 border-r border-slate-100 flex items-center justify-center bg-slate-50/50">
                         <span className="text-[11px] font-black text-slate-700">{time}</span>
                       </div>
-                      {COURTS.map(court => {
+                      {courts?.map(court => {
                         const state = getSlotState(court.id, time);
                         return (
                           <div key={court.id} className="flex-1 p-1.5 border-r border-slate-50 last:border-0">
@@ -205,38 +325,40 @@ const AvailabilityControl = () => {
           </div>
         </div>
 
-        {/* Override Registry (Rounded Design) */}
-        {blocks.filter(b => b.date === selectedDateStr).length > 0 && (
-          <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-            <h3 className="font-black text-[#36454F] text-sm uppercase tracking-widest mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
-               <Hash size={14} className="text-[#CE2029]" /> Blocked Slots — {format(selectedDate, 'MMM dd')}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-               {blocks.filter(b => b.date === selectedDateStr).map(block => {
-                 const bt = BLOCK_TYPES.find(t => t.id === block.reason);
-                 const court = COURTS.find(c => c.id === block.courtId);
-                 return (
-                   <motion.div key={block.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                     className="flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl hover:border-slate-300 transition-all">
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white border border-slate-200">
-                           <bt.icon size={14} style={{ color: bt.color }} />
-                        </div>
-                        <div>
-                           <p className="text-[11px] font-black text-[#36454F] uppercase">{court?.name} · {bt.label}</p>
-                           <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{block.startTime} — {block.endTime}</p>
-                        </div>
+        {/* Registry Summary */}
+        <AnimatePresence>
+          {blocks.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
+              <h3 className="font-black text-[#36454F] text-sm uppercase tracking-widest mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
+                 <Hash size={14} className="text-[#CE2029]" /> Blocked Registries — {format(selectedDate, 'MMM dd')}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                 {blocks.map(block => {
+                   const bt = BLOCK_TYPES.find(t => t.id === block.reason);
+                   const court = courts?.find(c => c.id === block.courtId);
+                   return (
+                     <div key={block.id} className="flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl">
+                       <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white border border-slate-200">
+                             {bt ? <bt.icon size={14} style={{ color: bt.color }} /> : <PenLine size={14} />}
+                          </div>
+                          <div>
+                             <p className="text-[11px] font-black text-[#36454F] uppercase">{court?.name || 'Invalid Court'} · {bt?.label || 'Custom'}</p>
+                             <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{block.startTime} — {block.endTime}</p>
+                          </div>
+                       </div>
+                       <button onClick={() => handleRemoveBlock(block.id)} className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={13} /></button>
                      </div>
-                     <button onClick={() => removeBlock(block.id)} className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={13} /></button>
-                   </motion.div>
-                 );
-               })}
-            </div>
-          </div>
-        )}
+                   );
+                 })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Block Modal (Rounded 3XL/XL Design) */}
+      {/* Block Modal */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
@@ -247,7 +369,7 @@ const AvailabilityControl = () => {
               <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
                   <h3 className="text-xl font-black flex items-center gap-3">
-                    <CalendarDays className="text-[#CE2029]" size={22} strokeWidth={3} /> Block Slots
+                    <CalendarDays className="text-[#CE2029]" size={22} strokeWidth={3} /> Initiate Override
                   </h3>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mt-1">{format(selectedDate, 'MMMM dd, yyyy')}</p>
                 </div>
@@ -256,25 +378,26 @@ const AvailabilityControl = () => {
 
               <div className="p-6 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">Court Selection</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">Target Court</label>
                   <select value={form.courtId} onChange={e => setForm(p => ({ ...p, courtId: e.target.value }))} className={inputCls}>
-                    {COURTS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    <option value="" disabled>Select a court</option>
+                    {courts?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">Start Cluster</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">Start Phase</label>
                     <input type="time" value={form.startTime} onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} className={inputCls} />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">End Cluster</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">End Phase</label>
                     <input type="time" value={form.endTime} onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} className={inputCls} />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">Displacement Locus</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 block px-1">Block Logotype</label>
                   <div className="grid grid-cols-2 gap-2">
                     {BLOCK_TYPES.map(bt => (
                       <button key={bt.id} onClick={() => setForm(p => ({ ...p, reason: bt.id }))}
@@ -289,9 +412,12 @@ const AvailabilityControl = () => {
                 </div>
 
                 <div className="pt-2">
-                  <button onClick={addBlock}
-                    className="w-full h-14 rounded-xl bg-[#CE2029] text-white text-[12px] font-black uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:shadow-lg shadow-[#CE2029]/20 transition-all active:translate-y-0.5">
-                    Initiate Block <ArrowRight size={16} strokeWidth={3} />
+                  <button onClick={handleAddBlock} disabled={saving}
+                    className={`w-full h-14 rounded-xl text-white text-[12px] font-black uppercase tracking-[0.25em] flex items-center justify-center gap-2 transition-all active:translate-y-0.5 ${
+                      saving ? 'bg-slate-400' : 'bg-[#CE2029] hover:shadow-lg shadow-[#CE2029]/20'
+                    }`}>
+                    {saving ? <Loader2 className="animate-spin" size={18} /> : <Activity size={16} strokeWidth={3} />}
+                    {saving ? 'Processing Vector...' : 'Execute Override'}
                   </button>
                 </div>
               </div>

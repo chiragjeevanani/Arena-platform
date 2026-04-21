@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Receipt, GraduationCap, Download, Calendar, ShieldCheck, X, MapPin, Clock, Printer, CheckCircle2, AlertOctagon } from 'lucide-react';
-import { USER_BOOKINGS } from '../../../data/mockData';
-import { RESOLVED_CONFLICT_BOOKINGS } from '../../../data/conflictMockData';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listMyBookings, cancelMyBooking } from '../../../services/bookingsApi';
+import { listMyEnrollments, cancelMyEnrollment, listMyEventRegistrations } from '../../../services/meApi';
+import { mapMeBookingToDashboardCard } from '../../../utils/meBookingAdapter';
+import { mapEnrollmentToDashboardCard } from '../../../utils/enrollmentAdapter';
+import { mapEventRegistrationToDashboardCard } from '../../../utils/eventRegistrationAdapter';
+import { pruneUserBookingsLocalCache } from '../../../utils/userBookingsCache';
 import BookingTimelineCard from '../components/BookingTimeline';
 import BookingCard from '../components/BookingCard';
 import NotificationToast, { useConflictToasts } from '../components/NotificationToast';
@@ -12,7 +18,7 @@ import { useTheme } from '../context/ThemeContext';
 
 // Full Receipt Modal
 const ReceiptModal = ({ receipt, onClose }) => (
-  <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+  <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
     <motion.div initial={{ scale: 0.93, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.93, opacity: 0, y: 20 }} className="relative w-full max-w-sm bg-white rounded-[28px] shadow-2xl overflow-hidden border border-slate-100">
       {/* Header */}
@@ -97,9 +103,11 @@ const ReceiptItem = ({ receipt }) => {
                <h4 className="text-[15px] font-black text-[#36454F]">{receipt.arenaName}</h4>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-right max-w-[120px]">
              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Receipt ID</p>
-             <span className="text-[11px] font-black text-[#36454F] bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">#{receipt.id}</span>
+             <div className="text-[10px] font-black text-[#36454F] bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 truncate" title={`#${receipt.id}`}>
+               #{receipt.id}
+             </div>
           </div>
         </div>
 
@@ -137,24 +145,93 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const { toggleTheme } = useTheme();
   const isDark = false;
-  const { toasts, dismiss } = useConflictToasts(RESOLVED_CONFLICT_BOOKINGS);
+  const resolvedConflictBookings = useMemo(() => [], []);
+  const { toasts, dismiss } = useConflictToasts(resolvedConflictBookings);
   const [allBookings, setAllBookings] = useState([]);
 
-  useEffect(() => {
-    // Merge mock bookings with user booked arenas from localStorage
+  const refetchBookings = useCallback(async () => {
     const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-    const merged = [...savedBookings, ...USER_BOOKINGS];
+    if (!isApiConfigured() || !getAuthToken()) {
+      setAllBookings(savedBookings);
+      return;
+    }
+    try {
+      const [data, enData, evData] = await Promise.all([
+        listMyBookings().catch(err => { console.error('Bookings API Fail:', err); return { bookings: [] }; }),
+        listMyEnrollments().catch(err => { console.error('Enrollments API Fail:', err); return { enrollments: [] }; }),
+        listMyEventRegistrations().catch(err => { console.error('Events API Fail:', err); return { registrations: [] }; }),
+      ]);
+      console.log('RAW API DATA - Bookings:', data);
+      console.log('RAW API DATA - Enrollments:', enData);
+      console.log('RAW API DATA - Events:', evData);
+      const courtCards = (data.bookings || []).map((b) => mapMeBookingToDashboardCard(b));
+      const enrollCards = (enData.enrollments || []).map((e) => mapEnrollmentToDashboardCard(e));
+      const eventCards = (evData.registrations || []).map((r) => mapEventRegistrationToDashboardCard(r));
+      pruneUserBookingsLocalCache({
+        bookingIds: courtCards.map((c) => c.id),
+        enrollmentIds: enrollCards.map((c) => c.id),
+        eventRegistrationIds: eventCards.map((c) => c.id),
+      });
+      const merged = [...courtCards, ...enrollCards, ...eventCards].sort((a, b) => {
+        const da = new Date(a.sortKey || `${a.date}T12:00:00`);
+        const db = new Date(b.sortKey || `${b.date}T12:00:00`);
+        const ta = da.getTime();
+        const tb = db.getTime();
+        if (Number.isNaN(ta) && Number.isNaN(tb)) return 0;
+        if (Number.isNaN(ta)) return 1;
+        if (Number.isNaN(tb)) return -1;
+        return tb - ta;
+      });
 
-    // Sort by date (mock sorting)
-    setAllBookings(merged);
+      // Deduplicate by ID and content (Date + Slot)
+      const unique = [];
+      const seenIds = new Set();
+      const seenContent = new Set();
+      for (const b of merged) {
+        const contentKey = `${b.date}_${b.slot}_${b.arenaName}`;
+        if (!seenIds.has(b.id) && !seenContent.has(contentKey)) {
+          seenIds.add(b.id);
+          seenContent.add(contentKey);
+          unique.push(b);
+        }
+      }
+
+      console.log('DEBUG: Merged Dashboard Cards:', unique);
+      setAllBookings(unique);
+    } catch (err) {
+      console.error('DEBUG: Dashboard Fetch Error:', err);
+      setAllBookings(savedBookings);
+    }
   }, []);
+
+  useEffect(() => {
+    refetchBookings();
+  }, [refetchBookings]);
+
+  const handleServerCancelBooking = useCallback(
+    async (bookingId) => {
+      await cancelMyBooking(bookingId);
+      await refetchBookings();
+    },
+    [refetchBookings]
+  );
+
+  const handleServerCancelEnrollment = useCallback(
+    async (enrollmentId) => {
+      await cancelMyEnrollment(enrollmentId);
+      await refetchBookings();
+    },
+    [refetchBookings]
+  );
+
+  const apiLive = isApiConfigured() && Boolean(getAuthToken());
 
   const tabs = [
     { id: 'upcoming', name: 'Upcoming' },
     { id: 'past', name: 'Past' },
     { id: 'coaching', name: 'Coaching' },
     { id: 'payments', name: 'Receipts' },
-    { id: 'conflicts', name: 'Conflicts', badge: RESOLVED_CONFLICT_BOOKINGS.length },
+    { id: 'conflicts', name: 'Conflicts', badge: resolvedConflictBookings.length },
   ];
 
   return (
@@ -228,7 +305,12 @@ const Dashboard = () => {
               {allBookings.filter(b => b.status === 'Upcoming' && b.type !== 'Coaching').length > 0 ? (
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                   {allBookings.filter(b => b.status === 'Upcoming' && b.type !== 'Coaching').map((booking, index) => (
-                    <BookingTimelineCard key={booking.id} booking={booking} index={index} />
+                    <BookingTimelineCard
+                      key={booking.id}
+                      booking={booking}
+                      index={index}
+                      onServerCancelBooking={apiLive ? handleServerCancelBooking : undefined}
+                    />
                   ))}
                 </div>
               ) : (
@@ -251,11 +333,25 @@ const Dashboard = () => {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-                {allBookings.filter(b => b.status === 'Completed' && b.type !== 'Coaching').map((booking, index) => (
-                  <BookingTimelineCard key={booking.id} booking={booking} index={index} />
-                ))}
-              </div>
+              {allBookings.filter((b) => b.status === 'Completed' && b.type !== 'Coaching').length > 0 ? (
+                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {allBookings
+                    .filter((b) => b.status === 'Completed' && b.type !== 'Coaching')
+                    .map((booking, index) => (
+                      <BookingTimelineCard
+                        key={booking.id}
+                        booking={booking}
+                        index={index}
+                        onServerCancelBooking={apiLive ? handleServerCancelBooking : undefined}
+                      />
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 px-10 max-w-5xl mx-auto">
+                  <h3 className="text-xl font-black font-display text-[#36454F]">No past bookings</h3>
+                  <p className="text-sm mt-2 font-bold opacity-30 text-[#36454F]">Completed court bookings will show here.</p>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -269,7 +365,13 @@ const Dashboard = () => {
               {allBookings.filter(b => b.type === 'Coaching').length > 0 ? (
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                   {allBookings.filter(b => b.type === 'Coaching').map((booking, index) => (
-                    <BookingTimelineCard key={booking.id} booking={booking} index={index} />
+                    <BookingTimelineCard
+                      key={booking.id}
+                      booking={booking}
+                      index={index}
+                      onServerCancelBooking={apiLive ? handleServerCancelBooking : undefined}
+                      onServerCancelEnrollment={apiLive ? handleServerCancelEnrollment : undefined}
+                    />
                   ))}
                 </div>
               ) : (
@@ -304,15 +406,15 @@ const Dashboard = () => {
                 <div>
                   <p className="text-xs font-black text-orange-700">Event Conflict Notice</p>
                   <p className="text-[10px] font-bold text-orange-500 mt-0.5 leading-relaxed">
-                    {RESOLVED_CONFLICT_BOOKINGS.length} of your booking{RESOLVED_CONFLICT_BOOKINGS.length !== 1 ? 's are' : ' is'} affected by upcoming events.
+                    {resolvedConflictBookings.length} of your booking{resolvedConflictBookings.length !== 1 ? 's are' : ' is'} affected by upcoming events.
                     Your plans have been extended automatically — no action needed.
                   </p>
                 </div>
               </div>
 
-              {RESOLVED_CONFLICT_BOOKINGS.length > 0 ? (
+              {resolvedConflictBookings.length > 0 ? (
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {RESOLVED_CONFLICT_BOOKINGS.map((booking, index) => (
+                  {resolvedConflictBookings.map((booking, index) => (
                     <BookingCard key={booking.id} booking={booking} index={index} />
                   ))}
                 </div>

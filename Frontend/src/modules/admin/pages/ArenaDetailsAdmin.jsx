@@ -6,28 +6,97 @@ import {
   Save, CheckCircle2, ChevronRight, Image as ImageIcon,
   Plus, Minus, Trash2, Edit3, Star, BadgeDollarSign,
   Trophy, Navigation, Upload, Cloud, ArrowLeft,
-  Wifi, Coffee, ShowerHead, ParkingCircle, Footprints
+  Wifi, Coffee, ShowerHead, ParkingCircle, Footprints, UploadCloud, Loader2,
+  Clock, Wrench, Activity
 } from 'lucide-react';
-import { ARENAS } from '../../../data/mockData';
+import { format } from 'date-fns';
+import { fetchPublicArenaById } from '../../../services/arenasApi';
+import { normalizeDetailArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { 
+  createAdminArena, 
+  patchAdminArena, 
+  getAdminArenaById, 
+  deleteAdminCourt, 
+  updateAdminCourt, 
+  uploadAdminImage,
+  listAdminArenaBlocks
+} from '../../../services/adminOpsApi';
+
+const newArenaForm = () => ({
+  id: Date.now(),
+  name: '',
+  location: '',
+  distance: '',
+  rating: 0,
+  reviews: 0,
+  pricePerHour: 0,
+  courtsCount: 0,
+  image: '',
+  category: '',
+  amenities: [],
+  description: '',
+});
 
 const ArenaDetailsAdmin = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const fileInputRef = useRef(null);
+  const courtImageInputRef = useRef(null);
   const [isEditingCourts, setIsEditingCourts] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  // Initializing based on URL param
-  const [form, setForm] = useState(() => {
+  const [form, setForm] = useState(() => (id === 'new' ? newArenaForm() : { ...newArenaForm(), id }));
+  const [courts, setCourts] = useState([]);
+  const [activeTab, setActiveTab] = useState('general'); // general, courts, availability
+
+  useEffect(() => {
     if (id === 'new') {
-      return {
-        id: Date.now(),
-        name: '', location: '', distance: '', rating: 0,
-        reviews: 0, pricePerHour: 0, courtsCount: 0, image: '',
-        category: '', amenities: [], description: ''
-      };
+      setForm(newArenaForm());
+      setCourts([]);
+      setLoadError('');
+      return undefined;
     }
-    return ARENAS.find(a => a.id === parseInt(id)) || ARENAS[0];
-  });
+    if (!isApiConfigured()) {
+      setLoadError('Set VITE_API_URL to load this arena from the server.');
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getAdminArenaById(id);
+        if (cancelled) return;
+        const d = data.arena;
+        setForm({
+          id: d.id,
+          name: d.name,
+          location: d.location,
+          distance: d.distance ?? '',
+          rating: d.rating,
+          reviews: d.reviewsCount || 0,
+          pricePerHour: d.pricePerHour,
+          courtsCount: d.courtsCount,
+          image: d.imageUrl || '',
+          category: d.category,
+          amenities: Array.isArray(d.amenities) ? d.amenities : [],
+          description: d.description || '',
+        });
+        
+        // Fetch real courts
+        if (data.courts) {
+            setCourts(data.courts);
+        }
+
+        setLoadError('');
+      } catch (e) {
+        if (!cancelled) setLoadError(e.message || 'Failed to load arena');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const [toast, setToast] = useState(null);
 
@@ -56,13 +125,128 @@ const ArenaDetailsAdmin = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.location) {
       showToast('Name and Location are required');
       return;
     }
-    showToast('Arena details saved to registry');
-    setTimeout(() => navigate('/admin/arena/details'), 1500);
+    if (!isApiConfigured() || !getAuthToken()) {
+      showToast('Configure API and sign in as admin');
+      return;
+    }
+    const body = {
+      name: form.name.trim(),
+      location: form.location.trim(),
+      category: form.category || 'Badminton',
+      description: form.description || '',
+      amenities: Array.isArray(form.amenities) ? form.amenities : [],
+      pricePerHour: Number(form.pricePerHour) || 0,
+      imageUrl: form.image || '',
+      rating: Number(form.rating) || 0,
+      reviewsCount: Number(form.reviews) || 0,
+      distance: String(form.distance || ''),
+      courtsCount: Number(form.courtsCount) || 0,
+      isPublished: true,
+    };
+    try {
+      if (id === 'new') {
+        const res = await createAdminArena(body);
+        showToast('Arena created');
+        navigate(`/admin/arena/details/${res.arena.id}`);
+      } else {
+        await patchAdminArena(String(id), body);
+        showToast('Arena updated');
+      }
+    } catch (e) {
+      showToast(e.message || 'Save failed');
+    }
+  };
+
+  const [courtToDelete, setCourtToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteCourt = async () => {
+    if (!courtToDelete?.id) return;
+    setDeleting(true);
+    try {
+      await deleteAdminCourt(courtToDelete.id);
+      showToast('Court removed successfully');
+      setCourtToDelete(null);
+      // Trigger a full data refresh
+      const data = await getAdminArenaById(id);
+      setCourts(data.courts || []);
+      setForm(prev => ({ ...prev, courtsCount: data.arena.courtsCount }));
+    } catch (err) {
+      showToast(err.message || 'Delete failed');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const [courtToEdit, setCourtToEdit] = useState(null);
+  const [updatingCourt, setUpdatingCourt] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleUpdateCourt = async (e) => {
+    e.preventDefault();
+    if (!courtToEdit?.id) return;
+    setUpdatingCourt(true);
+    try {
+      await updateAdminCourt(courtToEdit.id, {
+        name: courtToEdit.name,
+        type: courtToEdit.type,
+        status: courtToEdit.status,
+        pricePerHour: courtToEdit.pricePerHour,
+        imageUrl: courtToEdit.imageUrl
+      });
+      showToast('Unit updated successfully');
+      setCourtToEdit(null);
+      // Refresh
+      const data = await getAdminArenaById(id);
+      setCourts(data.courts || []);
+    } catch (err) {
+      showToast(err.message || 'Update failed');
+    } finally {
+      setUpdatingCourt(false);
+    }
+  };
+
+  const handleCourtImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingImage(true);
+    setUploadProgress(10);
+    
+    const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+            if (prev >= 90) {
+               clearInterval(progressInterval);
+               return 90;
+            }
+            return prev + Math.random() * 15;
+        });
+    }, 200);
+
+    try {
+      const res = await uploadAdminImage(file);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setTimeout(() => {
+          setCourtToEdit(prev => ({ ...prev, imageUrl: res.url }));
+          setUploadingImage(false);
+          setUploadProgress(0);
+      }, 300);
+      showToast('Image uploaded successfully');
+    } catch (err) {
+      clearInterval(progressInterval);
+      setUploadingImage(false);
+      setUploadProgress(0);
+      showToast(err.message || 'Upload failed');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const amenityList = [
@@ -77,6 +261,191 @@ const ArenaDetailsAdmin = () => {
 
   return (
     <div className="space-y-4 max-w-[1400px] mx-auto relative px-4 py-4 min-h-screen pb-20">
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {courtToDelete && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setCourtToDelete(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-slate-100"
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto text-[#CE2029]">
+                  <Trash2 size={28} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-[#36454F] uppercase tracking-tight">Decommission Unit?</h3>
+                  <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest line-clamp-1">
+                    Destroying "{courtToDelete.name}" registry
+                  </p>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => setCourtToDelete(null)} 
+                    className="flex-1 py-3 rounded-xl bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest border border-slate-100 hover:bg-slate-100 transition-all">
+                    Cancel
+                  </button>
+                  <button onClick={handleDeleteCourt} disabled={deleting}
+                    className="flex-1 py-3 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:brightness-110 transition-all disabled:opacity-50">
+                    {deleting ? 'Decommissioning...' : 'Confirm Destroy'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Court Modal */}
+      <AnimatePresence>
+        {courtToEdit && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setCourtToEdit(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto"
+            >
+              <form onSubmit={handleUpdateCourt} className="space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-50 pb-4">
+                  <h3 className="text-sm font-black text-[#36454F] uppercase tracking-widest flex items-center gap-2">
+                    <Edit3 size={16} className="text-[#CE2029]" /> Edit Unit Details
+                  </h3>
+                  <button type="button" onClick={() => setCourtToEdit(null)} className="text-slate-400 hover:text-[#36454F]">
+                    <Plus size={20} className="rotate-45" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                   {/* Court Image Preview/Upload */}
+                   <div className="space-y-2">
+                     <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Unit Showcase Image</label>
+                     <div className="relative group aspect-video bg-slate-50 border border-slate-100 rounded-xl overflow-hidden shadow-inner">
+                        {courtToEdit.imageUrl ? (
+                          <img src={courtToEdit.imageUrl} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 gap-1">
+                             <ImageIcon size={24} />
+                             <span className="text-[7px] font-bold uppercase tracking-widest">No Image Set</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/50 to-transparent translate-y-full group-hover:translate-y-0 transition-all flex gap-2 items-center">
+                           <input 
+                             type="text" value={courtToEdit.imageUrl || ''} 
+                             onChange={e => setCourtToEdit({...courtToEdit, imageUrl: e.target.value})}
+                             placeholder="Paste URL..."
+                             className="flex-1 bg-white/90 backdrop-blur-md border-none rounded-lg py-1.5 px-3 text-[9px] font-bold text-slate-900 outline-none"
+                           />
+                           <button 
+                             type="button" 
+                             onClick={() => courtImageInputRef.current?.click()}
+                             className="w-8 h-8 rounded-lg bg-[#CE2029] text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
+                           >
+                             <UploadCloud size={14} />
+                           </button>
+                           <input 
+                             ref={courtImageInputRef}
+                             type="file" accept="image/*" className="hidden"
+                             onChange={handleCourtImageUpload}
+                           />
+                        </div>
+                        
+                        <AnimatePresence>
+                           {uploadingImage && (
+                              <motion.div 
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 z-20"
+                              >
+                                 <div className="w-full max-w-[200px] space-y-3 text-center">
+                                    <div className="relative w-full h-1 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                       <motion.div 
+                                          className="absolute inset-y-0 left-0 bg-[#CE2029]"
+                                          initial={{ width: 0 }}
+                                          animate={{ width: `${uploadProgress}%` }}
+                                          transition={{ type: 'spring', bounce: 0, duration: 0.2 }}
+                                       />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                       <span className="text-[8px] font-black uppercase tracking-widest text-[#CE2029]">Analyzing Frame</span>
+                                       <span className="text-[10px] font-black text-[#36454F]">{Math.round(uploadProgress)}%</span>
+                                    </div>
+                                    <Loader2 size={16} className="text-[#CE2029] animate-spin mx-auto mt-2" />
+                                 </div>
+                              </motion.div>
+                           )}
+                        </AnimatePresence>
+                     </div>
+                   </div>
+
+                   <div className="space-y-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Unit Identity</label>
+                      <input 
+                        required type="text" value={courtToEdit.name} 
+                        onChange={e => setCourtToEdit({...courtToEdit, name: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white"
+                      />
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Unit Surface/Type</label>
+                      <select 
+                        value={courtToEdit.type} 
+                        onChange={e => setCourtToEdit({...courtToEdit, type: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white"
+                      >
+                         <option value="Wooden">Wooden</option>
+                         <option value="Synthetic">Synthetic</option>
+                         <option value="Turf">Turf</option>
+                         <option value="Acrylic">Acrylic</option>
+                         <option value="Sand">Sand</option>
+                      </select>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-[#CE2029] ml-1">Registry Status</label>
+                      <select 
+                        value={courtToEdit.status} 
+                        onChange={e => setCourtToEdit({...courtToEdit, status: e.target.value})}
+                        className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white"
+                      >
+                         <option value="active">ACTIVE</option>
+                         <option value="inactive">INACTIVE</option>
+                      </select>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Base Price / hr (OMR)</label>
+                      <input 
+                        type="number" step="0.001" value={courtToEdit.pricePerHour ?? ''} 
+                        onChange={e => setCourtToEdit({...courtToEdit, pricePerHour: e.target.value})}
+                        placeholder="Leave empty for base rate"
+                        className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white"
+                      />
+                   </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setCourtToEdit(null)} 
+                    className="flex-1 py-3 rounded-xl bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest border border-slate-100">
+                    Discard
+                  </button>
+                  <button type="submit" disabled={updatingCourt}
+                    className="flex-1 py-3 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20">
+                    {updatingCourt ? 'Saving...' : 'Patch Registry'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {loadError && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs font-bold px-4 py-3">
+          {loadError}
+        </div>
+      )}
+
       {/* Toast */}
       <AnimatePresence>
         {toast && (
@@ -117,9 +486,34 @@ const ArenaDetailsAdmin = () => {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex items-center gap-1 border-b border-slate-100 mb-6 sticky top-0 bg-white/80 backdrop-blur-md z-[100] py-2">
+        {[
+          { id: 'general', label: 'General Info', icon: Building2 },
+          { id: 'courts', label: 'Physical Units', icon: Trophy },
+          { id: 'availability', label: 'Availability Pulse', icon: Activity },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all relative ${
+              activeTab === tab.id ? 'text-[#CE2029]' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <tab.icon size={14} />
+            {tab.label}
+            {activeTab === tab.id && (
+              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#CE2029]" />
+            )}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-6">
-           {/* Banner Upload */}
-           <div className="bg-white rounded-none border border-slate-100 p-8 shadow-sm">
+        {activeTab === 'general' && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+             {/* Banner Upload */}
+             <div className="bg-white rounded-none border border-slate-100 p-8 shadow-sm">
              <div className="flex justify-between items-center mb-6">
                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                  <ImageIcon size={16} className="text-[#CE2029]" /> Arena Graphics
@@ -248,31 +642,34 @@ const ArenaDetailsAdmin = () => {
              </div>
            </div>
 
-           {/* Amenities & Operational Summary */}
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
-              <div className="bg-white rounded-none border border-slate-100 p-8 shadow-sm">
-                <h3 className="text-sm font-bold text-slate-900 mb-6">Amenity Checklist</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {amenityList.map(item => (
-                    <button
-                      key={item.name}
-                      onClick={() => toggleAmenity(item.name)}
-                      className={`flex items-center gap-3 p-3.5 rounded-none border transition-all ${
-                        form.amenities.includes(item.name)
-                          ? 'bg-[#CE2029]/5 border-[#CE2029]/20 text-[#CE2029]'
-                          : 'bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-200'
-                      }`}
-                    >
-                      <item.icon size={16} />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">{item.name}</span>
-                    </button>
-                  ))}
-                </div>
+           <div className="bg-white rounded-none border border-slate-100 p-8 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900 mb-6">Amenity Checklist</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                {amenityList.map(item => (
+                  <button
+                    key={item.name}
+                    onClick={() => toggleAmenity(item.name)}
+                    className={`flex items-center gap-3 p-3.5 rounded-none border transition-all ${
+                      form.amenities.includes(item.name)
+                        ? 'bg-[#CE2029]/5 border-[#CE2029]/20 text-[#CE2029]'
+                        : 'bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-200'
+                    }`}
+                  >
+                    <item.icon size={16} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{item.name}</span>
+                  </button>
+                ))}
               </div>
+           </div>
+          </motion.div>
+        )}
 
-              <div className="bg-[#CE2029]/[0.02] rounded-none p-8 border border-[#CE2029]/10 relative overflow-hidden group">
+        {activeTab === 'courts' && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+             <div className="bg-[#CE2029]/[0.02] rounded-none p-8 border border-[#CE2029]/10 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#CE2029]/5 rounded-none blur-3xl -translate-y-12 translate-x-12" />
                 <div className="relative z-10 flex flex-col h-full justify-between">
+                  {/* Reuse existing court management UI here */}
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-2">Resource Availability</p>
@@ -289,42 +686,71 @@ const ArenaDetailsAdmin = () => {
                       <Edit3 size={16} />
                     </button>
                   </div>
+                  {/* ... court grid ... */}
                     {/* High-Visibility Interactive Court Grid with Popout Controls */}
                     <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6 gap-6 my-6">
-                      {Array.from({ length: Number(form.courtsCount) || 0 }).map((_, i) => (
+                      {courts.map((court, i) => (
                         <motion.div 
-                          key={i}
+                          key={court.id || i}
                           initial={{ opacity: 0, scale: 0.9, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
-                          onClick={() => navigate(`/admin/arena/slots/${id}/${i + 1}`)}
-                          className="aspect-square bg-white border-2 border-[#CE2029]/10 shadow-sm flex flex-col items-center justify-center text-[#CE2029] relative group/unit transition-all cursor-pointer hover:border-[#CE2029] hover:bg-[#CE2029]/[0.02]"
+                          onClick={() => navigate(`/admin/arena/slots/${id}/${court.id || (i + 1)}`)}
+                          className={`aspect-square bg-white border-2 shadow-sm flex flex-col items-center justify-center relative group/unit transition-all cursor-pointer hover:border-[#CE2029] hover:bg-[#CE2029]/[0.02] ${
+                            court.status === 'inactive' ? 'border-slate-200 text-slate-300 opacity-60' : 'border-[#CE2029]/10 text-[#CE2029]'
+                          }`}
                         >
-                          {/* Popout Remove Unit Action - Floating on Border - Visible only in Edit Mode */}
                           <AnimatePresence>
                             {isEditingCourts && (
                               <motion.button
-                                initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
-                                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setForm(prev => ({ ...prev, courtsCount: Math.max(0, Number(prev.courtsCount) - 1) }));
+                                  setCourtToDelete(court);
                                 }}
-                                className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-full bg-[#CE2029] text-white flex items-center justify-center transition-all shadow-xl z-50 hover:scale-110 active:scale-90 border-2 border-white"
+                                className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-full bg-[#CE2029] text-white flex items-center justify-center transition-all shadow-xl z-50 hover:scale-110 border-2 border-white"
                               >
                                 <Minus size={14} strokeWidth={4} />
                               </motion.button>
                             )}
                           </AnimatePresence>
 
+                          <AnimatePresence>
+                            {isEditingCourts && (
+                               <motion.button
+                                 initial={{ opacity: 0, scale: 0.5 }}
+                                 animate={{ opacity: 1, scale: 1 }}
+                                 exit={{ opacity: 0, scale: 0.5 }}
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   setCourtToEdit(court);
+                                 }}
+                                 className="absolute -top-2.5 -left-2.5 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center transition-all shadow-xl z-50 hover:scale-110 border-2 border-white"
+                               >
+                                 <Edit3 size={12} strokeWidth={3} />
+                               </motion.button>
+                            )}
+                          </AnimatePresence>
+                          
                           <div className="absolute inset-0 bg-gradient-to-tr from-[#CE2029]/[0.05] to-transparent opacity-0 group-hover/unit:opacity-100 transition-opacity rounded-sm" />
                           <Building2 size={22} className="mb-1.5 transition-transform group-hover/unit:scale-110" />
-                          <div className="flex flex-col items-center">
-                            <span className="text-[7.5px] font-black uppercase tracking-[0.2em] text-slate-900 leading-none mb-1">COURT</span>
-                            <span className="text-xl font-black leading-none">{i + 1}</span>
+                          <div className="flex flex-col items-center text-center px-1">
+                            <span className="text-[7.5px] font-black uppercase tracking-[0.2em] text-slate-900 leading-none mb-1">UNIT</span>
+                            <span className="text-[10px] font-black leading-none break-words max-w-full">{court.name || (i + 1)}</span>
                           </div>
                         </motion.div>
                       ))}
+
+                      {/* Fallback for unsynced counter increase */}
+                      {courts.length < Number(form.courtsCount) && 
+                        Array.from({ length: Number(form.courtsCount) - courts.length }).map((_, i) => (
+                           <div key={`pending-${i}`} className="aspect-square bg-slate-50 border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-slate-300 opacity-50">
+                              <Plus size={16} />
+                              <span className="text-[7px] font-black uppercase tracking-widest mt-1">Pending Sync</span>
+                           </div>
+                        ))
+                      }
 
                       {/* Add Unit Action Card - Visible only in Edit Mode */}
                       <AnimatePresence>
@@ -357,7 +783,102 @@ const ArenaDetailsAdmin = () => {
                   </div>
                 </div>
               </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'availability' && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+             <AdminAvailabilityView arenaId={id} courts={courts} />
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* --- Read-Only Admin Availability View --- */
+const AdminAvailabilityView = ({ arenaId, courts }) => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [blocks, setBlocks] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await listAdminArenaBlocks(arenaId, format(selectedDate, 'yyyy-MM-dd'));
+        setBlocks(res.blocks || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [arenaId, selectedDate]);
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <div className="xl:col-span-4 bg-white border border-slate-100 p-6 rounded-none">
+        <h3 className="text-xs font-black uppercase tracking-widest text-[#CE2029] mb-4">Select Audit Date</h3>
+        <input 
+          type="date" 
+          value={format(selectedDate, 'yyyy-MM-dd')} 
+          onChange={(e) => setSelectedDate(new Date(e.target.value))}
+          className="w-full bg-slate-50 border border-slate-200 rounded-none py-3 px-4 text-xs font-bold outline-none focus:border-[#CE2029]"
+        />
+        
+        <div className="mt-8 space-y-4">
+           <div className="p-4 bg-slate-50 border border-slate-100 border-l-4 border-l-[#CE2029]">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Operational Pulse</p>
+              <h4 className="text-lg font-black text-[#36454F]">{blocks.length} Active Blocks</h4>
+              <p className="text-[9px] font-medium text-slate-500 mt-1 uppercase tracking-wider">Scheduled maintenance and events</p>
            </div>
+        </div>
+      </div>
+
+      <div className="xl:col-span-8 bg-white border border-slate-100 p-8 rounded-none min-h-[400px] relative">
+         {loading && (
+           <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+             <Loader2 className="animate-spin text-[#CE2029]" size={24} />
+           </div>
+         )}
+         
+         <div className="flex items-center justify-between mb-8 border-b border-slate-50 pb-4">
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Live Block Registry</h3>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#CE2029] px-3 py-1 bg-[#CE2029]/5 rounded-full border border-[#CE2029]/10">Read Only Mode</span>
+         </div>
+
+         {blocks.length === 0 ? (
+           <div className="flex flex-col items-center justify-center py-20 text-slate-300">
+             <Activity size={48} strokeWidth={1} />
+             <p className="text-[10px] font-black uppercase tracking-widest mt-4">No active blocks for this cycle</p>
+           </div>
+         ) : (
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {blocks.map(block => {
+                const court = courts.find(c => c.id === block.courtId);
+                return (
+                  <div key={block.id} className="p-5 bg-slate-50 border border-slate-100 rounded-none group hover:border-[#CE2029]/30 transition-all">
+                    <div className="flex items-center gap-3 mb-3">
+                       <div className="w-10 h-10 bg-white border border-slate-100 flex items-center justify-center text-[#CE2029] shadow-sm">
+                         <Wrench size={18} />
+                       </div>
+                       <div>
+                         <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{court?.name || 'Unknown Unit'}</h5>
+                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{block.reason}</span>
+                       </div>
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                       <div className="flex items-center gap-2 text-[#CE2029]">
+                         <Clock size={12} />
+                         <span className="text-[10px] font-black">{block.startTime} — {block.endTime}</span>
+                       </div>
+                    </div>
+                  </div>
+                )
+              })}
+           </div>
+         )}
       </div>
     </div>
   );

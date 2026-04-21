@@ -1,22 +1,111 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, Plus, Search, Filter, Settings2, Trash2, Edit2, CheckCircle2, 
   XCircle, X, ArrowRight, MoreVertical, Eye, FileText, Activity
 } from 'lucide-react';
-import { MOCK_DB } from '../../../data/mockDatabase';
+import { fetchPublicArenas, fetchPublicArenaById } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { createAdminCourt, deleteAdminCourt } from '../../../services/adminOpsApi';
 
 const CourtManagement = () => {
-  const [selectedArenaId, setSelectedArenaId] = useState(MOCK_DB.arenas[0].id);
+  const [arenas, setArenas] = useState([]);
+  const [selectedArenaId, setSelectedArenaId] = useState('');
+  const [arenaCourts, setArenaCourts] = useState([]);
   const [showAddCourtModal, setShowAddCourtModal] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [newCourtName, setNewCourtName] = useState('');
+  const [newCourtType, setNewCourtType] = useState('Wooden');
+  const [newCourtPrice, setNewCourtPrice] = useState(8);
+  const [courtError, setCourtError] = useState('');
 
-  // Use MOCK_DB instead of mockData
-  const filteredCourts = MOCK_DB.courts.filter(court => {
-    const matchesArena = court.arenaId === selectedArenaId;
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchPublicArenas();
+        if (cancelled) return;
+        const list = (data.arenas || []).map(normalizeListArena);
+        setArenas(list);
+        if (list.length) {
+          setSelectedArenaId((prev) => prev || String(list[0].id));
+        }
+      } catch {
+        if (!cancelled) setArenas([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const reloadCourts = useCallback(async () => {
+    if (!isApiConfigured() || !selectedArenaId) {
+      setArenaCourts([]);
+      return;
+    }
+    try {
+      const payload = await fetchPublicArenaById(selectedArenaId);
+      const raw = payload?.arena?.courts || [];
+      setArenaCourts(
+        raw.map((c) => ({
+          id: c.id,
+          arenaId: String(selectedArenaId),
+          name: c.name,
+          type: c.type || 'Court',
+          status: 'Active',
+          pricePerHour: Number(c.pricePerHour) || 0,
+        }))
+      );
+    } catch {
+      setArenaCourts([]);
+    }
+  }, [selectedArenaId]);
+
+  useEffect(() => {
+    reloadCourts();
+  }, [reloadCourts]);
+
+  const submitCreateCourt = async () => {
+    if (!selectedArenaId || !newCourtName.trim()) return;
+    if (!isApiConfigured() || !getAuthToken()) return;
+    setCourtError('');
+    try {
+      await createAdminCourt(selectedArenaId, {
+        name: newCourtName.trim(),
+        type: newCourtType,
+        pricePerHour: newCourtPrice,
+      });
+      setShowAddCourtModal(false);
+      setNewCourtName('');
+      setNewCourtType('Wooden');
+      setNewCourtPrice(8);
+      await reloadCourts();
+    } catch (e) {
+      setCourtError(e.message || 'Failed to create court');
+    }
+  };
+
+  const handleDeleteCourt = async (courtId) => {
+    if (!window.confirm('Delete this court?')) return;
+    if (!isApiConfigured() || !getAuthToken()) return;
+    setCourtError('');
+    try {
+      await deleteAdminCourt(courtId);
+      setActiveMenu(null);
+      await reloadCourts();
+    } catch (e) {
+      setCourtError(e.message || 'Delete failed');
+    }
+  };
+
+  const filteredCourts = arenaCourts.filter((court) => {
     const matchesSearch = court.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesArena && matchesSearch;
+    return matchesSearch;
   });
 
   return (
@@ -30,6 +119,7 @@ const CourtManagement = () => {
               <Target className="text-[#CE2029] w-[20px] h-[20px] md:w-[24px] md:h-[24px]" strokeWidth={2.5} /> Unit Portfolio
             </h2>
             <p className="text-xs md:text-sm mt-1 font-bold text-slate-500">Manage individual courts, surfaces, and unit-level operational status.</p>
+            {courtError ? <p className="text-xs text-red-600 mt-2">{courtError}</p> : null}
           </div>
           <button
             onClick={() => setShowAddCourtModal(true)}
@@ -59,7 +149,7 @@ const CourtManagement = () => {
                 onChange={(e) => setSelectedArenaId(e.target.value)}
                 className="w-full py-3.5 px-4 pr-10 rounded-xl border border-slate-200 bg-white text-[11px] font-black uppercase tracking-widest text-[#36454F] appearance-none outline-none focus:border-[#CE2029] transition-all shadow-sm"
               >
-                {MOCK_DB.arenas.map(arena => (
+                {arenas.map(arena => (
                   <option key={arena.id} value={arena.id}>{arena.name}</option>
                 ))}
               </select>
@@ -118,15 +208,19 @@ const CourtManagement = () => {
                         >
                            <div className="space-y-1">
                             {[
-                              { label: 'Edit Metrics', icon: Edit2, color: '#CE2029' },
-                              { label: 'Sync Calendar', icon: Settings2, color: '#CE2029' },
-                              { label: 'Access Logs', icon: FileText, color: '#CE2029' },
-                              { label: 'Performance', icon: Activity, color: '#CE2029' },
-                              { label: 'Decommission', icon: Trash2, color: '#ef4444' },
+                              { label: 'Edit Metrics', icon: Edit2, color: '#CE2029', action: 'noop' },
+                              { label: 'Sync Calendar', icon: Settings2, color: '#CE2029', action: 'noop' },
+                              { label: 'Access Logs', icon: FileText, color: '#CE2029', action: 'noop' },
+                              { label: 'Performance', icon: Activity, color: '#CE2029', action: 'noop' },
+                              { label: 'Decommission', icon: Trash2, color: '#ef4444', action: 'delete' },
                             ].map((opt, i) => (
                               <button
                                 key={i}
-                                onClick={() => setActiveMenu(null)}
+                                type="button"
+                                onClick={() => {
+                                  setActiveMenu(null);
+                                  if (opt.action === 'delete') handleDeleteCourt(court.id);
+                                }}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-all font-sans"
                               >
                                 <div className="p-1.5 rounded-lg border transition-colors" style={{ backgroundColor: `${opt.color}10`, borderColor: `${opt.color}30`, color: opt.color }}>
@@ -213,17 +307,27 @@ const CourtManagement = () => {
               <div className="p-6 md:p-8 space-y-6">
                 <div className="group">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Asset Identity</label>
-                  <input type="text" placeholder="e.g. Center Court - 01" className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white transition-all text-[#36454F] shadow-inner" />
+                  <input
+                    type="text"
+                    value={newCourtName}
+                    onChange={(e) => setNewCourtName(e.target.value)}
+                    placeholder="e.g. Center Court - 01"
+                    className="w-full py-4 px-6 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white transition-all text-[#36454F] shadow-inner"
+                  />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Surface Architecture</label>
-                    <select className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner">
-                      <option>Synthetic Pro</option>
-                      <option>Premium Wooden</option>
-                      <option>Hybrid Mat</option>
-                      <option>Hard Court</option>
+                    <select
+                      value={newCourtType}
+                      onChange={(e) => setNewCourtType(e.target.value)}
+                      className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner"
+                    >
+                      <option value="Synthetic Pro">Synthetic Pro</option>
+                      <option value="Wooden">Premium Wooden</option>
+                      <option value="Hybrid Mat">Hybrid Mat</option>
+                      <option value="Hard Court">Hard Court</option>
                     </select>
                   </div>
                   <div>
@@ -236,12 +340,18 @@ const CourtManagement = () => {
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block ml-1">Standard Hourly Rate (OMR)</label>
                   <div className="relative">
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">OMR</span>
-                    <input type="number" defaultValue="8.0" className="w-full py-4 pl-6 pr-16 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner" />
+                    <input
+                      type="number"
+                      value={newCourtPrice}
+                      onChange={(e) => setNewCourtPrice(parseFloat(e.target.value) || 0)}
+                      className="w-full py-4 pl-6 pr-16 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner"
+                    />
                   </div>
                 </div>
 
                 <button
-                  onClick={() => setShowAddCourtModal(false)}
+                  type="button"
+                  onClick={submitCreateCourt}
                   className="w-full py-4 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white text-[11px] font-black uppercase tracking-widest hover:shadow-[#CE2029]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
                   Confirm Deployment <ArrowRight size={18} strokeWidth={3} />

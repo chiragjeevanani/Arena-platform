@@ -1,37 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Plus, Edit2, Trash2, CheckSquare, Square, X, Info, Settings, Users } from 'lucide-react';
 
-const INITIAL_ROLES = [
-  { id: 1, name: 'Super Admin', users: 2, description: 'Full system engineering access', isSystem: true },
-  { id: 2, name: 'Arena Admin', users: 15, description: 'Regional facility operations', isSystem: false },
-  { id: 3, name: 'Receptionist', users: 45, description: 'Customer check-ins & POS', isSystem: false },
-  { id: 4, name: 'Analyst', users: 3, description: 'Financial audit & reporting', isSystem: false }
-];
+const INITIAL_ROLES = [];
 
 const MODULES = ['Identity', 'Arenas', 'Inventory', 'Finance', 'Schedules', 'Bookings', 'Coaching', 'Retail POS'];
 
 const RoleManagement = () => {
   const [roles, setRoles] = useState(INITIAL_ROLES);
-  const [selectedRole, setSelectedRole] = useState(roles[0]);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newRole, setNewRole] = useState({ name: '', description: '' });
 
-  const [permissions, setPermissions] = useState(() => {
-    const initial = {};
-    INITIAL_ROLES.forEach(role => {
-      initial[role.id] = {};
-      MODULES.forEach(module => {
-        const isSuper = role.id === 1;
-        initial[role.id][module] = { view: isSuper, create: isSuper, edit: isSuper, delete: isSuper };
-      });
+  const [permissions, setPermissions] = useState({});
+
+  useEffect(() => {
+    setSelectedRole((prev) => {
+      if (!roles.length) return null;
+      if (!prev || !roles.some((r) => r.id === prev.id)) return roles[0];
+      return prev;
     });
-    return initial;
-  });
+  }, [roles]);
+
+  useEffect(() => {
+    setPermissions((prev) => {
+      const next = { ...prev };
+      roles.forEach((role) => {
+        if (!next[role.id]) {
+          next[role.id] = MODULES.reduce(
+            (acc, mod) => ({ ...acc, [mod]: { view: false, create: false, edit: false, delete: false } }),
+            {}
+          );
+        }
+      });
+      return next;
+    });
+  }, [roles]);
 
   const handleCreateRole = () => {
     if (!newRole.name.trim()) return;
-    const id = Math.max(...roles.map(r => r.id)) + 1;
+    const id = roles.length ? Math.max(...roles.map((r) => r.id)) + 1 : 1;
     const roleToAdd = { id, name: newRole.name, description: newRole.description || 'Custom role', users: 0, isSystem: false };
     setRoles([...roles, roleToAdd]);
     setPermissions(prev => ({
@@ -44,7 +52,8 @@ const RoleManagement = () => {
   };
 
   const togglePermission = (roleId, module, action) => {
-    if (roleId === 1) return;
+    const role = roles.find((r) => r.id === roleId);
+    if (role?.isSystem) return;
     setPermissions(prev => ({
       ...prev,
       [roleId]: {
@@ -55,16 +64,25 @@ const RoleManagement = () => {
   };
 
   const handleDeleteRole = (id) => {
-    if (id === 1) return;
+    if (roles.find((r) => r.id === id)?.isSystem) return;
     const updatedRoles = roles.filter(r => r.id !== id);
     setRoles(updatedRoles);
-    if (selectedRole.id === id) setSelectedRole(updatedRoles[0]);
+    if (selectedRole?.id === id) setSelectedRole(updatedRoles[0] ?? null);
   };
 
   return (
     <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans text-[#36454F]">
       <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6">
-        
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-950">
+          <p className="font-bold text-amber-900">UI-only permission matrix</p>
+          <p className="mt-1 leading-relaxed opacity-90">
+            Custom roles and toggles below are stored in this browser session only. The API uses fixed{' '}
+            <code className="font-mono text-[11px]">User.role</code> values (see{' '}
+            <code className="font-mono text-[11px]">FRONTEND_API_COVERAGE.md</code> in the repo root). Staff
+            accounts are managed under <strong>Identity Registry</strong> when the backend is connected.
+          </p>
+        </div>
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200">
           <div>
@@ -94,17 +112,17 @@ const RoleManagement = () => {
                       key={role.id}
                       onClick={() => setSelectedRole(role)}
                       className={`text-left p-4 rounded-xl transition-all border w-full flex-shrink-0 lg:flex-shrink-1 min-w-[160px] lg:min-w-0 flex flex-col justify-between h-24 lg:h-auto ${
-                        selectedRole.id === role.id 
+                        selectedRole?.id === role.id 
                           ? 'bg-slate-50 border-[#CE2029] shadow-sm' 
                           : 'bg-transparent border-transparent hover:bg-slate-50 text-slate-400'
                       }`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className={`font-black text-[13px] tracking-tight ${selectedRole.id === role.id ? 'text-[#36454F]' : 'text-slate-500'}`}>
+                          <h3 className={`font-black text-[13px] tracking-tight ${selectedRole?.id === role.id ? 'text-[#36454F]' : 'text-slate-500'}`}>
                             {role.name}
                           </h3>
-                          <p className={`text-[10px] font-bold mt-0.5 uppercase tracking-widest leading-none ${selectedRole.id === role.id ? 'text-[#CE2029]' : 'text-slate-300'}`}>
+                          <p className={`text-[10px] font-bold mt-0.5 uppercase tracking-widest leading-none ${selectedRole?.id === role.id ? 'text-[#CE2029]' : 'text-slate-300'}`}>
                              {role.users} Members
                           </p>
                         </div>
@@ -120,6 +138,11 @@ const RoleManagement = () => {
 
           {/* Matrix Area */}
           <div className="lg:col-span-3 space-y-6">
+            {!selectedRole ? (
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-10 text-center text-slate-500 text-sm font-bold">
+                Add a role to configure permissions. Role definitions should eventually sync from your auth service.
+              </div>
+            ) : (
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-10 transition-all hover:border-[#CE2029]/40">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
@@ -166,7 +189,7 @@ const RoleManagement = () => {
                             </div>
                           </td>
                           {['view', 'create', 'edit', 'delete'].map((action) => {
-                            const isSuper = selectedRole.id === 1;
+                            const isSuper = selectedRole.isSystem;
                             const hasAccess = permissions[selectedRole.id]?.[module]?.[action];
                             return (
                               <td key={action} className="px-8 py-6 text-center">
@@ -201,6 +224,7 @@ const RoleManagement = () => {
                 </p>
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>

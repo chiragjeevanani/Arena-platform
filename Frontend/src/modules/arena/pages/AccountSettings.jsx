@@ -1,22 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Phone, Lock, Camera, Bell, Shield, Save, Key, UserCheck, ShieldAlert, MapPin } from 'lucide-react';
+import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { patchMyProfile } from '../../../services/meApi';
+import { meRequest } from '../../../services/authApi';
 
 const AccountSettings = () => {
+  const { user, setUser } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [notificationPrefs, setNotificationPrefs] = useState([true, true, false, true]);
   const [profileImg, setProfileImg] = useState(localStorage.getItem('arena_manager_img'));
   const [showImgModal, setShowImgModal] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    setName(user.name || '');
+    setPhone(user.phone || '');
+    if (user.avatar) setProfileImg(user.avatar);
+  }, [user]);
 
   const TABS = [
     { id: 'profile', label: 'Identity Profile', icon: User },
     { id: 'security', label: 'Security & Access', icon: Lock },
   ];
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setSaveError('');
     setIsSaving(true);
-    setTimeout(() => setIsSaving(false), 2000);
+    try {
+      localStorage.setItem('arena_manager_img', profileImg || '');
+      if (isApiConfigured() && getAuthToken()) {
+        await patchMyProfile({
+          name: name.trim(),
+          phone: phone.trim(),
+          avatarUrl: profileImg || '',
+        });
+        const me = await meRequest();
+        const u = me.user;
+        const mapped = {
+          id: u.id,
+          email: u.email,
+          name: u.name,
+          role: u.role,
+          phone: u.phone || '',
+          assignedArena: u.assignedArenaId || 'all',
+          avatar: u.avatarUrl || profileImg || '',
+        };
+        setUser(mapped);
+        localStorage.setItem('user', JSON.stringify(mapped));
+      }
+    } catch (e) {
+      setSaveError(e.message || 'Could not save');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -44,6 +87,9 @@ const AccountSettings = () => {
               <User className="text-[#CE2029]" size={24} strokeWidth={2.5} /> Account Settings
             </h2>
             <p className="text-xs mt-1 font-semibold text-slate-500 uppercase tracking-wider">Manage your manager profile and security preferences</p>
+            {saveError && (
+              <p className="mt-2 text-xs font-semibold text-red-600">{saveError}</p>
+            )}
           </div>
           <button 
             onClick={handleSave}
@@ -109,8 +155,8 @@ const AccountSettings = () => {
                         </label>
                       </div>
                       <div className="text-center sm:text-left">
-                        <h3 className="text-lg font-bold text-[#36454F] font-oswald uppercase tracking-tight">Arena Manager</h3>
-                        <p className="text-[10px] font-bold text-[#CE2029] uppercase tracking-[0.2em] mt-0.5">AMM SPORTS ARENA · MANAGER</p>
+                        <h3 className="text-lg font-bold text-[#36454F] font-oswald uppercase tracking-tight">{name || 'Arena staff'}</h3>
+                        <p className="text-[10px] font-bold text-[#CE2029] uppercase tracking-[0.2em] mt-0.5">Arena account</p>
                         <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#CE2029]/5 border border-[#CE2029]/10 rounded-full mt-1.5">
                            <Shield size={10} className="text-[#CE2029]" strokeWidth={2.5} />
                            <span className="text-[8px] font-bold text-[#CE2029] uppercase tracking-widest leading-none">Verified Account</span>
@@ -123,21 +169,36 @@ const AccountSettings = () => {
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1 block ml-1">Full Name</label>
                         <div className="relative">
                           <UserCheck size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#CE2029] transition-colors" />
-                          <input type="text" defaultValue="Arena Manager" className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm" />
+                          <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm"
+                          />
                         </div>
                       </div>
                       <div className="group">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1 block ml-1">Email Address</label>
                         <div className="relative">
                            <Mail size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#CE2029] transition-colors" />
-                           <input type="email" defaultValue="manager@ammsports.com" className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm" />
+                           <input
+                             type="email"
+                             readOnly
+                             value={user?.email || ''}
+                             className="w-full cursor-not-allowed bg-slate-100 border border-slate-200 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-semibold text-slate-500"
+                           />
                         </div>
                       </div>
                       <div className="group">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1 block ml-1">Phone Number</label>
                         <div className="relative">
                            <Phone size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#CE2029] transition-colors" />
-                           <input type="tel" defaultValue="+91 98765 43210" className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm" />
+                           <input
+                             type="tel"
+                             value={phone}
+                             onChange={(e) => setPhone(e.target.value)}
+                             className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm"
+                           />
                         </div>
                       </div>
                       <div className="group">

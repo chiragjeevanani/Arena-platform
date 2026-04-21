@@ -1,19 +1,38 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, User, Mail, Phone, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { patchMyProfile } from '../../../services/meApi';
+import { meRequest } from '../../../services/authApi';
+
+const DEFAULT_AVATAR =
+  'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop';
 
 const EditProfile = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { user, setUser } = useAuth();
 
   const fileInputRef = useRef(null);
   const [profileImage, setProfileImage] = useState(
-    localStorage.getItem('userProfileImage') || 
-    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"
+    localStorage.getItem('userProfileImage') || DEFAULT_AVATAR
   );
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    setName(user.name || '');
+    setPhone(user.phone || '');
+    if (user.avatar) setProfileImage(user.avatar);
+  }, [user]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -26,9 +45,37 @@ const EditProfile = () => {
     }
   };
 
-  const handleSave = () => {
-    localStorage.setItem('userProfileImage', profileImage);
-    navigate('/profile');
+  const handleSave = async () => {
+    setSaveError('');
+    setSaving(true);
+    try {
+      localStorage.setItem('userProfileImage', profileImage);
+      if (isApiConfigured() && getAuthToken()) {
+        await patchMyProfile({
+          name: name.trim(),
+          phone: phone.trim(),
+          avatarUrl: profileImage,
+        });
+        const me = await meRequest();
+        const u = me.user;
+        const mapped = {
+          id: u.id,
+          email: u.email,
+          name: u.name,
+          role: u.role,
+          phone: u.phone || '',
+          assignedArena: u.assignedArenaId || 'all',
+          avatar: u.avatarUrl || profileImage || DEFAULT_AVATAR,
+        };
+        setUser(mapped);
+        localStorage.setItem('user', JSON.stringify(mapped));
+      }
+      navigate('/profile');
+    } catch (e) {
+      setSaveError(e.message || 'Could not save profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -113,9 +160,10 @@ const EditProfile = () => {
                     </div>
                     <div className="flex-1">
                       <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Full Name</p>
-                      <input 
-                        type="text" 
-                        defaultValue="Muhammad Haroos"
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
                       />
                     </div>
@@ -135,10 +183,11 @@ const EditProfile = () => {
                     </div>
                     <div className="flex-1">
                       <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Email Address</p>
-                      <input 
-                        type="email" 
-                        defaultValue="haroos.design@gmail.com"
-                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
+                      <input
+                        type="email"
+                        value={user?.email || ''}
+                        readOnly
+                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 opacity-70 ${'text-[#0F172A]'}`}
                       />
                     </div>
                   </div>
@@ -157,9 +206,10 @@ const EditProfile = () => {
                     </div>
                     <div className="flex-1">
                       <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Phone Number</p>
-                      <input 
-                        type="tel" 
-                        defaultValue="+91 98765 43210"
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
                       />
                     </div>
@@ -189,13 +239,15 @@ const EditProfile = () => {
                 </div>
               </div>
             </div>
+            {saveError && <p className="text-center text-xs text-red-600 font-semibold mt-4">{saveError}</p>}
             <div className="mt-10">
-              <ShuttleButton 
+              <ShuttleButton
                 className="w-full !rounded-none !py-4 active:scale-[0.98] transition-all shadow-xl shadow-[#CE2029]/20 text-[12px] uppercase tracking-widest font-black"
                 variant="red"
-                onClick={handleSave}
+                disabled={saving}
+                onClick={() => void handleSave()}
               >
-                Save Profile Changes
+                {saving ? 'Saving…' : 'Save Profile Changes'}
               </ShuttleButton>
             </div>
           </div>

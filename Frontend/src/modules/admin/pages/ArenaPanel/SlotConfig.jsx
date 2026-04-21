@@ -1,64 +1,145 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Clock, Plus, X, ArrowRight, CalendarDays, Trash2, 
   Sun, Moon, Activity, ShieldCheck, 
-  Timer, Zap, Star
+  Timer, Zap, Star, Loader2, ChevronRight
 } from 'lucide-react';
+import { useArenaPanel } from '../../context/ArenaPanelContext';
+import { listMyCourtSlots, createMyCourtSlot, deleteMyCourtSlot } from '../../../../services/arenaStaffApi';
+import { showToast } from '../../../../utils/toast';
 
-const INITIAL_SLOTS = {
-  weekday: [
-    { id: 's1', startTime: '06:00', endTime: '07:00', duration: 60, type: 'nonPrime' },
-    { id: 's2', startTime: '07:00', endTime: '08:00', duration: 60, type: 'nonPrime' },
-    { id: 's3', startTime: '08:00', endTime: '09:00', duration: 60, type: 'nonPrime' },
-    { id: 's4', startTime: '17:00', endTime: '18:00', duration: 60, type: 'prime' },
-    { id: 's5', startTime: '18:00', endTime: '19:00', duration: 60, type: 'prime' },
-    { id: 's6', startTime: '19:00', endTime: '20:00', duration: 60, type: 'prime' },
-    { id: 's7', startTime: '20:00', endTime: '21:00', duration: 60, type: 'prime' },
-  ],
-  weekend: [
-    { id: 'sw1', startTime: '06:00', endTime: '07:30', duration: 90, type: 'nonPrime' },
-    { id: 'sw2', startTime: '07:30', endTime: '09:00', duration: 90, type: 'nonPrime' },
-    { id: 'sw3', startTime: '09:00', endTime: '10:30', duration: 90, type: 'nonPrime' },
-    { id: 'sw4', startTime: '15:00', endTime: '16:30', duration: 90, type: 'prime' },
-    { id: 'sw5', startTime: '16:30', endTime: '18:00', duration: 90, type: 'prime' },
-  ],
+const emptyForm = { startTime: '06:00', endTime: '07:00', type: 'nonPrime', status: 'Available' };
+
+const DAY_GROUPS = {
+  weekday: { label: 'Mon - Fri', days: [1, 2, 3, 4, 5] },
+  weekend: { label: 'Sat - Sun', days: [6, 0] }
 };
 
-const emptyForm = { startTime: '06:00', endTime: '07:00', duration: 60, type: 'nonPrime' };
+const DAY_MAP = {
+  1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 0: 'Sun'
+};
 
 const SlotConfig = () => {
-  const [slots, setSlots] = useState(INITIAL_SLOTS);
+  const { courts, loading: arenaLoading } = useArenaPanel();
+  const [selectedCourtId, setSelectedCourtId] = useState(null);
+  const [isEachDay, setIsEachDay] = useState(false); // DEFAULT FALSE for Arena Admin as they usually set templates
   const [activeTab, setActiveTab] = useState('weekday');
+  const [slotsByDay, setSlotsByDay] = useState({});
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
 
-  const addSlot = () => {
-    if (!form.startTime || !form.endTime) return;
-    setSlots(prev => ({
-      ...prev,
-      [activeTab]: [...prev[activeTab], { id: `s${Date.now()}`, ...form, duration: Number(form.duration) }],
-    }));
-    setShowModal(false);
-    setForm(emptyForm);
+  const GROUP_MAP = {
+    'weekday': [1, 2, 3, 4, 5],
+    'weekend': [6, 0]
   };
 
-  const removeSlot = (type, id) => {
-    setSlots(prev => ({ ...prev, [type]: prev[type].filter(s => s.id !== id) }));
+  const currentTabGroups = useMemo(() => isEachDay 
+    ? Object.fromEntries(Object.entries(DAY_MAP).map(([k, v]) => [v, { label: v, days: [Number(k)] }]))
+    : DAY_GROUPS, [isEachDay]);
+
+  useEffect(() => {
+    if (courts.length > 0 && !selectedCourtId) {
+      setSelectedCourtId(courts[0].id);
+    }
+  }, [courts, selectedCourtId]);
+
+  const fetchSlots = useCallback(async () => {
+    if (!selectedCourtId) return;
+    setLoadingSlots(true);
+    try {
+      const dayNums = currentTabGroups[activeTab].days;
+      // Fetch for first day of group to represent the template, or just show all
+      const res = await listMyCourtSlots(selectedCourtId, DAY_MAP[dayNums[0]]);
+      setSlotsByDay(prev => ({ ...prev, [activeTab]: res.slots }));
+    } catch (err) {
+      showToast('Failed to load slots', 'error');
+    } finally {
+      setLoadingSlots(false);
+    }
+  }, [selectedCourtId, activeTab, currentTabGroups]);
+
+  useEffect(() => {
+    fetchSlots();
+  }, [fetchSlots]);
+
+  const addSlot = async () => {
+    if (!form.startTime || !form.endTime || !selectedCourtId) return;
+    setSaving(true);
+    try {
+      const dayNums = currentTabGroups[activeTab].days;
+      const timeSlot = `${form.startTime}-${form.endTime}`;
+      
+      // We apply to ALL days in the group for better UX
+      await Promise.all(dayNums.map(dayNum => 
+        createMyCourtSlot(selectedCourtId, {
+          dayOfWeek: DAY_MAP[dayNum],
+          timeSlot,
+          startTime: form.startTime,
+          endTime: form.endTime,
+          slotClass: form.type, // backend expects slotClass
+          status: form.status
+        })
+      ));
+
+      showToast(`Slots registered to ${currentTabGroups[activeTab].label}`, 'success');
+      fetchSlots();
+      setShowModal(false);
+      setForm(emptyForm);
+    } catch (err) {
+      showToast('Failed to add slots', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const currentSlots = slots[activeTab];
-  const totalWeekday = slots.weekday.length;
-  const totalWeekend = slots.weekend.length;
-  const allSlots = [...slots.weekday, ...slots.weekend];
-  const avgDuration = allSlots.length ? Math.round(allSlots.reduce((a, s) => a + s.duration, 0) / allSlots.length) : 0;
-  const primeCount = allSlots.filter(s => s.type === 'prime').length;
-  const nonPrimeCount = allSlots.filter(s => s.type === 'nonPrime').length;
+  const removeSlot = async (slotId) => {
+    try {
+      await deleteMyCourtSlot(slotId);
+      showToast('Slot removed', 'success');
+      fetchSlots();
+    } catch (err) {
+      showToast('Failed to remove slot', 'error');
+    }
+  };
+
+  const currentSlots = slotsByDay[activeTab] || [];
+  const primeCount = currentSlots.filter(s => s.slotClass === 'prime').length;
+  const nonPrimeCount = currentSlots.filter(s => s.slotClass !== 'prime').length;
+
+  if (arenaLoading && courts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-10 h-10 text-[#CE2029] animate-spin" />
+        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Loading Configuration...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="font-sans text-[#36454F] max-w-[1600px] mx-auto border-t border-slate-100 tracking-tight bg-[#F9FAFB]">
       <div className="mx-auto space-y-4 py-4">
         
+        {/* Court Selector */}
+        <div className="flex items-center gap-4 bg-white p-4 rounded-sm border border-slate-200 shadow-sm overflow-x-auto scrollbar-hide">
+           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 shrink-0">Select Dimension:</span>
+           {courts.map(c => (
+              <button 
+                key={c.id} 
+                onClick={() => setSelectedCourtId(c.id)}
+                className={`px-4 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest border transition-all shrink-0 ${
+                  selectedCourtId === c.id 
+                    ? 'bg-[#36454F] border-[#36454F] text-white shadow-lg' 
+                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-400'
+                }`}
+              >
+                {c.name}
+              </button>
+           ))}
+        </div>
+
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 pb-3 border-b border-slate-200 bg-white p-4 shadow-sm rounded-sm">
            <div>
@@ -75,92 +156,89 @@ const SlotConfig = () => {
            <div className="flex items-center gap-2 w-full md:w-auto">
               <div className="flex bg-slate-50 p-1 border border-slate-200 rounded-sm">
                  {[
-                   { label: 'Weekday', value: totalWeekday, color: 'text-[#36454F]' },
-                   { label: 'Weekend', value: totalWeekend, color: 'text-[#CE2029]' },
+                   { label: 'Total', value: currentSlots.length, color: 'text-[#36454F]' },
                    { label: 'Prime', value: primeCount, color: 'text-amber-500' },
                    { label: 'Non-Prime', value: nonPrimeCount, color: 'text-slate-500' },
                  ].map((s, i) => (
-                   <div key={i} className="px-3 py-1 flex flex-col border-r last:border-0 border-slate-200 min-w-[55px]">
-                      <span className="text-[7.5px] font-black uppercase text-slate-600 tracking-widest leading-none mb-1">{s.label}</span>
-                      <span className={`text-[12px] font-bold ${s.color} leading-none`}>{s.value.toString().padStart(2, '0')}</span>
-                   </div>
+                    <div key={i} className="px-3 py-1 flex flex-col border-r last:border-0 border-slate-200 min-w-[55px]">
+                       <span className="text-[7.5px] font-black uppercase text-slate-600 tracking-widest leading-none mb-1">{s.label}</span>
+                       <span className={`text-[12px] font-bold ${s.color} leading-none`}>{s.value.toString().padStart(2, '0')}</span>
+                    </div>
                  ))}
               </div>
+
+              {/* Each Day Toggle - Premium UI */}
+              <div className="flex items-center gap-4 bg-white px-5 py-2 border border-slate-100 shadow-sm rounded-xl transition-all hover:shadow-md">
+                 <div className="flex flex-col text-right">
+                    <span className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-900 leading-none mb-1">View Control</span>
+                    <span className={`text-[7px] font-bold uppercase tracking-widest transition-colors ${isEachDay ? 'text-[#CE2029]' : 'text-slate-400'}`}>
+                       {isEachDay ? 'Each Day Mode' : 'Grouped View'}
+                    </span>
+                 </div>
+                 <button 
+                   onClick={() => {
+                     const newIsEachDay = !isEachDay;
+                     setIsEachDay(newIsEachDay);
+                     setActiveTab(newIsEachDay ? 'Mon' : 'weekday');
+                   }}
+                   className="w-10 h-5 rounded-full transition-all flex items-center relative shadow-inner overflow-hidden border border-slate-100"
+                   style={{ backgroundColor: isEachDay ? '#CE2029' : '#E2E8F0' }}
+                 >
+                    <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-all transform flex items-center justify-center ${
+                      isEachDay ? 'translate-x-[22px]' : 'translate-x-[1px]'
+                    }`}>
+                       <div className={`w-1 h-1 rounded-full ${isEachDay ? 'bg-[#CE2029]' : 'bg-slate-300'}`} />
+                    </div>
+                 </button>
+              </div>
+
               <button 
+                 disabled={!selectedCourtId}
                  onClick={() => setShowModal(true)}
-                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-[#36454F] text-white hover:bg-black transition-all text-[9.5px] font-bold uppercase tracking-widest shadow-md active:translate-y-0.5"
+                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-[#36454F] text-white hover:bg-black transition-all text-[9.5px] font-bold uppercase tracking-widest shadow-md active:translate-y-0.5 disabled:opacity-50"
               >
                  <Plus size={14} strokeWidth={3} /> Define Slot
               </button>
            </div>
         </div>
 
-        {/* Compact Metrics Bar */}
-        <div className="flex flex-wrap items-center gap-3">
-           {[
-             { label: 'Prime Slots', value: primeCount, icon: Star, color: '#f59e0b' },
-             { label: 'Non-Prime', value: nonPrimeCount, icon: CalendarDays, color: '#6366f1' }
-           ].map((stat, i) => (
-             <div key={i} className="bg-white border border-slate-200 px-4 py-2.5 rounded-sm flex items-center gap-6 transition-all hover:bg-slate-50 shadow-sm min-w-[200px]">
-                <div className="flex-1">
-                   <p className="text-[7.5px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-0.5">{stat.label}</p>
-                   <p className="text-sm font-black text-[#36454F] leading-tight">{stat.value.toString().padStart(2, '0')}</p>
-                </div>
-                <div className="w-7 h-7 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-                   <stat.icon size={12} style={{ color: stat.color }} strokeWidth={3} />
-                </div>
-             </div>
-           ))}
-        </div>
-
-        {/* Slot Type Legend */}
-        <div className="flex items-center gap-4 bg-white border border-slate-200 rounded-sm px-4 py-2.5 shadow-sm">
-          <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Slot Type Legend:</span>
-          <div className="flex items-center gap-1.5">
-            <Star size={10} className="text-amber-500" fill="#f59e0b" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-amber-600">Prime — Higher Base Rate, High-Demand Hours</span>
-          </div>
-          <div className="h-3 w-px bg-slate-200" />
-          <div className="flex items-center gap-1.5">
-            <CalendarDays size={10} className="text-slate-400" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Non-Prime — Standard Rate, Off-Peak Hours</span>
-          </div>
-        </div>
-
         {/* Tab System */}
         <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-           <div className="flex border-b border-slate-100 bg-slate-50/20">
-              {[
-                { key: 'weekday', label: 'Mon - Fri', icon: Sun },
-                { key: 'weekend', label: 'Sat - Sun', icon: Moon },
-              ].map(t => (
-                <button key={t.key} onClick={() => setActiveTab(t.key)}
-                  className={`flex-1 flex items-center justify-center gap-3 py-3 transition-all border-b-2 relative ${
-                    activeTab === t.key
-                      ? 'border-[#CE2029] text-[#36454F] bg-white'
-                      : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50'
-                  }`}>
-                  <t.icon size={14} /> 
-                  <span className="text-[10px] font-black uppercase tracking-widest">{t.label} Registry</span>
-                  <span className={`px-2 py-0.5 rounded-sm text-[8px] font-bold ${activeTab === t.key ? 'bg-[#CE2029] text-white' : 'bg-slate-100 text-slate-500'}`}>
-                    {slots[t.key].length}
-                  </span>
-                </button>
-              ))}
+           <div className="flex border-b border-slate-100 bg-slate-50/20 overflow-x-auto scrollbar-hide">
+              {Object.keys(currentTabGroups).map(key => {
+                const t = currentTabGroups[key];
+                const Icon = isEachDay ? (activeTab === key ? Star : Clock) : (key === 'weekday' ? Sun : Moon);
+                return (
+                  <button key={key} onClick={() => setActiveTab(key)}
+                    className={`flex-1 flex items-center justify-center gap-2 min-w-[80px] py-3 transition-all border-b-2 relative ${
+                      activeTab === key
+                        ? 'border-[#CE2029] text-[#36454F] bg-white'
+                        : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50'
+                    }`}>
+                    <Icon size={12} className={activeTab === key ? 'text-[#CE2029]' : 'text-slate-400'} /> 
+                    <span className="text-[9px] font-black uppercase tracking-widest">{isEachDay ? key : t.label}</span>
+                    {loadingSlots && activeTab === key && <Loader2 size={10} className="animate-spin text-[#CE2029]" />}
+                  </button>
+                );
+              })}
            </div>
 
            {/* Slots Grid */}
            <div className="p-4 bg-slate-50/20">
-              {currentSlots.length === 0 ? (
+              {loadingSlots ? (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 size={32} className="text-[#CE2029] animate-spin" />
+                </div>
+              ) : currentSlots.length === 0 ? (
                 <div className="text-center py-16 bg-white border border-dashed border-slate-200 rounded-sm">
                    <Clock size={24} className="mx-auto mb-2 text-slate-300" />
-                   <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">No Slots Defined</p>
+                   <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">No Slots Defined for this Node Cluster</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                   <AnimatePresence>
                     {currentSlots.map((slot, idx) => {
-                      const isPrime = slot.type === 'prime';
+                      const isPrime = slot.slotClass === 'prime';
                       return (
                         <motion.div key={slot.id}
                           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -185,7 +263,7 @@ const SlotConfig = () => {
                                 </span>
                              </div>
                              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => removeSlot(activeTab, slot.id)} className="w-6 h-6 flex items-center justify-center rounded-sm bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+                                <button onClick={() => removeSlot(slot.id)} className="w-6 h-6 flex items-center justify-center rounded-sm bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all">
                                    <Trash2 size={11} />
                                 </button>
                              </div>
@@ -208,16 +286,16 @@ const SlotConfig = () => {
 
                           {/* Footer */}
                           <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                             <div className="flex items-center gap-1.5 text-slate-600">
-                                <Clock size={11} />
-                                <span className="text-[9px] font-bold uppercase tracking-widest">{slot.duration} Min</span>
-                             </div>
                              {isPrime && (
                                <div className="flex items-center gap-1 text-amber-500">
                                  <Zap size={10} />
                                  <span className="text-[8px] font-black uppercase tracking-widest">High Rate</span>
                                </div>
                              )}
+                             <div className="flex items-center gap-1 text-slate-400">
+                                <Activity size={10} />
+                                <span className="text-[8.5px] font-bold uppercase">{slot.status}</span>
+                             </div>
                           </div>
                         </motion.div>
                       )
@@ -242,7 +320,7 @@ const SlotConfig = () => {
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#36454F]">
                 <div>
                   <h3 className="text-xl font-bold uppercase tracking-tight italic">Define Time Slot</h3>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-1">New slot for {activeTab} schedule</p>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#CE2029] mt-1">Applying to {currentTabGroups[activeTab].label} Cluster</p>
                 </div>
                 <button onClick={() => setShowModal(false)} className="text-slate-300 hover:text-[#36454F] transition-colors"><X size={18} /></button>
               </div>
@@ -290,21 +368,11 @@ const SlotConfig = () => {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#36454F] block">Duration</label>
-                  <select value={form.duration} onChange={e => setForm(p => ({ ...p, duration: Number(e.target.value) }))} className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase cursor-pointer">
-                    <option value={30}>30 Minutes</option>
-                    <option value={45}>45 Minutes</option>
-                    <option value={60}>60 Minutes (Standard)</option>
-                    <option value={90}>90 Minutes</option>
-                    <option value={120}>120 Minutes</option>
-                  </select>
-                </div>
-
                 <div className="pt-2">
-                  <button onClick={addSlot}
+                  <button onClick={addSlot} disabled={saving}
                     className="w-full h-12 rounded-sm bg-[#36454F] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md">
-                    Add Slot <Plus size={16} strokeWidth={3} />
+                    {saving && <Loader2 size={12} className="animate-spin" />}
+                    {saving ? 'Registering...' : 'Add Slot'} <Plus size={16} strokeWidth={3} />
                   </button>
                   <button onClick={() => setShowModal(false)}
                     className="w-full mt-2 text-[8px] font-black uppercase tracking-widest text-slate-500 hover:text-[#36454F] transition-colors py-2">

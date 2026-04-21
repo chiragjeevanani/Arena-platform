@@ -1,130 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, CalendarDays, Clock, MapPin, Tag, Share2, Heart, User, Phone, CheckCircle2, X, ChevronRight } from 'lucide-react';
-import Event1 from '../../../assets/Events/Events1 .jpeg';
-import Event2 from '../../../assets/Events/Events2.jpeg';
-import Event3 from '../../../assets/Events/Events3.jpeg';
-import BadmintonBanner from '../../../assets/Events/Badminton1.jpg';
-import TableTennisBanner from '../../../assets/Events/Tabletennis1.jpg';
+import { ArrowLeft, CalendarDays, Clock, MapPin, Share2, Heart, User, Phone, CheckCircle2, X, ChevronRight } from 'lucide-react';
+import { isApiConfigured } from '../../../services/config';
+import { fetchPublishedEventById, registerForEvent } from '../../../services/eventsApi';
+import { listMyEventRegistrations } from '../../../services/meApi';
+import { getAuthToken } from '../../../services/apiClient';
+import { isCmsEventId, normalizeCmsEventForDetail } from '../../../utils/eventAdapter';
 
-const eventsData = [
-  {
-    id: 1,
-    title: 'Pro Badminton Coaching',
-    subtitle: 'Intensive Training & League Prep',
-    image: BadmintonBanner,
-    date: 'Ongoing Registrations',
-    time: '4:00 PM – 9:00 PM',
-    location: 'AMM Sports Arena, Main Courts',
-    price: '45 OMR / Month',
-    category: 'Badminton',
-    description:
-      'Step up your game with our professional Badminton Coaching program. Ideal for passionate athletes looking to improve their agility, power, and precise shot-making. Our expert coaches guide you through personalized drills and strategic formations.',
-    highlights: [
-      'Advanced footwork and court coverage techniques',
-      'Smash power and defensive clear drills',
-      'One-on-one personalized coaching feedback',
-      'Weekly automated match-ups with peer groups',
-      'Complete fitness assessment and diet plan',
-    ],
-    contact: '+968 9178 3155',
-    badge: 'BADMINTON PRO',
-  },
-  {
-    id: 2,
-    title: 'Table Tennis Championship',
-    subtitle: 'Competitive Leagues & Open Play',
-    image: TableTennisBanner,
-    date: 'Weekends (Fri - Sat)',
-    time: '10:00 AM – 6:00 PM',
-    location: 'AMM Sports Arena, TT Hall',
-    price: '20 OMR / Entry',
-    category: 'Table Tennis',
-    description:
-      'Join our high-paced Table Tennis Championship series. Compete against top local talent across multiple brackets. Whether you play penhold or shakehand, aggressive looping or careful chopping, test your skills in our professionally timed and reffed environment.',
-    highlights: [
-      'Professionally formatted double-elimination brackets',
-      'Cash prizes and medals for top 3 finishers',
-      'State-of-the-art ITTF approved tables',
-      'Live broadcasting on local screens',
-      'Post-tournament networking and casual play',
-    ],
-    contact: '+968 7623 6687',
-    badge: 'CHAMPIONSHIP',
-  },
-  {
-    id: 3,
-    title: 'Spring Camp 2025',
-    subtitle: 'Badminton Training Camp for Beginners & Advanced',
-    image: Event1,
-    date: 'March 15 – March 30, 2025',
-    time: '8:00 AM – 12:00 PM',
-    location: 'AMM Sports Arena, Main Hall',
-    price: '35 OMR',
-    category: 'General',
-    description:
-      'Join our Spring Camp for an intensive badminton training experience. Whether you are a beginner or an advanced player, our coaches will work with you to sharpen your skills. The camp covers stroke correction, technical training, tactical training, match practice, fitness & conditioning, and mental training. Sibling discount is available.',
-    highlights: [
-      'Stroke Correction: Grip, footwork, smash, drop, clear, net shots',
-      'Technical Training: Proper techniques for consistency, serve & return skills',
-      'Tactical Training: Proven techniques, strategies, positioning & shot selection',
-      'Match Practice: Daily games, situation-based rallies, pressure training',
-      'Fitness & Conditioning: Agility, speed, strength & flexibility drills',
-      'Mental Training: Focus, confidence & sports match-p development',
-      'Weekly Progress Review and distribution/feedback',
-    ],
-    contact: '+968 9178 3155 / +968 7623 6687',
-    badge: 'MARCH 15TH – 30TH',
-  },
-  {
-    id: 4,
-    title: 'Winter Camp 2024',
-    subtitle: 'Exclusive Badminton Training — Intermediate & Beginner',
-    image: Event2,
-    date: 'Dec 18 – Jan 3 (Sunday to Thursday)',
-    time: '8:00 AM – 12:30 PM',
-    location: 'AMM Sports Arena, Indoor Courts',
-    price: '35–40 OMR',
-    category: 'General',
-    description:
-      'Our Winter Camp offers two exclusive batches tailored to different skill levels. Batch 01 is for intermediate players (8:00 AM – 10:00 AM) at 35 OMR, while Batch 02 is for beginners (10:30 AM – 12:30 PM) at 40 OMR. Separate Beginner & Intermediate batches ensure focused training.',
-    highlights: [
-      'Batch 01 (Intermediate): 8:00 – 10:00 AM | 35 OMR',
-      'Batch 02 (Beginner): 10:30 AM – 12:30 PM | 40 OMR',
-      'Stroke Connection: Grip, footwork, smash, drop, clear, net shots',
-      'Technical Training: Proper techniques for consistency, service & return skills',
-      'Tactical Training: Proven techniques, strategies, positioning & shot selection',
-      'Match Practice: Daily games, situation-based rallies, pressure training',
-      'Fitness & Conditioning: Agility, speed, strength & flexibility drills',
-      'Mental Training: Focus, confidence & sports match preparation',
-    ],
-    contact: '+968 9178 3155 / +968 9744 6582',
-    badge: 'DEC 18TH – JAN 3RD',
-  },
-  {
-    id: 5,
-    title: 'New Year Racket Fest — Season 1',
-    subtitle: 'Celebrate the New Year with an Epic Badminton Festival',
-    image: Event3,
-    date: 'January 2025',
-    time: 'TBA',
-    location: 'AMM Sports Arena',
-    price: 'TBA',
-    category: 'General',
-    description:
-      'Welcome the New Year with AMM Sports Arena\'s Racket Fest Season 1! A fun-filled badminton event open to all levels. Stay tuned for match schedules, prizes, and special guest appearances. This is your chance to celebrate the sport you love with the community.',
-    highlights: [
-      'Open to all skill levels',
-      'Exciting prizes and trophies',
-      'Fun match formats',
-      'Community hangout and networking',
-      'Special appearances by top players',
-    ],
-    contact: 'Contact AMM Sports Arena for details',
-    badge: 'SEASON 1',
-  },
-];
+function resolveContactHref(ev) {
+  if (!ev) return null;
+  if (ev.contactHref) return ev.contactHref;
+  const raw = String(ev.contact || '').split('/')[0].trim();
+  const digits = raw.replace(/[^\d+]/g, '');
+  if (digits.length >= 8) return `tel:${digits}`;
+  return null;
+}
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -134,12 +25,63 @@ const EventDetail = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [regForm, setRegForm] = useState({ name: '', phone: '' });
+   const [cmsEvent, setCmsEvent] = useState(null);
+  const [cmsStatus, setCmsStatus] = useState('idle');
+  const [isApplied, setIsApplied] = useState(false);
 
-  const event = eventsData.find((e) => e.id === parseInt(id));
+  useEffect(() => {
+    if (!id) {
+      setCmsEvent(null);
+      setCmsStatus('idle');
+      return undefined;
+    }
+    if (!isApiConfigured()) {
+      setCmsEvent(null);
+      setCmsStatus('no_api');
+      return undefined;
+    }
+    if (!isCmsEventId(id)) {
+      setCmsEvent(null);
+      setCmsStatus('invalid_id');
+      return undefined;
+    }
+    let cancelled = false;
+    setCmsStatus('loading');
+    (async () => {
+      try {
+        const [data, regData] = await Promise.all([
+          fetchPublishedEventById(id),
+          getAuthToken() ? listMyEventRegistrations().catch(() => ({ registrations: [] })) : Promise.resolve({ registrations: [] })
+        ]);
+        if (cancelled) return;
+        
+        const normalized = normalizeCmsEventForDetail(data.content);
+        setCmsEvent(normalized);
+        
+        // Check if already applied
+        const alreadyApplied = (regData.registrations || []).some(r => r.eventId === id);
+        setIsApplied(alreadyApplied);
+        
+        setCmsStatus('ok');
+      } catch {
+        if (!cancelled) {
+          setCmsEvent(null);
+          setCmsStatus('error');
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const event = cmsEvent;
+  const contactHref = event ? resolveContactHref(event) : null;
+
   const isFree = event?.price?.toLowerCase().includes('free');
   const isTBA = event?.price?.toLowerCase().includes('tba');
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     if (regForm.phone.length !== 10) {
       alert("Contact number must be exactly 10 digits.");
@@ -147,13 +89,20 @@ const EventDetail = () => {
     }
     
     setIsSubmitting(true);
-    // Simulate processing
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
       if (isFree || isTBA) {
+        // Direct registration for free/tba events
+        await registerForEvent({
+          eventId: id,
+          name: regForm.name,
+          phone: regForm.phone
+        });
         setRegStep('success');
       } else {
-        // Parse price to number (simple extraction)
+        // For paid events, we could either register-then-pay or pay-then-register.
+        // Usually, it's better to register as "Pending" and then confirm after payment.
+        // But the current flow goes to /payment.
+        // I'll stick to the current flow but prepare the registration.
         const amount = parseFloat(event.price.replace(/[^0-9.]/g, '')) || 0;
         navigate('/payment', { 
             state: { 
@@ -162,11 +111,17 @@ const EventDetail = () => {
                 eventCategory: event.category,
                 date: event.date,
                 slot: { time: event.time },
-                type: 'event'
+                type: 'event',
+                // Pass registration info to payment page if needed to finalize on success
+                registrationInfo: { eventId: id, name: regForm.name, phone: regForm.phone }
             } 
         });
       }
-    }, 1200);
+    } catch (err) {
+      alert(err.message || 'Registration failed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const confirmPayment = () => {
@@ -187,10 +142,40 @@ const EventDetail = () => {
     setRegForm({ ...regForm, phone: val });
   };
 
-  if (!event) {
+  if (cmsStatus === 'loading') {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-[#CE2029] font-bold text-lg">Event not found.</p>
+        <p className="text-[#CE2029] font-bold text-lg">Loading event…</p>
+      </div>
+    );
+  }
+
+  if (cmsStatus === 'no_api') {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center gap-3">
+        <p className="text-[#CE2029] font-bold text-lg">API not configured</p>
+        <p className="text-slate-600 text-sm max-w-md">
+          Set <span className="font-mono">VITE_API_URL</span> to load published events from the server.
+        </p>
+      </div>
+    );
+  }
+
+  if (cmsStatus === 'invalid_id') {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center gap-3">
+        <p className="text-[#CE2029] font-bold text-lg">Event not found</p>
+        <p className="text-slate-600 text-sm max-w-md">
+          Open an event from the Events list so the link uses the published CMS id.
+        </p>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-6 text-center">
+        <p className="text-[#CE2029] font-bold text-lg">Event not found or unpublished.</p>
       </div>
     );
   }
@@ -258,23 +243,25 @@ const EventDetail = () => {
             </div>
 
             {/* Program Highlights - Desktop Version */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="hidden lg:block space-y-8 p-8 bg-slate-50 lg:rounded-none border-l-4 border-[#CE2029]"
-            >
-              <h2 className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.3em]">Program Highlights</h2>
-              <div className="space-y-5">
-                {event.highlights.map((item, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="w-5 h-5 rounded-full bg-[#CE2029]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <CheckCircle2 size={12} className="text-[#CE2029]" />
+            {event.highlights && event.highlights.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="hidden lg:block space-y-8 p-8 bg-slate-50 lg:rounded-none border-l-4 border-[#CE2029]"
+              >
+                <h2 className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.3em]">Rules & Guidelines</h2>
+                <div className="space-y-5">
+                  {event.highlights.map((item, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-5 h-5 rounded-full bg-[#CE2029]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle2 size={12} className="text-[#CE2029]" />
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-bold leading-relaxed">{item}</p>
                     </div>
-                    <p className="text-[11px] text-slate-600 font-bold leading-relaxed">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* RIGHT COLUMN: Info & Actions */}
@@ -315,6 +302,25 @@ const EventDetail = () => {
               ))}
             </motion.div>
 
+            {/* What's Included Section */}
+            {event.inclusions && event.inclusions.length > 0 && (
+               <motion.div
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.12 }}
+               >
+                 <h2 className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.3em] mb-4">What's Included</h2>
+                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {event.inclusions.map((t, i) => (
+                       <div key={i} className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 border border-slate-100 gap-1.5">
+                          <CheckCircle2 size={14} className="text-emerald-500" />
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">{t}</span>
+                       </div>
+                    ))}
+                 </div>
+               </motion.div>
+            )}
+
             {/* About Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -328,42 +334,53 @@ const EventDetail = () => {
             </motion.div>
 
             {/* What's Included - Mobile Version Hook */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="lg:hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-sm"
-            >
-              <h2 className="text-[9px] font-black text-[#CE2029] uppercase tracking-[0.3em] mb-5">What's Included</h2>
-              <div className="space-y-4">
-                {event.highlights.map((item, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="w-6 h-6 rounded-full bg-[#CE2029] flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-[10px] font-black">{i + 1}</span>
+            {event.highlights && event.highlights.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="lg:hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-sm"
+              >
+                <h2 className="text-[9px] font-black text-[#CE2029] uppercase tracking-[0.3em] mb-5">Rules & Guidelines</h2>
+                <div className="space-y-4">
+                  {event.highlights.map((item, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-6 h-6 rounded-full bg-[#CE2029] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-white text-[10px] font-black">{i + 1}</span>
+                      </div>
+                      <p className="text-xs text-slate-700 font-bold leading-relaxed">{item}</p>
                     </div>
-                    <p className="text-xs text-slate-700 font-bold leading-relaxed">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Action Buttons - Compact on Desktop */}
             <div className="pt-4 flex gap-4 lg:max-w-md pb-20 lg:pb-0">
-              <a 
-                href={`tel:${event.contact.split('/')[0].trim()}`}
-                className="flex-1 h-14 lg:h-12 bg-slate-900 lg:rounded-none rounded-xl text-white font-black uppercase tracking-[0.2em] text-[10px] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-xl shadow-black/10"
+              <a
+                href={contactHref || '#'}
+                onClick={(e) => {
+                  if (!contactHref) e.preventDefault();
+                }}
+                className={`flex-1 h-14 lg:h-12 bg-slate-900 lg:rounded-none rounded-xl text-white font-black uppercase tracking-[0.2em] text-[10px] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-xl shadow-black/10 ${!contactHref ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <Phone size={14} /> Contact
               </a>
 
               <button 
                 onClick={() => {
+                   if (isApplied) return;
                    setRegStep('form');
                    setShowRegModal(true);
                 }}
-                className="flex-[1.6] h-14 lg:h-12 bg-[#CE2029] lg:rounded-none rounded-xl text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-[0_15px_35px_rgba(206, 32, 41,0.3)] hover:shadow-[0_20px_45px_rgba(206, 32, 41,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3"
+                disabled={isApplied}
+                className={`flex-[1.6] h-14 lg:h-12 lg:rounded-none rounded-xl text-white font-black uppercase tracking-[0.2em] text-[10px] transition-all flex items-center justify-center gap-3 ${
+                  isApplied 
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
+                    : 'bg-[#CE2029] shadow-[0_15px_35px_rgba(206, 32, 41,0.3)] hover:shadow-[0_20px_45px_rgba(206, 32, 41,0.4)] hover:-translate-y-1 active:translate-y-0'
+                }`}
               >
-                Register Now
+                {isApplied ? <><CheckCircle2 size={16} /> Applied</> : 'Register Now'}
               </button>
             </div>
           </div>
@@ -373,7 +390,7 @@ const EventDetail = () => {
       {/* Registration Modal Overlay */}
       <AnimatePresence>
         {showRegModal && (
-          <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center">
+          <div className="fixed inset-0 z-[1000] flex items-end md:items-center justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

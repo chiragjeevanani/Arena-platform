@@ -5,18 +5,24 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Lottie from 'lottie-react';
 import Logo from '../../../assets/Logo (3).png';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
+import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { loginRequest } from '../../../services/authApi';
+
+const DEMO_ARENA_ID = '507f1f77bcf86cd799439011';
 
 const ArenaLogin = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (!form.email || !form.password) {
       setError('Please fill in all fields.');
       return;
@@ -33,11 +39,41 @@ const ArenaLogin = () => {
       return;
     }
 
+    if (isApiConfigured()) {
+      setLoading(true);
+      try {
+        const data = await loginRequest(form.email, form.password);
+        const role = data.user?.role;
+        const arenaRoles = ['ARENA_ADMIN', 'RECEPTIONIST'];
+        if (!arenaRoles.includes(role)) {
+          setError('This portal is for arena staff (arena admin or receptionist) only.');
+          return;
+        }
+        login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+        navigate('/arena');
+      } catch (err) {
+        setError(err.message || 'Login failed');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      login({
+        token: 'mock-arena-token',
+        user: {
+          id: '507f191e810c19729de860ea',
+          email: form.email,
+          name: 'Demo Arena Manager',
+          role: 'ARENA_ADMIN',
+          assignedArenaId: DEMO_ARENA_ID,
+        },
+      });
       navigate('/arena');
-    }, 1200);
+    }, 800);
   };
 
   return (

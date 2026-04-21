@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Crown, Plus, Search, Filter, MoreVertical, 
@@ -7,38 +7,161 @@ import {
   Calendar, ShieldCheck, X, Save, Info, Layout,
   CreditCard, CalendarX2, TrendingUp, UserMinus, DollarSign, List
 } from 'lucide-react';
-import { MEMBERSHIP_PLANS } from '../../../data/mockData';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import {
+  listAdminMembershipPlans,
+  createAdminMembershipPlan,
+  patchAdminMembershipPlan,
+} from '../../../services/adminOpsApi';
+
+function durationDaysToLabel(d) {
+  const n = Number(d) || 30;
+  if (n >= 300) return '12 Months';
+  if (n >= 150) return '6 Months';
+  if (n >= 75) return '3 Months';
+  return '1 Month';
+}
+
+function durationLabelToDays(label) {
+  const m = { '12 Months': 365, '6 Months': 180, '3 Months': 90, '1 Month': 30 };
+  return m[label] || 30;
+}
+
+function mapApiPlanToUi(p, idx) {
+  const palette = ['#CE2029', '#f59e0b', '#6366f1', '#10b981', '#ec4899'];
+  const color = palette[idx % palette.length];
+  const benefits = p.description
+    ? String(p.description)
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : ['Plan benefits — edit in drawer'];
+  return {
+    id: p.id,
+    name: p.name,
+    price: Number(p.price) || 0,
+    duration: durationDaysToLabel(p.durationDays),
+    durationDays: p.durationDays,
+    discountPercent: p.discountPercent ?? 0,
+    category: 'premium',
+    status: p.isActive ? 'active' : 'draft',
+    benefits,
+    color,
+    bestValue: false,
+    isNew: false,
+  };
+}
 
 const MembershipMgmt = () => {
-  const [plans, setPlans] = useState(MEMBERSHIP_PLANS);
+  const [plans, setPlans] = useState([]);
+  const [arenas, setArenas] = useState([]);
+  const [selectedArenaId, setSelectedArenaId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [editingPlan, setEditingPlan] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
+  const [loadError, setLoadError] = useState('');
+
+  const loadPlans = useCallback(async () => {
+    if (!isApiConfigured() || !getAuthToken() || !selectedArenaId) {
+      setPlans([]);
+      return;
+    }
+    setLoadError('');
+    try {
+      const data = await listAdminMembershipPlans(selectedArenaId);
+      const list = (data.plans || []).map((p, i) => mapApiPlanToUi(p, i));
+      setPlans(list);
+    } catch (e) {
+      setLoadError(e.message || 'Failed to load plans');
+      setPlans([]);
+    }
+  }, [selectedArenaId]);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchPublicArenas();
+        if (cancelled) return;
+        const list = (data.arenas || []).map(normalizeListArena);
+        setArenas(list);
+        if (list.length) setSelectedArenaId((prev) => prev || String(list[0].id));
+      } catch {
+        if (!cancelled) setArenas([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    loadPlans();
+  }, [loadPlans]);
 
   const filteredPlans = plans.filter(plan => 
     plan.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (filterCategory === 'all' || plan.category === filterCategory)
   );
 
-  const toggleStatus = (id) => {
-    setPlans(plans.map(p => p.id === id ? { ...p, status: p.status === 'active' ? 'draft' : 'active' } : p));
-  };
-
-  const deletePlan = (id) => {
-    if (window.confirm('Are you sure you want to delete this plan?')) {
-      setPlans(plans.filter(p => p.id !== id));
+  const toggleStatus = async (id) => {
+    const p = plans.find((x) => x.id === id);
+    if (!p || !isApiConfigured() || !getAuthToken()) return;
+    try {
+      await patchAdminMembershipPlan(id, { isActive: p.status !== 'active' });
+      await loadPlans();
+    } catch (e) {
+      setLoadError(e.message || 'Update failed');
     }
   };
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    if (editingPlan.id) {
-      setPlans(plans.map(p => p.id === editingPlan.id ? editingPlan : p));
-    } else {
-      setPlans([{ ...editingPlan, id: Date.now() }, ...plans]);
+  const deletePlan = async (id) => {
+    if (!window.confirm('Deactivate this plan?')) return;
+    if (!isApiConfigured() || !getAuthToken()) return;
+    try {
+      await patchAdminMembershipPlan(id, { isActive: false });
+      await loadPlans();
+    } catch (e) {
+      setLoadError(e.message || 'Failed');
     }
-    setEditingPlan(null);
+  };
+
+  const saveDrawerPlan = async () => {
+    if (!editingPlan || !selectedArenaId) return;
+    if (!isApiConfigured() || !getAuthToken()) return;
+    const durationDays = durationLabelToDays(editingPlan.duration);
+    const desc = (editingPlan.benefits || []).join('\n').slice(0, 5000);
+    const isActive = editingPlan.status === 'active';
+    try {
+      if (editingPlan.isNew) {
+        await createAdminMembershipPlan({
+          arenaId: selectedArenaId,
+          name: editingPlan.name.trim(),
+          price: Number(editingPlan.price) || 0,
+          durationDays,
+          discountPercent: Number(editingPlan.discountPercent) || 0,
+          description: desc,
+        });
+      } else {
+        await patchAdminMembershipPlan(editingPlan.id, {
+          name: editingPlan.name.trim(),
+          price: Number(editingPlan.price) || 0,
+          durationDays,
+          discountPercent: Number(editingPlan.discountPercent) || 0,
+          description: desc,
+          isActive,
+        });
+      }
+      setEditingPlan(null);
+      await loadPlans();
+    } catch (e) {
+      setLoadError(e.message || 'Save failed');
+    }
   };
 
   return (
@@ -54,14 +177,46 @@ const MembershipMgmt = () => {
             Plan <span className="text-[#CE2029]">Management</span>
           </h1>
           <p className="text-slate-500 font-bold text-[13px] mt-2 opacity-60 flex items-center gap-1.5">
-            <Users size={14} /> 1.2k Active Members Across {plans.length} Live Plans
+            <Users size={14} /> {plans.length} plan(s) for selected arena
           </p>
+          {loadError ? <p className="text-xs text-red-600 mt-2">{loadError}</p> : null}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <label htmlFor="arena-membership" className="text-[10px] font-black uppercase text-slate-400">
+              Arena
+            </label>
+            <select
+              id="arena-membership"
+              value={selectedArenaId}
+              onChange={(e) => setSelectedArenaId(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-[#36454F]"
+            >
+              {arenas.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setEditingPlan({ name: '', price: 0, category: 'non-premium', duration: '12 Months', benefits: [], status: 'draft' })}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#CE2029] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:scale-[1.02] transition-all active:scale-95"
+            type="button"
+            onClick={() =>
+              setEditingPlan({
+                isNew: true,
+                name: '',
+                price: 0,
+                category: 'non-premium',
+                duration: '12 Months',
+                benefits: [],
+                status: 'draft',
+                discountPercent: 0,
+                color: '#f59e0b',
+              })
+            }
+            disabled={!selectedArenaId}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#CE2029] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50"
           >
             <Plus size={16} strokeWidth={3} /> Create New Plan
           </button>
@@ -551,7 +706,8 @@ const MembershipMgmt = () => {
                   Cancel
                 </button>
                 <button 
-                  onClick={handleSave}
+                  type="button"
+                  onClick={saveDrawerPlan}
                   className="flex-[2] py-4.5 px-6 rounded-[12px] bg-gradient-to-r from-[#eb483f] to-[#ff6b6b] text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-[#eb483f]/25 hover:shadow-[#eb483f]/40 hover:-translate-y-0.5 transition-all active:translate-y-0 active:scale-95"
                 >
                   Save Changes

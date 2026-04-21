@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -10,6 +11,9 @@ import SchoolIcon from '@mui/icons-material/School';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { createMyEnrollment } from '../../../services/meApi';
 
 const CoachingSummary = () => {
   const { state } = useLocation();
@@ -17,6 +21,44 @@ const CoachingSummary = () => {
   const { isDark } = useTheme();
 
   const { batch } = state || {};
+  const [enrolling, setEnrolling] = useState(false);
+  const [enrollError, setEnrollError] = useState('');
+
+  const regFee = batch ? 500 : 0;
+  const monthlyFee = batch ? Number(batch.fees) || 0 : 0;
+  const total = monthlyFee + regFee;
+  const gst = total * 0.18;
+  const finalPayable = total + gst;
+
+  const goToPayment = () => {
+    if (!batch) return;
+    navigate('/payment', { state: { amount: finalPayable, batch } });
+  };
+
+  const handleEnroll = async () => {
+    setEnrollError('');
+    const batchId = batch?.id;
+    if (isApiConfigured() && getAuthToken() && batchId) {
+      setEnrolling(true);
+      try {
+        const { enrollment } = await createMyEnrollment(batchId);
+        navigate('/booking-success', {
+          state: {
+            type: 'coaching',
+            batch,
+            enrollment,
+            amount: 0,
+          },
+        });
+      } catch (e) {
+        setEnrollError(e.message || 'Enrollment failed');
+      } finally {
+        setEnrolling(false);
+      }
+      return;
+    }
+    goToPayment();
+  };
 
   if (!batch) return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-[#F8FAFC]">
@@ -33,12 +75,6 @@ const CoachingSummary = () => {
       </button>
     </div>
   );
-
-  const regFee = 500;
-  const monthlyFee = batch.fees;
-  const total = monthlyFee + regFee;
-  const gst = total * 0.18;
-  const finalPayable = total + gst;
 
   return (
     <div className="min-h-screen pb-24 relative overflow-hidden bg-[#F8FAFC]">
@@ -59,6 +95,9 @@ const CoachingSummary = () => {
             <div>
               <h1 className="text-lg font-black text-white font-display tracking-tight uppercase leading-none">Enrollment Summary</h1>
               <p className="text-[9px] font-bold text-white/60 tracking-widest uppercase mt-1">Review Your Academy Details</p>
+              {enrollError ? (
+                <p className="text-[10px] font-bold text-amber-200 mt-1 max-w-xs">{enrollError}</p>
+              ) : null}
             </div>
           </div>
 
@@ -68,10 +107,11 @@ const CoachingSummary = () => {
               <p className="text-xl font-black text-white font-display">OMR {finalPayable.toFixed(3)}</p>
             </div>
             <button
-              className="bg-white text-[#CE2029] px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-black/10 active:scale-95 transition-all"
-              onClick={() => navigate('/payment', { state: { amount: finalPayable, batch } })}
+              className="bg-white text-[#CE2029] px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-black/10 active:scale-95 transition-all disabled:opacity-60"
+              disabled={enrolling}
+              onClick={handleEnroll}
             >
-              Enroll Now
+              {enrolling ? 'Enrolling…' : isApiConfigured() && getAuthToken() && batch?.id ? 'Enroll (free)' : 'Enroll Now'}
             </button>
           </div>
         </div>
@@ -260,9 +300,10 @@ const CoachingSummary = () => {
             <div className="hidden lg:block pt-1">
               <button
                 className="w-full bg-[#CE2029] text-white py-3.5 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-[#CE2029]/20 hover:shadow-[#CE2029]/30 active:scale-95 transition-all flex items-center justify-center gap-2 group"
-                onClick={() => navigate('/payment', { state: { amount: finalPayable, batch } })}
+                onClick={handleEnroll}
+                disabled={enrolling}
               >
-                Enroll Now
+                {enrolling ? 'Enrolling…' : 'Enroll Now'}
                 <ArrowForwardIcon style={{ fontSize: 16 }} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -275,9 +316,14 @@ const CoachingSummary = () => {
         <div className="max-w-md mx-auto bg-white/95 backdrop-blur-2xl p-1.5 rounded-[24px] border border-slate-100 shadow-xl shadow-black/10">
           <button
             className="w-full bg-[#CE2029] text-white py-3.5 rounded-[20px] font-black text-xs uppercase tracking-[0.15em] shadow-lg shadow-[#CE2029]/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
-            onClick={() => navigate('/payment', { state: { amount: finalPayable, batch } })}
+            onClick={handleEnroll}
+            disabled={enrolling}
           >
-            Pay OMR {finalPayable.toFixed(3)} Now
+            {enrolling
+              ? 'Enrolling…'
+              : isApiConfigured() && getAuthToken() && batch?.id
+                ? 'Complete enrollment'
+                : `Pay OMR ${finalPayable.toFixed(3)} Now`}
             <ArrowForwardIcon style={{ fontSize: 18 }} />
           </button>
         </div>

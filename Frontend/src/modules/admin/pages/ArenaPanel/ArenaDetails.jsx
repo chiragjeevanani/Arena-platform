@@ -1,9 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home, MapPin, Phone, Clock, Image, Upload, X, Plus, Check,
-  Eye, Building2, Wifi, Car, Coffee, Dumbbell, ShowerHead, Wind
+  Eye, Building2, Wifi, Car, Coffee, Dumbbell, ShowerHead, Wind,
+  Loader2
 } from 'lucide-react';
+import { useArenaPanel } from '../../context/ArenaPanelContext';
+import { patchMyArena, uploadArenaImage } from '../../../../services/arenaStaffApi';
+import { showToast } from '../../../../utils/toast';
 
 const AMENITY_OPTIONS = [
   { id: 'wifi', label: 'Free WiFi', icon: Wifi },
@@ -16,29 +20,34 @@ const AMENITY_OPTIONS = [
   { id: 'coaching', label: 'Coaching Area', icon: Home },
 ];
 
-const initialArena = {
-  id: 'arena-1',
-  name: 'AMM Sports Arena',
-  address: 'Sultan Qaboos St, Al Khuwair',
-  city: 'Muscat',
-  contact: '+968 9876 5432',
-  openTime: '06:00',
-  closeTime: '22:00',
-  amenities: ['wifi', 'parking', 'cafe'],
-  images: [],
-  banner: null,
-  status: 'active',
-};
-
 const ArenaDetails = () => {
+  const { arena: contextArena, loading: contextLoading, refetch } = useArenaPanel();
   const [isEditing, setIsEditing] = useState(false);
-  const [arena, setArena] = useState(initialArena);
+  const [arena, setArena] = useState(null);
   const [amenityOptions, setAmenityOptions] = useState(AMENITY_OPTIONS);
   const [showAddAmenity, setShowAddAmenity] = useState(false);
   const [newAmenityLabel, setNewAmenityLabel] = useState('');
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const galleryRef = useRef();
   const bannerRef = useRef();
+
+  useEffect(() => {
+    if (contextArena) {
+      setArena({
+        ...contextArena,
+        address: contextArena.location?.split(',')[0] || '',
+        city: contextArena.location?.split(',')[1]?.trim() || '',
+        contact: contextArena.contact || '',
+        openTime: contextArena.openTime || '06:00',
+        closeTime: contextArena.closeTime || '22:00',
+        amenities: contextArena.amenities || [],
+        banner: contextArena.imageUrl || null,
+        images: contextArena.images || [], // If backend supports secondary images later
+      });
+    }
+  }, [contextArena]);
 
   const handleAddAmenity = () => {
     if (!newAmenityLabel.trim()) return;
@@ -61,29 +70,63 @@ const ArenaDetails = () => {
     }));
   };
 
-  const handleGalleryUpload = (e) => {
-    if (!isEditing) return;
-    const files = Array.from(e.target.files);
-    const newImgs = files.map(f => ({ url: URL.createObjectURL(f), name: f.name }));
-    setArena(prev => ({ ...prev, images: [...prev.images, ...newImgs] }));
-  };
-
-  const handleBannerUpload = (e) => {
+  const handleBannerUpload = async (e) => {
     if (!isEditing) return;
     const file = e.target.files[0];
-    if (file) setArena(prev => ({ ...prev, banner: URL.createObjectURL(file) }));
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const res = await uploadArenaImage(file);
+      const url = res.imageUrl || res.url;
+      setArena(prev => ({ ...prev, banner: url }));
+      showToast('Banner uploaded successfully', 'success');
+    } catch (err) {
+      console.error('Upload failed:', err);
+      showToast('Upload failed', 'error');
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const removeImage = (idx) => {
-    if (!isEditing) return;
-    setArena(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        name: arena.name,
+        location: `${arena.address}, ${arena.city}`,
+        contact: arena.contact,
+        openTime: arena.openTime,
+        closeTime: arena.closeTime,
+        amenities: arena.amenities,
+        imageUrl: arena.banner,
+        description: arena.description
+      };
+      
+      await patchMyArena(payload);
+      await refetch();
+      setSaved(true);
+      setIsEditing(false);
+      showToast('Arena details updated', 'success');
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error('Save failed:', err);
+      showToast(err.message || 'Failed to save changes', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setIsEditing(false);
-    setTimeout(() => setSaved(false), 2500);
-  };
+  if (contextLoading && !arena) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-10 h-10 text-[#CE2029] animate-spin" />
+        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Loading Arena Details...</p>
+      </div>
+    );
+  }
+
+  if (!arena) return null;
 
   const field = (label, icon, children) => (
     <div className="group">
@@ -125,16 +168,19 @@ const ArenaDetails = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => { setIsEditing(false); setArena(initialArena); }}
-                  className="px-4 py-2 rounded-xl text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-red-500 transition-all"
+                  disabled={saving}
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 rounded-xl text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-red-500 transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button 
+                  disabled={saving}
                   onClick={handleSave}
-                  className="px-6 py-2 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                  className="px-6 py-2 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:-translate-y-0.5 transition-all flex items-center gap-2 disabled:opacity-50"
                 >
-                  Save Changes
+                  {saving ? <Loader2 size={12} className="animate-spin" /> : null}
+                  {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             )}
@@ -175,7 +221,7 @@ const ArenaDetails = () => {
                   readOnly={!isEditing}
                   onChange={e => setArena(p => ({ ...p, address: e.target.value }))}
                   className={inputCls("pr-11")} 
-                  placeholder="Full address" 
+                  placeholder="Street / Area" 
                 />
                 <MapPin size={14} className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors ${isEditing ? 'text-[#CE2029]' : 'text-slate-300'}`} />
               </div>
@@ -259,7 +305,7 @@ const ArenaDetails = () => {
           
           <div className="flex flex-wrap gap-2.5">
             {amenityOptions.map(({ id, label, icon: Icon }) => {
-              const selected = arena.amenities.includes(id);
+              const selected = Math.random() > 0 ? arena.amenities.includes(id) : false; // Safe check
               return (
                 <motion.button 
                   key={id} 
@@ -308,7 +354,7 @@ const ArenaDetails = () => {
           </AnimatePresence>
         </div>
 
-        {/* Gallery Section */}
+        {/* Gallery Section - Read Only for Banner for now */}
         <div className={`bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-[#CE2029]/[0.02] p-6 md:p-8 space-y-6 overflow-hidden relative group ${!isEditing && 'opacity-60 pointer-events-none'}`}>
           <div className="absolute top-4 right-4 text-[#CE2029]/[0.03] rotate-12 transition-transform group-hover:rotate-0 duration-700">
             <Image size={80} strokeWidth={1} />
@@ -319,55 +365,26 @@ const ArenaDetails = () => {
             <Image size={18} className="text-[#CE2029]" />
           </h3>
 
-          <input ref={galleryRef} type="file" multiple accept="image/*" className="hidden" onChange={handleGalleryUpload} />
-          <button onClick={() => galleryRef.current.click()}
-            className="w-full border-2 border-dashed border-slate-200 rounded-xl py-8 flex flex-col items-center gap-2 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029] transition-all group">
-            <Upload size={24} className="group-hover:scale-110 transition-transform" />
-            <span className="text-[11px] font-black uppercase tracking-widest">Click to upload images</span>
-            <span className="text-[10px] text-slate-300">PNG, JPG up to 10MB each</span>
-          </button>
-
-          {arena.images.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
-              <AnimatePresence>
-                {arena.images.map((img, idx) => (
-                  <motion.div key={idx} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                    className="relative group rounded-xl overflow-hidden aspect-square">
-                    <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                      <button onClick={() => removeImage(idx)}
-                        className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg">
-                        <X size={14} strokeWidth={3} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-                <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  onClick={() => galleryRef.current.click()}
-                  className="aspect-square rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029] transition-all gap-1">
-                  <Plus size={20} />
-                  <span className="text-[9px] font-black uppercase tracking-widest">Add</span>
-                </motion.button>
-              </AnimatePresence>
-            </div>
-          )}
-
           {/* Banner Upload */}
-          <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Banner Image</h4>
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hero Banner</h4>
             <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
             {arena.banner ? (
-              <div className="relative rounded-xl overflow-hidden h-32 group">
+              <div className="relative rounded-xl overflow-hidden h-40 group border border-slate-100">
                 <img src={arena.banner} alt="Banner" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
-                  <button onClick={() => bannerRef.current.click()} className="px-4 py-2 rounded-lg bg-white text-[#36454F] text-[10px] font-black uppercase tracking-widest">Change</button>
+                  <button disabled={uploading} onClick={() => bannerRef.current.click()} className="px-4 py-2 rounded-lg bg-white text-[#36454F] text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                    {uploading ? <Loader2 size={12} className="animate-spin" /> : null}
+                    Change
+                  </button>
                   <button onClick={() => setArena(p => ({ ...p, banner: null }))} className="px-4 py-2 rounded-lg bg-red-500 text-white text-[10px] font-black uppercase tracking-widest">Remove</button>
                 </div>
               </div>
             ) : (
               <button onClick={() => bannerRef.current.click()}
-                className="w-full border-2 border-dashed border-slate-200 rounded-xl py-6 flex flex-col items-center gap-2 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029] transition-all">
-                <Image size={20} />
+                disabled={uploading}
+                className="w-full border-2 border-dashed border-slate-200 rounded-xl py-12 flex flex-col items-center gap-2 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029] transition-all">
+                {uploading ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
                 <span className="text-[10px] font-black uppercase tracking-widest">Upload Banner (16:9)</span>
               </button>
             )}
@@ -377,13 +394,16 @@ const ArenaDetails = () => {
         {/* Save Button */}
         <AnimatePresence mode="wait">
           <motion.button key={saved ? 'saved' : 'save'} whileTap={{ scale: 0.98 }}
+            disabled={saving || !isEditing}
             onClick={handleSave}
             className={`w-fit mx-auto px-12 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
               saved
                 ? 'bg-green-500 border-green-500 text-white'
-                : 'bg-[#CE2029] border-[#CE2029] text-white hover:shadow-lg hover:shadow-[#CE2029]/30 hover:-translate-y-0.5'
+                : !isEditing 
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  : 'bg-[#CE2029] border-[#CE2029] text-white hover:shadow-lg hover:shadow-[#CE2029]/30 hover:-translate-y-0.5'
             }`}>
-            {saved ? <><Check size={16} strokeWidth={3} /> Changes Saved</> : 'Save Arena Details'}
+            {saved ? <><Check size={16} strokeWidth={3} /> Changes Saved</> : (saving ? 'Saving...' : 'Save Arena Details')}
           </motion.button>
         </AnimatePresence>
       </div>
@@ -410,7 +430,7 @@ const ArenaDetails = () => {
               </p>
             </div>
             <span className="absolute top-3 right-3 bg-green-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">
-              {arena.status}
+              Active
             </span>
           </div>
 
@@ -442,7 +462,7 @@ const ArenaDetails = () => {
                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Amenities</p>
                 <div className="flex flex-wrap gap-1.5">
                   {arena.amenities.map(id => {
-                    const opt = AMENITY_OPTIONS.find(o => o.id === id);
+                    const opt = amenityOptions.find(o => o.id === id);
                     if (!opt) return null;
                     const Icon = opt.icon;
                     return (
@@ -451,24 +471,6 @@ const ArenaDetails = () => {
                       </span>
                     );
                   })}
-                </div>
-              </div>
-            )}
-
-            {arena.images.length > 0 && (
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Gallery ({arena.images.length})</p>
-                <div className="grid grid-cols-4 gap-1">
-                  {arena.images.slice(0, 4).map((img, i) => (
-                    <div key={i} className="aspect-square rounded-lg overflow-hidden bg-slate-100 relative">
-                      <img src={img.url} alt="" className="w-full h-full object-cover" />
-                      {i === 3 && arena.images.length > 4 && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-[10px] font-black">
-                          +{arena.images.length - 4}
-                        </div>
-                      )}
-                    </div>
-                  ))}
                 </div>
               </div>
             )}

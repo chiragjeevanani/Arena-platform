@@ -1,31 +1,75 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { Bell, ChevronRight, Sun, Moon, Star, MapPin, Zap } from 'lucide-react';
-import { ARENAS } from '../../../data/mockData';
+import { isApiConfigured } from '../../../services/config';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { fetchPublishedCms } from '../../../services/cmsApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { mapCmsCategoryForHome, mapCmsHeroForHome } from '../../../utils/cmsUiAdapter';
 import { ShuttlecockIcon, PlayerAvatarIcon } from '../components/BadmintonIcons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTableTennisPaddleBall, faBasketball, faFutbol } from '@fortawesome/free-solid-svg-icons';
 import ScoreboardSearch from '../components/ScoreboardSearch';
 import MatchBanner from '../components/MatchBanner';
 import ArenaCard from '../components/ArenaCard';
-import EventCard from '../components/EventCard';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
-import { HOME_CONFIG } from '../../../data/frontendConfig';
+import { fetchPublishedEvents } from '../../../services/eventsApi';
+import { normalizeCmsEventForList } from '../../../utils/eventAdapter';
 
 const UserHome = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [apiArenas, setApiArenas] = useState([]);
+  const [apiEvents, setApiEvents] = useState([]);
+  const [heroBanners, setHeroBanners] = useState([]);
+  const [categoryCards, setCategoryCards] = useState([]);
   const heroRef = useRef(null);
   const lightRef1 = useRef(null);
   const lightRef2 = useRef(null);
   const { isDark, toggleTheme } = useTheme();
 
-  const promos = HOME_CONFIG.heroBanners;
-  const upcomingEvents = HOME_CONFIG.events;
-  const categories = HOME_CONFIG.categories;
+  const promos = heroBanners;
+  const categories = categoryCards;
+
+  const upcomingEvents = useMemo(() => apiEvents.slice(0, 6), [apiEvents]);
+
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [arenasRes, eventsRes, heroes, cats] = await Promise.all([
+          fetchPublicArenas(),
+          fetchPublishedEvents(),
+          fetchPublishedCms('hero'),
+          fetchPublishedCms('category'),
+        ]);
+        if (cancelled) return;
+        setApiArenas((arenasRes.arenas || []).map(normalizeListArena));
+        setApiEvents((eventsRes.contents || []).map(normalizeCmsEventForList));
+        setHeroBanners((heroes.contents || []).map(mapCmsHeroForHome));
+        setCategoryCards((cats.contents || []).map((c, i) => mapCmsCategoryForHome(c, i)));
+      } catch {
+        if (!cancelled) {
+          setApiArenas([]);
+          setApiEvents([]);
+          setHeroBanners([]);
+          setCategoryCards([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const featuredArena = useMemo(() => {
+    if (apiArenas.length > 0) return apiArenas[0];
+    return null;
+  }, [apiArenas]);
 
   // Stadium light streak animation
   useEffect(() => {
@@ -139,9 +183,14 @@ const UserHome = () => {
               What do you want to book?
             </motion.h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto px-4 md:px-0">
+              {categories.length === 0 && (
+                <p className={`col-span-full text-center text-sm font-bold py-8 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+                  No category tiles yet. Publish CMS rows with kind &quot;category&quot; in the admin.
+                </p>
+              )}
               {categories.map((sport, i) => (
                 <motion.div
-                  key={sport.title}
+                  key={sport.id || sport.title}
                   initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
@@ -163,13 +212,14 @@ const UserHome = () => {
             </div>
           </div>
 
-          {/* ═╦═╦═╦═╦═╦═╦═╦═ Book Amm Sports Arena CTA (Desktop Only) ═╦═╦═╦═╦═╦═╦═╦═ */}
+          {/* ═╦═╦═╦═╦═╦═╦═╦═ Featured arena CTA (Desktop Only) ═╦═╦═╦═╦═╦═╦═╦═ */}
+          {featuredArena && (
           <div className="hidden md:block max-w-5xl mx-auto w-full pt-14 px-4 md:px-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              onClick={() => navigate('/book/1/1')} 
+              onClick={() => navigate(`/arenas/${featuredArena.id}`)}
               className={`relative rounded-[32px] overflow-hidden group cursor-pointer border shadow-lg transition-all duration-500 hover:shadow-[0_30px_60px_rgba(206, 32, 41,0.2)] hover:-translate-y-2 ${
                 isDark ? 'bg-[#1a1d24] border-white/10 hover:border-[#CE2029]/50' : 'bg-white border-slate-200 hover:border-[#CE2029]/40'
               }`}
@@ -177,12 +227,12 @@ const UserHome = () => {
               <div className="flex flex-col md:flex-row h-auto md:h-[280px]">
                 {/* Image Section */}
                 <div className="w-full md:w-[60%] h-[200px] md:h-full relative overflow-hidden">
-                  <img src={ARENAS[0].image} alt={ARENAS[0].name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <img src={featuredArena.image} alt={featuredArena.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-black/60 md:to-[transparent] md:from-black/60 opacity-60 md:opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
                   
                   <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md border border-white/50">
                     <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                    <span className="text-slate-800 font-black text-[12px]">{ARENAS[0].rating} ({ARENAS[0].reviews} Reviews)</span>
+                    <span className="text-slate-800 font-black text-[12px]">{featuredArena.rating} ({featuredArena.reviews} Reviews)</span>
                   </div>
                 </div>
 
@@ -197,13 +247,13 @@ const UserHome = () => {
                       <span className="text-[10px] font-black uppercase tracking-widest">Premium Courts</span>
                     </div>
                     
-                    <h3 className={`text-3xl font-black font-display tracking-tight leading-tight mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>{ARENAS[0].name}</h3>
+                    <h3 className={`text-3xl font-black font-display tracking-tight leading-tight mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>{featuredArena.name}</h3>
                     <p className={`text-sm font-medium flex items-center gap-1 mb-6 flex-wrap ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
-                      <MapPin size={14} /> {ARENAS[0].location} • <span className="text-[#CE2029] font-bold">{ARENAS[0].distance} away</span>
+                      <MapPin size={14} /> {featuredArena.location} • <span className="text-[#CE2029] font-bold">{featuredArena.distance} away</span>
                     </p>
 
                     <div className="flex gap-2 flex-wrap mb-8">
-                      {ARENAS[0].amenities.slice(0, 3).map((amenity, idx) => (
+                      {(featuredArena.amenities || []).slice(0, 3).map((amenity, idx) => (
                         <span key={idx} className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border ${isDark ? 'bg-white/5 border-white/10 text-white/50' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
                           {amenity}
                         </span>
@@ -214,11 +264,11 @@ const UserHome = () => {
                       <div>
                         <p className={`text-[10px] uppercase font-black tracking-widest mb-1 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Book a slot</p>
                         <p className={`font-black font-display text-2xl leading-none ${isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'}`}>
-                          OMR {Number(ARENAS[0].pricePerHour).toFixed(3)} <span className={`text-xs font-bold ${isDark ? 'text-white/30' : 'text-slate-400'}`}>/hr</span>
+                          OMR {Number(featuredArena.pricePerHour).toFixed(3)} <span className={`text-xs font-bold ${isDark ? 'text-white/30' : 'text-slate-400'}`}>/hr</span>
                         </p>
                       </div>
                       
-                      <button className="px-6 py-3 rounded-xl bg-[#CE2029] text-white text-xs font-black tracking-widest uppercase shadow-[0_8px_20px_rgba(206, 32, 41,0.3)] group-hover:shadow-[0_12px_25px_rgba(206, 32, 41,0.4)] transition-all flex items-center gap-2 group-hover:-translate-y-1">
+                      <button type="button" className="px-6 py-3 rounded-xl bg-[#CE2029] text-white text-xs font-black tracking-widest uppercase shadow-[0_8px_20px_rgba(206, 32, 41,0.3)] group-hover:shadow-[0_12px_25px_rgba(206, 32, 41,0.4)] transition-all flex items-center gap-2 group-hover:-translate-y-1">
                         Book Now <ChevronRight size={16} className="opacity-70 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
@@ -227,6 +277,7 @@ const UserHome = () => {
               </div>
             </motion.div>
           </div>
+          )}
 
           {/* ═╦═╦═╦═╦═╦═╦═╦═ Our Events Section ═╦═╦═╦═╦═╦═╦═╦═ */}
           <div className="max-w-5xl mx-auto w-full pb-4 md:pt-4 md:pb-12">
@@ -246,9 +297,14 @@ const UserHome = () => {
             </motion.div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-7 md:gap-5 max-w-5xl mx-auto px-4 md:px-0">
+              {upcomingEvents.length === 0 && (
+                <p className={`col-span-full text-center text-sm font-bold py-10 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+                  No published events yet. Add CMS content with kind &quot;event&quot;.
+                </p>
+              )}
               {upcomingEvents.map((event, index) => (
                 <motion.div
-                  key={event.id}
+                  key={String(event.id)}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -258,7 +314,7 @@ const UserHome = () => {
                 >
                   <img
                     src={event.image}
-                    alt="Event Banner"
+                    alt={event.title || 'Event'}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   
@@ -269,6 +325,12 @@ const UserHome = () => {
                   
                   {/* Glowing inner border effect on hover (Desktop) */}
                   <div className="hidden md:block absolute inset-0 border-[3px] border-[#CE2029]/0 group-hover:border-[#CE2029]/30 transition-colors duration-500 rounded-[24px] pointer-events-none" />
+
+                  {event.title && (
+                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none">
+                      <p className="text-white font-black text-xs md:text-sm tracking-tight line-clamp-2">{event.title}</p>
+                    </div>
+                  )}
 
                   {/* Tap hint overlay (subtle for desktop, mainly mobile/hover) */}
                   <div className="absolute inset-0 flex items-end justify-center pb-5 md:pb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">

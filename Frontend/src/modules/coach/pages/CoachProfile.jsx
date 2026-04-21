@@ -1,29 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Mail, Phone, MapPin, Award, Calendar, Shield, Save, User, Star, TrendingUp } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { patchMyProfile } from '../../../services/meApi';
+import { meRequest } from '../../../services/authApi';
 
 const CoachProfile = () => {
   const { isDark } = useTheme();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: user?.name || 'Vikram Singh',
-    email: user?.email || 'vikram@ammsports.com',
+    name: user?.name || 'Coach',
+    email: user?.email || '',
     role: 'HEAD COACH (BADMINTON)',
     bio: 'Dedicated professional badminton coach with 8+ years of experience training state-level athletes and junior champions. Expert in technical analytics and high-intensity stamina conditioning.',
     experience: '8 Years',
-    phone: '+968 9123 4567',
+    phone: user?.phone || '',
     location: 'Muscat, Oman',
     specialization: ['Technical Footwork', 'Smash Precision', 'Junior Development'],
     achievements: ['Gold Medalist (Internal Masters)', 'Certified BWF Coach (Lv 2)'],
-    avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop"
+    avatar: user?.avatar || "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop"
   });
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Logic to persist changes would go here
+  useEffect(() => {
+    if (!user) return;
+    setProfileData((prev) => ({
+      ...prev,
+      name: user.name || prev.name,
+      email: user.email || prev.email,
+      phone: user.phone || prev.phone,
+      avatar: user.avatar || prev.avatar,
+    }));
+  }, [user]);
+
+  const handleSave = async () => {
+    setSaveError('');
+    setSaving(true);
+    try {
+      if (isApiConfigured() && getAuthToken()) {
+        await patchMyProfile({
+          name: profileData.name.trim(),
+          phone: profileData.phone.trim(),
+          avatarUrl: profileData.avatar,
+        });
+        const me = await meRequest();
+        const u = me.user;
+        const mapped = {
+          id: u.id,
+          email: u.email,
+          name: u.name,
+          role: u.role,
+          phone: u.phone || '',
+          assignedArena: u.assignedArenaId || 'all',
+          avatar: u.avatarUrl || profileData.avatar,
+        };
+        setUser(mapped);
+        localStorage.setItem('user', JSON.stringify(mapped));
+        setProfileData((prev) => ({
+          ...prev,
+          name: mapped.name,
+          email: mapped.email,
+          phone: mapped.phone,
+          avatar: mapped.avatar,
+        }));
+      }
+      setIsEditing(false);
+    } catch (e) {
+      setSaveError(e.message || 'Could not save profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -39,6 +90,11 @@ const CoachProfile = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-4 pb-10">
+      {saveError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-center text-xs font-semibold text-red-800">
+          {saveError}
+        </div>
+      )}
       {/* Header / Banner - Ultra Compact */}
       <div className={`relative rounded-[28px] overflow-hidden shadow-lg transition-all duration-500 ${isDark ? 'bg-[#1a1d24] border border-white/5' : 'bg-white border border-slate-100'}`}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#CE2029] via-transparent to-transparent opacity-[0.02]" />
@@ -91,15 +147,17 @@ const CoachProfile = () => {
 
           {/* Action Button - Ultra Compact */}
           <button 
-            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-            className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 ${
+            type="button"
+            onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+            disabled={saving}
+            className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-60 ${
               isEditing 
                 ? 'bg-emerald-500 text-white' 
                 : 'bg-slate-50 dark:bg-white/5 text-[#1e293b] dark:text-white border border-slate-200 dark:border-white/10 hover:border-[#CE2029] hover:text-[#CE2029]'
             }`}
           >
             <div className="flex items-center gap-2">
-              {isEditing ? <><Save size={12} /> Save</> : <><User size={12} /> Edit</>}
+              {isEditing ? <><Save size={12} /> {saving ? 'Saving…' : 'Save'}</> : <><User size={12} /> Edit</>}
             </div>
           </button>
         </div>

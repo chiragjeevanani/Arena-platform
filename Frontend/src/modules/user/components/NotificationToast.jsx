@@ -64,7 +64,7 @@ export const useConflictToasts = (bookings = []) => {
       setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== t.id)), 6000 + i * 1500)
     );
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [bookings]);
 
   const dismiss = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 

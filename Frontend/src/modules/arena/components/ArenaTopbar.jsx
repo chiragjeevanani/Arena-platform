@@ -1,29 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Search, Bell, Menu, UserCircle, Settings, LogOut, Building2, Calendar, Target, Clock as ClockIcon, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../../user/context/AuthContext';
+import { useArenaPanel } from '../../admin/context/ArenaPanelContext';
 
 const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
   const navigate = useNavigate();
+  const { user, logout: authLogout } = useAuth();
+  const { arena } = useArenaPanel();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isNotificationsExpanded, setIsNotificationsExpanded] = useState(false);
-  const [managerImg, setManagerImg] = useState(localStorage.getItem('arena_manager_img'));
 
-  const MOCK_NOTIFICATIONS = [
-    { id: 1, title: 'New Booking', desc: 'Court A booked for 8:00 PM', time: '2 mins ago', icon: Calendar, color: '#CE2029' },
-    { id: 2, title: 'Maintenance Alert', desc: 'Court C plumbing check scheduled', time: '1 hr ago', icon: Target, color: '#f59e0b' },
-    { id: 3, title: 'Payment Received', desc: '1.200 OMR received from Rahul', time: '3 hrs ago', icon: CheckCircle2, color: '#22c55e' },
-    { id: 4, title: 'Peak Hours Active', desc: 'Evening peak pricing is now live', time: '5 hrs ago', icon: ClockIcon, color: '#6366f1' },
-  ];
+  const notifications = [];
 
-  useEffect(() => {
-    const handleUpdate = () => {
-      setManagerImg(localStorage.getItem('arena_manager_img'));
-    };
-    window.addEventListener('storage_update', handleUpdate);
-    return () => window.removeEventListener('storage_update', handleUpdate);
-  }, []);
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+      navigate('/arena/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
 
   return (
     <header className="h-20 bg-[#E8EDF2] border-b border-[#D9E2EC] flex items-center justify-between px-6 sticky top-0 z-40">
@@ -68,14 +67,16 @@ const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
                       <h3 className="text-xs font-black uppercase tracking-widest">Notifications</h3>
                       <p className="text-[10px] font-bold text-slate-400 mt-0.5">Manager Activity Feed</p>
                     </div>
-                    <span className="text-[9px] font-bold text-[#CE2029] bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">4 New</span>
+                    <span className="text-[9px] font-bold text-[#CE2029] bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                      {notifications.length ? `${notifications.length} New` : 'Live'}
+                    </span>
                   </div>
 
                   <motion.div 
                     animate={{ maxHeight: isNotificationsExpanded ? 500 : 300 }}
                     className="overflow-y-auto scrollbar-hide py-2 transition-all duration-300"
                   >
-                    {[...MOCK_NOTIFICATIONS, ...(isNotificationsExpanded ? MOCK_NOTIFICATIONS : [])].map((n, idx) => (
+                    {[...notifications, ...(isNotificationsExpanded ? notifications : [])].map((n, idx) => (
                       <button key={`${n.id}-${idx}`} className="w-full text-left px-4 py-3 hover:bg-slate-50 flex gap-3 transition-colors group">
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110" style={{ backgroundColor: `${n.color}10` }}>
                           <n.icon size={16} style={{ color: n.color }} strokeWidth={2.5} />
@@ -108,12 +109,12 @@ const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
             className="flex items-center gap-3 pl-3 pr-2 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-[#CE2029] hover:shadow-sm transition-all"
           >
             <div className="text-right hidden sm:block">
-              <p className="text-[11px] font-black text-[#36454F] tracking-wide">Arena Manager</p>
-              <p className="text-[9px] font-bold text-[#CE2029] uppercase tracking-wider">AMM Sports Arena</p>
+              <p className="text-[11px] font-black text-[#36454F] tracking-wide">{user?.name || 'Arena Manager'}</p>
+              <p className="text-[9px] font-bold text-[#CE2029] uppercase tracking-wider">{arena?.name || 'Local Cluster'}</p>
             </div>
             <div className="w-8 h-8 rounded-lg bg-[#CE2029]/10 flex items-center justify-center border border-[#CE2029]/20 overflow-hidden">
-              {managerImg ? (
-                <img src={managerImg} alt="Manager" className="w-full h-full object-cover" />
+              {user?.avatar ? (
+                <img src={user.avatar} alt="Manager" className="w-full h-full object-cover" />
               ) : (
                 <UserCircle size={18} className="text-[#CE2029]" />
               )}
@@ -132,8 +133,8 @@ const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
                   className="absolute right-0 mt-3 w-60 rounded-2xl border border-slate-200 shadow-2xl overflow-hidden py-2 bg-white z-20 text-[#36454F]"
                 >
                   <div className="px-5 py-3 border-b border-slate-100 mb-2">
-                    <p className="text-xs font-black uppercase tracking-widest">Arena Manager</p>
-                    <p className="text-[10px] font-bold opacity-40 truncate">manager@phoenix.com</p>
+                    <p className="text-xs font-black uppercase tracking-widest">{user?.name || 'Manager'}</p>
+                    <p className="text-[10px] font-bold opacity-40 truncate">{user?.email || 'N/A'}</p>
                   </div>
 
                   <div className="px-2 space-y-1">
@@ -150,7 +151,7 @@ const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
                     <div className="h-px my-1 bg-slate-100" />
 
                     <button
-                      onClick={() => { setShowProfileMenu(false); navigate('/arena/login'); }}
+                      onClick={handleLogout}
                       className="w-full text-left px-4 py-2.5 text-[11px] font-bold text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors rounded-xl"
                     >
                       <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">

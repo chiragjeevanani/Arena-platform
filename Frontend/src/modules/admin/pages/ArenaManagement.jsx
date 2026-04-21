@@ -1,31 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, Plus, Map, Users, Settings, Target, Layers, X, Home, 
   Navigation, ArrowRight, MoreVertical, Eye, Shield, Calendar, Trash2 
 } from 'lucide-react';
 
-import { MOCK_DB, getArenaWithDetails } from '../../../data/mockDatabase';
 import { useAuth } from '../../user/context/AuthContext';
-import Arena1 from '../../../assets/Arenas/Arena1.jpg';
-import Arena2 from '../../../assets/Arenas/Arena2.jpg';
-import Arena3 from '../../../assets/Arenas/Arena3.jpg';
-
-const ARENA_IMAGES = {
-  'arena-1': Arena1,
-  'arena-2': Arena2,
-  'arena-3': Arena3
-};
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
 
 const ArenaManagement = () => {
   const [showNewArenaModal, setShowNewArenaModal] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [arenas, setArenas] = useState([]);
   const { user } = useAuth();
 
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchPublicArenas();
+        if (!cancelled) setArenas((data.arenas || []).map(normalizeListArena));
+      } catch {
+        if (!cancelled) setArenas([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const isArenaAdmin = user?.role === 'ARENA_ADMIN';
-  const displayArenas = isArenaAdmin 
-    ? MOCK_DB.arenas.filter(a => a.id === user.assignedArena)
-    : MOCK_DB.arenas;
+  const displayArenas = isArenaAdmin
+    ? arenas.filter((a) => String(a.id) === String(user?.assignedArena))
+    : arenas;
 
   return (
     <div className="bg-[#F4F7F6] min-h-full p-3 md:p-4 lg:p-8 font-sans">
@@ -50,7 +60,11 @@ const ArenaManagement = () => {
         {/* Global Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayArenas.map((arena, idx) => {
-            const details = getArenaWithDetails(arena.id);
+            const courtCount = Number(arena.courtsCount) || 0;
+            const details = {
+              courtDetails: Array.from({ length: courtCount }),
+              batches: [],
+            };
             return (
               <motion.div
                 key={arena.id}
@@ -61,9 +75,9 @@ const ArenaManagement = () => {
               >
                 {/* Image Header */}
                  <div className="h-44 w-full relative overflow-hidden bg-slate-100">
-                    {ARENA_IMAGES[arena.id] ? (
+                    {arena.image ? (
                       <img 
-                        src={ARENA_IMAGES[arena.id]} 
+                        src={arena.image} 
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                         alt={arena.name} 
                       />
@@ -80,7 +94,7 @@ const ArenaManagement = () => {
                        <div className="max-w-[75%]">
                          <h3 className="font-black font-display text-lg tracking-tight text-white drop-shadow-sm">{arena.name}</h3>
                          <p className="text-[9px] font-black uppercase tracking-[0.1em] flex items-center gap-1.5 mt-0.5 text-white/90 drop-shadow-sm">
-                           <MapPin size={10} className="text-[#CE2029]" /> {arena.locations}
+                           <MapPin size={10} className="text-[#CE2029]" /> {arena.location || '—'}
                          </p>
                        </div>
                        <div className="relative">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Clock, DollarSign, ArrowRight, Zap, Target, BookOpen, ToggleLeft, ToggleRight, CheckCircle2 } from 'lucide-react';
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const PolicySettings = () => {
   const [refundRules, setRefundRules] = useState([
@@ -20,6 +21,11 @@ const PolicySettings = () => {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+      <div className="xl:col-span-5">
+        <ArenaPanelDemoBanner>
+          Policy settings are a prototype screen; saving is local-only until wired to arena-admin APIs.
+        </ArenaPanelDemoBanner>
+      </div>
       {/* 1. Policy Config */}
       <div className="xl:col-span-3 space-y-6">
         {/* Dynamic Refund Rules */}

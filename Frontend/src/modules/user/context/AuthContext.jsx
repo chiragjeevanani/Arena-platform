@@ -1,6 +1,12 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken, setAuthToken, setRefreshToken, clearAuthTokens } from '../../../services/apiClient';
+import { meRequest, logoutRequest } from '../../../services/authApi';
 
 const AuthContext = createContext();
+
+const DEFAULT_AVATAR =
+  'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -8,59 +14,110 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const DEFAULT_USER = {
-    name: 'Muhammad Haroos',
-    role: 'SUPER_ADMIN',
-    assignedArena: 'all',
-    avatar: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop'
+function mapApiUser(u) {
+  if (!u) return null;
+  return {
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    role: u.role,
+    phone: u.phone || '',
+    assignedArena: u.assignedArenaId || 'all',
+    avatar: u.avatarUrl || DEFAULT_AVATAR,
   };
+}
 
-  // Mock user for SaaS behavior
-  const [user, setUser] = useState(() => {
-    try {
-      const savedUser = localStorage.getItem('user');
-      const parsed = savedUser ? JSON.parse(savedUser) : null;
-      // Validate that the saved user has the minimum required fields
-      if (parsed && parsed.role) return parsed;
-      return DEFAULT_USER;
-    } catch (e) {
-      // Production: if localStorage is unavailable or corrupted, use default
-      return DEFAULT_USER;
+function readStoredUser() {
+  try {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
+function readInitialUser() {
+  const token = isApiConfigured() ? getAuthToken() : null;
+  if (isApiConfigured() && !token) return null;
+  const u = readStoredUser();
+  if (u && u.role) return u;
+  return null;
+}
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(readInitialUser);
+
+  const clearSession = useCallback(() => {
+    setUser(null);
+    clearAuthTokens();
+    localStorage.removeItem('user');
+    localStorage.removeItem('isLoggedIn');
+  }, []);
+
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    const token = getAuthToken();
+    if (!token) {
+      queueMicrotask(() => setUser(null));
+      return undefined;
     }
-  });
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await meRequest();
+        if (cancelled) return;
+        const mapped = mapApiUser(data.user);
+        setUser(mapped);
+        localStorage.setItem('user', JSON.stringify(mapped));
+        localStorage.setItem('isLoggedIn', 'true');
+      } catch {
+        if (!cancelled) clearSession();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [clearSession]);
 
   const isLoggedIn = !!user;
 
-  const login = (userData = {}) => {
-    // In a real app, this would verify credentials and return details from a DB
-    // For our SaaS demo, we'll transform the mock data to the selected role
-    const mockProfile = {
-      name: userData?.role === 'SUPER_ADMIN' ? 'Muhammad Haroos' : 'Arena Manager',
-      avatar: userData?.role === 'SUPER_ADMIN' 
-        ? 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop'
-        : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
-      ...userData,
-    };
-    setUser(mockProfile);
-    localStorage.setItem('user', JSON.stringify(mockProfile));
-    localStorage.setItem('isLoggedIn', 'true');
-  };
+  const login = useCallback(
+    (payload = {}) => {
+      if (payload.token && payload.user) {
+        setAuthToken(payload.token);
+        if (payload.refreshToken) {
+          setRefreshToken(payload.refreshToken);
+        } else {
+          setRefreshToken(null);
+        }
+        const mapped = mapApiUser(payload.user);
+        setUser(mapped);
+        localStorage.setItem('user', JSON.stringify(mapped));
+        localStorage.setItem('isLoggedIn', 'true');
+        return;
+      }
+      setRefreshToken(null);
+    },
+    []
+  );
 
-  const logout = () => {
+  const logout = useCallback(async () => {
+    await logoutRequest();
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userBookings'); 
-  };
+    localStorage.removeItem('userBookings');
+  }, []);
 
-  const hasPermission = (permission) => {
+  const hasPermission = useCallback(() => {
     if (user?.role === 'SUPER_ADMIN') return true;
     return false;
-  };
+  }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isLoggedIn, login, logout, hasPermission }}>
+    <AuthContext.Provider
+      value={{ user, setUser, isLoggedIn, login, logout, hasPermission }}
+    >
       {children}
     </AuthContext.Provider>
   );

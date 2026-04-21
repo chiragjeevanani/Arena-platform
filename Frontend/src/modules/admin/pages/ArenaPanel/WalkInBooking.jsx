@@ -5,9 +5,8 @@ import {
   Star, CalendarDays, Users, Edit3, AlertCircle,
   ToggleLeft, ToggleRight
 } from 'lucide-react';
-import { COURTS, SLOTS } from '../../../../data/mockData';
-
-// Pricing config (in a real app, this would come from context/API)
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
+// Pricing config — hourly rates should come from the arena API when wired
 const PRICING_CONFIG = {
   primeRate: 5.000,
   nonPrimeRate: 3.000,
@@ -26,8 +25,8 @@ const WalkInBooking = () => {
   const [adminOverrideEnabled, setAdminOverrideEnabled] = useState(false);
   const [adminOverridePrice, setAdminOverridePrice] = useState('');
 
-  const arenaId = 1;
-  const arenaCourts = COURTS.filter(c => c.arenaId === arenaId);
+  const arenaCourts = [];
+  const SLOTS = [];
 
   const toggleSlot = (slot) => {
     if (slot.status !== 'Available') return;
@@ -73,6 +72,11 @@ const WalkInBooking = () => {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="xl:col-span-3">
+        <ArenaPanelDemoBanner>
+          Walk-in booking is a prototype. Connect courts, slots, and checkout to arena-admin or admin booking APIs.
+        </ArenaPanelDemoBanner>
+      </div>
       {/* Left: Court + Slot selection */}
       <div className="xl:col-span-2 space-y-5">
 
@@ -82,6 +86,11 @@ const WalkInBooking = () => {
             <div className="w-1.5 h-4 bg-[#CE2029] rounded-full" />
             1. Select Court
           </h3>
+          {arenaCourts.length === 0 && (
+            <p className="text-xs text-slate-500 font-bold py-4">
+              Courts load from the arena API. Configure published arenas and courts, then wire this panel to the same source as the public booking flow.
+            </p>
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {arenaCourts.map(court => (
               <button key={court.id} onClick={() => setSelectedCourt(court)}
@@ -93,7 +102,7 @@ const WalkInBooking = () => {
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                   selectedCourt?.id === court.id ? 'bg-[#CE2029] text-white' : 'bg-slate-100'
                 }`}>
-                  <span className="text-xs font-black">{court.name.split(' ')[1]}</span>
+                  <span className="text-xs font-black">{(court.name || '').split(' ').pop() || '—'}</span>
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest">{court.name}</span>
               </button>
@@ -130,6 +139,11 @@ const WalkInBooking = () => {
             )}
           </div>
 
+          {SLOTS.length === 0 && (
+            <p className="text-xs text-slate-500 font-bold mb-4">
+              No slot grid until availability is loaded from the API (see public slot selection).
+            </p>
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {SLOTS.map(slot => {
               const isPrime = slot.type === 'prime';

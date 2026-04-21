@@ -1,4 +1,5 @@
 import { Wallet, TrendingUp, DollarSign, Download, Filter, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const TRANSACTIONS = [
   { id: 'TX-1001', date: 'Mar 24, 2024', type: 'Booking', amount: 4.500, status: 'Paid', method: 'UPI' },
@@ -11,6 +12,9 @@ const TRANSACTIONS = [
 const ArenaIncome = () => {
   return (
     <div className="space-y-6">
+      <ArenaPanelDemoBanner>
+        Financial data is simulated on this prototype screen until wired to arena-admin APIs.
+      </ArenaPanelDemoBanner>
       {/* Financial Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Main Wallet */}

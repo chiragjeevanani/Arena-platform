@@ -5,6 +5,8 @@ import { Email, Lock, Visibility, VisibilityOff, Person, Category } from '@mui/i
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { coachRegisterRequest, loginRequest } from '../../../services/authApi';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 
 const CoachSignup = () => {
@@ -18,23 +20,42 @@ const CoachSignup = () => {
     specialty: 'Badminton',
     password: ''
   });
+  const [submitError, setSubmitError] = useState('');
 
   const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
     setIsLoading(true);
-    
-    // Simulate API delay
-    setTimeout(() => {
-      setIsLoading(false);
-      login({ 
+    try {
+      if (isApiConfigured()) {
+        if (!formData.password || formData.password.length < 8) {
+          setSubmitError('Password must be at least 8 characters');
+          return;
+        }
+        await coachRegisterRequest({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          name: formData.name.trim(),
+        });
+        const data = await loginRequest(formData.email.trim().toLowerCase(), formData.password);
+        login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+        navigate('/coach');
+        return;
+      }
+      await new Promise((r) => setTimeout(r, 600));
+      login({
         role: 'COACH',
         name: formData.name,
-        email: formData.email
+        email: formData.email,
       });
       navigate('/coach');
-    }, 1500);
+    } catch (err) {
+      setSubmitError(err.message || 'Could not create coach account');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -181,6 +202,10 @@ const CoachSignup = () => {
                 '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
               }}
             />
+
+            {submitError && (
+              <p className="text-center text-xs text-red-600 font-semibold mt-2">{submitError}</p>
+            )}
 
             <Button
               fullWidth

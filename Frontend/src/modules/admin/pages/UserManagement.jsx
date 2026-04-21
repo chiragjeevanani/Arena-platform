@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, UserPlus, Search, Filter, 
@@ -6,9 +6,20 @@ import {
   Eye, UserCog, UserMinus, Key, CheckCircle2, AlertCircle, Fingerprint, Activity
 } from 'lucide-react';
 
-import { MOCK_DB } from '../../../data/mockDatabase';
+import { listAdminArenas } from '../../../services/adminOpsApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listAdminUsers, patchAdminUser, createAdminUser } from '../../../services/adminUsersApi';
+import { meRequest } from '../../../services/authApi';
 
 const UserManagement = () => {
+  const [arenas, setArenas] = useState([]);
+  const [users, setUsers] = useState([]);
+  const editRoleRef = useRef(null);
+  const editArenaRef = useRef(null);
+  const editNameRef = useRef(null);
+  const editEmailRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
@@ -17,6 +28,68 @@ const UserManagement = () => {
   const [toast, setToast] = useState(null);
   const [viewingUser, setViewingUser] = useState(null);
   const [editingUserDetails, setEditingUserDetails] = useState(null);
+  const [newUserForm, setNewUserForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'ARENA_ADMIN',
+    arenaId: '',
+  });
+  const [isCreating, setIsCreating] = useState(false);
+  const [me, setMe] = useState(null);
+
+  useEffect(() => {
+    meRequest().then(res => setMe(res.user)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (arenas.length > 0 && !newUserForm.arenaId) {
+      setNewUserForm(prev => ({ ...prev, arenaId: arenas[0].id }));
+    }
+  }, [arenas, newUserForm.arenaId]);
+
+  const loadStaffUsers = useCallback(async () => {
+    if (!isApiConfigured() || !getAuthToken()) {
+      setUsers([]);
+      return;
+    }
+    try {
+      const data = await listAdminUsers({ limit: 100 });
+      setUsers(
+        (data.users || []).map((u) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          arenaId: u.assignedArenaId || 'all',
+          isActive: u.isActive !== false,
+          status: u.isActive !== false ? 'Active' : 'Inactive',
+        }))
+      );
+    } catch {
+      setUsers([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await listAdminArenas();
+        if (!cancelled) setArenas((data.arenas || []).map(normalizeListArena));
+      } catch {
+        if (!cancelled) setArenas([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    void loadStaffUsers();
+  }, [loadStaffUsers]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -25,10 +98,10 @@ const UserManagement = () => {
 
   const getArenaName = (arenaId) => {
     if (arenaId === 'all') return 'Global Scope';
-    return MOCK_DB.arenas.find(a => a.id === arenaId)?.name || 'Unassigned';
+    return arenas.find((a) => String(a.id) === String(arenaId))?.name || 'Unassigned';
   };
 
-  const filteredUsers = MOCK_DB.users.filter(user => {
+  const filteredUsers = users.filter(user => {
     if (user.role === 'CUSTOMER') return false;
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -100,8 +173,8 @@ const UserManagement = () => {
         </div>
 
         {/* Table Container */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#CE2029]/40">
-          <div className="overflow-x-auto scrollbar-hide">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 transition-all hover:border-[#CE2029]/40">
+          <div className="scrollbar-hide">
             <table className="w-full text-left whitespace-nowrap min-w-[800px]">
               <thead className="bg-[#F8F9FA] text-[#36454F] font-semibold border-b border-slate-100">
                 <tr className="text-[10px] font-black uppercase tracking-[0.15em]">
@@ -150,11 +223,11 @@ const UserManagement = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                        <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border ${
-                         user.status === 'Active' 
+                         user.isActive 
                            ? 'bg-[#CE2029]/10 text-[#CE2029] border-[#CE2029]/20' 
                            : 'bg-slate-100 text-slate-400 border-slate-200'
                        }`}>
-                         {user.status === 'Active' ? 'Verified' : 'Inactive'}
+                         {user.isActive ? 'Verified' : 'Suspended'}
                        </span>
                     </td>
                      <td className="px-6 py-4 text-right pr-10">
@@ -185,7 +258,7 @@ const UserManagement = () => {
                                       onClick={() => { setViewingUser(user); setActiveMenu(null); }}
                                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
                                     >
-                                      <div className="p-1.5 rounded-md border bg-[#CE2029]10 border-[#CE2029]30 text-[#CE2029]">
+                                      <div className="p-1.5 rounded-md border bg-[#CE2029]/10 border-[#CE2029]/30 text-[#CE2029]">
                                         <Eye size={12} strokeWidth={2.5} />
                                       </div>
                                       View Profile
@@ -194,28 +267,48 @@ const UserManagement = () => {
                                       onClick={() => { setEditingUserDetails(user); setActiveMenu(null); }}
                                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
                                     >
-                                      <div className="p-1.5 rounded-md border bg-[#CE2029]10 border-[#CE2029]30 text-[#CE2029]">
+                                      <div className="p-1.5 rounded-md border bg-[#CE2029]/10 border-[#CE2029]/30 text-[#CE2029]">
                                         <UserCog size={12} strokeWidth={2.5} />
                                       </div>
-                                      Edit Rules
+                                      Edit Identity
                                     </button>
                                     <button
                                       onClick={() => { showToast(`Key reset link sent to ${user.email}`); setActiveMenu(null); }}
                                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
                                     >
-                                      <div className="p-1.5 rounded-md border bg-[#CE2029]10 border-[#CE2029]30 text-[#CE2029]">
+                                      <div className="p-1.5 rounded-md border bg-[#CE2029]/10 border-[#CE2029]/30 text-[#CE2029]">
                                         <Key size={12} strokeWidth={2.5} />
                                       </div>
                                       Reset Key
                                     </button>
                                     <button
-                                      onClick={() => { showToast('User identity suspended', 'error'); setActiveMenu(null); }}
-                                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors group"
+                                      disabled={me?.id === user.id}
+                                      onClick={async () => {
+                                        setActiveMenu(null);
+                                        if (!isApiConfigured() || !getAuthToken()) {
+                                          showToast(`User identity ${user.isActive ? 'suspended' : 'activated'}`, 'error');
+                                          return;
+                                        }
+                                        try {
+                                          await patchAdminUser(user.id, { isActive: !user.isActive });
+                                          await loadStaffUsers();
+                                          showToast(`User ${user.isActive ? 'suspended' : 'activated'}`, 'success');
+                                        } catch (e) {
+                                          showToast(e.message || 'Action failed', 'error');
+                                        }
+                                      }}
+                                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-colors group ${
+                                        me?.id === user.id ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 hover:text-[#36454F]'
+                                      } ${user.isActive ? 'text-slate-600' : 'text-[#CE2029]'}`}
                                     >
-                                      <div className="p-1.5 rounded-md border bg-[#FF4B4B]10 border-[#FF4B4B]30 text-[#FF4B4B]">
-                                        <UserMinus size={12} strokeWidth={2.5} />
+                                      <div className={`p-1.5 rounded-md border ${
+                                        user.isActive 
+                                          ? 'bg-[#FF4B4B]/10 border-[#FF4B4B]/30 text-[#FF4B4B]' 
+                                          : 'bg-green-50 border-green-200 text-green-600'
+                                      }`}>
+                                        {user.isActive ? <UserMinus size={12} strokeWidth={2.5} /> : <CheckCircle2 size={12} strokeWidth={2.5} />}
                                       </div>
-                                      Suspend User
+                                      {user.isActive ? 'Suspend User' : 'Activate User'}
                                     </button>
                                   </div>
                               </motion.div>
@@ -271,6 +364,8 @@ const UserManagement = () => {
                     <input 
                       type="text" 
                       placeholder="Full Name"
+                      value={newUserForm.name}
+                      onChange={e => setNewUserForm(p => ({ ...p, name: e.target.value }))}
                       className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F] placeholder:text-slate-400"
                     />
                   </div>
@@ -280,23 +375,49 @@ const UserManagement = () => {
                     <input 
                       type="email" 
                       placeholder="admin@arena.com"
+                      value={newUserForm.email}
+                      onChange={e => setNewUserForm(p => ({ ...p, email: e.target.value }))}
                       className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F] placeholder:text-slate-400"
                     />
+                  </div>
+
+                  <div className="group">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Access Password</label>
+                    <div className="relative">
+                       <input 
+                        type="password" 
+                        placeholder="••••••••"
+                        value={newUserForm.password}
+                        onChange={e => setNewUserForm(p => ({ ...p, password: e.target.value }))}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F] placeholder:text-slate-400"
+                      />
+                      <Key className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Role</label>
-                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
+                      <select 
+                        value={newUserForm.role}
+                        onChange={e => setNewUserForm(p => ({ ...p, role: e.target.value }))}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
+                      >
                         <option value="SUPER_ADMIN">Super Admin</option>
                         <option value="ARENA_ADMIN">Admin</option>
                         <option value="COACH">Coach</option>
+                        <option value="RECEPTIONIST">Receptionist</option>
                       </select>
                     </div>
                     <div className="group">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Arena</label>
-                      <select className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
-                        {MOCK_DB.arenas.map(arena => (
+                      <select 
+                        value={newUserForm.arenaId}
+                        onChange={e => setNewUserForm(p => ({ ...p, arenaId: e.target.value }))}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
+                      >
+                        <option value="all">Global Scope</option>
+                        {arenas.map(arena => (
                           <option key={arena.id} value={arena.id}>{arena.name.split(' ')[0]}</option>
                         ))}
                       </select>
@@ -308,18 +429,39 @@ const UserManagement = () => {
                    <ShieldCheck className="text-[#CE2029]" size={24} strokeWidth={2.5} />
                    <div className="flex-1">
                       <p className="text-[11px] font-black uppercase tracking-widest text-[#CE2029]">Privacy & Shield</p>
-                      <p className="text-[10px] font-bold text-slate-400 mt-0.5">Automated 2FA enforcement required for assignment.</p>
-                   </div>
-                   <div className="w-10 h-6 bg-[#CE2029] rounded-full relative shadow-sm">
-                      <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                      <p className="text-[10px] font-bold text-slate-400 mt-0.5">Password will be required for the first authentication.</p>
                    </div>
                 </div>
 
                 <button 
-                  onClick={() => { setShowNewUserModal(false); showToast('Assignment initialized'); }}
-                  className="w-full py-4 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-[#CE2029]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mt-2"
+                  disabled={isCreating}
+                  onClick={async () => {
+                    if (!newUserForm.name || !newUserForm.email || !newUserForm.password) {
+                      showToast('Please fill all fields', 'error');
+                      return;
+                    }
+                    setIsCreating(true);
+                    try {
+                      await createAdminUser({
+                        name: newUserForm.name,
+                        email: newUserForm.email,
+                        password: newUserForm.password,
+                        role: newUserForm.role,
+                        assignedArenaId: newUserForm.arenaId === 'all' ? null : newUserForm.arenaId
+                      });
+                      await loadStaffUsers();
+                      setShowNewUserModal(false);
+                      setNewUserForm({ name: '', email: '', password: '', role: 'ARENA_ADMIN', arenaId: arenas[0]?.id || '' });
+                      showToast('Assignment initialized');
+                    } catch (e) {
+                      showToast(e.message || 'Identity initialization failed', 'error');
+                    } finally {
+                      setIsCreating(false);
+                    }
+                  }}
+                  className={`w-full py-4 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white text-[13px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 mt-2 ${isCreating ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-[#CE2029]/30 hover:shadow-lg hover:-translate-y-0.5'}`}
                 >
-                  Create Identity <ArrowRight size={16} strokeWidth={3} />
+                  {isCreating ? 'Initializing...' : 'Create Identity'} <ArrowRight size={16} strokeWidth={3} />
                 </button>
               </div>
             </motion.div>
@@ -397,7 +539,7 @@ const UserManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Edit Rules Modal */}
+      {/* Edit Identity Modal */}
       <AnimatePresence>
         {editingUserDetails && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
@@ -406,39 +548,95 @@ const UserManagement = () => {
                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <div>
                     <h3 className="text-xl md:text-2xl font-black font-display tracking-tight flex items-center gap-2">
-                       <UserCog className="text-[#CE2029]" size={24} strokeWidth={3} /> Edit Rules
+                       <UserCog className="text-[#CE2029]" size={24} strokeWidth={3} /> Edit Identity
                     </h3>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Update {editingUserDetails.name}'s scope</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Modify details for {editingUserDetails.name}</p>
                   </div>
-                  <button onClick={() => setEditingUserDetails(null)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-400 bg-white border border-slate-200 shadow-sm">
+                  <button onClick={() => setEditingUserDetails(null)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-slate-200 text-slate-400 bg-white border border-slate-200 shadow-sm" title="Dismiss terminal">
                     <X size={20} strokeWidth={2.5} />
                   </button>
                </div>
                <div className="p-6 space-y-4 md:space-y-6">
+                  {/* Name & Email */}
+                  <div className="space-y-4">
+                    <div className="group">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Full Name</label>
+                      <input 
+                        ref={editNameRef}
+                        type="text" 
+                        defaultValue={editingUserDetails.name}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
+                      />
+                    </div>
+                    <div className="group">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Registry Email</label>
+                      <input 
+                        ref={editEmailRef}
+                        type="email" 
+                        defaultValue={editingUserDetails.email}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
+                      />
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="group">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">New Role</label>
-                      <select defaultValue={editingUserDetails.role} className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Assigned Role</label>
+                      <select
+                        ref={editRoleRef}
+                        defaultValue={editingUserDetails.role}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
+                      >
                         <option value="SUPER_ADMIN">Super Admin</option>
                         <option value="ARENA_ADMIN">Admin</option>
+                        <option value="RECEPTIONIST">Receptionist</option>
                         <option value="COACH">Coach</option>
+                        <option value="CUSTOMER">Customer</option>
                       </select>
                     </div>
                     <div className="group">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Arena Scope</label>
-                      <select defaultValue={editingUserDetails.arenaId} className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]">
-                         <option value="all">Global</option>
-                        {MOCK_DB.arenas.map(arena => (
-                          <option key={arena.id} value={arena.id}>{arena.name.split(' ')[0]}</option>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Operational Scope</label>
+                      <select
+                        ref={editArenaRef}
+                        defaultValue={editingUserDetails.arenaId}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
+                      >
+                        <option value="all">Global</option>
+                        {arenas.map((arena) => (
+                          <option key={arena.id} value={arena.id}>
+                            {arena.name.split(' ')[0]}
+                          </option>
                         ))}
                       </select>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => { setEditingUserDetails(null); showToast('Rules updated successfully'); }}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!editingUserDetails) return;
+                      const name = editNameRef.current?.value;
+                      const email = editEmailRef.current?.value;
+                      const role = editRoleRef.current?.value;
+                      const arenaRaw = editArenaRef.current?.value;
+                      const assignedArenaId = arenaRaw === 'all' || !arenaRaw ? null : arenaRaw;
+
+                      try {
+                        await patchAdminUser(editingUserDetails.id, {
+                          name,
+                          email,
+                          role,
+                          assignedArenaId,
+                        });
+                        await loadStaffUsers();
+                        setEditingUserDetails(null);
+                        showToast('Identity updated successfully');
+                      } catch (e) {
+                        showToast(e.message || 'Update failed', 'error');
+                      }
+                    }}
                     className="w-full py-4 rounded-xl bg-[#CE2029] text-white text-[13px] font-bold uppercase tracking-widest hover:shadow-lg transition-all"
                   >
-                    Save Changes
+                    Save Identity Changes
                   </button>
                </div>
             </motion.div>
@@ -489,7 +687,7 @@ const UserManagement = () => {
                
                {/* Core Information Grid (1x2 to save space) */}
                <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#CE2029]30 hover:shadow-sm">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#CE2029]/30 hover:shadow-sm">
                      <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[#CE2029] mb-3">
                         <MapPin size={16} strokeWidth={2.5} />
                      </div>
@@ -497,7 +695,7 @@ const UserManagement = () => {
                      <p className="font-black text-[12px] text-[#36454F] truncate">{getArenaName(viewingUser.arenaId)}</p>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#CE2029]30 hover:shadow-sm">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-[#CE2029]/30 hover:shadow-sm">
                      <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-[#CE2029] mb-3">
                         <Mail size={16} strokeWidth={2.5} />
                      </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Calendar, Clock, PenTool, CheckCircle2, MoreVertical, Plus, AlertCircle, Info, ChevronRight } from 'lucide-react';
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const TASKS = [
   { id: 1, court: 'Court 1', task: 'Floor Polishing', date: 'Mar 28, 2024', time: '05:00 AM - 09:00 AM', status: 'Scheduled', staff: 'Rajesh T.' },
@@ -15,6 +16,9 @@ const MaintenanceScheduler = () => {
 
   return (
     <div className="space-y-6">
+      <ArenaPanelDemoBanner>
+        Maintenance scheduling is a prototype screen; tasks are local-only until wired to arena-admin APIs.
+      </ArenaPanelDemoBanner>
       <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
            <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white">

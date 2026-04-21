@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { Star, CalendarDays, Users, ShieldCheck, Tag, ArrowRight, Zap } from 'lucide-react';
 
 /**
@@ -21,13 +21,22 @@ const PRICING_CONFIG = {
  *   slot         — slot object from SLOTS array (with .type, .price)
  *   isMember     — boolean, toggles member discount
  *   adminOverride — number | null, if set uses this as final price
+ *   showOverrideBanner — when false, final price still uses adminOverride but hides “admin override” UI (e.g. API arena rate)
  *   compact      — boolean, shows compact version for mobile footer
  */
-const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, compact = false }) => {
+const PriceBreakdownCard = ({
+  slot,
+  isMember = false,
+  adminOverride = null,
+  showOverrideBanner = true,
+  compact = false,
+}) => {
   if (!slot) return null;
 
   const isPrime = slot.type === 'prime';
   const baseRate = isPrime ? PRICING_CONFIG.primeRate : PRICING_CONFIG.nonPrimeRate;
+  const apiStylePricing = adminOverride !== null && !showOverrideBanner;
+  const displayBase = apiStylePricing ? Number(adminOverride) : baseRate;
 
   // Calculate member discount
   let discountAmount = 0;
@@ -44,13 +53,13 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
   }
 
   const afterDiscount = baseRate - discountAmount;
-  const finalPrice = adminOverride !== null ? adminOverride : afterDiscount;
-  const isOverridden = adminOverride !== null;
+  const finalPrice = adminOverride !== null ? Number(adminOverride) : afterDiscount;
+  const isOverridden = adminOverride !== null && showOverrideBanner;
 
   // ── COMPACT (mobile bottom bar) ──
   if (compact) {
     return (
-      <motion.div
+      <Motion.div
         key={`${slot?.id}-${isMember}-${adminOverride}`}
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,13 +79,13 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
             </div>
           )}
         </div>
-      </motion.div>
+      </Motion.div>
     );
   }
 
   // ── FULL BREAKDOWN CARD ──
   return (
-    <motion.div
+    <Motion.div
       key={`${slot?.id}-${isMember}-${adminOverride}`}
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -108,13 +117,13 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
             <div className={`w-1.5 h-1.5 rounded-full ${isPrime ? 'bg-amber-400' : 'bg-slate-400'}`} />
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Price</span>
           </div>
-          <span className="text-sm font-black text-slate-700">OMR {baseRate.toFixed(3)}</span>
+          <span className="text-sm font-black text-slate-700">OMR {displayBase.toFixed(3)}</span>
         </div>
 
         {/* Row — Member Discount */}
         <AnimatePresence>
           {isMember && PRICING_CONFIG.memberDiscountEnabled && discountAmount > 0 && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -130,14 +139,14 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
                 </div>
                 <span className="text-sm font-black text-green-600">-OMR {discountAmount.toFixed(3)}</span>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
 
         {/* Row — Admin Override */}
         <AnimatePresence>
           {isOverridden && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -150,7 +159,7 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
                 </div>
                 <span className="text-[9px] font-black text-orange-500">Admin Override</span>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
 
@@ -162,10 +171,10 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">Final Price</p>
             {isMember && !isOverridden && discountAmount > 0 && (
-              <p className="text-xs font-bold text-slate-300 line-through leading-none">OMR {baseRate.toFixed(3)}</p>
+              <p className="text-xs font-bold text-slate-300 line-through leading-none">OMR {displayBase.toFixed(3)}</p>
             )}
           </div>
-          <motion.p
+          <Motion.p
             key={finalPrice}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -174,7 +183,7 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
             }`}
           >
             OMR {finalPrice.toFixed(3)}
-          </motion.p>
+          </Motion.p>
         </div>
 
         {/* Badges */}
@@ -197,7 +206,7 @@ const PriceBreakdownCard = ({ slot, isMember = false, adminOverride = null, comp
           </div>
         </div>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 

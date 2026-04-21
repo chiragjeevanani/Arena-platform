@@ -32,10 +32,10 @@ const UserLayout = () => {
       )}
 
       {/* Court line pattern background */}
-      <div className={`fixed inset-0 court-lines ${isDark ? 'opacity-10' : 'opacity-20'} pointer-events-none z-0`} />
+      <div className={`fixed inset-0 court-lines ${isDark ? 'opacity-10' : 'opacity-20'} pointer-events-none z-[-1]`} />
 
       {/* Scrollable Content */}
-      <main className="flex-1 relative z-10 w-full min-h-screen">
+      <main className="flex-1 relative w-full min-h-screen">
         <div key={location.pathname}>
           <Outlet />
         </div>

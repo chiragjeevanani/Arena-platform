@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Shield, Briefcase, Plus, MoreVertical, Trash2, Edit2, ShieldAlert } from 'lucide-react';
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const STAFF = [
   { id: 1, name: 'Rahul Khanna', role: 'Front Desk', status: 'Active', phone: '9876543210', email: 'rahul@amm.com' },
@@ -15,6 +16,7 @@ const StaffManagement = () => {
 
   return (
     <div className="space-y-6">
+      <ArenaPanelDemoBanner>Staff roster and permissions are local-only until wired to admin user APIs.</ArenaPanelDemoBanner>
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-black tracking-tight text-[#36454F]">Staff Management</h2>

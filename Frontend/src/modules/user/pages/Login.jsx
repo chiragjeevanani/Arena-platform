@@ -1,35 +1,70 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
-import { Email, Lock, Visibility, VisibilityOff, Login as LoginIcon } from '@mui/icons-material';
+import { Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { loginRequest } from '../../../services/authApi';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 import Logo from '../../../assets/Logo (3).png';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const st = location.state;
+    if (st?.registeredEmail) {
+      setEmail(st.registeredEmail);
+    }
+    if (st?.message) {
+      setInfoMessage(st.message);
+    }
+  }, [location.state]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Email Validation Check
+    setSubmitError('');
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setEmailError('Email is required');
       return;
-    } else if (!emailRegex.test(email)) {
+    }
+    if (!emailRegex.test(email)) {
       setEmailError('Please enter a valid email address (e.g., name@example.com)');
       return;
     }
-    
-    setEmailError(''); // Clear error on success
+    setEmailError('');
+
+    if (isApiConfigured()) {
+      if (!password) {
+        setSubmitError('Password is required');
+        return;
+      }
+      setLoading(true);
+      try {
+        const data = await loginRequest(email, password);
+        login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+        navigate('/');
+      } catch (err) {
+        setSubmitError(err.message || 'Login failed');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     login();
     navigate('/');
@@ -109,12 +144,24 @@ const Login = () => {
             }}
           />
 
+          {infoMessage && (
+            <p className="text-xs text-emerald-700 font-semibold text-center -mt-2">{infoMessage}</p>
+          )}
+          {submitError && (
+            <p className="text-xs text-red-600 font-semibold text-center -mt-2">{submitError}</p>
+          )}
+
           <TextField
             fullWidth
             size="small"
             label="Password"
             type={showPassword ? 'text' : 'password'}
             variant="outlined"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (submitError) setSubmitError('');
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -146,7 +193,16 @@ const Login = () => {
           />
 
           <div className="text-right">
-            <button type="button" className="text-[#CE2029] font-bold text-xs tracking-wide hover:underline transition-all">Forgot Password?</button>
+            {isApiConfigured() ? (
+              <Link
+                to="/forgot-password"
+                className="text-[#CE2029] font-bold text-xs tracking-wide hover:underline transition-all inline-block"
+              >
+                Forgot Password?
+              </Link>
+            ) : (
+              <span className="text-slate-400 font-bold text-xs tracking-wide cursor-default">Forgot Password?</span>
+            )}
           </div>
 
           <Button
@@ -154,6 +210,7 @@ const Login = () => {
             type="submit"
             variant="contained"
             size="large"
+            disabled={loading}
             className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-3 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all"
             sx={{
               borderRadius: '14px',
@@ -164,7 +221,7 @@ const Login = () => {
               backgroundColor: '#CE2029'
             }}
           >
-            Login
+            {loading ? 'Signing in…' : 'Login'}
           </Button>
         </form>
 

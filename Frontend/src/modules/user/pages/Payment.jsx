@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Smartphone, CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ShuttleButton from '../components/ShuttleButton';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
+import { isApiConfigured, getMockPaymentWebhookSecret } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { completeWalletTopUpViaMockPayment } from '../../../services/mockTopUpFlow';
+import { registerForEvent } from '../../../services/eventsApi';
 
 const Payment = () => {
   const { state } = useLocation();
@@ -12,6 +15,7 @@ const Payment = () => {
   const { isDark } = useTheme();
   const [selectedMethod, setSelectedMethod] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [payError, setPayError] = useState('');
 
   // Fallback amount in case navigated without state
   const amount = state?.amount || 0;
@@ -23,12 +27,48 @@ const Payment = () => {
     { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-400/10', desc: 'On-Site Payment' },
   ];
 
-  const handlePay = () => {
+  const handlePay = async () => {
+    setPayError('');
+    const amountNum = Number(amount) || 0;
+    const mockSecret = getMockPaymentWebhookSecret();
+    const useMockTopUp =
+      state?.paymentPurpose === 'top_up' &&
+      isApiConfigured() &&
+      getAuthToken() &&
+      Boolean(mockSecret) &&
+      amountNum > 0;
+
+    if (useMockTopUp) {
+      setIsProcessing(true);
+      try {
+        await completeWalletTopUpViaMockPayment(amountNum, mockSecret);
+        setIsProcessing(false);
+        navigate('/booking-success', {
+          state: { ...state, type: 'wallet_top_up', amount: amountNum },
+        });
+      } catch (e) {
+        setPayError(e.message || 'Payment failed');
+        setIsProcessing(false);
+      }
+      return;
+    }
+
     setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      if (state?.type === 'event' && state?.registrationInfo) {
+        await registerForEvent(state.registrationInfo);
+      }
+      
+      // Artificial delay for premium experience
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       setIsProcessing(false);
       navigate('/booking-success', { state });
-    }, 2000);
+    } catch (err) {
+      console.error('Payment/Registration Error:', err);
+      setPayError(err.message || 'Processing failed. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -99,6 +139,11 @@ const Payment = () => {
 
           {/* RIGHT: Payment Methods */}
           <div className="lg:col-span-7 space-y-6">
+            {payError ? (
+              <p className="text-sm text-red-600 font-semibold bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                {payError}
+              </p>
+            ) : null}
             <div className="px-1">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-0.5">Payment Method</h3>
               <p className={`text-[9px] font-bold uppercase tracking-widest ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Select to proceed</p>

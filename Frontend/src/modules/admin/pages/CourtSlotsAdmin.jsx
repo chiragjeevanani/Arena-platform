@@ -5,29 +5,55 @@ import {
   Building2, ArrowLeft, Clock, BadgeDollarSign, 
   Settings2, Activity, Info, Edit3, Trash2, Plus, X, Save, Star, CalendarDays
 } from 'lucide-react';
+import { listAdminCourtSlots, createAdminCourtSlot, deleteAdminCourtSlot } from '../../../services/adminSlotApi';
+import { useEffect } from 'react';
 
 const CourtSlotsAdmin = () => {
   const { arenaId, courtId } = useParams();
   const navigate = useNavigate();
+  const [isEachDay, setIsEachDay] = useState(true);
   const [selectedDay, setSelectedDay] = useState('Mon');
   const [editingSlot, setEditingSlot] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ time: '', startTime: '06:00', endTime: '07:00', price: '3.000', type: 'Normal', slotClass: 'nonPrime', status: 'Available' });
-  const [timeSlots, setTimeSlots] = useState([
-    { id: 1, time: '05:00 AM - 06:00 AM', status: 'Available', price: 'OMR 3.000', type: 'Normal', slotClass: 'nonPrime' },
-    { id: 2, time: '06:00 AM - 07:00 AM', status: 'Booked',    price: null,        type: 'Customer', slotClass: 'nonPrime' },
-    { id: 3, time: '07:00 AM - 08:00 AM', status: 'Coaching',  price: null,        type: 'Academy', slotClass: 'nonPrime' },
-    { id: 4, time: '08:00 AM - 09:00 AM', status: 'Available', price: 'OMR 4.000', type: 'Peak', slotClass: 'nonPrime' },
-    { id: 5, time: '09:00 AM - 10:00 AM', status: 'Available', price: 'OMR 4.000', type: 'Peak', slotClass: 'nonPrime' },
-    { id: 6, time: '10:00 AM - 11:00 AM', status: 'Blocked',   price: null,        type: 'Maintenance', slotClass: 'nonPrime' },
-    { id: 7, time: '05:00 PM - 06:00 PM', status: 'Available', price: 'OMR 5.000', type: 'Normal', slotClass: 'prime' },
-    { id: 8, time: '06:00 PM - 07:00 PM', status: 'Available', price: 'OMR 5.000', type: 'Normal', slotClass: 'prime' },
-  ]);
+  const [addForm, setAddForm] = useState({ startTime: '06:00', endTime: '07:00', price: '3.000', type: 'Normal', slotClass: 'nonPrime', status: 'Available' });
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const GROUP_MAP = {
+    'Weekdays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    'Weekend': ['Sat', 'Sun']
+  };
+
+  const currentTabDays = isEachDay 
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    : ['Weekdays', 'Weekend'];
+
+  const fetchSlots = async () => {
+    setLoading(true);
+    try {
+      const dayToFetch = isEachDay ? selectedDay : GROUP_MAP[selectedDay][0];
+      const data = await listAdminCourtSlots(arenaId, courtId, dayToFetch);
+      setTimeSlots(data.slots || []);
+    } catch (e) {
+      console.error('Failed to fetch slots:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSlots();
+  }, [arenaId, courtId, selectedDay]);
 
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  const deleteSlot = (id) => {
-    setTimeSlots(prev => prev.filter(s => s.id !== id));
+  const deleteSlot = async (id) => {
+    try {
+      await deleteAdminCourtSlot(id);
+      setTimeSlots(prev => prev.filter(s => s.id !== id));
+    } catch (e) {
+      alert(e.name === 'AbortError' ? 'Process cancelled' : (e.message || 'Delete failed'));
+    }
   };
 
   const openAddModal = () => {
@@ -35,7 +61,7 @@ const CourtSlotsAdmin = () => {
     setShowAddModal(true);
   };
 
-  const confirmAddSlot = () => {
+  const confirmAddSlot = async () => {
     if (!addForm.startTime || !addForm.endTime) return;
     const formatTime = (t) => {
       const [h, m] = t.split(':');
@@ -44,21 +70,52 @@ const CourtSlotsAdmin = () => {
       const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
       return `${String(displayHour).padStart(2,'0')}:${m} ${period}`;
     };
-    const newSlot = {
-      id: Date.now(),
-      time: `${formatTime(addForm.startTime)} - ${formatTime(addForm.endTime)}`,
-      status: addForm.status,
-      price: addForm.status === 'Available' ? `OMR ${parseFloat(addForm.price).toFixed(3)}` : null,
-      type: addForm.type,
-      slotClass: addForm.slotClass,
-    };
-    setTimeSlots(prev => [...prev, newSlot]);
-    setShowAddModal(false);
+    
+    const daysToUpdate = isEachDay ? [selectedDay] : GROUP_MAP[selectedDay];
+    
+    try {
+      await Promise.all(daysToUpdate.map(day => {
+        const body = {
+          dayOfWeek: day,
+          timeSlot: `${formatTime(addForm.startTime)} - ${formatTime(addForm.endTime)}`,
+          startTime: addForm.startTime,
+          endTime: addForm.endTime,
+          price: parseFloat(addForm.price) || 0,
+          slotClass: addForm.slotClass,
+          type: addForm.type,
+          status: addForm.status,
+        };
+        return createAdminCourtSlot(arenaId, courtId, body);
+      }));
+
+      fetchSlots();
+      setShowAddModal(false);
+    } catch (e) {
+      alert(e.message || 'Save failed');
+    }
   };
 
-  const saveSlot = (updatedSlot) => {
-    setTimeSlots(prev => prev.map(s => s.id === updatedSlot.id ? updatedSlot : s));
-    setEditingSlot(null);
+  const saveSlot = async (updatedSlot) => {
+    const daysToUpdate = isEachDay ? [selectedDay] : GROUP_MAP[selectedDay];
+
+    try {
+      await Promise.all(daysToUpdate.map(day => {
+        const body = {
+          dayOfWeek: day,
+          timeSlot: updatedSlot.time,
+          price: parseFloat(String(updatedSlot.price).replace(/[^0-9.]/g, '')) || 0,
+          slotClass: updatedSlot.slotClass,
+          type: updatedSlot.type,
+          status: updatedSlot.status,
+        };
+        return createAdminCourtSlot(arenaId, courtId, body);
+      }));
+      
+      fetchSlots();
+      setEditingSlot(null);
+    } catch (e) {
+      alert(e.message || 'Update failed');
+    }
   };
 
   return (
@@ -99,25 +156,55 @@ const CourtSlotsAdmin = () => {
         </div>
 
         {/* Day Selector - High Density */}
-        <div className="bg-white border border-slate-100 p-1.5 shadow-sm inline-flex gap-1 overflow-x-auto no-scrollbar max-w-full">
-          {days.map(day => (
-            <button
-              key={day}
-              onClick={() => setSelectedDay(day)}
-              className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap ${
-                selectedDay === day 
-                ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' 
-                : 'text-[#36454F] hover:text-[#CE2029] hover:bg-slate-50'
-              }`}
-            >
-              {day}
-            </button>
-          ))}
+        <div className="flex items-center gap-4">
+          <div className="bg-white border border-slate-100 p-1.5 shadow-sm inline-flex gap-1 overflow-x-auto no-scrollbar max-w-full">
+            {currentTabDays.map(day => (
+              <button
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all whitespace-nowrap ${
+                  selectedDay === day 
+                  ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' 
+                  : 'text-[#36454F] hover:text-[#CE2029] hover:bg-slate-50'
+                }`}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-6 bg-white px-6 py-3 border border-slate-100 shadow-sm ml-auto rounded-xl transition-all hover:shadow-md">
+             <div className="flex flex-col text-right">
+                <span className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900 leading-none mb-1">Schedule Control</span>
+                <span className={`text-[8.5px] font-bold uppercase tracking-widest transition-colors ${isEachDay ? 'text-[#CE2029]' : 'text-slate-400'}`}>
+                   {isEachDay ? 'Each Day Active' : 'Grouped View'}
+                </span>
+             </div>
+             <button 
+               onClick={() => {
+                 const newIsEachDay = !isEachDay;
+                 setIsEachDay(newIsEachDay);
+                 setSelectedDay(newIsEachDay ? 'Mon' : 'Weekdays');
+               }}
+               className="w-12 h-6 rounded-full transition-all flex items-center relative shadow-inner overflow-hidden border border-slate-100"
+               style={{ backgroundColor: isEachDay ? '#CE2029' : '#E2E8F0' }}
+             >
+                <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-all transform flex items-center justify-center ${
+                  isEachDay ? 'translate-x-[26px]' : 'translate-x-[2px]'
+                }`}>
+                   <div className={`w-1 h-1 rounded-full ${isEachDay ? 'bg-[#CE2029]' : 'bg-slate-300'}`} />
+                </div>
+             </button>
+          </div>
         </div>
 
         {/* Slot Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-          {timeSlots.map((slot) => (
+          {loading ? (
+             <div className="col-span-full py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                Syncing with Schedule Registry...
+             </div>
+          ) : timeSlots.map((slot) => (
             <motion.div
               layout
               key={slot.id}
@@ -185,12 +272,12 @@ const CourtSlotsAdmin = () => {
                   }`}>{slot.type}</span>
                 </div>
                 <h3 className="text-[13px] font-black tracking-tight text-slate-900 leading-none">
-                  {slot.time}
+                  {slot.timeSlot || slot.time}
                 </h3>
-                {slot.price ? (
+                {slot.price !== undefined ? (
                   <div className="flex items-center gap-1 text-[#CE2029] pt-1 mt-1">
                     <BadgeDollarSign size={12} strokeWidth={3} />
-                    <span className="text-[12px] font-black uppercase">{slot.price}</span>
+                    <span className="text-[12px] font-black uppercase">OMR {Number(slot.price).toFixed(3)}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1 text-slate-400 pt-1 mt-1">

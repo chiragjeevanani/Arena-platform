@@ -4,8 +4,7 @@ import {
   Crown, Shield, Users, Plus, Edit3, Trash2, ToggleLeft, ToggleRight,
   CheckCircle2, X, Save, Clock, Calendar, Zap, Star, ChevronDown
 } from 'lucide-react';
-import { MEMBERSHIP_PLANS } from '../../../../data/mockData';
-
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 const CATEGORY_META = {
   premium:      { label: 'Premium',     icon: Crown,   color: '#f59e0b', bg: 'bg-amber-50',  border: 'border-amber-200', text: 'text-amber-700' },
   'non-premium':{ label: 'Standard',    icon: Shield,  color: '#6366f1', bg: 'bg-indigo-50', border: 'border-indigo-200',text: 'text-indigo-700' },
@@ -19,7 +18,7 @@ const emptyForm = {
 };
 
 const MembershipAdmin = () => {
-  const [plans, setPlans] = useState(MEMBERSHIP_PLANS);
+  const [plans, setPlans] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -61,6 +60,9 @@ const MembershipAdmin = () => {
 
   return (
     <div className="space-y-5">
+      <ArenaPanelDemoBanner>
+        Plan edits here are local. Super-admin membership plans are under Admin → Membership management.
+      </ArenaPanelDemoBanner>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

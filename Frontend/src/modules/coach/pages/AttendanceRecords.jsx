@@ -1,52 +1,81 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ClipboardCheck, Calendar, Filter, Download, CheckCircle2, 
   XCircle, Clock, MoreVertical, Eye, Edit3, AlertTriangle, Bell, Trash2, Search, Plus, UserCheck, UserMinus, X
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
-
-const ATTENDANCE_DATA = [
-  { id: 1, date: '12 Mar 2026', batch: 'Morning Elite', present: 14, absent: 2, status: 'Logged' },
-  { id: 2, date: '11 Mar 2026', batch: 'Morning Elite', present: 15, absent: 1, status: 'Logged' },
-  { id: 3, date: '11 Mar 2026', batch: 'Junior Stars', present: 8, absent: 0, status: 'Logged' },
-  { id: 4, date: '10 Mar 2026', batch: 'Morning Elite', present: 16, absent: 0, status: 'Logged' },
-  { id: 5, date: '09 Mar 2026', batch: 'Pro Analytics', present: 18, absent: 4, status: 'Pending' },
-];
-
-const MOCK_STUDENTS = [
-  { id: 'STU-101', name: 'Arjun Mehta', present: true },
-  { id: 'STU-102', name: 'Sanya Gupta', present: true },
-  { id: 'STU-103', name: 'Kabir Singh', present: false },
-  { id: 'STU-104', name: 'Rohan Verma', present: true },
-  { id: 'STU-105', name: 'Ananya Rao', present: true },
-  { id: 'STU-106', name: 'Priya Kumar', present: true },
-  { id: 'STU-107', name: 'Vikram Singh', present: false },
-  { id: 'STU-108', name: 'Nisha Sharma', present: true },
-];
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import {
+  listCoachBatches,
+  listBatchStudents,
+  upsertBatchAttendance,
+  listCoachAttendanceHistory,
+} from '../../../services/coachApi';
 
 // ── Mark Attendance Modal ──────────────────────────────────────
-const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
-  const [students, setStudents] = useState(MOCK_STUDENTS);
+const MarkAttendanceModal = ({ target, onClose, isDark, onSaved }) => {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadErr, setLoadErr] = useState('');
+
+  useEffect(() => {
+    if (!target?.batchId) {
+      setStudents([]);
+      setLoading(false);
+      return undefined;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setLoadErr('');
+    listBatchStudents(target.batchId)
+      .then((d) => {
+        if (cancelled) return;
+        setStudents(
+          (d.students || []).map((s) => ({
+            id: s.userId,
+            name: s.name || 'Student',
+            present: true,
+          }))
+        );
+      })
+      .catch((e) => {
+        if (!cancelled) setLoadErr(e.message || 'Could not load roster');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [target?.batchId]);
 
   const updateStatus = (id, isPresent) => {
-    setStudents(prev => prev.map(s => s.id === id ? { ...s, present: isPresent } : s));
+    setStudents((prev) => prev.map((s) => (s.id === id ? { ...s, present: isPresent } : s)));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!target?.batchId) return;
     setSaving(true);
-    setTimeout(() => {
-      onSave({
-        id: Date.now(),
-        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        batch,
-        present: students.filter(s => s.present).length,
-        absent: students.filter(s => !s.present).length,
-        status: 'Logged'
+    setLoadErr('');
+    try {
+      const ymd = new Date().toISOString().slice(0, 10);
+      await upsertBatchAttendance(target.batchId, {
+        sessionDate: ymd,
+        records: students.map((s) => ({
+          userId: s.id,
+          status: s.present ? 'present' : 'absent',
+        })),
       });
+      await onSaved();
       onClose();
-    }, 1500);
+    } catch (e) {
+      setLoadErr(e.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -60,12 +89,25 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
         <div className="p-4 border-b border-white/5 flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold tracking-tight">Log Attendance</h3>
-            <p className="text-[10px] font-black uppercase text-[#CE2029] tracking-widest mt-1">{batch} · {new Date().toLocaleDateString()}</p>
+            <p className="text-[10px] font-black uppercase text-[#CE2029] tracking-widest mt-1">
+              {target?.batchTitle || '—'} · {new Date().toLocaleDateString()}
+            </p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><X size={18} /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-hide">
+          {loadErr && (
+            <p className="text-center text-xs text-red-600 font-semibold py-2">{loadErr}</p>
+          )}
+          {loading && (
+            <p className={`text-center text-xs py-8 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Loading roster…</p>
+          )}
+          {!loading && students.length === 0 && (
+            <p className={`text-center text-xs py-8 px-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              No students enrolled in this batch yet.
+            </p>
+          )}
           {students.map((stu) => (
             <div key={stu.id} className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
               isDark ? 'bg-white/[0.02] border-white/5' : 'bg-white border-slate-100'
@@ -112,8 +154,18 @@ const MarkAttendanceModal = ({ batch, onSave, onClose, isDark }) => {
             <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Class Summary</span>
             <span className="text-[10px] font-black">{students.filter(s => s.present).length} P / {students.filter(s => !s.present).length} A</span>
           </div>
-          <button onClick={handleSave} disabled={saving} className="w-full py-3 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#36454F] transition-all shadow-xl shadow-[#CE2029]/20 active:scale-[0.98] disabled:opacity-50">
-            {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Finalize Session Log <CheckCircle2 size={18} /></>}
+          <button
+            onClick={() => void handleSave()}
+            disabled={saving || loading || !students.length}
+            className="w-full py-3 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-[#36454F] transition-all shadow-xl shadow-[#CE2029]/20 active:scale-[0.98] disabled:opacity-50"
+          >
+            {saving ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                Finalize Session Log <CheckCircle2 size={18} />
+              </>
+            )}
           </button>
         </div>
       </motion.div>
@@ -127,19 +179,13 @@ const AttendanceDetailModal = ({ record, onClose, isDark }) => {
   const generateStudents = () => {
     const total = record.present + record.absent;
     const list = [];
-    
-    // Names for generated students
-    const extraNames = ['Rahul J.', 'Siddharth M.', 'Ishita K.', 'Zain A.', 'Meera P.', 'Varun D.', 'Kritika B.', 'Armaan S.', 'Saira V.', 'Aditya K.', 'Tanvi R.', 'Yash G.', 'Preeti S.', 'Manish T.'];
-
     for (let i = 0; i < total; i++) {
-        const isPresent = i < record.present;
-        let baseStudent = MOCK_STUDENTS[i % MOCK_STUDENTS.length];
-        
-        list.push({
-            id: `STU-${101 + i}`,
-            name: i < MOCK_STUDENTS.length ? baseStudent.name : extraNames[i - MOCK_STUDENTS.length] || `Student ${i + 1}`,
-            present: isPresent
-        });
+      const isPresent = i < record.present;
+      list.push({
+        id: `STU-${101 + i}`,
+        name: `Student ${i + 1}`,
+        present: isPresent,
+      });
     }
     return list;
   };
@@ -243,21 +289,90 @@ const AttendanceDetailModal = ({ record, onClose, isDark }) => {
 // ── Main Component ──────────────────────────────────────────────
 const AttendanceRecords = () => {
   const { isDark } = useTheme();
-  const [records, setRecords] = useState(ATTENDANCE_DATA);
+  const live = isApiConfigured() && Boolean(getAuthToken());
+  const [records, setRecords] = useState([]);
+  const [coachBatches, setCoachBatches] = useState([]);
+  const [markPickId, setMarkPickId] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAttendanceDetail, setShowAttendanceDetail] = useState(null); // Record object
-  
-  // New modal & filter state
-  const [showMarkModal, setShowMarkModal] = useState(null); // String: batch name
+
+  const [showMarkModal, setShowMarkModal] = useState(null); // { batchId, batchTitle }
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     status: 'All',
-    batch: 'All'
+    batch: 'All',
   });
+
+  const refreshHistory = useCallback(async () => {
+    if (!live) {
+      setRecords([]);
+      setCoachBatches([]);
+      return;
+    }
+    try {
+      const from = new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+      const to = new Date().toISOString().slice(0, 10);
+      const [hist, batchesRes] = await Promise.all([
+        listCoachAttendanceHistory({ from, to }),
+        listCoachBatches(),
+      ]);
+      const sessions = hist.sessions || [];
+      setRecords(
+        sessions.map((s) => ({
+          id: s.id,
+          date: new Date(`${s.sessionDate}T12:00:00`).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          }),
+          batch: s.batch,
+          present: s.present,
+          absent: s.absent,
+          status: s.status || 'Logged',
+        }))
+      );
+      const batches = batchesRes.batches || [];
+      setCoachBatches(batches);
+      setMarkPickId((prev) => prev || (batches[0]?.id ?? ''));
+    } catch {
+      setRecords([]);
+      setCoachBatches([]);
+    }
+  }, [live]);
+
+  useEffect(() => {
+    void refreshHistory();
+  }, [refreshHistory]);
+
+  const batchFilterOptions = useMemo(() => {
+    const names = new Set(['All']);
+    coachBatches.forEach((b) => names.add(b.title));
+    records.forEach((r) => names.add(r.batch));
+    return [...names];
+  }, [coachBatches, records]);
+
+  const statsCards = useMemo(() => {
+    if (!records.length) {
+      return [
+        { label: 'Avg Attendance', value: '—', icon: CheckCircle2, color: '#CE2029' },
+        { label: 'Classes Logged', value: '0', icon: Clock, color: '#36454F' },
+        { label: 'Absence Rate', value: '—', icon: XCircle, color: '#FF4B4B' },
+      ];
+    }
+    const total = records.reduce((acc, r) => acc + r.present + r.absent, 0);
+    const pres = records.reduce((acc, r) => acc + r.present, 0);
+    const avg = total ? ((pres / total) * 100).toFixed(1) : '0';
+    const absRate = total ? (((total - pres) / total) * 100).toFixed(1) : '0';
+    return [
+      { label: 'Avg Attendance', value: `${avg}%`, icon: CheckCircle2, color: '#CE2029' },
+      { label: 'Classes Logged', value: String(records.length), icon: Clock, color: '#36454F' },
+      { label: 'Absence Rate', value: `${absRate}%`, icon: XCircle, color: '#FF4B4B' },
+    ];
+  }, [records]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -268,17 +383,19 @@ const AttendanceRecords = () => {
     const record = records.find(r => r.id === logId);
     setActiveMenu(null);
     switch(action) {
-      case 'Delete Record': setRecords(prev => prev.filter(r => r.id !== logId)); showToast(`Record for ${record.date} deleted`, 'error'); break;
+      case 'Delete Record':
+        if (live) {
+          showToast('Session logs are stored on the server for this account.', 'warning');
+        } else {
+          setRecords((prev) => prev.filter((r) => r.id !== logId));
+          showToast(`Record for ${record.date} deleted`, 'error');
+        }
+        break;
       case 'View Details': setSelectedRecord(record); setIsEditMode(false); break;
       case 'Edit Log': setSelectedRecord(record); setIsEditMode(true); break;
       case 'Attendance Detail': setShowAttendanceDetail(record); break;
       default: break;
     }
-  };
-
-  const handleNewAttendance = (newRecord) => {
-    setRecords([newRecord, ...records]);
-    showToast(`${newRecord.batch} log submitted for ${newRecord.date}`);
   };
 
   const exportToCSV = () => {
@@ -319,7 +436,14 @@ const AttendanceRecords = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {showMarkModal && <MarkAttendanceModal batch={showMarkModal} onSave={handleNewAttendance} onClose={() => setShowMarkModal(null)} isDark={isDark} />}
+        {showMarkModal && (
+          <MarkAttendanceModal
+            target={showMarkModal}
+            onClose={() => setShowMarkModal(null)}
+            isDark={isDark}
+            onSaved={refreshHistory}
+          />
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -381,18 +505,47 @@ const AttendanceRecords = () => {
           </h2>
           <p className={`text-[10px] mt-0.5 font-medium ${isDark ? 'text-white/40' : 'text-slate-500'}`}>Monitor and verify daily presence logs.</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowMarkModal('Morning Elite')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#CE2029] text-white transition-all text-[10px] font-black uppercase tracking-wider shadow-md hover:-translate-y-0.5 border border-[#CE2029]"><Plus size={14} /> Mark Attendance</button>
+        <div className="flex flex-wrap gap-2 items-center">
+          {live && coachBatches.length > 1 && (
+            <select
+              value={markPickId || coachBatches[0]?.id || ''}
+              onChange={(e) => setMarkPickId(e.target.value)}
+              className={`py-1.5 px-2 rounded-lg border text-[10px] font-bold outline-none ${
+                isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
+              }`}
+            >
+              {coachBatches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.title}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              if (!live) {
+                showToast('Connect VITE_API_URL and sign in as a coach to log attendance.', 'warning');
+                return;
+              }
+              const id = markPickId || coachBatches[0]?.id;
+              const b = coachBatches.find((x) => x.id === id);
+              if (!id || !b) {
+                showToast('No coaching batches assigned to you yet.', 'warning');
+                return;
+              }
+              setShowMarkModal({ batchId: id, batchTitle: b.title });
+            }}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#CE2029] text-white transition-all text-[10px] font-black uppercase tracking-wider shadow-md hover:-translate-y-0.5 border border-[#CE2029]"
+          >
+            <Plus size={14} /> Mark Attendance
+          </button>
           <button onClick={exportToCSV} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg border transition-all text-[10px] font-black uppercase tracking-wider ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-[#CE2029]' : 'bg-white border-slate-200 text-slate-600 hover:border-[#CE2029] hover:text-[#CE2029] shadow-sm'}`}><Download size={14} /> Export CSV</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: 'Avg Attendance', value: '94.2%', icon: CheckCircle2, color: '#CE2029' },
-          { label: 'Classes Logged', value: '42', icon: Clock, color: '#36454F' },
-          { label: 'Absence Rate', value: '5.8%', icon: XCircle, color: '#FF4B4B' },
-        ].map((stat, idx) => (
+        {statsCards.map((stat, idx) => (
           <div key={idx} className={`p-4 rounded-xl border shadow-sm ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-white border-slate-100'}`}>
             <div className="flex items-center justify-between">
               <div>
@@ -459,8 +612,10 @@ const AttendanceRecords = () => {
                         onChange={(e) => setFilters(prev => ({ ...prev, batch: e.target.value }))}
                         className={`w-full py-2 px-3 rounded-xl border text-[11px] font-bold outline-none ${isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-slate-50 border-slate-100 text-[#36454F]'}`}
                       >
-                        {['All', 'Morning Elite', 'Junior Stars', 'Pro Analytics'].map(b => (
-                          <option key={b} value={b}>{b}</option>
+                        {batchFilterOptions.map((b) => (
+                          <option key={b} value={b}>
+                            {b}
+                          </option>
                         ))}
                       </select>
                     </div>

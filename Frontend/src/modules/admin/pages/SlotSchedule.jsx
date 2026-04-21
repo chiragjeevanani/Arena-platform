@@ -1,32 +1,73 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarClock, ChevronLeft, ChevronRight, Clock, MapPin, Plus, AlertTriangle, X, MoreVertical } from 'lucide-react';
-import { MOCK_DB } from '../../../data/mockDatabase';
 import { format, addDays, startOfToday } from 'date-fns';
+import { fetchPublicArenas, fetchPublicArenaById } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
 
 const SlotSchedule = () => {
-  const [selectedArenaId, setSelectedArenaId] = useState(MOCK_DB.arenas[0].id);
+  const [arenas, setArenas] = useState([]);
+  const [selectedArenaId, setSelectedArenaId] = useState('');
+  const [arenaCourts, setArenaCourts] = useState([]);
   const [selectedDate, setSelectedDate] = useState(startOfToday());
   const [showBlockModal, setShowBlockModal] = useState(false);
 
-  const arena = MOCK_DB.arenas.find(a => a.id === selectedArenaId);
-  const arenaCourts = MOCK_DB.courts.filter(c => c.arenaId === selectedArenaId);
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchPublicArenas();
+        if (cancelled) return;
+        const list = (data.arenas || []).map(normalizeListArena);
+        setArenas(list);
+        if (list.length) {
+          setSelectedArenaId((prev) => prev || String(list[0].id));
+        }
+      } catch {
+        if (!cancelled) setArenas([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !selectedArenaId) {
+      setArenaCourts([]);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const payload = await fetchPublicArenaById(selectedArenaId);
+        if (cancelled) return;
+        const raw = payload?.arena?.courts || [];
+        setArenaCourts(
+          raw.map((c) => ({
+            id: c.id,
+            arenaId: String(selectedArenaId),
+            name: c.name,
+            type: c.type || 'Court',
+          }))
+        );
+      } catch {
+        if (!cancelled) setArenaCourts([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedArenaId]);
   
   const timeSlots = [
     "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", 
     "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"
   ];
 
-  const getSlotStatus = (courtId, time) => {
-    const booking = MOCK_DB.bookings.find(b => b.courtId === courtId && b.time === time);
-    if (booking) return { status: 'Booked', data: booking };
-    
-    const hour = parseInt(time.split(':')[0]);
-    if (hour === 12 && courtId === 'court-1') return { status: 'Maintenance', data: { reason: 'Clean' } };
-    if (hour === 18 && courtId === 'court-1') return { status: 'Alert', data: { reason: 'Conflict' } };
-    
-    return { status: 'Available', data: null };
-  };
+  const getSlotStatus = () => ({ status: 'Available', data: null });
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -71,7 +112,7 @@ const SlotSchedule = () => {
                   onChange={(e) => setSelectedArenaId(e.target.value)}
                   className="w-full bg-transparent text-sm font-black text-[#36454F] outline-none cursor-pointer appearance-none"
                 >
-                  {MOCK_DB.arenas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  {arenas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
            </div>
@@ -139,7 +180,7 @@ const SlotSchedule = () => {
                     {/* Court Slots Column */}
                     <div className="flex-1 flex divide-x divide-slate-50 p-3 gap-3">
                       {arenaCourts.map(court => {
-                        const { status, data } = getSlotStatus(court.id, time);
+                        const { status, data } = getSlotStatus();
                         return (
                           <motion.div
                             key={court.id}

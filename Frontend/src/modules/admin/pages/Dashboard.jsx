@@ -4,42 +4,91 @@ import {
   ChevronLeft, ChevronRight,
   Receipt, WalletCards, Users
 } from 'lucide-react';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { getAdminReportSummary } from '../../../services/adminReportsApi';
+import { listAdminBookings } from '../../../services/adminBookingsApi';
+import { listAdminPosSales } from '../../../services/adminOpsApi';
 
 const AdminDashboard = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [calendarView, setCalendarView] = useState('Week');
+  const [summary, setSummary] = useState(null);
+  const [scheduleBookings, setScheduleBookings] = useState([]);
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [paymentList, setPaymentList] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
+    if (!isApiConfigured() || !getAuthToken()) {
+      setIsLoading(false);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      setLoadError('');
+      try {
+        const arenasRes = await fetchPublicArenas();
+        const arenas = (arenasRes.arenas || []).map(normalizeListArena);
+        const aid = arenas[0]?.id ? String(arenas[0].id) : '';
+        if (cancelled) return;
+        if (!aid) {
+          setIsLoading(false);
+          return;
+        }
+        const [rep, books, pos] = await Promise.all([
+          getAdminReportSummary({ arenaId: aid }),
+          listAdminBookings({ arenaId: aid }),
+          listAdminPosSales(aid),
+        ]);
+        if (cancelled) return;
+        setSummary(rep);
+        const bks = (books.bookings || []).slice(0, 8);
+        setRecentBookings(
+          bks.map((b) => ({
+            date: b.date || '—',
+            court: b.courtName || '—',
+            time: b.timeSlot || '—',
+            player: `User …${String(b.userId || '').slice(-6)}`,
+            status: b.status || '—',
+            statusBg: b.status === 'confirmed' ? '#d1fae5' : '#f1f5f9',
+            statusText: b.status === 'confirmed' ? '#047857' : '#64748b',
+          }))
+        );
+        const sales = (pos.sales || []).slice(0, 8);
+        setPaymentList(
+          sales.map((s) => ({
+            player: `POS ${String(s.id || '').slice(-6)}`,
+            amount: `${Number(s.totalAmount || 0).toFixed(2)}`,
+            method: 'POS',
+            status: 'Paid',
+            statusBg: '#d1fae5',
+            statusText: '#047857',
+          }))
+        );
+        setScheduleBookings([]);
+      } catch (e) {
+        if (!cancelled) setLoadError(e.message || 'Failed to load dashboard');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  // MOCK DATA specifically for UI display to match the reference image exactly
-  const scheduleBookings = [
-    { name: 'John Smith', time: '6:00 PM - 7:00 PM', bgColor: '#CE2029', textColor: '#ffffff', colStart: 3, rowStart: 3, rowSpan: 2 }, // Wed 6pm
-    { name: 'Rynn Scott', time: '5:00 PM - 6:00 PM', bgColor: '#ff6b6b', textColor: '#ffffff', colStart: 2, rowStart: 2, rowSpan: 2 }, // Tue 5pm
-    { name: 'Emily Brown', time: '7:00 PM - 8:00 PM', bgColor: '#ff6b6b', textColor: '#ffffff', colStart: 3, rowStart: 4, rowSpan: 2 }, // Wed 7pm
-    { name: 'Mark Davis', time: '4:00 PM - 5:00 PM', bgColor: '#E88E3E', textColor: '#ffffff', colStart: 4, rowStart: 1, rowSpan: 2 }, // Thu 4pm
-    { name: 'Emma Clark', time: '8:00 PM - 9:00 PM', bgColor: '#98B84B', textColor: '#ffffff', colStart: 5, rowStart: 5, rowSpan: 2 }, // Fri 8pm
-  ];
-
-  const recentBookings = [
-    { date: '24 Apr', court: 'Court 1', time: '6:00 PM - 7:00', player: 'John Smith', status: 'Confirmed', statusBg: '#CE2029', statusText: '#ffffff' },
-    { date: '24 Apr', court: 'Court 4', time: '6:00 PM - 7:00', player: 'Mark Davis', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
-    { date: '24 Apr', court: 'Court 1', time: '7:00 PM - 8:00', player: 'Emily Brown', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
-    { date: '26 Apr', court: 'Court 3', time: '6:30 PM - 7:30', player: 'Ryan Wilson', status: 'Pending', statusBg: '#E88E3E', statusText: '#ffffff' },
-  ];
-
-  const paymentList = [
-    { player: 'Mark Davis', amount: 'OMR 1.500', method: 'Card', status: 'Completed', statusBg: '#76A87A', statusText: '#ffffff' },
-    { player: 'Emily Brown', amount: 'OMR 2.000', method: 'Cash', status: 'Paid', statusBg: '#ff6b6b', statusText: '#ffffff' },
-    { player: 'Ryan Wilson', amount: 'OMR 1.200', method: 'Online', status: 'Pending', statusBg: '#E88E3E', statusText: '#ffffff' },
-  ];
 
 
   return (
     <div className="bg-[#F4F7F6] min-h-full p-4 md:p-6 lg:p-8 font-sans">
+      {loadError ? (
+        <div className="max-w-[1600px] mx-auto mb-4 rounded-xl border border-red-200 bg-red-50 text-red-800 text-xs font-bold px-4 py-3">
+          {loadError}
+        </div>
+      ) : null}
 
       {/* Main Grid Layout to match reference image */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6 max-w-[1600px] mx-auto">
@@ -141,7 +190,7 @@ const AdminDashboard = () => {
                       {Array.from({ length: 35 }).map((_, i) => {
                         const dayNumber = i - 2; // Offset for April 2026 starts on Wed
                         const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
-                        const hasEvent = [5, 12, 18, 23, 24].includes(dayNumber);
+                        const hasEvent = false;
                         const isToday = dayNumber === 23;
                         
                         return (
@@ -219,10 +268,12 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <p className="text-[#36454F] font-bold text-sm mb-0.5">Pending Payments</p>
-                  <p className="text-xs text-slate-500 font-medium">OMR 3.250</p>
+                  <p className="text-xs text-slate-500 font-medium">Booking revenue (confirmed)</p>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#113F47] tracking-tight">OMR 0.500</p>
+              <p className="text-2xl font-bold text-[#113F47] tracking-tight">
+                {summary ? Number(summary.bookings?.revenueAmount || 0).toFixed(2) : isLoading ? '…' : '—'}
+              </p>
             </div>
 
             {/* Upcoming Bookings stat */}
@@ -232,11 +283,13 @@ const AdminDashboard = () => {
                   <CalendarDays size={20} />
                 </div>
                 <div>
-                  <p className="text-[#36454F] font-bold text-sm mb-0.5">Upcoming Bookings</p>
-                  <p className="text-xs text-slate-500 font-medium">OMR 2.750 est.</p>
+                  <p className="text-[#36454F] font-bold text-sm mb-0.5">Bookings</p>
+                  <p className="text-xs text-slate-500 font-medium">Confirmed + completed</p>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#113F47]">8</p>
+              <p className="text-2xl font-bold text-[#113F47]">
+                {summary ? summary.bookings?.confirmedOrCompleted ?? 0 : isLoading ? '…' : '—'}
+              </p>
             </div>
           </div>
 

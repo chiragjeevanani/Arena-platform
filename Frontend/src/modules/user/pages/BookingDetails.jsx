@@ -4,6 +4,12 @@ import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
 import { useEffect, useState } from 'react';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listMyBookings } from '../../../services/bookingsApi';
+import { listMyEventRegistrations } from '../../../services/meApi';
+import { mapMeBookingToDashboardCard } from '../../../utils/meBookingAdapter';
+import { mapEventRegistrationToDashboardCard } from '../../../utils/eventRegistrationAdapter';
 
 const BookingDetails = () => {
   const { state } = useLocation();
@@ -15,15 +21,42 @@ const BookingDetails = () => {
   const [booking, setBooking] = useState(state?.booking || null);
 
   useEffect(() => {
-    if (!booking) {
-      // In a real app, you'd fetch the booking details using the id
-      // For now, let's check localStorage
-      const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-      const found = savedBookings.find(b => b.id?.toString() === id);
-      if (found) {
-        setBooking(found);
-      }
+    if (booking || !id) return undefined;
+
+    if (isApiConfigured() && getAuthToken()) {
+      let cancelled = false;
+      (async () => {
+        try {
+          const [bData, evData] = await Promise.all([
+            listMyBookings().catch(() => ({ bookings: [] })),
+            listMyEventRegistrations().catch(() => ({ registrations: [] }))
+          ]);
+          if (cancelled) return;
+
+          let raw = (bData.bookings || []).find((b) => String(b.id) === String(id));
+          if (raw) {
+             setBooking(mapMeBookingToDashboardCard(raw));
+          } else {
+             const evRaw = (evData.registrations || []).find((r) => String(r.id) === String(id));
+             if (evRaw) setBooking(mapEventRegistrationToDashboardCard(evRaw));
+          }
+        } catch {
+          if (!cancelled) {
+            const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+            const found = savedBookings.find((b) => String(b.id) === String(id));
+            if (found) setBooking(found);
+          }
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
     }
+
+    const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+    const found = savedBookings.find((b) => String(b.id) === String(id));
+    if (found) setBooking(found);
+    return undefined;
   }, [booking, id]);
 
   if (!booking) return (
@@ -114,7 +147,7 @@ const BookingDetails = () => {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                     {['Sanitized', 'Equipment', 'Parking'].map((t, i) => (
+                     {(booking.inclusions && booking.inclusions.length > 0 ? booking.inclusions : ['Sanitized', 'Equipment', 'Parking']).map((t, i) => (
                         <div key={i} className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 border border-slate-100 gap-1.5">
                            <CheckCircle size={14} className="text-emerald-500" />
                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">{t}</span>

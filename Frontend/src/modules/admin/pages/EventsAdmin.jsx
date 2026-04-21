@@ -1,57 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, Plus, Search, Filter, Calendar, Target, Medal, X, 
   Zap, ArrowRight, ShieldCheck, Share2, Users, Activity,
   Settings2, BarChart3, ChevronRight, Hash, Eye, Edit3, MoreHorizontal
 } from 'lucide-react';
-
-const EVENTS = [
-  { 
-    id: 1, 
-    title: 'Summer Smash 2026', 
-    type: 'Open Tournament', 
-    date: 'Mar 25-27', 
-    venue: 'Olympic Arena', 
-    status: 'Registration', 
-    prize: '500 OMR', 
-    participants: 128,
-    banner: 'https://images.unsplash.com/photo-1626225967045-944062402170?q=80&w=800&auto=format&fit=crop'
-  },
-  { 
-    id: 2, 
-    title: 'Junior Championship', 
-    type: 'U-17 Boys/Girls', 
-    date: 'Apr 05', 
-    venue: 'Olympic Arena', 
-    status: 'Drafting', 
-    prize: 'Trophies', 
-    participants: 0,
-    banner: 'https://images.unsplash.com/photo-1542103448-43d96924d548?q=80&w=800&auto=format&fit=crop'
-  },
-  { 
-    id: 3, 
-    title: 'Corporate League', 
-    type: 'Teams of 4', 
-    date: 'Ongoing', 
-    venue: 'Delta Hub', 
-    status: 'Live', 
-    prize: 'Shield', 
-    participants: 16,
-    banner: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=800&auto=format&fit=crop'
-  },
-  { 
-    id: 4, 
-    title: 'Weekend Blitz', 
-    type: 'Solo Knockout', 
-    date: 'Apr 12', 
-    venue: 'Olympic Arena', 
-    status: 'Upcoming', 
-    prize: '120 OMR', 
-    participants: 64,
-    banner: 'https://images.unsplash.com/photo-1534158914592-062992fbe900?q=80&w=800&auto=format&fit=crop'
-  },
-];
 
 import { 
   Dialog, DialogTitle, DialogContent, 
@@ -60,39 +14,123 @@ import {
   Typography
 } from '@mui/material';
 import { UserPlus } from 'lucide-react';
+import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listArenaAdminCmsContent } from '../../../services/arenaAdminApi';
+import { listAdminCmsContent, listEventRegistrations, updateEventRegistrationStatus } from '../../../services/adminOpsApi';
+import { registerForEvent } from '../../../services/eventsApi';
+import { resolveLiveCmsScope } from '../../../utils/liveOpsScope';
+import { mapCmsContentToEventCard } from '../../../utils/arenaCmsEventAdapter';
+
+const DEMO_EVENTS = [];
 
 const EventsAdmin = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const arenaIdFromQuery = searchParams.get('arenaId');
+
+  const cmsScope = useMemo(
+    () =>
+      resolveLiveCmsScope(user, {
+        apiConfigured: isApiConfigured(),
+        hasToken: Boolean(getAuthToken()),
+        arenaIdFromQuery,
+      }),
+    [user, arenaIdFromQuery]
+  );
+
+  const [cmsEvents, setCmsEvents] = useState([]);
   const [view, setView] = useState('GRID'); // GRID, DETAILS
   const [activeEvent, setActiveEvent] = useState(null);
   const [showRegModal, setShowRegModal] = useState(false);
   const [regForm, setRegForm] = useState({ name: '', age: '', contact: '', category: 'Solo' });
-
-  // Mock Participants for the Details View
-  const [participants, setParticipants] = useState([
-    { id: 1, name: 'Ali Al-Said', age: 24, contact: '+968 9876 5432', category: 'Men\'s Solo', status: 'Approved' },
-    { id: 2, name: 'Fatima Al-Harthy', age: 19, contact: '+968 9123 4567', category: 'Women\'s Solo', status: 'Pending' },
-    { id: 3, name: 'Salim Al-Abri', age: 28, contact: '+968 9988 7766', category: 'Men\'s Solo', status: 'Rejected' },
-  ]);
-
+  const [participants, setParticipants] = useState([]);
   const [filterQuery, setFilterQuery] = useState('');
   const [activeAthleteMenu, setActiveAthleteMenu] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleManualEnroll = () => {
-    if (!regForm.name || !regForm.age || !regForm.contact) {
-      alert('Operational Error: Please populate all mandatory framework fields.');
+  useEffect(() => {
+    if (!cmsScope.live) {
+      setCmsEvents([]);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data =
+          cmsScope.channel === 'arena'
+            ? await listArenaAdminCmsContent(cmsScope.cmsListParams)
+            : await listAdminCmsContent(cmsScope.cmsListParams);
+        const rows = (data.contents || []).map(mapCmsContentToEventCard);
+        if (!cancelled) setCmsEvents(rows);
+      } catch {
+        if (!cancelled) setCmsEvents([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [cmsScope]);
+
+  // --- Registration Logic ---
+  useEffect(() => {
+    if (view === 'DETAILS' && activeEvent?.id) {
+       let cancelled = false;
+       (async () => {
+         try {
+           const data = await listEventRegistrations(activeEvent.id);
+           if (!cancelled) {
+             setParticipants(data.registrations.map(r => ({
+                id: r.id,
+                name: r.name,
+                contact: r.phone,
+                status: r.status,
+                category: 'Standard', // Fallback for simple registrations
+                age: 'N/A' // Fallback
+             })));
+           }
+         } catch (err) {
+           console.error('Failed to load registrations', err);
+         }
+       })();
+       return () => { cancelled = true; };
+    }
+  }, [view, activeEvent]);
+
+  const displayEvents = cmsScope.live ? cmsEvents : DEMO_EVENTS;
+
+  // --- Registration Logic ---
+
+  const handleManualEnroll = async () => {
+    if (!regForm.name || !regForm.contact) {
+      alert('Operational Error: Name and Contact are mandatory.');
       return;
     }
-    const newParticipant = {
-      id: Date.now(),
-      name: regForm.name,
-      age: regForm.age,
-      contact: regForm.contact,
-      category: regForm.category,
-      status: 'Approved'
-    };
-    setParticipants([newParticipant, ...participants]);
-    setShowRegModal(false);
-    setRegForm({ name: '', age: '', contact: '', category: 'Solo' });
+    setIsSubmitting(true);
+    try {
+      await registerForEvent({
+        eventId: activeEvent.id,
+        name: regForm.name,
+        phone: regForm.contact
+      });
+      setShowRegModal(false);
+      setRegForm({ name: '', age: '', contact: '', category: 'Solo' });
+      // Refresh list
+      const data = await listEventRegistrations(activeEvent.id);
+      setParticipants(data.registrations.map(r => ({
+         id: r.id,
+         name: r.name,
+         contact: r.phone,
+         status: r.status,
+         category: 'Standard',
+         age: 'N/A'
+      })));
+    } catch (err) {
+      alert('Enrollment failed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filteredParticipants = participants.filter(p => 
@@ -101,8 +139,17 @@ const EventsAdmin = () => {
     p.category.toLowerCase().includes(filterQuery.toLowerCase())
   );
 
-  const toggleStatus = (id, newStatus) => {
-    setParticipants(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+  const filteredEvents = displayEvents.filter((e) =>
+    e.title.toLowerCase().includes(filterQuery.toLowerCase())
+  );
+
+  const toggleStatus = async (id, newStatus) => {
+    try {
+      await updateEventRegistrationStatus(id, newStatus);
+      setParticipants(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+    } catch (err) {
+      alert('Failed to update status');
+    }
     setActiveAthleteMenu(null);
   };
 
@@ -128,10 +175,10 @@ const EventsAdmin = () => {
           {/* Key Metrics (Classy Miniature Cards) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
              {[
-               { label: 'Live Events', value: '03', icon: Trophy },
-               { label: 'Athletes', value: '3.4K+', icon: Users },
-               { label: 'Approvals', value: '12', icon: ShieldCheck },
-               { label: 'Revenue', value: '1.2L', icon: BarChart3 }
+               { label: 'Live Events', value: String(displayEvents.length), icon: Trophy },
+               { label: 'Athletes', value: '—', icon: Users },
+               { label: 'Approvals', value: '—', icon: ShieldCheck },
+               { label: 'Revenue', value: '—', icon: BarChart3 }
              ].map((stat, i) => (
                <div key={i} className="bg-white border border-slate-200 p-2.5 rounded-sm flex items-center justify-between transition-all hover:bg-slate-50">
                   <div>
@@ -165,7 +212,12 @@ const EventsAdmin = () => {
 
           {/* Events Data Grid (Extreme-Compact High-Density) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xxl:grid-cols-6 gap-2.5 pb-8">
-            {EVENTS.filter(e => e.title.toLowerCase().includes(filterQuery.toLowerCase())).map((item, idx) => (
+            {filteredEvents.length === 0 && (
+              <p className="col-span-full text-sm text-slate-500 py-8 px-2">
+                No events to show. Connect your events API, or restore the bundled demo snapshot from the repo&apos;s demo-backup folder if needed.
+              </p>
+            )}
+            {filteredEvents.map((item, idx) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 8 }}
@@ -192,7 +244,8 @@ const EventsAdmin = () => {
                 <div className="p-2 flex-1 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 text-[7.5px] font-bold text-[#CE2029] uppercase tracking-widest">
-                      <Hash size={8} strokeWidth={4} /> {item.id.toString().padStart(4, '0')}
+                      <Hash size={8} strokeWidth={4} />{' '}
+                      {item.listCode || String(item.id).slice(-6).toUpperCase()}
                     </div>
                     <div className={`px-1 rounded-sm text-[6.5px] font-bold uppercase tracking-widest border border-slate-100 ${
                         item.status === 'Live' ? 'text-emerald-500' :

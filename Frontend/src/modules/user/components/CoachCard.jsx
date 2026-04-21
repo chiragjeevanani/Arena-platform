@@ -9,9 +9,12 @@ import { useTheme } from '../context/ThemeContext';
 const CoachCard = ({ batch, index = 0 }) => {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  // Mock seats data
-  const totalSeats = 12;
-  const filledSeats = Math.floor(Math.random() * 8) + 3;
+  const totalSeats = Math.max(1, Number(batch.capacity) || 12);
+  const spotsRem = Number(batch.spotsRemaining);
+  const filledSeats =
+    Number.isFinite(spotsRem) && Number.isFinite(batch.capacity)
+      ? Math.min(totalSeats, Math.max(0, totalSeats - spotsRem))
+      : 0;
   const seatPercent = (filledSeats / totalSeats) * 100;
 
   return (

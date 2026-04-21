@@ -3,11 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { Message, ArrowBackIos } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
+import { getOtpMode, isApiConfigured } from '../../../services/config';
+import { verifyOtpRequest } from '../../../services/authApi';
 
 const OTPVerification = () => {
   const navigate = useNavigate();
   const [otp, setOtp] = useState(['', '', '', '']);
+  const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const otpMode = getOtpMode();
 
   const handleChange = (index, value) => {
     // Only allow numbers
@@ -30,13 +35,32 @@ const OTPVerification = () => {
     }
   };
 
-  const { login } = useAuth();
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (otp.join('').length < 4) return;
-    login();
-    navigate('/');
+    setError('');
+    const code = otp.join('');
+    if (code.length < 4) return;
+
+    if (otpMode === 'disabled') {
+      setError('OTP is not enabled. Use email and password on the login page.');
+      return;
+    }
+
+    if (otpMode === 'dev') {
+      if (!isApiConfigured()) {
+        setError('Set VITE_API_URL and enable DEV_OTP_ENABLED on the backend to verify.');
+        return;
+      }
+      setSending(true);
+      try {
+        await verifyOtpRequest(code);
+        navigate('/login', { state: { otpVerified: true } });
+      } catch (err) {
+        setError(err.message || 'Verification failed');
+      } finally {
+        setSending(false);
+      }
+    }
   };
 
   return (
@@ -51,6 +75,24 @@ const OTPVerification = () => {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full md:max-w-[440px] bg-transparent md:bg-white md:p-10 md:rounded-none rounded-[40px] md:shadow-[0_20px_60px_rgba(206, 32, 41,0.08)] md:border md:border-slate-100"
       >
+        {otpMode === 'disabled' && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-950">
+            SMS OTP is not configured. Sign in with your email and password instead.
+          </div>
+        )}
+        {otpMode === 'dev' && (
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-[11px] font-medium text-slate-700">
+            Dev mode: set <code className="rounded bg-white px-1">DEV_OTP_ENABLED=true</code> on the API and{' '}
+            <code className="rounded bg-white px-1">VITE_OTP_MODE=dev</code> on the app. Default code{' '}
+            <code className="rounded bg-white px-1">1234</code> unless <code className="rounded bg-white px-1">DEV_OTP_CODE</code> is set.
+            After a successful check you will be sent to login.
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-center text-xs font-semibold text-red-800">
+            {error}
+          </div>
+        )}
         <button 
           onClick={() => navigate(-1)} 
           className="mb-8 w-11 h-11 rounded-full bg-white/80 border border-slate-100 flex items-center justify-center hover:bg-[#CE2029] hover:text-white transition-all shadow-sm active:scale-90"
@@ -91,9 +133,22 @@ const OTPVerification = () => {
             </p>
           </div>
 
+          {otpMode === 'disabled' && (
+            <Button
+              fullWidth
+              onClick={() => navigate('/login')}
+              variant="outlined"
+              size="large"
+              className="mb-3 border-[#CE2029] text-[#CE2029]"
+              sx={{ borderRadius: '16px', textTransform: 'none', fontWeight: 'bold' }}
+            >
+              Go to login
+            </Button>
+          )}
           <Button
             fullWidth
             onClick={handleSubmit}
+            disabled={otpMode === 'disabled' || sending}
             variant="contained"
             size="large"
             className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-4 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all"
@@ -106,7 +161,7 @@ const OTPVerification = () => {
                 letterSpacing: '0.02em'
             }}
           >
-            Verify & Continue
+            {sending ? 'Verifying…' : otpMode === 'disabled' ? 'Use login instead' : 'Verify & continue to login'}
           </Button>
         </div>
       </motion.div>

@@ -1,22 +1,69 @@
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, CheckCircle, Video, Users, ClipboardCheck, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, Video, Users, ClipboardCheck, ChevronRight } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
-
-const mockSchedule = [
-  { id: 1, time: '06:00 AM - 08:00 AM', batch: 'Morning Elite', level: 'Advanced', students: 12, arena: 'Olympic Smash, Court 1', type: 'Offline' },
-  { id: 2, time: '04:00 PM - 06:00 PM', batch: 'Junior Stars', level: 'Beginner', students: 8, arena: 'Badminton Hub, Court 3', type: 'Offline' },
-  { id: 3, time: '07:00 PM - 08:30 PM', batch: 'Pro Analytics', level: 'Intermediate', students: 15, arena: 'Zoom Video', type: 'Online' },
-];
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listCoachBatches } from '../../../services/coachApi';
 
 const CoachDashboard = () => {
   const { isDark } = useTheme();
+  const [sessions, setSessions] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
-  const stats = [
-    { label: 'Today', value: '3', sub: 'Sessions', icon: Calendar, color: 'text-red-500' },
-    { label: 'Students', value: '35', sub: 'Active', icon: Users, color: 'text-blue-500' },
-    { label: 'Attendance', value: '92%', sub: 'Avg.', icon: ClipboardCheck, color: 'text-emerald-500' },
-  ];
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await listCoachBatches();
+        if (cancelled) return;
+        const rows = (data.batches || []).map((b) => ({
+          id: b.id,
+          time: (b.schedule || '').trim() || `${b.startDate} – ${b.endDate}`,
+          type: 'Arena',
+          batch: b.title || 'Batch',
+          arena: b.arenaName || '—',
+          students: b.capacity ?? 0,
+          level: 'Open',
+        }));
+        setSessions(rows);
+      } catch (e) {
+        if (!cancelled) setLoadError(e.message || 'Could not load batches');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      {
+        label: 'Batches',
+        value: sessions.length ? String(sessions.length) : '—',
+        sub: 'Assigned',
+        icon: Calendar,
+        color: 'text-red-500',
+      },
+      {
+        label: 'Capacity',
+        value: sessions.length ? String(sessions.reduce((a, s) => a + (Number(s.students) || 0), 0)) : '—',
+        sub: 'Seats',
+        icon: Users,
+        color: 'text-blue-500',
+      },
+      {
+        label: 'Attendance',
+        value: '—',
+        sub: 'Avg.',
+        icon: ClipboardCheck,
+        color: 'text-emerald-500',
+      },
+    ],
+    [sessions]
+  );
 
   return (
     <div className="space-y-5 max-w-[1600px] mx-auto pb-10 px-0.5">
@@ -64,8 +111,19 @@ const CoachDashboard = () => {
           <Link to="/coach/schedule" className="text-[#CE2029] text-[9px] font-black tracking-widest uppercase hover:underline">Calendar</Link>
         </div>
 
+        {loadError ? (
+          <p className="text-xs text-red-600 font-medium px-1.5">{loadError}</p>
+        ) : null}
+
         <div className="space-y-2.5">
-          {mockSchedule.map((session, idx) => (
+          {!sessions.length && !loadError ? (
+            <p className={`text-xs font-medium px-2 py-6 text-center ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+              {isApiConfigured() && getAuthToken()
+                ? 'No coaching batches assigned yet.'
+                : 'Sign in as a coach with the API configured to load your batches.'}
+            </p>
+          ) : null}
+          {sessions.map((session, idx) => (
             <motion.div
               key={session.id}
               initial={{ opacity: 0, x: -5 }}
@@ -87,7 +145,7 @@ const CoachDashboard = () => {
                     isDark ? 'bg-white/5 text-white/50' : 'bg-slate-50 text-slate-400'
                   }`}>
                     <Clock size={10} className="text-[#CE2029]" />
-                    {session.time.split(' - ')[0]}
+                    {(session.time || '—').split(' - ')[0] || session.time}
                   </div>
                   <div className={`px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest ${
                     session.type === 'Online' 
@@ -134,10 +192,11 @@ const CoachDashboard = () => {
                       <ClipboardCheck size={12} /> Attendance
                     </Link>
                     <Link 
-                      to="/coach/students"
+                      to={`/coach/batches/${session.id}`}
                       className={`flex items-center justify-center h-[34px] w-[34px] rounded-lg border transition-all active:scale-95 ${
                         isDark ? 'bg-white/5 border-white/5 text-white/30 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-[#CE2029] hover:text-[#CE2029]'
                       }`}
+                      title="Batch details"
                     >
                       <ChevronRight size={14} />
                     </Link>

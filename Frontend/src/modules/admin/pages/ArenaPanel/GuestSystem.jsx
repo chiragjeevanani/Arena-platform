@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, UserCheck, Search, Filter, Shield, MoreVertical, Plus, CheckCircle2, XCircle } from 'lucide-react';
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const GUESTS = [
   { id: 1, name: 'Amit Kumar', phone: '9876543210', court: 'Court 1', time: '05:00 PM - 06:00 PM', status: 'Checked-in' },
@@ -15,6 +16,9 @@ const GuestSystem = () => {
 
   return (
     <div className="space-y-6">
+      <ArenaPanelDemoBanner>
+        Guest check-in is a prototype screen; guest records are local-only until wired to arena-admin APIs.
+      </ArenaPanelDemoBanner>
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-black tracking-tight text-[#36454F]">Guest Check-in System</h2>

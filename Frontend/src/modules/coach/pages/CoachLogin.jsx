@@ -5,6 +5,8 @@ import { Email, Lock, Visibility, VisibilityOff, Login as LoginIcon } from '@mui
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { loginRequest } from '../../../services/authApi';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 import Logo from '../../../assets/Logo (3).png';
 
@@ -14,35 +16,53 @@ const CoachLogin = () => {
   const [email, setEmail] = useState('coach@ammarena.com');
   const [password, setPassword] = useState('password123');
   const [emailError, setEmailError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
     setIsLoading(true);
-    
-    // Email Validation Check
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setEmailError('Email is required');
       setIsLoading(false);
       return;
-    } else if (!emailRegex.test(email)) {
+    }
+    if (!emailRegex.test(email)) {
       setEmailError('Please enter a valid email address');
       setIsLoading(false);
       return;
     }
-    
+
     setEmailError('');
 
-    // Simulate API delay
+    if (isApiConfigured()) {
+      try {
+        const data = await loginRequest(email, password);
+        if (data.user?.role !== 'COACH') {
+          setSubmitError('This account is not registered as a coach.');
+          return;
+        }
+        login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+        navigate('/coach');
+      } catch (err) {
+        setSubmitError(err.message || 'Login failed');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     setTimeout(() => {
       setIsLoading(false);
-      login({ 
+      login({
         role: 'COACH',
         name: 'Coach Vikram Singh',
-        email: email
+        email,
       });
       navigate('/coach');
     }, 1200);
@@ -79,6 +99,9 @@ const CoachLogin = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {submitError && (
+              <p className="text-xs text-red-600 font-semibold text-center">{submitError}</p>
+            )}
             <TextField
               fullWidth
               size="small"

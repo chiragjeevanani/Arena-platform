@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -7,14 +7,11 @@ import {
   Calendar, TrendingUp, BarChart3, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listCoachStudentsAll } from '../../../services/coachApi';
 
-const INITIAL_STUDENTS = [
-  { id: 'STU-001', name: 'Arjun Mehta', batch: 'Morning Elite', level: 'Advanced', attendance: '95%', rating: 4.8, status: 'Active' },
-  { id: 'STU-002', name: 'Sanya Gupta', batch: 'Morning Elite', level: 'Advanced', attendance: '88%', rating: 4.5, status: 'Active' },
-  { id: 'STU-003', name: 'Kabir Singh', batch: 'Junior Stars', level: 'Beginner', attendance: '92%', rating: 4.2, status: 'Active' },
-  { id: 'STU-004', name: 'Rohan Verma', batch: 'Junior Stars', level: 'Beginner', attendance: '75%', rating: 3.9, status: 'Medical' },
-  { id: 'STU-005', name: 'Ananya Rao', batch: 'Pro Analytics', level: 'Intermediate', attendance: '100%', rating: 4.9, status: 'Active' },
-];
+const INITIAL_STUDENTS = [];
 
 const MyStudents = () => {
   const { isDark } = useTheme();
@@ -33,15 +30,47 @@ const MyStudents = () => {
     status: 'All'
   });
 
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await listCoachStudentsAll();
+        if (cancelled) return;
+        const rows = data.students || [];
+        setStudents(
+          rows.map((s) => ({
+            id: s.userId || s.id,
+            name: s.name || 'Student',
+            batch: s.batch || '—',
+            level: s.level || '—',
+            status: s.status || 'Active',
+            email: s.email,
+            batchId: s.batchId,
+          }))
+        );
+      } catch {
+        if (!cancelled) setStudents([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
   };
 
   const deleteStudent = (id) => {
-    const student = students.find(s => s.id === id);
-    setStudents(prev => prev.filter(s => s.id !== id));
-    showToast(`Student ${student.name} removed from roster`);
+    if (isApiConfigured() && getAuthToken()) {
+      showToast('Enrollments are managed in the admin or customer app.');
+      return;
+    }
+    const student = students.find((s) => s.id === id);
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+    showToast(`Student ${student?.name || ''} removed from roster`);
   };
 
   const filteredStudents = students.filter(s => {
@@ -54,7 +83,7 @@ const MyStudents = () => {
     return matchesSearch && matchesBatch && matchesLevel && matchesStatus;
   });
 
-  const batches = ['All', ...new Set(INITIAL_STUDENTS.map(s => s.batch))];
+  const batches = ['All', ...new Set(students.map((s) => s.batch))];
   const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
   const statuses = ['All', 'Active', 'Medical'];
 
@@ -482,7 +511,11 @@ const MyStudents = () => {
                       <GraduationCap size={12} /> Profile
                    </button>
                    <button 
-                    onClick={() => navigate(`/coach/students/${student.id}/performance`)}
+                    onClick={() =>
+                      navigate(
+                        `/coach/students/${student.id}/performance?batchId=${encodeURIComponent(student.batchId || '')}`
+                      )
+                    }
                     className={`py-1.5 rounded-lg flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider transition-all border ${
                       isDark ? 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
                     }`}

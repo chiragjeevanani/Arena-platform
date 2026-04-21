@@ -1,18 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Receipt, Search, Download, Filter, MoreHorizontal, Clock, ArrowUpRight,
   Eye, CalendarRange, RefreshCw, Trash2, X, CheckCircle, AlertTriangle, Calendar, MapPin,
-  Banknote, Wallet, CreditCard, User, Target
+  Banknote, Wallet, CreditCard, User, Target, UserPlus
 } from 'lucide-react';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listAdminBookings, updateAdminBooking } from '../../../services/adminBookingsApi';
+import { listMyBookings, updateMyBooking } from '../../../services/arenaStaffApi';
+import { mapAdminBookingToLedgerRow } from '../../../utils/adminBookingAdapter';
+import { useArenaPanel } from '../context/ArenaPanelContext';
+import WalkInBookingModal from '../components/WalkInBookingModal';
 
-const mockBookings = [
-  { id: 'BK-1001', customer: 'Amit Sharma', court: 'Court 1', arena: 'Amm Sports Arena', date: '2026-03-12', time: '07:00 AM', amount: 4.500, status: 'Completed', payment: 'Paid', paymentMethod: 'Online', statusBg: '#76A87A', statusText: '#ffffff' },
-  { id: 'BK-1002', customer: 'Rajesh Kumar', court: 'Court 3', arena: 'Amm Sports Arena', date: '2026-03-12', time: '09:00 AM', amount: 3.500, status: 'Upcoming', payment: 'Pending', paymentMethod: 'Online', statusBg: '#E88E3E', statusText: '#ffffff' },
-  { id: 'BK-1003', customer: 'Sanya Mirza', court: 'Court 2', arena: 'Amm Sports Arena', date: '2026-03-12', time: '04:00 PM', amount: 5.000, status: 'Upcoming', payment: 'Paid', paymentMethod: 'Online', statusBg: '#E88E3E', statusText: '#ffffff' },
-  { id: 'BK-1004', customer: 'Vikram Singh', court: 'Court 1', arena: 'Amm Sports Arena', date: '2026-03-12', time: '05:00 PM', amount: 4.000, status: 'Cancelled', payment: 'Refunded', paymentMethod: 'Online', statusBg: '#ff6b6b', statusText: '#ffffff' },
-  { id: 'BK-1005', customer: 'Neha Malik', court: 'Court 4', arena: 'Amm Sports Arena', date: '2026-03-13', time: '06:00 AM', amount: 4.500, status: 'Upcoming', payment: 'Paid', paymentMethod: 'Cash', statusBg: '#E88E3E', statusText: '#ffffff' },
-];
+const mockBookings = [];
 
 // ── View Details Modal ──────────────────────────────────────────
 const ViewDetailsModal = ({ booking, onClose }) => (
@@ -133,7 +136,10 @@ const CancelModal = ({ booking, onClose, onConfirm }) => {
   const [done, setDone] = useState(false);
   const handleConfirm = () => {
     setDone(true);
-    setTimeout(() => { onConfirm(booking.id); onClose(); }, 1200);
+    setTimeout(() => {
+      onConfirm(booking.bookingId ?? booking.id);
+      onClose();
+    }, 1200);
   };
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
@@ -165,7 +171,10 @@ const CashPaymentModal = ({ onClose, onConfirm }) => {
   const handleConfirm = () => {
     if (!form.customer.trim() || !form.amount) return;
     setDone(true);
-    setTimeout(() => { onConfirm(form); onClose(); }, 1200);
+    setTimeout(() => {
+      onConfirm(form);
+      onClose();
+    }, 1200);
   };
   const timeSlots = ['06:00 AM','07:00 AM','08:00 AM','09:00 AM','10:00 AM','11:00 AM','12:00 PM','01:00 PM','02:00 PM','03:00 PM','04:00 PM','05:00 PM','06:00 PM','07:00 PM','08:00 PM','09:00 PM','10:00 PM'];
   return (
@@ -250,9 +259,103 @@ const CashPaymentModal = ({ onClose, onConfirm }) => {
   );
 };
 
+// ── Action Menu with Portal ──────────────────────────────────────
+const ActionMenu = ({ booking, onAction }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const updateCoords = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const isBottomHalf = rect.top > window.innerHeight / 2;
+      setCoords({
+        top: isBottomHalf ? rect.top : rect.bottom,
+        left: rect.right,
+        isBottomHalf
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updateCoords();
+      window.addEventListener('scroll', updateCoords);
+      window.addEventListener('resize', updateCoords);
+    }
+    return () => {
+      window.removeEventListener('scroll', updateCoords);
+      window.removeEventListener('resize', updateCoords);
+    };
+  }, [isOpen]);
+
+  const menuContent = (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-[140]" onClick={() => setIsOpen(false)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: coords.isBottomHalf ? 10 : -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: coords.isBottomHalf ? 10 : -10 }}
+            style={{
+              position: 'fixed',
+              top: coords.isBottomHalf ? 'auto' : coords.top + 8,
+              bottom: coords.isBottomHalf ? (window.innerHeight - coords.top) + 8 : 'auto',
+              left: coords.left - 192, // w-48 = 192px
+              width: '192px',
+            }}
+            className="z-[150] p-1.5 rounded-xl border border-slate-200 bg-white shadow-2xl"
+          >
+            <div className="space-y-1">
+              {[
+                { id: 'view', label: 'View Details', icon: Eye, color: '#CE2029' },
+                { id: 'reschedule', label: 'Reschedule', icon: CalendarRange, color: '#CE2029', disabled: booking.status === 'Cancelled' || booking.status === 'Completed' },
+                { id: 'refund', label: 'Process Refund', icon: RefreshCw, color: '#E88E3E', disabled: booking.payment === 'Refunded' || booking.payment === 'Pending Refund' },
+                { id: 'cancel', label: 'Cancel Booking', icon: Trash2, color: '#FF4B4B', disabled: booking.status === 'Cancelled' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  disabled={opt.disabled}
+                  onClick={() => { onAction(opt.id); setIsOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors ${opt.disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+                >
+                  <div className="p-1.5 rounded-md border" style={{ backgroundColor: `${opt.color}15`, borderColor: `${opt.color}30`, color: opt.color }}>
+                    <opt.icon size={12} />
+                  </div>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+
+  return (
+    <div className="inline-block">
+      <button
+        ref={buttonRef}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`p-2 rounded-lg border transition-all ${isOpen ? 'bg-slate-100 border-slate-300 text-[#CE2029]' : 'bg-white border-slate-200 text-slate-400 hover:text-[#CE2029] hover:border-slate-300 shadow-sm'}`}
+      >
+        <MoreHorizontal size={16} />
+      </button>
+      {typeof document !== 'undefined' && createPortal(menuContent, document.body)}
+    </div>
+  );
+};
+
 // ── Main Component ──────────────────────────────────────────────
 const Bookings = () => {
+  const location = useLocation();
+  const isArenaPanel = location.pathname.startsWith('/arena');
+  const arenaPanelContext = isArenaPanel ? useArenaPanel() : null;
+  const currentArenaId = arenaPanelContext?.arenaId || null;
+
   const [bookings, setBookings] = useState(mockBookings);
+  const [loadError, setLoadError] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
@@ -263,43 +366,101 @@ const Bookings = () => {
   const [rescheduleModal, setRescheduleModal] = useState(null);
   const [refundModal, setRefundModal] = useState(null);
   const [cancelModal, setCancelModal] = useState(null);
-  const [cashModal, setCashModal] = useState(false);
+  const [walkInModal, setWalkInModal] = useState(false);
 
-  const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = booking.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.id.toLowerCase().includes(searchTerm.toLowerCase());
+  const refreshFromApi = useCallback(async () => {
+    if (!isApiConfigured() || !getAuthToken()) return;
+    setLoadError('');
+    try {
+      const fetchFn = isArenaPanel ? listMyBookings : listAdminBookings;
+      const params = isArenaPanel ? { arenaId: currentArenaId } : {};
+      
+      const data = await fetchFn(params);
+      const rows = (data.bookings || []).map(mapAdminBookingToLedgerRow);
+      setBookings(rows);
+    } catch (e) {
+      setLoadError(e.message || 'Failed to load bookings');
+      setBookings([]);
+    }
+  }, [isArenaPanel, currentArenaId]);
+
+  useEffect(() => {
+    refreshFromApi();
+  }, [refreshFromApi]);
+
+  const filteredBookings = bookings.filter((booking) => {
+    const q = searchTerm.toLowerCase();
+    const matchesSearch =
+      booking.customer.toLowerCase().includes(q) ||
+      booking.id.toLowerCase().includes(q) ||
+      (booking.bookingId && String(booking.bookingId).toLowerCase().includes(q));
     const matchesStatus = statusFilter === 'All' || booking.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const handleReschedule = (id, newDate) => {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, date: newDate } : b));
+  const handleReschedule = async (id, newDate) => {
+    // Both 'id' (display) and 'bookingId' (mongo) are handled by adapter
+    // but actual API expects the Mongo ID.
+    const booking = bookings.find(b => b.id === id);
+    const mongoId = booking?.bookingId;
+
+    if (isApiConfigured() && getAuthToken() && mongoId) {
+      try {
+        const updateFn = isArenaPanel ? updateMyBooking : updateAdminBooking;
+        await updateFn(mongoId, { date: newDate });
+        await refreshFromApi();
+        return;
+      } catch (e) {
+        setLoadError(e.message || 'Reschedule failed');
+      }
+    }
+    // Fallback for mock/local data
+    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, date: newDate } : b)));
   };
 
   const handleRefund = (id) => {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, payment: 'Refunded', status: 'Cancelled', statusBg: '#ff6b6b' } : b));
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === id
+          ? { ...b, payment: 'Refunded', status: 'Cancelled', statusBg: '#ff6b6b' }
+          : b
+      )
+    );
   };
 
-  const handleCashPayment = (form) => {
-    const newBooking = {
-      id: `BK-${1000 + bookings.length + 1}`,
-      customer: form.customer,
-      court: form.court,
-      arena: 'Amm Sports Arena',
-      date: form.date,
-      time: form.time,
-      amount: parseFloat(form.amount) || 0,
-      status: 'Completed',
-      payment: 'Paid',
-      paymentMethod: 'Cash',
-      statusBg: '#76A87A',
-      statusText: '#ffffff',
-    };
-    setBookings(prev => [newBooking, ...prev]);
+  const handleWalkinSuccess = (booking) => {
+    // Refresh from API to show the new walk-in booking in the list
+    refreshFromApi();
   };
 
-  const handleCancel = (id) => {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'Cancelled', statusBg: '#ff6b6b', payment: b.payment === 'Paid' ? 'Pending Refund' : b.payment } : b));
+  const handleCancel = async (bookingIdOrDisplayId) => {
+    const booking = bookings.find(b => b.id === bookingIdOrDisplayId || b.bookingId === bookingIdOrDisplayId);
+    const mongoId = booking?.bookingId;
+
+    if (isApiConfigured() && getAuthToken() && mongoId) {
+      try {
+        const updateFn = isArenaPanel ? updateMyBooking : updateAdminBooking;
+        await updateFn(mongoId, { status: 'cancelled' });
+        await refreshFromApi();
+        return;
+      } catch (e) {
+        setLoadError(e.message || 'Cancel failed');
+      }
+    }
+
+    // Fallback for mock/local data
+    setBookings((prev) =>
+      prev.map((b) =>
+        (b.bookingId === bookingIdOrDisplayId || b.id === bookingIdOrDisplayId)
+          ? {
+              ...b,
+              status: 'Cancelled',
+              statusBg: '#ff6b6b',
+              payment: b.payment === 'Paid' ? 'Pending Refund' : b.payment,
+            }
+          : b
+      )
+    );
   };
 
   const exportToCSV = () => {
@@ -326,7 +487,7 @@ const Bookings = () => {
         {rescheduleModal && <RescheduleModal booking={rescheduleModal} onClose={() => setRescheduleModal(null)} onConfirm={handleReschedule} />}
         {refundModal && <RefundModal booking={refundModal} onClose={() => setRefundModal(null)} onConfirm={handleRefund} />}
         {cancelModal && <CancelModal booking={cancelModal} onClose={() => setCancelModal(null)} onConfirm={handleCancel} />}
-        {cashModal && <CashPaymentModal onClose={() => setCashModal(false)} onConfirm={handleCashPayment} />}
+        {walkInModal && <WalkInBookingModal onClose={() => setWalkInModal(false)} onSuccess={handleWalkinSuccess} />}
       </AnimatePresence>
 
       {/* Filter Drawer */}
@@ -364,10 +525,15 @@ const Bookings = () => {
               <Receipt className="text-[#CE2029]" size={24} /> Bookings Ledger
             </h2>
             <p className="text-xs md:text-sm mt-1 font-medium text-slate-500">Manage all facility reservations and transactions.</p>
+            {loadError ? (
+              <p className="text-xs text-red-600 font-semibold mt-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2 inline-block">
+                {loadError}
+              </p>
+            ) : null}
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setCashModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all shadow-md shadow-green-600/20 font-bold text-xs uppercase tracking-wider">
-              <Banknote size={14} /> Record Cash Payment
+            <button onClick={() => setWalkInModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#CE2029] text-white hover:brightness-110 transition-all shadow-md shadow-[#CE2029]/20 font-bold text-xs uppercase tracking-wider">
+              <UserPlus size={14} /> Walk-In Booking
             </button>
             <button onClick={exportToCSV} className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-[#CE2029] hover:border-[#CE2029] transition-all shadow-sm font-bold text-xs uppercase tracking-wider">
               <Download size={14} /> Export CSV
@@ -409,7 +575,7 @@ const Bookings = () => {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:border-[#CE2029]/40">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 transition-all hover:border-[#CE2029]/40">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap min-w-[900px]">
               <thead className="bg-[#F8F9FA] text-[#36454F] font-semibold border-b border-slate-100">
@@ -460,38 +626,12 @@ const Bookings = () => {
                       <span className="inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-md" style={{ backgroundColor: booking.statusBg, color: booking.statusText }}>{booking.status}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="relative inline-block text-left">
-                        <button onClick={() => setActiveMenu(activeMenu === booking.id ? null : booking.id)}
-                          className={`p-2 rounded-lg border transition-all ${activeMenu === booking.id ? 'bg-slate-100 border-slate-300 text-[#CE2029]' : 'bg-white border-slate-200 text-slate-400 hover:text-[#CE2029] hover:border-slate-300 shadow-sm'}`}>
-                          <MoreHorizontal size={16} />
-                        </button>
-                        <AnimatePresence>
-                          {activeMenu === booking.id && (
-                            <>
-                              <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
-                              <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                className="absolute right-0 top-full mt-2 w-48 p-1.5 rounded-xl border border-slate-200 bg-white shadow-xl z-20">
-                                <div className="space-y-1">
-                                  {[
-                                    { label: 'View Details', icon: Eye, color: '#CE2029', action: () => { setViewModal(booking); setActiveMenu(null); } },
-                                    { label: 'Reschedule', icon: CalendarRange, color: '#CE2029', action: () => { setRescheduleModal(booking); setActiveMenu(null); }, disabled: booking.status === 'Cancelled' || booking.status === 'Completed' },
-                                    { label: 'Process Refund', icon: RefreshCw, color: '#E88E3E', action: () => { setRefundModal(booking); setActiveMenu(null); }, disabled: booking.payment === 'Refunded' || booking.payment === 'Pending Refund' },
-                                    { label: 'Cancel Booking', icon: Trash2, color: '#FF4B4B', action: () => { setCancelModal(booking); setActiveMenu(null); }, disabled: booking.status === 'Cancelled' },
-                                  ].map((opt, i) => (
-                                    <button key={i} onClick={opt.action} disabled={opt.disabled}
-                                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#36454F] transition-colors ${opt.disabled ? 'opacity-30 cursor-not-allowed' : ''}`}>
-                                      <div className="p-1.5 rounded-md border" style={{ backgroundColor: `${opt.color}15`, borderColor: `${opt.color}30`, color: opt.color }}>
-                                        <opt.icon size={12} />
-                                      </div>
-                                      {opt.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            </>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                      <ActionMenu booking={booking} onAction={(action) => {
+                        if (action === 'view') setViewModal(booking);
+                        if (action === 'reschedule') setRescheduleModal(booking);
+                        if (action === 'refund') setRefundModal(booking);
+                        if (action === 'cancel') setCancelModal(booking);
+                      }} />
                     </td>
                   </motion.tr>
                 ))}

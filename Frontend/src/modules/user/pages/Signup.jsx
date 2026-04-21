@@ -4,40 +4,74 @@ import { TextField, Button, InputAdornment, IconButton, Checkbox, FormControlLab
 import { Person, Email, Lock, Phone, Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
+import { isApiConfigured } from '../../../services/config';
+import { registerRequest } from '../../../services/authApi';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
-
 
 const Signup = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Phone Validation Check
-    if (!phone) {
-      setPhoneError('Phone number is required');
-      return;
-    } else if (phone.length !== 10) {
-      setPhoneError('Phone number must be exactly 10 digits');
-      return;
-    }
+    setSubmitError('');
 
-    // Email Validation Check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setEmailError('Email is required');
       return;
-    } else if (!emailRegex.test(email)) {
+    }
+    if (!emailRegex.test(email)) {
       setEmailError('Please enter a valid email address');
       return;
     }
-    
-    setEmailError(''); // Clear error on success
+    setEmailError('');
+
+    if (isApiConfigured()) {
+      if (!name.trim()) {
+        setSubmitError('Full name is required');
+        return;
+      }
+      if (!password || password.length < 8) {
+        setSubmitError('Password must be at least 8 characters');
+        return;
+      }
+      setLoading(true);
+      try {
+        await registerRequest({
+          email,
+          password,
+          name: name.trim(),
+        });
+        navigate('/login', {
+          replace: true,
+          state: { registeredEmail: email, message: 'Account created. Please sign in.' },
+        });
+      } catch (err) {
+        setSubmitError(err.message || 'Sign up failed');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (!phone) {
+      setPhoneError('Phone number is required');
+      return;
+    }
+    if (phone.length !== 10) {
+      setPhoneError('Phone number must be exactly 10 digits');
+      return;
+    }
+
     setPhoneError('');
     navigate('/otp-verify');
   };
@@ -68,12 +102,20 @@ const Signup = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {submitError && (
+              <p className="text-xs text-red-600 font-semibold text-center">{submitError}</p>
+            )}
             <div className="grid grid-cols-1 gap-4">
               <TextField
                 fullWidth
                 size="small"
                 label="Full Name"
                 variant="outlined"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (submitError) setSubmitError('');
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -180,6 +222,11 @@ const Signup = () => {
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
                 variant="outlined"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (submitError) setSubmitError('');
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -219,6 +266,7 @@ const Signup = () => {
               type="submit"
               variant="contained"
               size="large"
+              disabled={loading}
               className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-3 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all"
               sx={{
                 borderRadius: '14px',
@@ -229,7 +277,7 @@ const Signup = () => {
                 backgroundColor: '#CE2029'
               }}
             >
-              Sign Up
+              {loading ? 'Creating account…' : 'Sign Up'}
             </Button>
           </form>
 

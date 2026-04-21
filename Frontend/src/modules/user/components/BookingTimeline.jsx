@@ -3,11 +3,21 @@ import { Calendar, Clock, MapPin, ChevronRight, X, AlertTriangle, RefreshCw, Che
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { shouldCancelBookingViaApi, shouldCancelEnrollmentViaApi } from '../../../utils/bookingCancelPolicy';
+import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 
 /**
  * BookingTimeline — Timeline-style booking card with cancel & reschedule
  */
-const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) => {
+const BookingTimelineCard = ({
+  booking: initialBooking,
+  index = 0,
+  onCancel,
+  onServerCancelBooking,
+  onServerCancelEnrollment,
+}) => {
   const [booking, setBooking] = useState(initialBooking);
   const [countdown, setCountdown] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -18,21 +28,106 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
   const { isDark } = useTheme();
   const navigate = useNavigate();
 
-  // Deterministic countdown based on index
+  // Real-time countdown based on booking date/time
   useEffect(() => {
-    const baseHours = ((index + 1) * 3) % 24 || 1;
-    const baseMins = ((index * 7) + 15) % 60;
-    setCountdown(`${baseHours}h ${baseMins}m`);
-  }, [index]);
+    const updateCountdown = () => {
+      if (!booking.date || !booking.slot) return;
+      
+      try {
+        // Robust parsing for slot formats like "06:00 PM", "15:00 - 16:00", or "15:00-16:00"
+        const fullSlot = booking.slot.trim();
+        // Extract the start time part (everything before the first dash or space-dash)
+        const startTimeStr = fullSlot.split(/[–-]/)[0].trim(); 
+        
+        const ampmMatch = startTimeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        const militaryMatch = startTimeStr.match(/(\d+):(\d+)/);
+
+        let hours = 0;
+        let mins = 0;
+
+        if (ampmMatch) {
+          hours = parseInt(ampmMatch[1], 10);
+          mins = parseInt(ampmMatch[2], 10);
+          const period = ampmMatch[3].toUpperCase();
+          if (period === 'PM' && hours < 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+        } else if (militaryMatch) {
+          hours = parseInt(militaryMatch[1], 10);
+          mins = parseInt(militaryMatch[2], 10);
+        } else {
+          setCountdown('--');
+          return;
+        }
+        
+        // Use individual year, month, day to avoid TZ issues
+        const [y, m, d] = booking.date.split('-').map(Number);
+        const bookingDate = new Date(y, m - 1, d, hours, mins, 0);
+        const now = new Date();
+        const diff = bookingDate - now;
+        
+        if (diff <= 0) {
+          // If the booking is more than 1 hour old, hide countdown
+          if (Math.abs(diff) > 3600000) {
+             setCountdown('Ongoing/Started');
+          } else {
+             setCountdown('Started');
+          }
+          return;
+        }
+        
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const minPart = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        if (h > 0) {
+          setCountdown(`${h}h ${minPart}m`);
+        } else {
+          setCountdown(`${minPart}m`);
+        }
+      } catch (e) {
+        console.error('Countdown Error:', e);
+        setCountdown('--');
+      }
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, [booking.date, booking.slot]);
 
   const handleCancel = () => {
-    setCancelDone(true);
-    setTimeout(() => {
-      setShowCancelModal(false);
-      setBooking(prev => ({ ...prev, status: 'Cancelled' }));
-      setCancelDone(false);
-      if (onCancel) onCancel(booking.id);
-    }, 1200);
+    const run = async () => {
+      if (
+        onServerCancelEnrollment &&
+        shouldCancelEnrollmentViaApi(booking, isApiConfigured(), Boolean(getAuthToken()))
+      ) {
+        try {
+          await onServerCancelEnrollment(booking.id);
+        } catch (e) {
+          alert(e.message || 'Could not cancel enrollment');
+          setShowCancelModal(false);
+          return;
+        }
+      } else if (
+        onServerCancelBooking &&
+        shouldCancelBookingViaApi(booking, isApiConfigured(), Boolean(getAuthToken()))
+      ) {
+        try {
+          await onServerCancelBooking(booking.id);
+        } catch (e) {
+          alert(e.message || 'Could not cancel booking');
+          setShowCancelModal(false);
+          return;
+        }
+      }
+      setCancelDone(true);
+      setTimeout(() => {
+        setShowCancelModal(false);
+        setBooking((prev) => ({ ...prev, status: 'Cancelled' }));
+        setCancelDone(false);
+        if (onCancel) onCancel(booking.id);
+      }, 1200);
+    };
+    void run();
   };
 
   const handleReschedule = () => {
@@ -80,9 +175,10 @@ const BookingTimelineCard = ({ booking: initialBooking, index = 0, onCancel }) =
             {/* Arena Image */}
             <div className="w-[125px] relative overflow-hidden flex-shrink-0">
               <img
-                src={booking.arenaImage}
+                src={booking.arenaImage || ArenaProfile}
                 alt={booking.arenaName}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                onError={(e) => { e.target.src = ArenaProfile; }}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent" />
               {/* Prime badge on image corner */}

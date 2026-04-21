@@ -6,24 +6,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
-const INITIAL_CATEGORIES = [
-  { 
-    id: 1, 
-    title: 'BADMINTON ARENA', 
-    subtitle: 'CONNECT. CELEBRATE. PLAY', 
-    imageUrl: 'https://images.unsplash.com/photo-1626225967045-944062402170?q=80&w=800&auto=format&fit=crop',
-    active: true,
-    accentColor: '#CE2029'
-  },
-  { 
-    id: 2, 
-    title: 'TABLE TENNIS ARENA', 
-    subtitle: 'CONNECT. CELEBRATE. PLAY', 
-    imageUrl: 'https://images.unsplash.com/photo-1534158914592-062992fbe900?q=80&w=800&auto=format&fit=crop',
-    active: true,
-    accentColor: '#36454F'
-  },
-];
+const INITIAL_CATEGORIES = [];
 
 const BookingSelectorMgmt = () => {
   const { isDark } = useTheme();
@@ -79,6 +62,9 @@ const BookingSelectorMgmt = () => {
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto relative">
+      <div className={`rounded-xl border px-4 py-3 text-xs font-semibold ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+        Demo UI: booking selector tiles are not persisted server-side.
+      </div>
       {/* Toast */}
       <AnimatePresence>
         {toast && (
@@ -126,6 +112,11 @@ const BookingSelectorMgmt = () => {
 
       {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {filtered.length === 0 ? (
+          <div className={`col-span-full rounded-2xl border px-6 py-12 text-center text-xs font-bold uppercase tracking-widest ${isDark ? 'border-white/10 bg-white/[0.02] text-white/40' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+            No booking categories yet. Add one to configure the public booking selector.
+          </div>
+        ) : (
         <AnimatePresence mode="popLayout">
           {filtered.map((cat) => (
             <motion.div
@@ -189,6 +180,7 @@ const BookingSelectorMgmt = () => {
             </motion.div>
           ))}
         </AnimatePresence>
+        )}
       </div>
 
       {/* Modal */}

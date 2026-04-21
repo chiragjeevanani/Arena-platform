@@ -7,12 +7,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 
-const INITIAL_RULES = [
-  { id: 1, name: 'Base Price – Weekdays', type: 'base', applies: 'All Courts', time: 'Mon–Fri, 06:00–22:00', price: 4.00, active: true },
-  { id: 2, name: 'Weekend Surge', type: 'weekend', applies: 'All Courts', time: 'Sat–Sun, All Day', price: 5.50, active: true },
-  { id: 3, name: 'Peak Hour – Evening', type: 'peak', applies: 'All Courts', time: 'Mon–Fri, 17:00–20:00', price: 6.50, active: true },
-  { id: 4, name: 'Off-Peak Morning', type: 'offpeak', applies: 'All Courts', time: 'Mon–Fri, 06:00–09:00', price: 3.00, active: false },
-];
+const INITIAL_RULES = [];
 
 const TYPE_META = {
   base: { label: 'Base', color: '#36454F', icon: Tag },
@@ -88,6 +83,9 @@ const PricingManagement = () => {
 
   return (
     <div className="space-y-4 max-w-[1600px] mx-auto relative">
+      <div className={`rounded-xl border px-4 py-3 text-xs font-semibold ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+        Demo UI: pricing rules here are local-only. Court rates from arena/court APIs apply to bookings.
+      </div>
 
       {/* Toast */}
       <AnimatePresence>

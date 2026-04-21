@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Megaphone, Send, Users, Calendar, Clock, CheckCircle2, AlertCircle, Info, Bookmark } from 'lucide-react';
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const Broadcaster = () => {
   const [message, setMessage] = useState('');
@@ -15,6 +16,11 @@ const Broadcaster = () => {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="xl:col-span-2">
+        <ArenaPanelDemoBanner>
+          Arena broadcasts are a prototype screen; sending is simulated until wired to arena-admin APIs.
+        </ArenaPanelDemoBanner>
+      </div>
       {/* 1. Compose Notice */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-8">
         <div>

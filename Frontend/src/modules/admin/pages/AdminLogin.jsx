@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Shield } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { loginRequest } from '../../../services/authApi';
 import Logo from '../../../assets/Logo (3).png';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 
@@ -13,36 +15,47 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const FIXED_CREDENTIALS = {
-    SUPER_ADMIN: { email: 'superadmin@arena.com', password: 'password123' },
-    ARENA_ADMIN: { email: 'manager@elitehub.com', password: 'password123' }
-  };
 
   const [formData, setFormData] = useState({
-    email: FIXED_CREDENTIALS.ARENA_ADMIN.email,
-    password: FIXED_CREDENTIALS.ARENA_ADMIN.password,
-    role: 'ARENA_ADMIN' 
+    email: '',
+    password: '',
+    /** Used only when VITE_API_URL is unset (mock demo). */
+    role: 'SUPER_ADMIN',
   });
 
-  const handleRoleChange = (roleId) => {
-    setFormData({
-      role: roleId,
-      email: FIXED_CREDENTIALS[roleId].email,
-      password: FIXED_CREDENTIALS[roleId].password
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
+    if (isApiConfigured()) {
+      try {
+        const data = await loginRequest(formData.email, formData.password);
+        const role = data.user?.role;
+        const adminRoles = ['ARENA_ADMIN', 'RECEPTIONIST', 'SUPER_ADMIN'];
+        if (!adminRoles.includes(role)) {
+          setError('This account is not an admin user.');
+          return;
+        }
+        login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+        if (role === 'ARENA_ADMIN' || role === 'RECEPTIONIST') {
+          navigate('/arena');
+        } else {
+          navigate('/admin');
+        }
+      } catch (err) {
+        setError(err.message || 'Login failed');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     setTimeout(() => {
       setIsLoading(false);
-      login({ 
+      login({
         role: formData.role,
-        assignedArena: formData.role === 'ARENA_ADMIN' ? 'arena-1' : 'all' 
+        assignedArena: formData.role === 'ARENA_ADMIN' ? 'arena-1' : 'all',
       });
       if (formData.role === 'ARENA_ADMIN') {
         navigate('/arena');
@@ -51,11 +64,6 @@ const AdminLogin = () => {
       }
     }, 1200);
   };
-
-  const roles = [
-    { id: 'ARENA_ADMIN', label: 'Arena Manager' },
-    { id: 'SUPER_ADMIN', label: 'System Admin' },
-  ];
 
   const inputCls = "w-full bg-slate-50/80 border border-slate-200 rounded-2xl py-3 pl-11 pr-4 text-sm font-bold text-[#36454F] placeholder:text-slate-400 outline-none transition-all focus:bg-white focus:border-[#CE2029]/50";
 
@@ -89,6 +97,9 @@ const AdminLogin = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <p className="text-xs text-red-600 font-semibold text-center">{error}</p>
+            )}
 
             {/* Email */}
             <div className="group">

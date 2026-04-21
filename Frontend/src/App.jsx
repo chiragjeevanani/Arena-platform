@@ -1,93 +1,110 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import { lazy, Suspense } from 'react';
+import { Box, CircularProgress } from '@mui/material';
 
-// Layouts
+// Layouts - Keep these static as they are wraps
 import UserLayout from './layouts/UserLayout';
 import AdminLayout from './layouts/AdminLayout';
 import CoachLayout from './layouts/CoachLayout';
 import ArenaLayout from './layouts/ArenaLayout';
 
+// Loading Fallback
+const PageLoader = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+    <CircularProgress sx={{ color: '#CE2029' }} />
+  </Box>
+);
+
 // Auth Pages
-import Login from './modules/user/pages/Login';
-import Signup from './modules/user/pages/Signup';
-import OTPVerification from './modules/user/pages/OTPVerification';
+const Login = lazy(() => import('./modules/user/pages/Login'));
+const Signup = lazy(() => import('./modules/user/pages/Signup'));
+const OTPVerification = lazy(() => import('./modules/user/pages/OTPVerification'));
+const ForgotPassword = lazy(() => import('./modules/user/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./modules/user/pages/ResetPassword'));
 
 // User Pages
-import UserHome from './modules/user/pages/Home';
-import ArenaListing from './modules/user/pages/ArenaListing';
-import ArenaDetails from './modules/user/pages/ArenaDetails';
-import SlotSelection from './modules/user/pages/SlotSelection';
-import BookingSummary from './modules/user/pages/BookingSummary';
-import Payment from './modules/user/pages/Payment';
-import BookingSuccess from './modules/user/pages/BookingSuccess';
-import BookingDetails from './modules/user/pages/BookingDetails';
-import Dashboard from './modules/user/pages/Dashboard';
-import Coaching from './modules/user/pages/Coaching';
-import Profile from './modules/user/pages/Profile';
-import EditProfile from './modules/user/pages/EditProfile';
-import Wallet from './modules/user/pages/Wallet';
-import Notifications from './modules/user/pages/Notifications';
-import Events from './modules/user/pages/Events';
-import EventDetail from './modules/user/pages/EventDetail';
-import Privacy from './modules/user/pages/Privacy';
-import Help from './modules/user/pages/Help';
-import Terms from './modules/user/pages/Terms';
-import CoachingSummary from './modules/user/pages/CoachingSummary';
-import MembershipPlans from './modules/user/pages/MembershipPlans';
-import MyAttendance from './modules/user/pages/MyAttendance';
+const UserHome = lazy(() => import('./modules/user/pages/Home'));
+const ArenaListing = lazy(() => import('./modules/user/pages/ArenaListing'));
+const ArenaDetails = lazy(() => import('./modules/user/pages/ArenaDetails'));
+const SlotSelection = lazy(() => import('./modules/user/pages/SlotSelection'));
+const BookingSummary = lazy(() => import('./modules/user/pages/BookingSummary'));
+const Payment = lazy(() => import('./modules/user/pages/Payment'));
+const BookingSuccess = lazy(() => import('./modules/user/pages/BookingSuccess'));
+const BookingDetails = lazy(() => import('./modules/user/pages/BookingDetails'));
+const Dashboard = lazy(() => import('./modules/user/pages/Dashboard'));
+const Coaching = lazy(() => import('./modules/user/pages/Coaching'));
+const Profile = lazy(() => import('./modules/user/pages/Profile'));
+const EditProfile = lazy(() => import('./modules/user/pages/EditProfile'));
+const Wallet = lazy(() => import('./modules/user/pages/Wallet'));
+const Notifications = lazy(() => import('./modules/user/pages/Notifications'));
+const Events = lazy(() => import('./modules/user/pages/Events'));
+const EventDetail = lazy(() => import('./modules/user/pages/EventDetail'));
+const Privacy = lazy(() => import('./modules/user/pages/Privacy'));
+const Help = lazy(() => import('./modules/user/pages/Help'));
+const Terms = lazy(() => import('./modules/user/pages/Terms'));
+const CoachingSummary = lazy(() => import('./modules/user/pages/CoachingSummary'));
+const MembershipPlans = lazy(() => import('./modules/user/pages/MembershipPlans'));
+const MyAttendance = lazy(() => import('./modules/user/pages/MyAttendance'));
 
 // Admin Pages
-import AdminDashboard from './modules/admin/pages/Dashboard';
-import RoleManagement from './modules/admin/pages/RoleManagement';
-import UserManagement from './modules/admin/pages/UserManagement';
-import ArenaManagement from './modules/admin/pages/ArenaManagement';
-import CourtManagement from './modules/admin/pages/CourtManagement';
-import SlotSchedule from './modules/admin/pages/SlotSchedule';
-import Bookings from './modules/admin/pages/Bookings';
-import CoachingAdmin from './modules/admin/pages/CoachingAdmin';
-import EventsAdmin from './modules/admin/pages/EventsAdmin';
-import Sponsorships from './modules/admin/pages/Sponsorships';
-import Inventory from './modules/admin/pages/Inventory';
-import RetailPOS from './modules/admin/pages/RetailPOS';
-import FinancialReports from './modules/admin/pages/FinancialReports';
-import AccountSettings from './modules/admin/pages/AccountSettings';
-import AdminLogin from './modules/admin/pages/AdminLogin';
-import MembershipMgmt from './modules/admin/pages/MembershipMgmt';
-import ActiveMemberships from './modules/admin/pages/ActiveMemberships';
-import Placeholder from './modules/admin/pages/Placeholder';
+const AdminDashboard = lazy(() => import('./modules/admin/pages/Dashboard'));
+const RoleManagement = lazy(() => import('./modules/admin/pages/RoleManagement'));
+const UserManagement = lazy(() => import('./modules/admin/pages/UserManagement'));
+const ArenaManagement = lazy(() => import('./modules/admin/pages/ArenaManagement'));
+const CourtManagement = lazy(() => import('./modules/admin/pages/CourtManagement'));
+const SlotSchedule = lazy(() => import('./modules/admin/pages/SlotSchedule'));
+const Bookings = lazy(() => import('./modules/admin/pages/Bookings'));
+const CoachingAdmin = lazy(() => import('./modules/admin/pages/CoachingAdmin'));
+const EventsAdmin = lazy(() => import('./modules/admin/pages/EventsAdmin'));
+const Sponsorships = lazy(() => import('./modules/admin/pages/Sponsorships'));
+const Inventory = lazy(() => import('./modules/admin/pages/Inventory'));
+const RetailPOS = lazy(() => import('./modules/admin/pages/RetailPOS'));
+const FinancialReports = lazy(() => import('./modules/admin/pages/FinancialReports'));
+const AccountSettings = lazy(() => import('./modules/admin/pages/AccountSettings'));
+const AdminLogin = lazy(() => import('./modules/admin/pages/AdminLogin'));
+const MembershipMgmt = lazy(() => import('./modules/admin/pages/MembershipMgmt'));
+const ActiveMemberships = lazy(() => import('./modules/admin/pages/ActiveMemberships'));
+const Placeholder = lazy(() => import('./modules/admin/pages/Placeholder'));
 
 // Coach Pages
-import CoachDashboard from './modules/coach/pages/CoachDashboard';
-import MyStudents from './modules/coach/pages/MyStudents';
-import CoachLogin from './modules/coach/pages/CoachLogin';
-import CoachSignup from './modules/coach/pages/CoachSignup';
-import AttendanceRecords from './modules/coach/pages/AttendanceRecords';
-import ScheduleCalendar from './modules/coach/pages/ScheduleCalendar';
-import ProgressTracker from './modules/coach/pages/ProgressTracker';
-import CoachBatches from './modules/coach/pages/CoachBatches';
-import BatchDetails from './modules/coach/pages/BatchDetails';
-import BatchStudents from './modules/coach/pages/BatchStudents';
-import StudentPerformance from './modules/coach/pages/StudentPerformance';
-import CoachProfile from './modules/coach/pages/CoachProfile';
+const CoachDashboard = lazy(() => import('./modules/coach/pages/CoachDashboard'));
+const MyStudents = lazy(() => import('./modules/coach/pages/MyStudents'));
+const CoachLogin = lazy(() => import('./modules/coach/pages/CoachLogin'));
+const CoachSignup = lazy(() => import('./modules/coach/pages/CoachSignup'));
+const AttendanceRecords = lazy(() => import('./modules/coach/pages/AttendanceRecords'));
+const ScheduleCalendar = lazy(() => import('./modules/coach/pages/ScheduleCalendar'));
+const ProgressTracker = lazy(() => import('./modules/coach/pages/ProgressTracker'));
+const CoachBatches = lazy(() => import('./modules/coach/pages/CoachBatches'));
+const BatchDetails = lazy(() => import('./modules/coach/pages/BatchDetails'));
+const BatchStudents = lazy(() => import('./modules/coach/pages/BatchStudents'));
+const StudentPerformance = lazy(() => import('./modules/coach/pages/StudentPerformance'));
+const CoachProfile = lazy(() => import('./modules/coach/pages/CoachProfile'));
 
 // Admin Extra Pages
-import PricingManagement from './modules/admin/pages/PricingManagement';
-import EventBanners from './modules/admin/pages/EventBanners';
-import ArenaManagementPanel from './modules/admin/pages/ArenaManagementPanel';
-import FrontendHeroMgmt from './modules/admin/pages/FrontendHeroMgmt';
-import FrontendCategoryMgmt from './modules/admin/pages/FrontendCategoryMgmt';
-import ArenaListAdmin from './modules/admin/pages/ArenaListAdmin';
-import ArenaDetailsAdmin from './modules/admin/pages/ArenaDetailsAdmin';
-import CourtSlotsAdmin from './modules/admin/pages/CourtSlotsAdmin';
+const PricingManagement = lazy(() => import('./modules/admin/pages/PricingManagement'));
+const EventBanners = lazy(() => import('./modules/admin/pages/EventBanners'));
+const ArenaManagementPanel = lazy(() => import('./modules/admin/pages/ArenaManagementPanel'));
+const FrontendHeroMgmt = lazy(() => import('./modules/admin/pages/FrontendHeroMgmt'));
+const FrontendCategoryMgmt = lazy(() => import('./modules/admin/pages/FrontendCategoryMgmt'));
+const ArenaListAdmin = lazy(() => import('./modules/admin/pages/ArenaListAdmin'));
+const ArenaDetailsAdmin = lazy(() => import('./modules/admin/pages/ArenaDetailsAdmin'));
+const CourtSlotsAdmin = lazy(() => import('./modules/admin/pages/CourtSlotsAdmin'));
 
 // Arena Panel (Standalone)
-import ArenaLogin from './modules/arena/pages/ArenaLogin';
-import ArenaDashboard from './modules/arena/pages/ArenaDashboard';
-import { 
-  ArenaDetailsPage, CourtMgmtPage, SlotConfigPage, 
-  PricingRulesPage, AvailabilityPage, AccountSettingsPage,
-  InventoryPage, EventsAdminPage, RetailPOSPage 
-} from './modules/arena/pages/index.jsx';
+const ArenaLogin = lazy(() => import('./modules/arena/pages/ArenaLogin'));
+const ArenaDashboard = lazy(() => import('./modules/arena/pages/ArenaDashboard'));
+
+const ArenaDetailsPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.ArenaDetailsPage })));
+const CourtMgmtPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.CourtMgmtPage })));
+const SlotConfigPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.SlotConfigPage })));
+const PricingRulesPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.PricingRulesPage })));
+const AvailabilityPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AvailabilityPage })));
+const InventoryPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.InventoryPage })));
+const EventsAdminPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.EventsAdminPage })));
+const RetailPOSPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.RetailPOSPage })));
+const AccountSettingsPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AccountSettingsPage })));
+
 
 // Components
 import ScrollToTop from './components/ScrollToTop';
@@ -124,109 +141,116 @@ function App() {
     <MuiThemeProvider theme={muiTheme}>
       <Router>
         <ScrollToTop />
-        <Routes>
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/otp-verify" element={<OTPVerification />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/otp-verify" element={<OTPVerification />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* User App Routes (Mobile-first) - Primary Entry */}
-          <Route path="/" element={<UserLayout />}>
-            <Route index element={<UserHome />} />
-            <Route path="arenas" element={<ArenaListing />} />
-            <Route path="arenas/:id" element={<ArenaDetails />} />
-            <Route path="events" element={<Events />} />
-            <Route path="events/:id" element={<EventDetail />} />
-            <Route path="bookings" element={<Dashboard />} />
-            <Route path="coaching" element={<Coaching />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="profile/edit" element={<EditProfile />} />
-            <Route path="profile/wallet" element={<Wallet />} />
-            <Route path="profile/attendance" element={<MyAttendance />} />
-            <Route path="profile/notifications" element={<Notifications />} />
-            <Route path="profile/privacy" element={<Privacy />} />
-            <Route path="profile/help" element={<Help />} />
-            <Route path="terms" element={<Terms />} />
-          </Route>
+            {/* User App Routes (Mobile-first) - Primary Entry */}
+            <Route path="/" element={<UserLayout />}>
+              <Route index element={<UserHome />} />
+              <Route path="arenas" element={<ArenaListing />} />
+              <Route path="arenas/:id" element={<ArenaDetails />} />
+              <Route path="events" element={<Events />} />
+              <Route path="events/:id" element={<EventDetail />} />
+              <Route path="bookings" element={<Dashboard />} />
+              <Route path="coaching" element={<Coaching />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="profile/edit" element={<EditProfile />} />
+              <Route path="profile/wallet" element={<Wallet />} />
+              <Route path="profile/attendance" element={<MyAttendance />} />
+              <Route path="profile/notifications" element={<Notifications />} />
+              <Route path="profile/privacy" element={<Privacy />} />
+              <Route path="profile/help" element={<Help />} />
+              <Route path="terms" element={<Terms />} />
+            </Route>
 
-          {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
-          <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
-          <Route path="/booking-summary" element={<BookingSummary />} />
-          <Route path="/coaching-summary" element={<CoachingSummary />} />
-          <Route path="/membership" element={<MembershipPlans />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/booking-success" element={<BookingSuccess />} />
-          <Route path="/bookings/:id" element={<BookingDetails />} />
+            {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
+            <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
+            <Route path="/booking-summary" element={<BookingSummary />} />
+            <Route path="/coaching-summary" element={<CoachingSummary />} />
+            <Route path="/membership" element={<MembershipPlans />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/booking-success" element={<BookingSuccess />} />
+            <Route path="/bookings/:id" element={<BookingDetails />} />
 
-          {/* Unified Admin Login */}
-          <Route path="/admin/login" element={<AdminLogin />} />
+            {/* Unified Admin Login */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="roles" element={<RoleManagement />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="arenas" element={<ArenaManagement />} />
-            <Route path="courts" element={<CourtManagement />} />
-            <Route path="slots" element={<SlotSchedule />} />
-            <Route path="bookings" element={<Bookings />} />
-            <Route path="coaching" element={<CoachingAdmin />} />
-            <Route path="events" element={<EventsAdmin />} />
-            <Route path="sponsorships" element={<Sponsorships />} />
-            <Route path="inventory" element={<Inventory />} />
-            <Route path="pos" element={<RetailPOS />} />
-            <Route path="reports" element={<FinancialReports />} />
-            <Route path="pricing" element={<PricingManagement />} />
-            <Route path="membership" element={<MembershipMgmt />} />
-            <Route path="membership/active" element={<ActiveMemberships />} />
-            <Route path="user/hero" element={<FrontendHeroMgmt />} />
-            <Route path="user/events" element={<EventBanners />} />
-            <Route path="user/booking" element={<FrontendCategoryMgmt />} />
-            <Route path="arena/details" element={<ArenaListAdmin />} />
-            <Route path="arena/details/:id" element={<ArenaDetailsAdmin />} />
-            <Route path="arena/slots/:arenaId/:courtId" element={<CourtSlotsAdmin />} />
-            <Route path="settings" element={<AccountSettings />} />
-            <Route path="arena-panel" element={<ArenaManagementPanel />} />
-          </Route>
+            {/* === ARENA PANEL (Standalone) === */}
+            <Route path="/arena/login" element={<ArenaLogin />} />
+            <Route path="/arena" element={<ArenaLayout />}>
+              <Route index element={<ArenaDashboard />} />
+              <Route path="details" element={<ArenaDetailsPage />} />
+              <Route path="courts" element={<CourtMgmtPage />} />
+              <Route path="slots" element={<SlotConfigPage />} />
+              <Route path="pricing" element={<PricingRulesPage />} />
+              <Route path="availability" element={<AvailabilityPage />} />
+              <Route path="inventory" element={<InventoryPage />} />
+              <Route path="events" element={<EventsAdminPage />} />
+              <Route path="retail" element={<RetailPOSPage />} />
+              <Route path="ledger" element={<Bookings />} />
+              <Route path="account-settings" element={<AccountSettingsPage />} />
+            </Route>
 
-          {/* Coach Routes */}
-          <Route path="/coach" element={<CoachLayout />}>
-            <Route index element={<CoachDashboard />} />
-            <Route path="schedule" element={<ScheduleCalendar />} />
-            <Route path="batches" element={<CoachBatches />} />
-            <Route path="batches/:id" element={<BatchDetails />} />
-            <Route path="batches/:id/students" element={<BatchStudents />} />
-            <Route path="students/:id/performance" element={<StudentPerformance />} />
-            <Route path="students" element={<MyStudents />} />
-            <Route path="attendance" element={<AttendanceRecords />} />
-            <Route path="progress" element={<ProgressTracker />} />
-            <Route path="profile" element={<CoachProfile />} />
-          </Route>
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="roles" element={<RoleManagement />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="arenas" element={<ArenaManagement />} />
+              <Route path="courts" element={<CourtManagement />} />
+              <Route path="slots" element={<SlotSchedule />} />
+              <Route path="bookings" element={<Bookings />} />
+              <Route path="coaching" element={<CoachingAdmin />} />
+              <Route path="events" element={<EventsAdmin />} />
+              <Route path="sponsorships" element={<Sponsorships />} />
+              <Route path="inventory" element={<Inventory />} />
+              <Route path="pos" element={<RetailPOS />} />
+              <Route path="reports" element={<FinancialReports />} />
+              <Route path="pricing" element={<PricingManagement />} />
+              <Route path="membership" element={<MembershipMgmt />} />
+              <Route path="membership/active" element={<ActiveMemberships />} />
+              <Route path="user/hero" element={<FrontendHeroMgmt />} />
+              <Route path="user/events" element={<EventBanners />} />
+              <Route path="user/booking" element={<FrontendCategoryMgmt />} />
+              <Route path="arena/details" element={<ArenaListAdmin />} />
+              <Route path="arena/details/:id" element={<ArenaDetailsAdmin />} />
+              <Route path="arena/slots/:arenaId/:courtId" element={<CourtSlotsAdmin />} />
+              <Route path="settings" element={<AccountSettings />} />
+              <Route path="arena-panel" element={<ArenaManagementPanel />} />
+            </Route>
 
-          <Route path="/coach/login" element={<CoachLogin />} />
-          <Route path="/coach/signup" element={<CoachSignup />} />
+            {/* Coach Routes */}
+            <Route path="/coach" element={<CoachLayout />}>
+              <Route index element={<CoachDashboard />} />
+              <Route path="schedule" element={<ScheduleCalendar />} />
+              <Route path="batches" element={<CoachBatches />} />
+              <Route path="batches/:id" element={<BatchDetails />} />
+              <Route path="batches/:id/students" element={<BatchStudents />} />
+              <Route path="students/:id/performance" element={<StudentPerformance />} />
+              <Route path="students" element={<MyStudents />} />
+              <Route path="attendance" element={<AttendanceRecords />} />
+              <Route path="progress" element={<ProgressTracker />} />
+              <Route path="profile" element={<CoachProfile />} />
+            </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/coach/login" element={<CoachLogin />} />
+            <Route path="/coach/signup" element={<CoachSignup />} />
 
-          {/* === ARENA PANEL (Standalone) === */}
-          <Route path="/arena/login" element={<ArenaLogin />} />
-          <Route path="/arena" element={<ArenaLayout />}>
-            <Route index element={<ArenaDashboard />} />
-            <Route path="details" element={<ArenaDetailsPage />} />
-            <Route path="courts" element={<CourtMgmtPage />} />
-            <Route path="slots" element={<SlotConfigPage />} />
-            <Route path="pricing" element={<PricingRulesPage />} />
-            <Route path="availability" element={<AvailabilityPage />} />
-            <Route path="inventory" element={<InventoryPage />} />
-            <Route path="events" element={<EventsAdminPage />} />
-            <Route path="retail" element={<RetailPOSPage />} />
-            <Route path="account-settings" element={<AccountSettingsPage />} />
-          </Route>
-        </Routes>
+
+            {/* Fallback (must be last) */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </Router>
     </MuiThemeProvider>
   );
 }
 
 export default App;
+

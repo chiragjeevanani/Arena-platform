@@ -9,20 +9,8 @@ import {
   XCircle, UserPlus, FileText, X, Trash2, ShieldCheck
 } from 'lucide-react';
 
-// Mock Data based on the user's Excel sheet
-const MOCK_MEMBERS = [
-  { id: 1, firstName: 'VINOD', surname: '', membershipCode: '4', type: 'GANP', price: 700.00, slot: '6AM - 7 AM', courtNo: '1', email: 'vinod@example.com', phone: '98765432', startDate: '12-Mar-26', endDate: '11-Mar-27', status: 'ACTIVE', action: 'NO ACTION' },
-  { id: 2, firstName: 'NBO', surname: '', membershipCode: '4', type: 'GANP', price: 700.00, slot: '5 PM - 6 PM', courtNo: '1', email: 'nbo@example.com', phone: '98761234', startDate: '12-Mar-26', endDate: '11-Mar-27', status: 'ACTIVE', action: 'NO ACTION' },
-  { id: 3, firstName: 'AKHIL', surname: '', membershipCode: '3', type: 'GAP', price: 1000.00, slot: '7 PM - 8 PM', courtNo: '1', email: 'akhil@example.com', phone: '91234567', startDate: '12-Mar-26', endDate: '11-Mar-27', status: 'ACTIVE', action: 'NO ACTION' },
-  { id: 4, firstName: 'ARUN', surname: '', membershipCode: '3', type: 'GAP', price: 1000.00, slot: '8 PM - 9 PM', courtNo: '1', email: 'arun@example.com', phone: '92345678', startDate: '2-Mar-25', endDate: '1-Mar-26', status: 'LAPSED', action: 'NEARING EXPIRY' },
-  { id: 5, firstName: 'BIJI', surname: '', membershipCode: '3', type: 'GAP', price: 1000.00, slot: '9 PM - 10 PM', courtNo: '1', email: 'biji@example.com', phone: '93456789', startDate: '2-Mar-25', endDate: '1-Mar-26', status: 'LAPSED', action: 'NEARING EXPIRY' },
-  { id: 6, firstName: 'AVINASH', surname: '', membershipCode: '4', type: 'GANP', price: 700.00, slot: '6AM - 7 AM', courtNo: '2', email: 'avinash@example.com', phone: '94567890', startDate: '2-Mar-25', endDate: '1-Mar-26', status: 'LAPSED', action: 'NEARING EXPIRY' },
-  { id: 7, firstName: 'GAFFAR', surname: '', membershipCode: '3', type: 'GAP', price: 1000.00, slot: '6 PM - 7 PM', courtNo: '2', email: 'gaffar@example.com', phone: '95678901', startDate: '2-Mar-25', endDate: '1-Mar-26', status: 'LAPSED', action: 'NEARING EXPIRY' },
-  { id: 8, firstName: 'AMM', surname: '', membershipCode: '3', type: 'GAP', price: 1000.00, slot: '7 PM - 8 PM', courtNo: '2', email: 'amm1@example.com', phone: '96789012', startDate: '2-Mar-25', endDate: '1-Mar-26', status: 'LAPSED', action: 'NEARING EXPIRY' },
-];
-
 const ActiveMemberships = () => {
-  const [members, setMembers] = useState(MOCK_MEMBERS);
+  const [members, setMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [activeMenu, setActiveMenu] = useState(null); // Track which member's meatball menu is open
   const [searchTerm, setSearchTerm] = useState('');

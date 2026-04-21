@@ -1,79 +1,150 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, Plus, Edit2, Trash2, X, CheckCircle2, 
   XCircle, ArrowRight, Layers, Settings, Activity,
-  ShieldCheck, Share2, MoreHorizontal, Layout, Grid3X3, Camera, ImagePlus
+  ShieldCheck, Share2, MoreHorizontal, Layout, Grid3X3, Camera, ImagePlus,
+  Loader2
 } from 'lucide-react';
 import CourtImg1 from '../../../../assets/Courts/court1.jpeg';
 import CourtImg2 from '../../../../assets/Courts/court2.jpeg';
 import CourtImg3 from '../../../../assets/Courts/court3.jpeg';
+import { useArenaPanel } from '../../context/ArenaPanelContext';
+import { createMyCourt, patchMyCourt, deleteMyCourt, uploadArenaImage } from '../../../../services/arenaStaffApi';
+import { showToast } from '../../../../utils/toast';
 
 const COURT_IMAGES = [CourtImg1, CourtImg2, CourtImg3];
 
-const INITIAL_COURTS = [
-  { id: 'c1', arenaId: 'arena-1', name: 'Court 1', type: 'Indoor', status: 'Active', image: CourtImg1 },
-  { id: 'c2', arenaId: 'arena-1', name: 'Court 2', type: 'Indoor', status: 'Active', image: CourtImg2 },
-  { id: 'c3', arenaId: 'arena-1', name: 'Court 3', type: 'Indoor', status: 'Active', image: CourtImg3 },
-  { id: 'c4', arenaId: 'arena-1', name: 'Court 4', type: 'Indoor', status: 'Active', image: CourtImg1 },
-  { id: 'c5', arenaId: 'arena-1', name: 'Court 5', type: 'Indoor', status: 'Active', image: CourtImg2 },
-];
-
-const emptyForm = { name: '', type: 'Indoor', status: 'Active', image: null };
+const emptyForm = { name: '', type: 'Wooden', status: 'active', image: null };
 
 const CourtMgmt = () => {
-  const [courts, setCourts] = useState(INITIAL_COURTS);
+  const { courts, loading, refetch } = useArenaPanel();
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
-  const cardFileInputRef = useRef(null);
-  const [cardImageCourtId, setCardImageCourtId] = useState(null);
 
-  const handleImageUpload = (e, target = 'form') => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (target === 'form') {
-        setForm(p => ({ ...p, image: ev.target.result }));
-      } else {
-        // Direct card image change
-        setCourts(p => p.map(c => c.id === target ? { ...c, image: ev.target.result } : c));
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
+
+    setUploading(true);
+    setUploadProgress(10);
+    
+    // Simulate real progress since fetch doesn't support easy progress events
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) {
+           clearInterval(progressInterval);
+           return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+
+    try {
+      const res = await uploadArenaImage(file);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setTimeout(() => {
+         setForm(p => ({ ...p, image: res.imageUrl || res.url }));
+         setUploading(false);
+         setUploadProgress(0);
+      }, 300);
+      showToast('Court image uploaded', 'success');
+    } catch (err) {
+      clearInterval(progressInterval);
+      setUploading(false);
+      setUploadProgress(0);
+      showToast('Image upload failed', 'error');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const openAdd = () => { setEditId(null); setForm(emptyForm); setShowModal(true); };
-  const openEdit = (c) => { setEditId(c.id); setForm({ name: c.name, type: c.type, status: c.status, image: c.image || null }); setShowModal(true); };
+  const openEdit = (c) => { 
+    setEditId(c.id); 
+    setForm({ 
+      name: c.name, 
+      type: c.type || 'Wooden', 
+      status: c.status || 'active', 
+      image: c.imageUrl || null 
+    }); 
+    setShowModal(true); 
+  };
 
-  const save = () => {
+  const save = async () => {
     if (!form.name.trim()) return;
-    if (editId) {
-      setCourts(p => p.map(c => c.id === editId ? { ...c, ...form } : c));
-    } else {
-      const newIdx = courts.length;
-      const defaultImage = form.image || COURT_IMAGES[newIdx % COURT_IMAGES.length];
-      setCourts(p => [...p, { id: `c${Date.now()}`, arenaId: 'arena-1', ...form, image: defaultImage }]);
+    setSaving(true);
+    try {
+      const payload = {
+        name: form.name.trim(),
+        type: form.type,
+        status: form.status,
+        imageUrl: form.image
+      };
+
+      if (editId) {
+        await patchMyCourt(editId, payload);
+        showToast('Court updated', 'success');
+      } else {
+        await createMyCourt(payload);
+        showToast('Court registered', 'success');
+      }
+      await refetch();
+      setShowModal(false);
+    } catch (err) {
+      showToast(err.message || 'Failed to save court', 'error');
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
   };
 
-  const confirmDelete = () => {
-    setCourts(p => p.filter(c => c.id !== deleteId));
-    setDeleteId(null);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteMyCourt(deleteId);
+      await refetch();
+      showToast('Court removed', 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to delete court', 'error');
+    } finally {
+      setDeleteId(null);
+    }
   };
 
-  const activeCourts = courts.filter(c => c.status === 'Active').length;
+  const activeCourtsCount = courts.filter(c => c.status === 'active').length;
+
+  if (loading && courts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-10 h-10 text-[#CE2029] animate-spin" />
+        <p className="text-xs font-black uppercase tracking-widest text-slate-400">Synchronizing Nodes...</p>
+      </div>
+    );
+  }
+
+  const { error } = useArenaPanel();
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 text-center p-6">
+        <XCircle className="w-12 h-12 text-[#CE2029]" />
+        <h3 className="text-lg font-black text-[#36454F] uppercase">Cluster Sync Failed</h3>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest max-w-sm">{error}</p>
+        <button onClick={() => refetch()} className="mt-4 px-6 py-2 bg-[#36454F] text-white text-[10px] font-black uppercase tracking-widest rounded-sm">Retry Connection</button>
+      </div>
+    );
+  }
 
   return (
     <div className="font-sans text-[#36454F] max-w-[1600px] mx-auto tracking-tight">
       <div className="mx-auto space-y-4 py-4">
-        
-        {/* Professional Header Dashboard (Now Extra Compact) */}
+        {/* Professional Header Dashboard */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-3 pb-3 border-b border-slate-200 bg-white p-3 shadow-md rounded-sm">
            <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-sm bg-[#36454F] flex items-center justify-center text-white shadow-sm">
@@ -90,13 +161,13 @@ const CourtMgmt = () => {
            <div className="flex items-center gap-3">
               <div className="flex bg-slate-50 p-1 border border-slate-200 rounded-sm">
                  {[
-                   { label: 'Active', value: activeCourts, color: 'text-green-500' },
-                   { label: 'Inactive', value: courts.length - activeCourts, color: 'text-slate-500' }
+                   { label: 'Active', value: activeCourtsCount, color: 'text-green-500' },
+                   { label: 'Inactive', value: courts.length - activeCourtsCount, color: 'text-slate-500' }
                  ].map((s, i) => (
-                   <div key={i} className="px-3 py-0.5 flex flex-col border-r last:border-0 border-slate-200 min-w-[45px] text-center">
-                      <span className="text-[6.5px] font-black uppercase text-slate-500 tracking-widest">{s.label}</span>
-                      <span className={`text-[12px] font-bold ${s.color}`}>{s.value.toString().padStart(2, '0')}</span>
-                   </div>
+                    <div key={i} className="px-3 py-0.5 flex flex-col border-r last:border-0 border-slate-200 min-w-[45px] text-center">
+                       <span className="text-[6.5px] font-black uppercase text-slate-500 tracking-widest">{s.label}</span>
+                       <span className={`text-[12px] font-bold ${s.color}`}>{s.value.toString().padStart(2, '0')}</span>
+                    </div>
                  ))}
               </div>
               <button 
@@ -108,7 +179,7 @@ const CourtMgmt = () => {
            </div>
         </div>
 
-        {/* Compact Grid with PERFECT Visibility Icons */}
+        {/* Compact Grid */}
         {courts.length === 0 ? (
           <div className="text-center py-20 bg-white border border-dashed border-slate-200 rounded-sm">
             <Target size={32} className="mx-auto mb-3 text-slate-300" />
@@ -133,36 +204,28 @@ const CourtMgmt = () => {
                         <span className="text-[7.5px] font-black text-[#36454F] uppercase tracking-[0.2em]">NODE-0{idx + 1}</span>
                      </div>
                      <span className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-widest border transition-colors ${
-                        court.type === 'Indoor' ? 'bg-blue-50/50 text-blue-400 border-blue-100' : 'bg-amber-50 text-amber-500 border-amber-100'
+                        court.type === 'Wooden' ? 'bg-amber-50 text-amber-500 border-amber-100' : 'bg-blue-50/50 text-blue-400 border-blue-100'
                      }`}>
-                        {court.type}
+                        {court.type || 'Wooden'}
                      </span>
                   </div>
 
                   {/* Center: Court Image */}
                   <div className="flex flex-col items-center justify-center space-y-3 relative z-10">
-                      <div className="w-full h-32 rounded-[4px] overflow-hidden border border-slate-100 shadow-sm relative cursor-pointer"
-                        onClick={() => { setCardImageCourtId(court.id); setTimeout(() => cardFileInputRef.current?.click(), 50); }}
-                      >
+                      <div className="w-full h-32 rounded-[4px] overflow-hidden border border-slate-100 shadow-sm relative group">
                          <img 
-                           src={court.image || COURT_IMAGES[idx % COURT_IMAGES.length]} 
+                           src={court.imageUrl || COURT_IMAGES[idx % COURT_IMAGES.length]} 
                            alt={court.name} 
                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                          />
-                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                         {/* Camera overlay on hover */}
-                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                           <div className="w-8 h-8 rounded-full bg-white/90 shadow-lg flex items-center justify-center">
-                             <Camera size={14} className="text-[#36454F]" />
-                           </div>
-                         </div>
+                         <div className="absolute inset-0 bg-black/10 transition-opacity" />
                       </div>
-                     <div>
-                        <h3 className="text-[13px] font-bold text-[#36454F] uppercase tracking-wide text-center">{court.name}</h3>
+                     <div className="w-full">
+                        <h3 className="text-[13px] font-bold text-[#36454F] uppercase tracking-wide text-center truncate">{court.name}</h3>
                         <div className="mt-1 flex justify-center">
-                           <div className={`flex items-center gap-1 px-2 py-0.5 rounded-sm text-[7.5px] font-bold uppercase tracking-widest ${court.status === 'Active' ? 'text-green-500 bg-green-50' : 'text-red-400 bg-red-50'}`}>
-                              <div className={`w-1 h-1 rounded-full ${court.status === 'Active' ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`} />
-                              {court.status === 'Active' ? 'Operational' : 'Standby'}
+                           <div className={`flex items-center gap-1 px-2 py-0.5 rounded-sm text-[7.5px] font-bold uppercase tracking-widest ${court.status === 'active' ? 'text-green-500 bg-green-50' : 'text-red-400 bg-red-50'}`}>
+                              <div className={`w-1 h-1 rounded-full ${court.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`} />
+                              {court.status === 'active' ? 'Operational' : 'Standby'}
                            </div>
                         </div>
                      </div>
@@ -170,7 +233,7 @@ const CourtMgmt = () => {
 
                   {/* Bottom: Fast Action Menu */}
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between relative z-10">
-                     <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">ID: {court.id.slice(-4)}</span>
+                     <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">REF: {court.id.slice(-6)}</span>
                      <div className="flex gap-1">
                         <button onClick={() => openEdit(court)} className="w-8 h-8 flex items-center justify-center rounded-sm bg-slate-50 text-slate-500 hover:text-[#36454F] hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all">
                            <Edit2 size={12} />
@@ -187,7 +250,7 @@ const CourtMgmt = () => {
         )}
       </div>
 
-      {/* Advanced Configuration Modal */}
+      {/* Configuration Modal */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
@@ -198,9 +261,9 @@ const CourtMgmt = () => {
               
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#36454F]">
                 <div>
-                  <h3 className="text-lg font-bold uppercase tracking-tight">Resource Framework</h3>
+                  <h3 className="text-lg font-bold uppercase tracking-tight">{editId ? 'Modify Resource' : 'Register Resource'}</h3>
                   <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600 mt-1">
-                    Arena Resource Registration
+                    Arena Resource Infrastructure
                   </p>
                 </div>
                 <button onClick={() => setShowModal(false)} className="text-slate-300 hover:text-[#36454F] transition-colors"><X size={18} /></button>
@@ -209,7 +272,7 @@ const CourtMgmt = () => {
               <div className="p-6 space-y-5 bg-[#F9FAFB]/30">
                 {/* Court Image Upload */}
                 <div className="space-y-1.5">
-                  <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Court Image</label>
+                  <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Resource Icon (Image)</label>
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className="w-full h-36 rounded-sm border-2 border-dashed border-slate-200 hover:border-[#CE2029] bg-slate-50 hover:bg-red-50/30 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group"
@@ -220,48 +283,76 @@ const CourtMgmt = () => {
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <div className="flex items-center gap-2 text-white">
                             <Camera size={16} />
-                            <span className="text-[9px] font-bold uppercase tracking-widest">Change Image</span>
+                            <span className="text-[9px] font-bold uppercase tracking-widest">Change</span>
                           </div>
                         </div>
                       </>
                     ) : (
                       <>
                         <ImagePlus size={24} className="text-slate-300 mb-2" />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Click to upload</span>
-                        <span className="text-[7px] text-slate-400 mt-0.5">JPG, PNG up to 5MB</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Initialize Visual</span>
                       </>
                     )}
+
+                    {/* Progressive Loader Overlay */}
+                    <AnimatePresence>
+                       {uploading && (
+                          <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 z-20"
+                          >
+                             <div className="w-full max-w-[200px] space-y-3 text-center">
+                                <div className="relative w-full h-1 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                   <motion.div 
+                                      className="absolute inset-y-0 left-0 bg-[#CE2029]"
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${uploadProgress}%` }}
+                                      transition={{ type: 'spring', bounce: 0, duration: 0.2 }}
+                                   />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                   <span className="text-[8px] font-black uppercase tracking-widest text-[#CE2029]">Uploading Metadata</span>
+                                   <span className="text-[10px] font-black text-[#36454F]">{Math.round(uploadProgress)}%</span>
+                                </div>
+                                <Loader2 size={16} className="text-[#CE2029] animate-spin mx-auto mt-2" />
+                             </div>
+                          </motion.div>
+                       )}
+                    </AnimatePresence>
                   </div>
-                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'form')} />
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Designation (Title)</label>
+                  <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Designation (Name)</label>
                   <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                    placeholder="e.g. Court 5" className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#CE2029] uppercase tracking-widest transition-all" />
+                    placeholder="e.g. Court Alpha" className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#CE2029] uppercase tracking-widest transition-all" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Locus Node Typology</label>
+                    <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Material Typology</label>
                     <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))} className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase cursor-pointer">
-                      <option>Indoor</option>
-                      <option>Outdoor</option>
+                      <option value="Wooden">Wooden</option>
+                      <option value="Turf">Turf</option>
+                      <option value="Acrylic">Acrylic</option>
+                      <option value="Clay">Clay</option>
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Status Registry</label>
+                    <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Registry Status</label>
                     <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))} className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase cursor-pointer">
-                      <option>Active</option>
-                      <option>Inactive</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Standby</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="pt-2">
-                  <button onClick={save} disabled={!form.name.trim()}
+                  <button onClick={save} disabled={saving || !form.name.trim()}
                     className="w-full h-12 rounded-sm bg-[#36454F] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-md">
-                    {editId ? 'Commit Modifications' : 'Initialize Hub'} <ArrowRight size={14} />
+                    {saving && <Loader2 size={12} className="animate-spin" />}
+                    {editId ? 'Commit Modifications' : 'Initialize Node'} <ArrowRight size={14} />
                   </button>
                 </div>
               </div>
@@ -270,7 +361,7 @@ const CourtMgmt = () => {
         )}
       </AnimatePresence>
 
-      {/* Critical Purge Confirmation */}
+      {/* Confirmation Modal */}
       <AnimatePresence>
         {deleteId && (
           <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
@@ -282,17 +373,15 @@ const CourtMgmt = () => {
                 <Trash2 size={24} className="text-red-500" />
               </div>
               <h3 className="text-xl font-black text-[#36454F] uppercase tracking-tight mb-2">Purge Resource?</h3>
-              <p className="text-[10px] font-medium text-slate-700 leading-normal mb-8">This operation will permanently remove the resource from the arena cluster. This is IRREVERSIBLE.</p>
+              <p className="text-[10px] font-medium text-slate-700 leading-normal mb-8">Permanently remove this resource from the cluster core. This action is IRREVERSIBLE.</p>
               <div className="flex gap-2">
                 <button onClick={() => setDeleteId(null)} className="flex-1 h-10 rounded-sm border border-slate-200 text-slate-500 font-bold text-[9px] uppercase tracking-widest hover:bg-slate-50 transition-all">Abort</button>
-                <button onClick={confirmDelete} className="flex-1 h-10 rounded-sm bg-red-500 text-white font-bold text-[9px] uppercase tracking-widest hover:bg-red-600 transition-all">Confirm Purge</button>
+                <button onClick={confirmDelete} className="flex-1 h-10 rounded-sm bg-red-500 text-white font-bold text-[9px] uppercase tracking-widest hover:bg-red-600 transition-all">Confirm</button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-      {/* Hidden file input for direct card image change */}
-      <input ref={cardFileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { handleImageUpload(e, cardImageCourtId); setCardImageCourtId(null); }} />
     </div>
   );
 };

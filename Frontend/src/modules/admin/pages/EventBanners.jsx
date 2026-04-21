@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Box, Typography, Button, IconButton, Card, Grid,
@@ -47,64 +47,16 @@ import {
 } from 'recharts';
 import decathlonLogo from '../../../assets/Sponsors/decathlon.png';
 import redbullLogo from '../../../assets/Sponsors/redbull.png';
-import summerSmashBanner from '../../../assets/Events/summer_smash.png';
 import { useTheme } from '../../user/context/ThemeContext';
-
-// --- MOCK DATA ---
-const MOCK_EVENTS = [
-  {
-    id: 1,
-    name: 'Summer Badminton Smash 2026',
-    type: 'Tournament',
-    date: '2026-06-15',
-    time: '10:00 AM',
-    venue: 'Bawshar Main Court',
-    status: 'Upcoming',
-    participants: 128,
-    maxParticipants: 256,
-    revenue: 550,
-    expenses: 120,
-    banner: summerSmashBanner
-  },
-  {
-    id: 2,
-    name: 'Junior Elite Coaching Camp',
-    type: 'Camp',
-    date: '2026-04-10',
-    time: '08:00 AM',
-    venue: 'Amm Sports Academy Muscat',
-    status: 'Active',
-    participants: 45,
-    maxParticipants: 50,
-    revenue: 350,
-    expenses: 80,
-    banner: 'https://images.unsplash.com/photo-1544033527-b192daee1f5b?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    id: 3,
-    name: 'Winter TT Open House',
-    type: 'Special Event',
-    date: '2025-12-05',
-    time: '11:00 AM',
-    venue: 'Sultan Qaboos Arena',
-    status: 'Completed',
-    participants: 96,
-    maxParticipants: 100,
-    revenue: 250,
-    expenses: 150,
-    banner: 'https://images.unsplash.com/photo-1534158914592-062992fbe900?q=80&w=800&auto=format&fit=crop'
-  },
-];
-
-const MOCK_PARTICIPANTS = [
-  { id: 1, name: 'Ali Al-Said', age: 24, contact: '+968 9876 5432', category: 'Men\'s Solo', status: 'Approved' },
-  { id: 2, name: 'Fatima Al-Harthy', age: 19, contact: '+968 9123 4567', category: 'Women\'s Solo', status: 'Pending' },
-  { id: 3, name: 'Salim Al-Abri', age: 28, contact: '+968 9988 7766', category: 'Men\'s Solo', status: 'Rejected' },
-];
-
-// The mock constants are now handled inside the component state
-
-// The mock constants are now handled inside the component state
+import {
+  listAdminCms,
+  createAdminCms,
+  updateAdminCms,
+  deleteAdminCms,
+  uploadAdminImage
+} from '../../../services/cmsApi';
+import { listEventRegistrations, updateEventRegistrationStatus } from '../../../services/adminOpsApi';
+import { registerForEvent } from '../../../services/eventsApi';
 
 const COLORS = ['#CE2029', '#36454F', '#627D98', '#36454F'];
 
@@ -154,21 +106,173 @@ const EventBanners = () => {
   // --- Edit Event modal state ---
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [editFormData, setEditFormData] = useState({ name: '', type: '', status: '', banner: '' });
+  const [editFormData, setEditFormData] = useState({ 
+    name: '', type: '', status: '', banner: '', description: '', rules: '',
+    date: '', time: '', venue: '', entryFee: '', inclusions: ''
+  });
+  const [isEditUploading, setIsEditUploading] = useState(false);
 
-  const handleUpdateEvent = () => {
-    if (!editingEvent) return;
-    setEvents(prev =>
-      prev.map(e => e.id === editingEvent.id ? { ...e, ...editFormData } : e)
-    );
-    setIsEditModalOpen(false);
-    setEditingEvent(null);
+  const handleEditFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsEditUploading(true);
+    try {
+      const res = await uploadAdminImage(file);
+      setEditFormData(prev => ({ ...prev, banner: res.url }));
+    } catch (err) {
+      alert('Failed to upload image');
+    } finally {
+      setIsEditUploading(false);
+    }
   };
 
-  // --- Events State (replaces static MOCK_EVENTS) ---
-  const [events, setEvents] = useState(MOCK_EVENTS);
+  const handleUpdateEvent = async () => {
+    if (!editingEvent) return;
+    try {
+      const formattedRules = (editFormData.rules || '').split('\n').map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n');
+      const payload = {
+        title: editFormData.name,
+        subtitle: `${editFormData.date} | ${editFormData.time} | ${editFormData.venue} | ${editFormData.entryFee || '0'} | ${editFormData.type}`,
+        imageUrl: editFormData.banner,
+        body: `${editFormData.description || ''}\n\n${formattedRules}`,
+        isPublished: editFormData.status === 'Active',
+        inclusions: (editFormData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean)
+      };
+      await updateAdminCms(editingEvent.id, payload);
+      setIsEditModalOpen(false);
+      setEditingEvent(null);
+      loadEvents();
+    } catch (err) {
+      alert('Failed to update event');
+    }
+  };
+
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadEvents = async () => {
+    setLoading(true);
+    try {
+      const [cmsRes, regRes] = await Promise.all([
+        listAdminCms('event'),
+        listEventRegistrations()
+      ]);
+      
+      const regs = regRes.registrations || [];
+      const mapped = (cmsRes.contents || []).map(c => {
+        const parts = (c.subtitle || '').split('|').map(s => s.trim());
+        const eventParticipants = regs.filter(r => r.eventId === c.id).length;
+        
+        return {
+          id: c.id,
+          name: c.title,
+          type: parts[4] || 'Tournament',
+          date: parts[0] || '',
+          time: parts[1] || '',
+          venue: parts[2] || 'Main Court',
+          entryFee: parts[3] || '0',
+          status: c.isPublished ? 'Active' : 'Draft',
+          participants: eventParticipants,
+          maxParticipants: 100,
+          revenue: regs.filter(r => r.eventId === c.id && r.status === 'Approved')
+                      .reduce((sum) => sum + (parseFloat(parts[3]) || 0), 0),
+          expenses: 0,
+          banner: c.imageUrl || 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=800&auto=format&fit=crop',
+          linkUrl: c.linkUrl,
+          description: (c.body || '').replace(/^\s*[-*•]\s+.+\n?/gm, '').trim(),
+          rules: (c.body || '').split('\n').filter(l => /^[-*•]\s+/.test(l.trim())).map(l => l.trim().replace(/^[-*•]\s+/, '')).join('\n'),
+          body: c.body,
+          isPublished: c.isPublished,
+          inclusions: c.inclusions || []
+        };
+      });
+      setEvents(mapped);
+    } catch (err) {
+      console.error('Failed to load events', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const [participants, setParticipants] = useState([]);
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    upcoming: 0,
+    athletes: 0,
+    revenue: 0
+  });
+
+  const loadDashboardStats = async (currentEvents) => {
+    try {
+      const data = await listEventRegistrations(); // Fetch all registrations
+      const regs = data.registrations || [];
+      
+      const totalRevenue = regs
+        .filter(r => r.status === 'Approved')
+        .reduce((sum, r) => {
+            // Find the event for this registration to get the fee
+            const ev = currentEvents.find(e => e.id === r.eventId);
+            const fee = parseFloat(ev?.entryFee) || 0;
+            return sum + fee;
+        }, 0);
+
+      setStats({
+        totalEvents: currentEvents.length,
+        upcoming: currentEvents.filter(e => e.status === 'Upcoming').length,
+        athletes: regs.length,
+        revenue: totalRevenue
+      });
+    } catch (err) {
+      console.error('Failed to load dashboard stats', err);
+    }
+  };
+
+  useEffect(() => {
+    if (events.length > 0) {
+      loadDashboardStats(events);
+    }
+  }, [events]);
+
+  useEffect(() => {
+    if (view === 'DETAILS' && activeEvent?.id) {
+       let cancelled = false;
+       (async () => {
+         try {
+           const data = await listEventRegistrations(activeEvent.id);
+           if (!cancelled) {
+             setParticipants(data.registrations.map(r => ({
+                id: r.id,
+                name: r.name,
+                contact: r.phone,
+                status: r.status,
+                category: 'Standard'
+             })));
+           }
+         } catch (err) {
+           console.error('Failed to load registrations', err);
+         }
+       })();
+       return () => { cancelled = true; };
+    }
+  }, [view, activeEvent]);
+
   const handleAddEvent = (newEvent) => {
-    setEvents(prev => [newEvent, ...prev]);
+    // This was previously just local state. Now we'll call loadEvents after real save.
+    loadEvents();
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    try {
+      await deleteAdminCms(id);
+      loadEvents();
+    } catch (err) {
+      alert('Failed to delete event');
+    }
   };
 
   // Results Management State
@@ -177,6 +281,15 @@ const EventBanners = () => {
   const [scorecardImage, setScorecardImage] = useState(null);
   const [publishDuration, setPublishDuration] = useState('7');
   const [hideEventBanner, setHideEventBanner] = useState(false);
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      await updateEventRegistrationStatus(id, newStatus);
+      setParticipants(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+    } catch (err) {
+      alert('Failed to update status');
+    }
+  };
+
   const [publishStatus, setPublishStatus] = useState('IDLE');
   const [isPublished, setIsPublished] = useState(false);
   const [isPubliclyVisible, setIsPubliclyVisible] = useState(true);
@@ -334,10 +447,10 @@ const EventBanners = () => {
       {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {[
-          { label: 'Total Events', value: events.length, icon: <EmojiEvents sx={{ fontSize: 20 }} />, color: '#CE2029' },
-          { label: 'Upcoming', value: '08', icon: <CalendarMonth sx={{ fontSize: 20 }} />, color: '#3B82F6' },
-          { label: 'Athletes', value: '1.2K', icon: <Groups sx={{ fontSize: 20 }} />, color: '#10B981' },
-          { label: 'Net Revenue', value: '4,500 OMR', icon: <MonetizationOn sx={{ fontSize: 20 }} />, color: '#8B5CF6' }
+          { label: 'Total Events', value: stats.totalEvents, icon: <EmojiEvents sx={{ fontSize: 20 }} />, color: '#CE2029' },
+          { label: 'Upcoming', value: stats.upcoming.toString().padStart(2, '0'), icon: <CalendarMonth sx={{ fontSize: 20 }} />, color: '#3B82F6' },
+          { label: 'Athletes', value: stats.athletes >= 1000 ? `${(stats.athletes / 1000).toFixed(1)}K` : stats.athletes.toString(), icon: <Groups sx={{ fontSize: 20 }} />, color: '#10B981' },
+          { label: 'Net Revenue', value: `${stats.revenue.toLocaleString()} OMR`, icon: <MonetizationOn sx={{ fontSize: 20 }} />, color: '#8B5CF6' }
         ].map((stat, i) => (
           <Grid item xs={12} sm={6} md={3} key={i}>
             <PremiumCard sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
@@ -467,7 +580,14 @@ const EventBanners = () => {
                                   name: event.name,
                                   type: event.type,
                                   status: event.status,
-                                  banner: event.banner
+                                  banner: event.banner,
+                                  description: event.description || '',
+                                  rules: event.rules || '',
+                                  date: event.date || '',
+                                  time: event.time || '',
+                                  venue: event.venue || '',
+                                  entryFee: event.entryFee || '',
+                                  inclusions: (event.inclusions || []).join(', ')
                                 });
                                 setIsEditModalOpen(true);
                                 setActiveCardMenu(null);
@@ -483,6 +603,21 @@ const EventBanners = () => {
                             >
                               <Edit sx={{ fontSize: 16 }} />
                               Edit Event Details
+                            </Box>
+                            <Box sx={{ height: '1px', bgcolor: isDark ? 'rgba(255,255,255,0.07)' : '#f1f5f9' }} />
+                            <Box
+                              onClick={() => handleDeleteEvent(event.id)}
+                              sx={{
+                                display: 'flex', alignItems: 'center', gap: 1.5,
+                                px: 2, py: 1.25, cursor: 'pointer',
+                                fontSize: '0.8rem', fontWeight: 600,
+                                color: '#CE2029',
+                                '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,0.06)' : '#fff1f1' },
+                                transition: 'background 0.15s'
+                              }}
+                            >
+                              <Delete sx={{ fontSize: 16 }} />
+                              Delete Event
                             </Box>
                           </motion.div>
                         )}
@@ -572,7 +707,7 @@ const EventBanners = () => {
                 const day = i - firstDayOfMonth + 1;
                 const isCurrentMonth = day > 0 && day <= daysInMonth(currentDate.getMonth(), currentDate.getFullYear());
                 const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-                const eventThisDay = MOCK_EVENTS.find(e => {
+                const eventThisDay = events.find(e => {
                   const eventDate = new Date(e.date);
                   return eventDate.getDate() === day && eventDate.getMonth() === currentDate.getMonth() && eventDate.getFullYear() === currentDate.getFullYear();
                 });
@@ -659,29 +794,47 @@ const EventBanners = () => {
       venue: 'Main Court',
       maxParticipants: '',
       entryFee: '',
-      rules: ''
+      rules: '',
+      inclusions: ''
     });
 
     const handleField = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.value }));
 
-    const handleSubmit = () => {
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleFileUpload = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setIsUploading(true);
+      try {
+        const res = await uploadAdminImage(file);
+        setBannerPreview(res.url);
+      } catch (err) {
+        alert('Failed to upload banner');
+      } finally {
+        setIsUploading(false);
+      }
+    };
+
+    const handleSubmit = async () => {
       if (!formData.name) return;
-      const newEvent = {
-        id: Date.now(),
-        name: formData.name,
-        type: formData.type || 'Tournament',
-        date: formData.date || new Date().toISOString().split('T')[0],
-        time: formData.time || '',
-        venue: formData.venue || 'Main Court',
-        status: 'Upcoming',
-        participants: 0,
-        maxParticipants: parseInt(formData.maxParticipants) || 100,
-        revenue: 0,
-        expenses: 0,
-        banner: bannerPreview || 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=800&auto=format&fit=crop'
-      };
-      handleAddEvent(newEvent);
-      setView('DASHBOARD');
+      try {
+        const formattedRules = (formData.rules || '').split('\n').map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n');
+        const payload = {
+          kind: 'event',
+          title: formData.name,
+          subtitle: `${formData.date} | ${formData.time} | ${formData.venue} | ${formData.entryFee || '0'} | ${formData.type}`,
+          imageUrl: bannerPreview,
+          isPublished: true, 
+          body: `${formData.description || ''}\n\n${formattedRules}`,
+          inclusions: (formData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean)
+        };
+        await createAdminCms(payload);
+        loadEvents();
+        setView('DASHBOARD');
+      } catch (err) {
+        alert('Failed to create event');
+      }
     };
 
     return (
@@ -773,7 +926,7 @@ const EventBanners = () => {
                           >
                             Change
                             <input type="file" hidden accept="image/*"
-                              onChange={(e) => e.target.files?.[0] && setBannerPreview(URL.createObjectURL(e.target.files[0]))} />
+                              onChange={handleFileUpload} />
                           </Button>
                         </Box>
                       </Box>
@@ -789,9 +942,9 @@ const EventBanners = () => {
                           '&:hover': { borderColor: '#CE2029', bgcolor: 'rgba(206, 32, 41, 0.05)' }
                         }}
                       >
-                        Upload Banner (16:9)
+                        {isUploading ? 'Uploading...' : 'Upload Banner (16:9)'}
                         <input type="file" hidden accept="image/*"
-                          onChange={(e) => e.target.files?.[0] && setBannerPreview(URL.createObjectURL(e.target.files[0]))} />
+                          onChange={handleFileUpload} />
                       </Button>
                     )}
                   </Grid>
@@ -929,6 +1082,27 @@ const EventBanners = () => {
                     }}
                   />
                 </Box>
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
+                    What's Included (Amenities, comma separated)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="e.g. Sanitized, Equipment, Parking, Refreshments"
+                    value={formData.inclusions}
+                    onChange={handleField('inclusions')}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 3,
+                        bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                        '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
+                        '&:hover fieldset': { borderColor: '#CE202966' },
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                      }
+                    }}
+                  />
+                </Box>
               </Box>
             </motion.div>
           )}
@@ -977,7 +1151,7 @@ const EventBanners = () => {
       <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 800 }}>Athlete Registry</Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>{MOCK_PARTICIPANTS.length} confirmed entries</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>{participants.length} confirmed entries</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5, width: { xs: '100%', sm: 'auto' } }}>
           <TextField
@@ -1013,7 +1187,7 @@ const EventBanners = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {MOCK_PARTICIPANTS.map((row) => (
+            {participants.map((row) => (
               <TableRow key={row.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1025,7 +1199,7 @@ const EventBanners = () => {
                         border: '2px solid', borderColor: '#CE202944'
                       }}
                     >
-                      {row.name[0]}
+                      {row.name?.[0] || 'A'}
                     </Avatar>
                     <Box>
                       <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{row.name}</Typography>
@@ -1054,8 +1228,24 @@ const EventBanners = () => {
                 </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                    <Tooltip title="Approve"><IconButton size="small" sx={{ color: '#10B981', '&:hover': { bgcolor: '#10B98110' } }}><CheckCircle fontSize="small" /></IconButton></Tooltip>
-                    <Tooltip title="Reject"><IconButton size="small" sx={{ color: '#EF4444', '&:hover': { bgcolor: '#EF444410' } }}><Cancel fontSize="small" /></IconButton></Tooltip>
+                    <Tooltip title="Approve">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleUpdateStatus(row.id, 'Approved')}
+                        sx={{ color: '#10B981', '&:hover': { bgcolor: '#10B98110' } }}
+                      >
+                        <CheckCircle fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Reject">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleUpdateStatus(row.id, 'Rejected')}
+                        sx={{ color: '#EF4444', '&:hover': { bgcolor: '#EF444410' } }}
+                      >
+                        <Cancel fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -1186,11 +1376,11 @@ const EventBanners = () => {
               ].map((pos, i) => (
                 <PremiumCard key={i} sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 3, borderLeft: `4px solid ${pos.color}` }}>
                   <Avatar sx={{ width: 56, height: 56, bgcolor: `${pos.color}20`, color: pos.color, fontWeight: 900, border: '2px solid' }}>
-                    {MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name[0]}
+                    {participants.find(p => p.id === pos.id)?.name[0]}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="caption" sx={{ fontWeight: 800, color: pos.color, textTransform: 'uppercase', letterSpacing: 1.5 }}>{pos.rank}</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>{MOCK_PARTICIPANTS.find(p => p.id === pos.id)?.name || 'N/A'}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800 }}>{participants.find(p => p.id === pos.id)?.name || 'N/A'}</Typography>
                   </Box>
                   <EmojiEvents sx={{ color: pos.color, fontSize: 32, opacity: 0.3 }} />
                 </PremiumCard>
@@ -1245,12 +1435,12 @@ const EventBanners = () => {
                       sx={{ fontWeight: 800, fontSize: '1.1rem', color: pos.color }}
                     >
                       <MenuItem value="" disabled>Select Athlete...</MenuItem>
-                      {MOCK_PARTICIPANTS.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+                      {participants.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
                     </Select>
                   </Box>
                   {pos.value && (
                     <Avatar sx={{ width: 44, height: 44, bgcolor: `${pos.color}20`, color: pos.color, border: '2px solid' }}>
-                      {MOCK_PARTICIPANTS.find(p => p.id === pos.value)?.name[0]}
+                      {participants.find(p => p.id === pos.value)?.name[0]}
                     </Avatar>
                   )}
                 </PremiumCard>
@@ -1462,6 +1652,20 @@ const EventBanners = () => {
       '& .MuiButton-root, & input, & textarea, & select': { fontFamily: "'Inter', sans-serif" }
     }}>
       <Container maxWidth="xl">
+        <Box
+          sx={{
+            mb: 2,
+            p: 2,
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: isDark ? 'rgba(245, 158, 11, 0.35)' : 'rgba(245, 158, 11, 0.45)',
+            bgcolor: isDark ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 251, 235, 0.95)',
+          }}
+        >
+          <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
+            Demo UI: event banner scheduling here is local-only. Use Events admin + CMS for published events.
+          </Typography>
+        </Box>
         {/* View Switcher Tabs (Only if not in details view) */}
         {view !== 'DETAILS' && (
           <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
@@ -1663,25 +1867,44 @@ const EventBanners = () => {
         </Box>
 
         <DialogContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <TextField
-            fullWidth
-            label="Event Name"
-            variant="filled"
-            value={editFormData.name}
-            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-            InputProps={{ disableUnderline: true, sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc', p: 0.5 } }}
-            InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-          />
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+              Event Name
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={editFormData.name}
+              onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+              placeholder="e.g. Badminton Championship"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                  '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                  '&:hover fieldset': { borderColor: '#CE202944' },
+                  '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                }
+              }}
+            />
+          </Box>
 
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth variant="filled">
-                <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Type</InputLabel>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Event Type
+              </Typography>
+              <FormControl fullWidth>
                 <Select
                   value={editFormData.type}
                   onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
-                  disableUnderline
-                  sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                  sx={{ 
+                    borderRadius: 3, 
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CE202944' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#CE2029' }
+                  }}
                 >
                   <MenuItem value="Tournament">Tournament</MenuItem>
                   <MenuItem value="Camp">Training Camp</MenuItem>
@@ -1690,13 +1913,20 @@ const EventBanners = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth variant="filled">
-                <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Deployment Status</InputLabel>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Deployment Status
+              </Typography>
+              <FormControl fullWidth>
                 <Select
                   value={editFormData.status}
                   onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
-                  disableUnderline
-                  sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                  sx={{ 
+                    borderRadius: 3, 
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CE202944' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#CE2029' }
+                  }}
                 >
                   <MenuItem value="Upcoming">Upcoming</MenuItem>
                   <MenuItem value="Active">Active</MenuItem>
@@ -1705,6 +1935,162 @@ const EventBanners = () => {
               </FormControl>
             </Grid>
           </Grid>
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Event Date
+              </Typography>
+              <TextField
+                fullWidth
+                type="date"
+                variant="outlined"
+                value={editFormData.date}
+                onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover fieldset': { borderColor: '#CE202944' },
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Event Time
+              </Typography>
+              <TextField
+                fullWidth
+                type="time"
+                variant="outlined"
+                value={editFormData.time}
+                onChange={(e) => setEditFormData({ ...editFormData, time: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover fieldset': { borderColor: '#CE202944' },
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Event Venue
+              </Typography>
+              <TextField
+                fullWidth
+                variant="outlined"
+                value={editFormData.venue}
+                onChange={(e) => setEditFormData({ ...editFormData, venue: e.target.value })}
+                placeholder="e.g. Court 1"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover fieldset': { borderColor: '#CE202944' },
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Entry Fee (OMR)
+              </Typography>
+              <TextField
+                fullWidth
+                variant="outlined"
+                value={editFormData.entryFee}
+                onChange={(e) => setEditFormData({ ...editFormData, entryFee: e.target.value })}
+                placeholder="0.000"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover fieldset': { borderColor: '#CE202944' },
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                  }
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+              Event Description
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={2}
+              variant="outlined"
+              value={editFormData.description}
+              onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+              placeholder="Enter brief event description..."
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                  '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                  '&:hover fieldset': { borderColor: '#CE202944' },
+                  '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                }
+              }}
+            />
+          </Box>
+
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+              Rules & Guidelines (One per line)
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              variant="outlined"
+              value={editFormData.rules}
+              onChange={(e) => setEditFormData({ ...editFormData, rules: e.target.value })}
+              placeholder="1. Wear proper sports shoes..."
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                  '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                  '&:hover fieldset': { borderColor: '#CE202944' },
+                  '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                }
+              }}
+            />
+          </Box>
+          <Box sx={{ mt: 2, mb: 1 }}>
+            <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+              What's Included (Amenities, comma separated)
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={editFormData.inclusions}
+              onChange={(e) => setEditFormData({ ...editFormData, inclusions: e.target.value })}
+              placeholder="e.g. Sanitized, Equipment, Parking"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                  '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                  '&:hover fieldset': { borderColor: '#CE202944' },
+                  '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                }
+              }}
+            />
+          </Box>
 
           <Box>
             <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'text.secondary', display: 'block', mb: 1.5 }}>
@@ -1720,8 +2106,8 @@ const EventBanners = () => {
                   startIcon={<CloudUpload />}
                   sx={{ bgcolor: 'rgba(54, 69, 79, 0.8)', backdropFilter: 'blur(8px)', textTransform: 'none', fontWeight: 700, borderRadius: 2, '&:hover': { bgcolor: '#CE2029' } }}
                 >
-                  Swap Image
-                  <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && setEditFormData({ ...editFormData, banner: URL.createObjectURL(e.target.files[0]) })} />
+                  {isEditUploading ? 'Uploading...' : 'Swap Image'}
+                  <input type="file" hidden accept="image/*" onChange={handleEditFileUpload} />
                 </Button>
               </Box>
             </Box>

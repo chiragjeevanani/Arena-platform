@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Settings, Award, UserCheck, TrendingUp, Activity, LayoutGrid } from 'lucide-react';
 import { 
@@ -9,147 +9,33 @@ import {
 import Court1 from '../../../assets/Courts/court1.jpeg';
 import Court2 from '../../../assets/Courts/court2.jpeg';
 import Court3 from '../../../assets/Courts/court3.jpeg';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listAdminCoachingBatches } from '../../../services/adminOpsApi';
+import { listAdminBookings } from '../../../services/adminBookingsApi';
 
 
 
-const COACHES_DATA = [
-  { id: 1, name: 'Vikram Singh', role: 'Head Coach', specialty: 'Elite Training', students: 48, rating: 4.9, image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=150&auto=format&fit=crop', plan: 'Elite Partner', court: 'Court 01 - Main Arena', timing: '06:00 AM - 12:00 PM', salary: 45000, experience: '8 Years', status: 'Active', reviews: [{ user: 'Rahul A.', rating: 5, comment: 'Excellent technical skills.', date: '2 days ago' }] },
-  { id: 2, name: 'Anjali Sharma', role: 'Senior Pro', specialty: 'Junior Academy', students: 32, rating: 4.8, image: 'https://images.unsplash.com/photo-1548690312-e3b507d17a12?q=80&w=150&auto=format&fit=crop', plan: 'Standard Trainer', court: 'Court 03 - Smash Zone', timing: '04:00 PM - 08:30 PM', salary: 32000, experience: '5 Years', status: 'Active', reviews: [] },
-  { id: 3, name: 'Siddharth Roy', role: 'Trainer', specialty: 'Beginner Foundations', students: 25, rating: 4.7, image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150&auto=format&fit=crop', plan: 'Basic', court: 'Court 02 - Pro Arena', timing: '07:30 AM - 10:00 AM', salary: 18000, experience: '2 Years', status: 'Inactive', reviews: [] },
-];
-
-const REQUESTED_COACHES = [
-  { id: 4, name: 'Rahul Khanna', role: 'Applicant', specialty: 'Strength & Conditioning', dateApplied: '2 hours ago', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=150&auto=format&fit=crop', plan: 'Pending Approval', court: 'TBD', timing: 'TBD', salary: 25000, experience: '4 Years', status: 'Inactive' },
-];
-
-const ATTENDANCE_DATA = [
-  { id: 1, coachName: 'Vikram Singh', checkIn: '05:55 AM', checkOut: '01:15 PM', date: 'Today', status: 'On-time' },
-  { id: 2, coachName: 'Anjali Sharma', checkIn: '03:50 PM', checkOut: 'Pending', date: 'Today', status: 'On-time' },
-];
-
-const COACHING_TYPES = [
-  { id: 1, name: 'Weekday', description: 'Regular mon-fri training sessions', status: 'Active' },
-  { id: 2, name: 'Weekend Morning', description: 'Intensive weekend early sessions', status: 'Active' },
-  { id: 3, name: 'Weekend Evening', description: 'Advanced evening drills', status: 'Active' },
-  { id: 4, name: 'Special Coaching (Single)', description: 'One-on-one focused sessions', status: 'Active' },
-  { id: 5, name: 'Special Coaching (Double)', description: 'Pair training drills', status: 'Active' },
-  { id: 6, name: 'Group Coaching', description: 'Large group recreational sessions', status: 'Active' },
-];
-
-const PRICING_SLABS = [
-  { id: 1, typeId: 1, price: 3500, duration: 'Monthly', status: 'Active' },
-  { id: 2, typeId: 4, price: 500, duration: 'Per Session', status: 'Active' },
-  { id: 3, typeId: 6, price: 2000, duration: 'Monthly', status: 'Active' },
-];
-
-const BATCHES_DATA = [
-  { id: 'B-11', name: 'Elite Performance', coach: 'Vikram Singh', arena: 'Olympic Smash', frequency: 'Daily', time: '06:00 AM', enrolled: 12, capacity: 15, fee: 30 },
-  { id: 'B-12', name: 'Morning Stars', coach: 'Anjali Sharma', arena: 'Badminton Hub', frequency: 'Mon-Wed-Fri', time: '07:30 AM', enrolled: 8, capacity: 10, fee: 20 },
-];
-
-const STUDENT_DIRECTORY = [
-  { id: 1, name: 'RIA G SEBASTIAN', parent: 'GINEETH SEBASTIAN', group: 2, type: 'WEEKDAYS 4DW / WEEK SIB', price: 25, slot: '7 PM - 8 PM', level: 'ADVANCED', phone: '98878936', status: 'PAID', date: '30-Mar-26', paid: 25, pending: 0 },
-  { id: 2, name: 'IAN GEORGE', parent: 'SUDHIN GEORGE', group: 2, type: 'WEEKDAYS 4DW / WEEK SIB', price: 25, slot: '7 PM - 8 PM', level: 'ADVANCED', phone: '97756891', status: 'PAID', date: '30-Mar-26', paid: 25, pending: 0 },
-  { id: 3, name: 'ATHARV PARSEKAR', parent: 'DUTTA PARSEKAR', group: 1, type: 'WEEKDAYS 4DW / WEEK', price: 30, slot: '7 PM - 8 PM', level: 'ADVANCED', phone: 'N/A', status: 'PAID', date: '30-Mar-26', paid: 30, pending: 0 },
-  { id: 4, name: 'NAKSHATHRA', parent: 'N/A', group: 1, type: 'WEEKDAYS 4DW / WEEK', price: 30, slot: '7 PM - 8 PM', level: 'ADVANCED', phone: 'N/A', status: 'PARTLY PAID', date: '30-Mar-26', paid: 20, pending: 10 },
-];
-
+const COACHES_DATA = [];
+const REQUESTED_COACHES = [];
+const ATTENDANCE_DATA = [];
+const COACHING_TYPES = [];
+const PRICING_SLABS = [];
+const BATCHES_DATA = [];
+const STUDENT_DIRECTORY = [];
 const OFFICIAL_PROGRAMS = {
-  Weekdays: [
-    { id: 1, title: 'WEEKDAYS 4DW / WEEK', fee: 30 },
-    { id: 2, title: 'WEEKDAYS 4DW / WEEK SIB', fee: 25 },
-    { id: 3, title: 'WEEKDAYS 3DW / WEEK', fee: 20 },
-    { id: 4, title: 'WEEKDAYS 15 DAYS / MONTH', fee: 15 },
-  ],
-  Weekends: [
-    { id: 5, title: 'WEEKEND SESSIONS', fee: 30 },
-    { id: 6, title: 'WEEKEND SIBLING', fee: 25 },
-  ],
-  Special: [
-    { id: 7, title: 'ADULT TRAINING', fee: 30 },
-    { id: 8, title: 'SPECIAL SINGLE', fee: 7 },
-    { id: 9, title: 'SPECIAL DOUBLE', fee: 5 },
-    { id: 10, title: 'SPECIAL SIBLING', fee: 3 },
-    { id: 11, title: 'SPECIAL MONTHLY', fee: 80 },
-  ]
+  Weekdays: [],
+  Weekends: [],
+  Special: [],
 };
-
 const STUDENT_ATTENDANCE_STATS = {
-    daily: [
-        { 
-          court: 'Court 1', 
-          batch: 'Elite Performance', 
-          present: 14, 
-          total: 18, 
-          time: '06:00 AM', 
-          image: Court1,
-          presentStudents: ['Ria G Sebastian', 'Ian George', 'Atharv Parsekar', 'Nakshathra', 'Rahul A.', 'Siddharth R.', 'Vikram S.', 'Anjali S.', 'Divya K.', 'Karan M.', 'Sonia L.', 'Amit P.', 'Neha J.', 'Rohit S.'],
-          absentStudents: ['Gineeth S.', 'Sudhin G.', 'Parsekar D.', 'Anand P.']
-        },
-        { 
-          court: 'Court 2', 
-          batch: 'Morning Stars', 
-          present: 8, 
-          total: 12, 
-          time: '07:30 AM', 
-          image: Court2,
-          presentStudents: ['Arjun V.', 'Meera B.', 'Sahil T.', 'Pooja R.', 'Varun D.', 'Simran K.', 'Ishaan G.', 'Rhea M.'],
-          absentStudents: ['Kunal Z.', 'Sneha W.', 'Prateek L.', 'Ishita V.']
-        },
-        { 
-          court: 'Court 3', 
-          batch: 'Junior Academy', 
-          present: 18, 
-          total: 22, 
-          time: '04:00 PM', 
-          image: Court3,
-          presentStudents: ['Kavya S.', 'Rohan J.', 'Ananya P.', 'Aryan K.', 'Saanvi M.', 'Advik G.', 'Prisha T.', 'Vivaan R.', 'Shanaya B.', 'Aarav V.', 'Myra D.', 'Reyansh S.', 'Kiara L.', 'Zoya K.', 'Kabir H.', 'Ishani F.', 'Samaira N.', 'Ahaan C.'],
-          absentStudents: ['Naira G.', 'Zaid P.', 'Inaya R.', 'Yuvraj B.']
-        },
-        { 
-          court: 'Court 4', 
-          batch: 'Pro Drillers', 
-          present: 12, 
-          total: 15, 
-          time: '06:00 PM', 
-          image: Court1,
-          presentStudents: ['Devansh Q.', 'Tia W.', 'Ranveer E.', 'Anika Y.', 'Hrithik U.', 'Sanya I.', 'Abhimanyu O.', 'Tara K.', 'Vedant A.', 'Ishita S.', 'Yuvraj M.', 'Anya D.'],
-          absentStudents: ['Manish P.', 'Radhika S.', 'Tushar K.']
-        },
-        { 
-          court: 'Court 5', 
-          batch: 'Evening Smashers', 
-          present: 10, 
-          total: 14, 
-          time: '08:00 PM', 
-          image: Court2,
-          presentStudents: ['Aditya G.', 'Bhavna K.', 'Chaitanya R.', 'Deepika S.', 'Eshaan V.', 'Farhan M.', 'Gitanjali P.', 'Harshita D.', 'Inder J.', 'Jasmine K.'],
-          absentStudents: ['Kartik R.', 'Lavanya S.', 'Manav B.', 'Nupur K.']
-        },
-    ],
-
-
-
-    monthly: [
-        { day: '01', present: 85 }, { day: '05', present: 92 }, { day: '10', present: 78 },
-        { day: '15', present: 95 }, { day: '20', present: 88 }, { day: '25', present: 94 },
-        { day: '30', present: 91 },
-    ],
-    yearly: [
-        { month: 'Jan', rate: 88 }, { month: 'Feb', rate: 92 }, { month: 'Mar', rate: 95 },
-        { month: 'Apr', rate: 91 }, { month: 'May', rate: 89 }, { month: 'Jun', rate: 85 },
-        { month: 'Jul', rate: 82 }, { month: 'Aug', rate: 88 }, { month: 'Sep', rate: 94 },
-        { month: 'Oct', rate: 96 }, { month: 'Nov', rate: 93 }, { month: 'Dec', rate: 90 },
-    ]
+  daily: [],
+  monthly: [],
+  yearly: [],
 };
-
-const BOOKINGS_DATA = [
-  { id: 'BK-1001', customer: 'Ahmed Al Rashid', court: 'Court 01', arena: 'Olympic Smash Arena', date: '15-Apr-26', time: '06:00 AM - 07:00 AM', amount: 30.00, status: 'Completed', payment: 'Paid' },
-  { id: 'BK-1002', customer: 'Sara Al Balushi', court: 'Court 03', arena: 'Badminton Hub', date: '15-Apr-26', time: '07:30 AM - 09:00 AM', amount: 20.00, status: 'Completed', payment: 'Paid' },
-  { id: 'BK-1003', customer: 'Mohammed Farhan', court: 'Court 02', arena: 'Pro Arena', date: '15-Apr-26', time: '04:00 PM - 05:30 PM', amount: 25.00, status: 'Upcoming', payment: 'Paid' },
-  { id: 'BK-1004', customer: 'Nadia Hassan', court: 'Court 01', arena: 'Olympic Smash Arena', date: '14-Apr-26', time: '06:00 PM - 07:00 PM', amount: 30.00, status: 'Completed', payment: 'Cash' },
-  { id: 'BK-1005', customer: 'Khalid Al Amri', court: 'Court 04', arena: 'Smash Zone', date: '14-Apr-26', time: '08:00 PM - 09:00 PM', amount: 35.00, status: 'Cancelled', payment: 'Refunded' },
-];
+const BOOKINGS_DATA = [];
 
 const CoachingAdmin = () => {
   const [view, setView] = useState('students'); // students | batches | coaches | attendance | programs | bookings | student-attendance
@@ -168,6 +54,50 @@ const CoachingAdmin = () => {
   const [students, setStudents] = useState(STUDENT_DIRECTORY);
   const [bookings, setBookings] = useState(BOOKINGS_DATA);
   const [showCoachModal, setShowCoachModal] = useState(false);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const ar = await fetchPublicArenas();
+        const list = (ar.arenas || []).map(normalizeListArena);
+        const aid = list[0]?.id;
+        if (!aid) return;
+        const [cb, bk] = await Promise.all([
+          listAdminCoachingBatches(String(aid)),
+          listAdminBookings({ arenaId: String(aid) }),
+        ]);
+        if (cancelled) return;
+        const br = (cb.batches || []).map((b) => ({
+          id: b.id,
+          name: b.title,
+          coach: '—',
+          capacity: b.capacity,
+          enrolled: 0,
+          fee: b.price ?? 0,
+          frequency: b.schedule || '',
+          time: '',
+          arena: list[0]?.name || '',
+        }));
+        if (br.length) setBatches(br);
+        const rows = (bk.bookings || []).slice(0, 20).map((b) => ({
+          id: b.id,
+          date: b.date,
+          court: b.courtName || '—',
+          player: `User …${String(b.userId || '').slice(-6)}`,
+          time: b.timeSlot || '',
+          status: b.status,
+        }));
+        if (rows.length) setBookings(rows);
+      } catch {
+        /* keep demo empty state */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [editingCoach, setEditingCoach] = useState(null);
   const [coaches, setCoaches] = useState(COACHES_DATA);
   const [requestedCoaches, setRequestedCoaches] = useState(REQUESTED_COACHES);
@@ -230,7 +160,7 @@ const CoachingAdmin = () => {
         salary: Number(salary),
         experience,
         status,
-        image: selectedImage || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=150&auto=format&fit=crop',
+        image: selectedImage || '',
         students: 0,
         rating: 5.0,
         reviews: []
@@ -270,7 +200,7 @@ const CoachingAdmin = () => {
       setToast('Batch updated successfully');
     } else {
       const newBatchObj = {
-        id: `B-${Math.floor(10 + Math.random() * 90)}`,
+        id: `B-${Date.now()}`,
         name,
         coach,
         capacity,
@@ -353,7 +283,7 @@ const CoachingAdmin = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const bookingData = {
-      id: editingBooking?.id || `BK-${Math.floor(1000 + Math.random() * 9000)}`,
+      id: editingBooking?.id || `BK-${Date.now()}`,
       customer: formData.get('customer'),
       court: formData.get('court'),
       arena: formData.get('arena'),

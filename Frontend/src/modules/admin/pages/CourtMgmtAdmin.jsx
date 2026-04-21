@@ -5,10 +5,8 @@ import {
   CheckCircle2, X, Activity, Layers, ChevronRight,
   Maximize2, Save, MoreVertical, Globe, Settings2, ShieldCheck, User
 } from 'lucide-react';
-import { MOCK_DB } from '../../../data/mockDatabase';
-
 const CourtMgmtAdmin = () => {
-  const [courts, setCourts] = useState(MOCK_DB.courts);
+  const [courts, setCourts] = useState([]);
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ name: '', type: '', status: '', baseRate: '' });

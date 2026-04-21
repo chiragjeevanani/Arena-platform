@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -6,15 +6,40 @@ import {
   ChevronRight, Search, Filter, 
   Target, Users, ArrowLeft
 } from 'lucide-react';
-import { ARENAS } from '../../../data/mockData';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
 
 const ArenaListAdmin = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [arenas, setArenas] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
-  const filtered = ARENAS.filter(a => 
+  useEffect(() => {
+    if (!isApiConfigured()) {
+      setLoadError('Set VITE_API_URL to load arenas from the server.');
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchPublicArenas();
+        if (cancelled) return;
+        setArenas((data.arenas || []).map(normalizeListArena));
+        setLoadError('');
+      } catch (e) {
+        if (!cancelled) setLoadError(e.message || 'Failed to load arenas');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filtered = arenas.filter(a => 
     a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.location.toLowerCase().includes(searchTerm.toLowerCase())
+    (a.location || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -59,8 +84,15 @@ const ArenaListAdmin = () => {
         </button>
       </div>
 
+      {loadError && (
+        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">{loadError}</p>
+      )}
+
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 pt-4">
+        {!loadError && filtered.length === 0 && (
+          <p className="text-sm text-slate-500 col-span-full py-6">No published arenas yet. Publish an arena in the backend or adjust your search.</p>
+        )}
         {filtered.map((arena) => (
           <motion.div
             key={arena.id}

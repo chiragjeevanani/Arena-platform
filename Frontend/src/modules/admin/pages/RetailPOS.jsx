@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CreditCard, Search, ShoppingCart, User, Plus, Minus, 
   Trash2, CheckCircle2, Receipt, ChevronRight, 
   Package, Store, Zap, ArrowRight, Tag, ShoppingBag, ArrowUpRight
 } from 'lucide-react';
+import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import {
+  listArenaAdminInventoryItems,
+  createArenaAdminPosSale,
+} from '../../../services/arenaAdminApi';
+import { listAdminInventoryItems, createAdminPosSale } from '../../../services/adminOpsApi';
+import { resolveLiveOpsArenaScope } from '../../../utils/liveOpsScope';
+import { mapArenaInventoryItemToPosProduct } from '../../../utils/arenaInventoryAdapter';
 
-const ITEMS = [
+const STATIC_CATALOG = [
   { id: 1, name: 'Yonex Mavis 350 (Y)', price: 1.200, category: 'Equipment', stock: 42, sku: 'SN-001' },
   { id: 2, name: 'Grip Wrap (Blue)', price: 0.450, category: 'Accessories', stock: 128, sku: 'GR-022' },
   { id: 3, name: 'Gatorade Blue (500ml)', price: 0.600, category: 'Drinks', stock: 24, sku: 'DR-109' },
@@ -15,12 +26,66 @@ const ITEMS = [
   { id: 6, name: 'Shuttlecock Box (10x)', price: 11.000, category: 'Equipment', stock: 12, sku: 'SN-112' },
 ];
 
-const CATEGORIES = ['All', 'Equipment', 'Drinks', 'Accessories', 'Services'];
+const CATEGORIES_FULL = ['All', 'Equipment', 'Drinks', 'Accessories', 'Services'];
 
 const RetailPOS = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const arenaIdFromQuery = searchParams.get('arenaId');
+
+  const opsScope = useMemo(
+    () =>
+      resolveLiveOpsArenaScope(user, {
+        apiConfigured: isApiConfigured(),
+        hasToken: Boolean(getAuthToken()),
+        arenaIdFromQuery,
+      }),
+    [user, arenaIdFromQuery]
+  );
+
+  const [catalogItems, setCatalogItems] = useState(() => STATIC_CATALOG);
+
+  const refetchCatalog = useCallback(async () => {
+    if (!opsScope.live) return;
+    const data =
+      opsScope.channel === 'arena'
+        ? await listArenaAdminInventoryItems(opsScope.arenaId)
+        : await listAdminInventoryItems({ arenaId: opsScope.arenaId });
+    setCatalogItems((data.items || []).map(mapArenaInventoryItemToPosProduct));
+  }, [opsScope]);
+
+  useEffect(() => {
+    if (!opsScope.live) {
+      setCatalogItems(STATIC_CATALOG);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        await refetchCatalog();
+      } catch {
+        if (!cancelled) setCatalogItems([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [opsScope, refetchCatalog]);
+
+  const categoryOptions = useMemo(
+    () => (opsScope.live ? ['All', 'Equipment'] : CATEGORIES_FULL),
+    [opsScope.live]
+  );
+
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  useEffect(() => {
+    if (!categoryOptions.includes(selectedCategory)) {
+      setSelectedCategory('All');
+    }
+  }, [categoryOptions, selectedCategory]);
   const [selectedCustomer, setSelectedCustomer] = useState({ name: 'Walk-in Customer', id: 'GUEST-01', phone: 'N/A' });
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
@@ -70,13 +135,48 @@ const RetailPOS = () => {
     }
   };
 
-  const finalizeTransaction = (method) => {
+  const finalizeTransaction = async (method) => {
+    if (opsScope.live) {
+      try {
+        const lines = cart.map((i) => ({
+          inventoryItemId: String(i.id),
+          qty: i.qty,
+          unitPrice: i.price,
+        }));
+        const saleBody = { arenaId: opsScope.arenaId, lines };
+        const { sale } =
+          opsScope.channel === 'arena'
+            ? await createArenaAdminPosSale(saleBody)
+            : await createAdminPosSale(saleBody);
+        setLastOrder({
+          items: [...cart],
+          subtotal,
+          tax,
+          total: currentTotal,
+          orderId: sale?.id ? `POS-${sale.id}` : `AMM-${Date.now()}`,
+          date: new Date().toLocaleString(),
+          paymentMethod: method,
+          customer: selectedCustomer,
+          cashReceived: method === 'CASH' ? Number(cashTendered) : currentTotal,
+          change: method === 'CASH' ? Number(cashTendered) - currentTotal : 0,
+        });
+        setCart([]);
+        setShowPaymentModal(false);
+        setShowReceipt(true);
+        setCashTendered('');
+        await refetchCatalog();
+      } catch (e) {
+        alert(e.message || 'Sale could not be recorded');
+        setShowPaymentModal(false);
+      }
+      return;
+    }
     setLastOrder({
       items: [...cart],
       subtotal,
       tax,
       total: currentTotal,
-      orderId: `AMM-${Math.floor(Math.random() * 9000) + 1000}`,
+      orderId: `AMM-${Date.now()}`,
       date: new Date().toLocaleString(),
       paymentMethod: method,
       customer: selectedCustomer,
@@ -95,8 +195,10 @@ const RetailPOS = () => {
 
   const removeFromCart = (id) => setCart(cart.filter(i => i.id !== id));
 
-  const filteredItems = ITEMS.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
+  const filteredItems = catalogItems.filter(item => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      String(item.sku || '').toLowerCase().includes(search.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -120,7 +222,7 @@ const RetailPOS = () => {
               </div>
               
               <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-sm border border-slate-200">
-                {CATEGORIES.map((cat) => (
+                {categoryOptions.map((cat) => (
                   <button 
                     key={cat} 
                     onClick={() => setSelectedCategory(cat)}
@@ -135,6 +237,13 @@ const RetailPOS = () => {
                 ))}
               </div>
             </div>
+
+            {user?.role === 'SUPER_ADMIN' && isApiConfigured() && getAuthToken() && !opsScope.live ? (
+              <div className="mb-4 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-semibold text-amber-950">
+                Live POS catalog: add <span className="font-mono">?arenaId=&lt;Mongo id&gt;</span> to this URL to sell from API inventory (
+                <span className="font-mono">/api/admin/pos/sales</span>).
+              </div>
+            ) : null}
 
             {/* Search Bar (Sharp Edges) */}
             <div className="relative">

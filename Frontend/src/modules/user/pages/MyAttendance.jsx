@@ -1,12 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Calendar, BarChart3, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listMyAttendance } from '../../../services/meApi';
+
+function toYmd(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
 
 const MyAttendance = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const [attendanceByDate, setAttendanceByDate] = useState({});
   const [attendanceTab, setAttendanceTab] = useState('daily'); // 'daily' | 'monthly' | 'yearly'
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [expandedWeek, setExpandedWeek] = useState(null);
@@ -15,6 +24,34 @@ const MyAttendance = () => {
 
   const monthName = currentMonth.toLocaleString('default', { month: 'long' }).toUpperCase();
   const year = currentMonth.getFullYear();
+
+  const monthKey = useMemo(() => {
+    const p = (n) => String(n).padStart(2, '0');
+    return `${currentMonth.getFullYear()}-${p(currentMonth.getMonth() + 1)}`;
+  }, [currentMonth]);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) {
+      setAttendanceByDate({});
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await listMyAttendance({ month: monthKey });
+        const map = {};
+        (data.sessions || []).forEach((s) => {
+          map[s.sessionDate] = s.status;
+        });
+        if (!cancelled) setAttendanceByDate(map);
+      } catch {
+        if (!cancelled) setAttendanceByDate({});
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [monthKey]);
 
   const goToPreviousMonth = () => {
     setCurrentMonth((prevMonth) => new Date(prevMonth.getFullYear(), prevMonth.getMonth() - 1, 1));
@@ -46,41 +83,22 @@ const MyAttendance = () => {
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, currentMonth.getMonth(), day);
-      const dayOfWeek = date.getDay();
-      // Mock attendance data - randomly assign present/absent
-      const isPresent = Math.random() > 0.2;
+      const key = toYmd(date);
+      const st = attendanceByDate[key];
+      let status = 'none';
+      if (st === 'present' || st === 'late') status = 'present';
+      else if (st === 'absent' || st === 'excused') status = 'absent';
       days.push({
         day: day,
         date: date,
-        status: isPresent ? 'present' : 'absent'
+        status,
       });
     }
 
     return days;
   };
 
-  const getYearlyData = () => {
-    const allMonths = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    
-    const currentYearValue = new Date().getFullYear();
-    const currentMonthIndex = new Date().getMonth();
-    
-    let monthsToShow = 12;
-    if (selectedYear > currentYearValue) {
-      monthsToShow = 0;
-    } else if (selectedYear === currentYearValue) {
-      monthsToShow = currentMonthIndex + 1;
-    }
-    
-    return allMonths.slice(0, monthsToShow).map((month, idx) => {
-      const seed = (selectedYear % 100) + idx;
-      const rate = Math.floor(((seed * 7) % 25) + 75); 
-      return { month, rate };
-    });
-  };
+  const getYearlyData = () => [];
 
   const yearlyData = getYearlyData();
   const yearlyAverage = yearlyData.length > 0 
@@ -450,6 +468,8 @@ const MyAttendance = () => {
                           <div className={`aspect-square rounded-lg flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer hover:scale-110 ${
                             dayData.status === 'present'
                               ? 'bg-green-500 text-white shadow-md'
+                              : dayData.status === 'none'
+                                ? (isDark ? 'bg-white/5 text-slate-500 border border-white/10' : 'bg-slate-100 text-slate-400 border border-slate-200')
                               : 'bg-red-500/10 text-red-500 border border-red-500/20'
                           }`}>
                             {dayData.day}

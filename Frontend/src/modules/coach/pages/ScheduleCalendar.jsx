@@ -5,20 +5,47 @@ import {
   Users, Video, X, Layers, Info
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listCoachBatches } from '../../../services/coachApi';
+import { mapApiBatchToCard } from '../utils/coachBatchUi';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const HOURS = ['06 AM', '07 AM', '08 AM', '09 AM', '10 AM', '11 AM', '12 PM', '01 PM', '02 PM', '03 PM', '04 PM', '05 PM', '06 PM', '07 PM', '08 PM'];
 
-const SESSIONS = [
-  { id: 1, batch: 'Morning Elite', dayIdx: 1, startHour: 6, duration: 2, students: 12, court: 'Court 1', arena: 'Olympic Smash', type: 'Offline', color: '#CE2029', level: 'Advanced' },
-  { id: 2, batch: 'Junior Stars', dayIdx: 2, startHour: 8, duration: 1.5, students: 8, court: 'Court 3', arena: 'Badminton Hub', type: 'Offline', color: '#36454F', level: 'Beginner' },
-  { id: 3, batch: 'Pro Analytics', dayIdx: 3, startHour: 13, duration: 1.5, students: 15, court: 'Zoom', arena: 'Online', type: 'Online', color: '#6366f1', level: 'Intermediate' },
-  { id: 4, batch: 'Morning Elite', dayIdx: 3, startHour: 6, duration: 2, students: 12, court: 'Court 1', arena: 'Olympic Smash', type: 'Offline', color: '#CE2029', level: 'Advanced' },
-  { id: 5, batch: 'Evening Drill', dayIdx: 4, startHour: 11, duration: 2, students: 10, court: 'Court 2', arena: 'Olympic Smash', type: 'Offline', color: '#f59e0b', level: 'Intermediate' },
-  { id: 6, batch: 'Junior Stars', dayIdx: 5, startHour: 8, duration: 1.5, students: 8, court: 'Court 3', arena: 'Badminton Hub', type: 'Offline', color: '#36454F', level: 'Beginner' },
-];
-
 const HOUR_START = 6;
+
+/** Derive calendar blocks from batch schedule text (best-effort) */
+function batchesToSessions(batches) {
+  return batches.map((b, i) => {
+    const sched = `${b.raw?.schedule || ''} ${b.raw?.title || ''}`.toLowerCase();
+    let dayIdx = 2;
+    const dayMatch = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].findIndex((d) => sched.includes(d));
+    if (dayMatch >= 0) dayIdx = dayMatch;
+    else dayIdx = 1 + (i % 5);
+    let startHour = 9;
+    const hm = sched.match(/(\d{1,2})\s*(?::(\d{2}))?\s*(am|pm)?/i);
+    if (hm) {
+      let h = parseInt(hm[1], 10);
+      const ap = (hm[3] || '').toLowerCase();
+      if (ap === 'pm' && h < 12) h += 12;
+      if (ap === 'am' && h === 12) h = 0;
+      startHour = Math.min(20, Math.max(6, h));
+    } else {
+      startHour = 9 + (i % 4);
+    }
+    return {
+      id: b.id,
+      dayIdx,
+      startHour,
+      duration: 2,
+      batch: b.name,
+      students: b.students,
+      court: b.arena,
+      color: b.color,
+    };
+  });
+}
 
 const getToday = () => new Date().getDay();
 
@@ -42,6 +69,7 @@ const fmtHour = (h, isMobile) => {
 
 const ScheduleCalendar = () => {
   const { isDark } = useTheme();
+  const [sessions, setSessions] = useState([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedSession, setSelectedSession] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -54,6 +82,24 @@ const ScheduleCalendar = () => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await listCoachBatches();
+        if (cancelled) return;
+        const cards = (data.batches || []).map((raw) => ({ ...mapApiBatchToCard(raw), raw }));
+        setSessions(batchesToSessions(cards));
+      } catch {
+        if (!cancelled) setSessions([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const cellHeight = isMobile ? 40 : 44;
@@ -132,9 +178,9 @@ const ScheduleCalendar = () => {
 
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: viewMode === 'week' ? 'Sessions This Week' : 'Sessions This Month', value: viewMode === 'week' ? SESSIONS.length : SESSIONS.length * 4, icon: CalendarDays },
-          { label: 'Total Students', value: SESSIONS.reduce((a, b) => a + b.students, 0), icon: Users },
-          { label: 'Hours Scheduled', value: `${SESSIONS.reduce((a, b) => a + b.duration, 0)}h`, icon: Clock },
+          { label: viewMode === 'week' ? 'Sessions This Week' : 'Sessions This Month', value: viewMode === 'week' ? sessions.length : sessions.length * 4, icon: CalendarDays },
+          { label: 'Total Students', value: sessions.reduce((a, b) => a + b.students, 0), icon: Users },
+          { label: 'Hours Scheduled', value: `${sessions.reduce((a, b) => a + b.duration, 0)}h`, icon: Clock },
         ].map((stat, i) => (
           <div key={i} className={`rounded-xl border shadow-sm flex px-3 py-2.5 items-center gap-2.5 ${isDark ? 'bg-[#1a1d24] border-white/5' : 'bg-white border-slate-100'}`}>
             <div className="w-7 h-7 rounded-lg bg-[#CE2029]/10 flex items-center justify-center shrink-0">
@@ -174,7 +220,7 @@ const ScheduleCalendar = () => {
                   ))}
                 </div>
                 {weekDates.map((_, dayIdx) => {
-                  const daySessions = SESSIONS.filter(s => s.dayIdx === dayIdx);
+                  const daySessions = sessions.filter(s => s.dayIdx === dayIdx);
                   return (
                     <div key={dayIdx} className={`relative border-r ${isDark ? 'border-white/8' : 'border-slate-200'}`} style={{ height: HOURS.length * cellHeight }}>
                       {HOURS.map((_, hIdx) => (
@@ -203,7 +249,7 @@ const ScheduleCalendar = () => {
                   <div key={`empty-${i}`} className={`h-32 border border-transparent opacity-10 bg-slate-50 dark:bg-white/5 rounded-2xl m-1`} />
                 ))}
                 {getMonthDays(selectedDate).map(date => {
-                    const daySessions = SESSIONS.filter(s => s.dayIdx === date.getDay());
+                    const daySessions = sessions.filter(s => s.dayIdx === date.getDay());
                     const isToday = date.toDateString() === new Date().toDateString();
                     return (
                         <div key={date.toISOString()} className={`min-h-[140px] border border-transparent rounded-2xl m-1 p-3 transition-all cursor-pointer ${
@@ -271,8 +317,8 @@ const ScheduleCalendar = () => {
                 </div>
                 
                 <div className="px-8 pb-32 space-y-3.5 overflow-y-auto">
-                  {SESSIONS.filter(s => s.dayIdx === selectedDate.getDay()).length > 0 ? (
-                    SESSIONS.filter(s => s.dayIdx === selectedDate.getDay()).map((session, sidx) => (
+                  {sessions.filter(s => s.dayIdx === selectedDate.getDay()).length > 0 ? (
+                    sessions.filter(s => s.dayIdx === selectedDate.getDay()).map((session, sidx) => (
                       <motion.div 
                         key={session.id} 
                         initial={{ opacity: 0, x: -10 }} 
@@ -364,7 +410,7 @@ const ScheduleCalendar = () => {
           {monthDays.map(date => {
             const isToday = date.toDateString() === new Date().toDateString();
             const isSelected = date.toDateString() === selectedDate.toDateString();
-            const daySessions = SESSIONS.filter(s => s.dayIdx === date.getDay());
+            const daySessions = sessions.filter(s => s.dayIdx === date.getDay());
             
             return (
               <button 

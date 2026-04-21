@@ -1,22 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { MapPin, Star, ArrowLeft, Search } from 'lucide-react';
-import { ARENAS } from '../../../data/mockData';
-import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import DesktopNavbar from '../components/DesktopNavbar';
-import { useTheme } from '../context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
 
 const ArenaListing = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const { toggleTheme } = useTheme();
-  const isDark = false; // Forced for removal of dark mode
+  const [arenas, setArenas] = useState([]);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    if (!isApiConfigured()) {
+      setLoadError('Set VITE_API_URL to load arenas from the server.');
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchPublicArenas();
+        if (cancelled) return;
+        setArenas((data.arenas || []).map(normalizeListArena));
+      } catch (e) {
+        if (!cancelled) setLoadError(e.message || 'Failed to load arenas');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const categories = ['All', 'Badminton', 'Table Tennis'];
 
-  const filteredArenas = ARENAS.filter(a => {
+  const filteredArenas = arenas.filter(a => {
     const matchesSearch = a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || a.category === selectedCategory;
@@ -70,7 +90,17 @@ const ArenaListing = () => {
 
       {/* Arena List */}
       <div className="max-w-5xl mx-auto px-6 mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
-        {filteredArenas.map((arena, index) => (
+        {loadError && (
+          <div className="col-span-full text-center text-sm text-red-600 font-semibold py-6">
+            {loadError}
+          </div>
+        )}
+        {!loadError && filteredArenas.length === 0 && (
+          <div className="col-span-full text-center text-slate-500 text-sm py-10">
+            No arenas published yet. Add one in the admin API and refresh.
+          </div>
+        )}
+        {filteredArenas.map((arena) => (
           <div
             key={arena.id}
             className={`rounded-3xl overflow-hidden group cursor-pointer transition-all duration-500 border bg-white border-slate-200 hover:border-[#CE2029]/30 shadow-sm hover:shadow-md`}

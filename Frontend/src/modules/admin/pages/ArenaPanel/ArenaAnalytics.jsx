@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { TrendingUp, Users, Target, DollarSign, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const COURT_REVENUE = [
   { name: 'Court 1', revenue: 450.500, occupancy: 85, bookings: 42 },
@@ -13,6 +14,9 @@ const COURT_REVENUE = [
 const ArenaAnalytics = () => {
   return (
     <div className="space-y-6">
+      <ArenaPanelDemoBanner>
+        Analytics are simulated on this prototype screen until wired to arena-admin APIs.
+      </ArenaPanelDemoBanner>
       {/* Top Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[

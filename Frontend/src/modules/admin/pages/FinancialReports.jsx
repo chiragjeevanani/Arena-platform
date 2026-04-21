@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PieChart, Download, Calendar, ArrowUpRight, ArrowDownLeft,
@@ -13,70 +13,19 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePieChart, Pie, Cell, Legend,
   LineChart, Line
 } from 'recharts';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { getAdminReportSummary } from '../../../services/adminReportsApi';
 
-// ── Mock Data ──────────────────────────────────────────────────
-const weeklyRevenue = [
-  { name: 'Mon', courts: 2400, coaching: 1200, retail: 400, events: 0, membership: 850 },
-  { name: 'Tue', courts: 1800, coaching: 980, retail: 320, events: 600, membership: 420 },
-  { name: 'Wed', courts: 3200, coaching: 2400, retail: 580, events: 0, membership: 1200 },
-  { name: 'Thu', courts: 2100, coaching: 1700, retail: 290, events: 0, membership: 600 },
-  { name: 'Fri', courts: 2900, coaching: 1100, retail: 440, events: 1200, membership: 950 },
-  { name: 'Sat', courts: 5100, coaching: 3800, retail: 820, events: 2000, membership: 1500 },
-  { name: 'Sun', courts: 6200, coaching: 4300, retail: 910, events: 1800, membership: 2100 },
-];
-
-const correlationData = [
-  { name: 'W1', events: 0, retail: 1200 },
-  { name: 'W2', events: 2500, retail: 4800 },
-  { name: 'W3', events: 0, retail: 1400 },
-  { name: 'W4', events: 4000, retail: 7200 },
-  { name: 'W5', events: 1200, retail: 2800 },
-];
-
-const monthlyRevenue = [
-  { name: 'Jan', revenue: 18400 }, { name: 'Feb', revenue: 21200 }, { name: 'Mar', revenue: 25100 },
-  { name: 'Apr', revenue: 22800 }, { name: 'May', revenue: 31500 }, { name: 'Jun', revenue: 38200 },
-  { name: 'Jul', revenue: 35100 }, { name: 'Aug', revenue: 29800 }, { name: 'Sep', revenue: 33600 },
-  { name: 'Oct', revenue: 41200 }, { name: 'Nov', revenue: 38700 }, { name: 'Dec', revenue: 45900 },
-];
-
-const courtUtilization = [
-  { id: 'c1', name: 'Court 1', utilization: 87, revenue: 12400 },
-  { id: 'c2', name: 'Court 2', utilization: 73, revenue: 10200 },
-  { id: 'c3', name: 'Court 3', utilization: 91, revenue: 14100 },
-  { id: 'c4', name: 'Court 4', utilization: 65, revenue: 8900 },
-  { id: 'c5', name: 'Court 5', utilization: 78, revenue: 11200 },
-];
-
-const coachingRevenue = [
-  { id: 'b1', name: 'Morning Elite', morning: 4200, evening: 0, weekend: 0, total: 4200 },
-  { id: 'b2', name: 'Evening Pro', morning: 0, evening: 3600, weekend: 0, total: 3600 },
-  { id: 'b3', name: 'Weekend Junior', morning: 0, evening: 0, weekend: 6200, total: 6200 },
-];
-
-const revenueBySource = [
-  { name: 'Court Bookings', value: 42, color: '#CE2029' },
-  { name: 'Coaching', value: 24, color: '#36454F' },
-  { name: 'Memberships', value: 16, color: '#4287f5' },
-  { name: 'Retail POS', value: 9, color: '#E88E3E' },
-  { name: 'Events', value: 6, color: '#76A87A' },
-  { name: 'Sponsorships', value: 3, color: '#64748b' },
-];
-
-const outstandingPayments = [
-  { id: 'BK-1002', customer: 'Ali Al-Said', amount: 35, type: 'Court Booking', dueDate: '2026-03-15', days: 13 },
-  { id: 'AC-2201', customer: 'Fatima Al-Harthy', amount: 250, type: 'Coaching Fee', dueDate: '2026-03-10', days: 18 },
-  { id: 'BK-1007', customer: 'Salim Al-Abri', amount: 45, type: 'Court Booking', dueDate: '2026-03-20', days: 8 },
-  { id: 'AC-2198', customer: 'Muna Al-Maskari', amount: 350, type: 'Coaching — Quarterly', dueDate: '2026-03-05', days: 23 },
-];
-
-const ledgerEntries = [
-  { type: 'Court Bookings', id: 'TR-1082XN', amount: 82, mode: 'Credit', date: '12 Mar 2026' },
-  { type: 'Academy Fees', id: 'TR-1081XN', amount: 125, mode: 'Credit', date: '12 Mar 2026' },
-  { type: 'POS Retail', id: 'TR-1080XN', amount: 41, mode: 'Credit', date: '11 Mar 2026' },
-  { type: 'Maintenance', id: 'TR-1079XN', amount: 150, mode: 'Debit', date: '11 Mar 2026' },
-  { type: 'Event Revenue', id: 'TR-1078XN', amount: 62, mode: 'Credit', date: '10 Mar 2026' },
-];
+// Revenue and ledger rows load from the API when connected.
+const weeklyRevenue = [];
+const correlationData = [];
+const monthlyRevenue = [];
+const courtUtilization = [];
+const coachingRevenue = [];
+const revenueBySource = [];
+const outstandingPayments = [];
+const ledgerEntries = [];
 
 // ── Main Component ─────────────────────────────────────────────
 const FinancialReports = () => {
@@ -92,6 +41,28 @@ const FinancialReports = () => {
   
   const [selectedCourt, setSelectedCourt] = useState('All Courts');
   const [selectedBatch, setSelectedBatch] = useState('All Batches');
+  const [apiSummary, setApiSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+
+  const loadSummary = useCallback(async () => {
+    if (!isApiConfigured() || !getAuthToken()) {
+      setApiSummary(null);
+      return;
+    }
+    setSummaryLoading(true);
+    try {
+      const data = await getAdminReportSummary({ from: startDate, to: endDate });
+      setApiSummary(data);
+    } catch {
+      setApiSummary(null);
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    void loadSummary();
+  }, [loadSummary]);
 
   const handleGenerateReport = () => {
     setIsGenerating(true);
@@ -231,7 +202,33 @@ const FinancialReports = () => {
   return (
     <div className="bg-[#F4F7F6] min-h-full font-sans print:bg-white overflow-hidden">
       <IntelligenceFilterBar />
-      
+
+      {isApiConfigured() && getAuthToken() && (
+        <div className="max-w-[1600px] mx-auto px-4 lg:px-6 pt-2">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-[#36454F]">
+            {summaryLoading && <p className="text-xs font-semibold">Loading report summary…</p>}
+            {!summaryLoading && apiSummary && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-800">Live API summary</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px] font-bold">
+                  <span>Bookings: {apiSummary.bookings?.confirmedOrCompleted ?? 0}</span>
+                  <span>Revenue: OMR {Number(apiSummary.bookings?.revenueAmount ?? 0).toFixed(2)}</span>
+                  <span>POS sales: {apiSummary.pos?.salesCount ?? 0}</span>
+                  <span>POS total: OMR {Number(apiSummary.pos?.totalAmount ?? 0).toFixed(2)}</span>
+                </div>
+                <p className="text-[10px] text-emerald-900/80">
+                  Active enrollments (global or arena-scoped in API):{' '}
+                  {apiSummary.coaching?.activeEnrollments ?? 0}
+                </p>
+              </div>
+            )}
+            {!summaryLoading && !apiSummary && (
+              <p className="text-xs text-slate-600">No summary for this range (or request failed).</p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-[1600px] mx-auto p-4 lg:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>

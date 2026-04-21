@@ -1,27 +1,88 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin } from 'lucide-react';
+import { motion as Motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { createMyBooking } from '../../../services/bookingsApi';
+import { toYMDFromDateString } from '../../../utils/bookingDates';
+
+function readStoredArenaSafe() {
+  try {
+    const raw = localStorage.getItem('selectedArena');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 const BookingSummary = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const storedArena = JSON.parse(localStorage.getItem("selectedArena"));
-  const { arena: stateArena, court: stateCourt, date, slot } = state || {};
+  const { user } = useAuth();
+  const [bookingError, setBookingError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const storedArena = readStoredArenaSafe();
+  const { arena: stateArena, court: stateCourt, date, slot, useApiCheckout, dateYmd } = state || {};
 
   const arena = stateArena || storedArena;
   const court = stateCourt || storedArena?.selectedCourt;
 
-  if (!arena) return (
-    <div className={`p-10 text-center ${'text-[#CE2029]/40'}`}>
-      No booking details found. Please select an arena first.
-    </div>
-  );
+  if (!arena) {
+    return (
+      <div className={`p-10 text-center ${'text-[#CE2029]/40'}`}>
+        No booking details found. Please select an arena first.
+      </div>
+    );
+  }
 
-  const total = slot?.price || 0;
-  const tax = total * 0.18;
+  const useLiveCheckout = Boolean(useApiCheckout && isApiConfigured());
+  const subtotal = Number(slot?.price) || 0;
+  const tax = useLiveCheckout ? 0 : subtotal * 0.18;
+  const canApiBook = useLiveCheckout && user?.role === 'CUSTOMER';
+
+  const handlePayOrBook = async () => {
+    if (canApiBook) {
+      setBookingError('');
+      setSubmitting(true);
+      try {
+        const ymd = dateYmd || toYMDFromDateString(date);
+        const timeSlot = slot?.timeSlot || slot?.time;
+        if (!ymd || !timeSlot || !court?.id) {
+          throw new Error('Missing date, slot, or court');
+        }
+        const res = await createMyBooking({
+          arenaId: String(arena.id),
+          courtId: String(court.id),
+          date: ymd,
+          timeSlot,
+          paymentMethod: 'online',
+        });
+        navigate('/booking-success', {
+          replace: true,
+          state: {
+            arena,
+            court,
+            date,
+            slot,
+            amount: res.booking.amount,
+            booking: res.booking,
+            pricing: res.pricing,
+          },
+        });
+      } catch (e) {
+        setBookingError(e.message || 'Booking failed');
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      navigate('/payment', { state: { amount: subtotal + tax, arena, court, date, slot } });
+    }
+  };
 
   return (
     <div className={`min-h-screen relative overflow-y-auto ${'bg-[#FDFDFD]'}`}>
@@ -73,7 +134,7 @@ const BookingSummary = () => {
           
           {/* LEFT COLUMN: Venue Showcase */}
           <div className="lg:col-span-7 space-y-8 lg:space-y-10">
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
@@ -141,13 +202,13 @@ const BookingSummary = () => {
                    </div>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
 
           {/* RIGHT COLUMN: Smart Digital Receipt */}
           <div className="lg:col-span-5 relative mt-6 lg:mt-0">
             <div className="lg:sticky lg:top-28">
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -210,19 +271,28 @@ const BookingSummary = () => {
                      <div className="space-y-3">
                         <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                            <span>Base Reservation</span>
-                           <span className="text-slate-900 font-black">OMR {total.toFixed(3)}</span>
+                           <span className="text-slate-900 font-black">OMR {subtotal.toFixed(3)}</span>
                         </div>
                         <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                           <span>Tax Reconciliation</span>
+                           <span>{useLiveCheckout ? 'Tax' : 'Tax Reconciliation'}</span>
                            <span className="text-slate-900 font-black">OMR {tax.toFixed(3)}</span>
                         </div>
-                        
+
+                        {bookingError && (
+                          <p className="text-[10px] font-bold text-[#CE2029]">{bookingError}</p>
+                        )}
+                        {useLiveCheckout && !canApiBook && (
+                          <p className="text-[10px] font-bold text-amber-700">
+                            Sign in as a customer to confirm this booking with the server.
+                          </p>
+                        )}
+
                         <div className="pt-4 border-t border-slate-50 mt-4">
                            <div className="flex items-center justify-between gap-4">
                               <div className="space-y-0.5 shrink-0">
                                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#CE2029]">Total Amount</p>
                                  <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-black font-display text-slate-950 tracking-tighter">OMR {(total+tax).toFixed(3)}</span>
+                                    <span className="text-2xl font-black font-display text-slate-950 tracking-tighter">OMR {(subtotal + tax).toFixed(3)}</span>
                                  </div>
                               </div>
 
@@ -233,9 +303,10 @@ const BookingSummary = () => {
                                     fullWidth
                                     className="!rounded-none !py-3 shadow-xl hover:-translate-y-1 transition-all font-black uppercase tracking-widest text-[10px]"
                                     icon={<ArrowRight size={14} />}
-                                    onClick={() => navigate('/payment', { state: { amount: total + tax, arena, court, date, slot } })}
+                                    disabled={submitting}
+                                    onClick={handlePayOrBook}
                                  >
-                                    Pay Now
+                                    {canApiBook ? (submitting ? 'Booking…' : 'Confirm booking') : 'Pay Now'}
                                  </ShuttleButton>
                               </div>
                            </div>
@@ -247,9 +318,10 @@ const BookingSummary = () => {
                                  fullWidth
                                  className="!rounded-2xl py-4 shadow-xl active:scale-95 font-black uppercase tracking-widest text-[12px]"
                                  icon={<ArrowRight size={18} />}
-                                 onClick={() => navigate('/payment', { state: { amount: total + tax, arena, court, date, slot } })}
+                                 disabled={submitting}
+                                 onClick={handlePayOrBook}
                               >
-                                 Confirm Booking
+                                 {canApiBook ? (submitting ? 'Booking…' : 'Confirm booking') : 'Confirm Booking'}
                               </ShuttleButton>
                            </div>
 
@@ -261,7 +333,7 @@ const BookingSummary = () => {
                      </div>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             </div>
           </div>
         </div>
@@ -295,7 +367,7 @@ const BookingSummary = () => {
               <div className="h-px bg-slate-100" />
               <div className="space-y-3">
                   <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                    <span>Subtotal</span><span>OMR {total.toFixed(3)}</span>
+                    <span>Subtotal</span><span>OMR {subtotal.toFixed(3)}</span>
                  </div>
                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
                     <span>Tax</span><span>OMR {tax.toFixed(3)}</span>
@@ -304,7 +376,7 @@ const BookingSummary = () => {
               <div className="bg-[#CE2029]/5 p-4 rounded-[20px] border border-[#CE2029]/10 flex justify-between items-end">
                  <div className="space-y-0.5">
                     <p className="text-[8px] font-black uppercase tracking-widest text-[#CE2029]">Price</p>
-                    <span className="text-2xl font-black font-display text-[#CE2029]">OMR {(total+tax).toFixed(3)}</span>
+                    <span className="text-2xl font-black font-display text-[#CE2029]">OMR {(subtotal + tax).toFixed(3)}</span>
                  </div>
                  <div className="px-2.5 py-1 rounded-full bg-white border border-[#CE2029]/10 text-[8px] font-black uppercase tracking-widest text-[#CE2029] flex items-center gap-1 shadow-sm">
                     <div className="w-1 h-1 rounded-full bg-current animate-pulse" /> Final Price
@@ -322,9 +394,10 @@ const BookingSummary = () => {
           fullWidth
           className="shadow-2xl shadow-[#CE2029]/20 !rounded-2xl active:scale-95 transition-all py-4"
           icon={<ArrowRight size={18} />}
-          onClick={() => navigate('/payment', { state: { amount: total + tax, arena, court, date, slot } })}
+          disabled={submitting}
+          onClick={handlePayOrBook}
         >
-          Confirm & Pay
+          {canApiBook ? (submitting ? 'Booking…' : 'Confirm booking') : 'Confirm & Pay'}
         </ShuttleButton>
       </div>
     </div>

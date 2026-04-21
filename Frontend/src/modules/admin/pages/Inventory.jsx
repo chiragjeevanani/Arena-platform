@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, 
@@ -6,10 +7,27 @@ import {
   Eye, Settings2, FileText, Printer, Trash2, Activity, 
   Hash, Clock, ShieldCheck
 } from 'lucide-react';
-import { MOCK_DB } from '../../../data/mockDatabase';
+import { useAuth } from '../../user/context/AuthContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import {
+  listArenaAdminInventoryItems,
+  createArenaAdminInventoryItem,
+  updateArenaAdminInventoryItem,
+} from '../../../services/arenaAdminApi';
+import {
+  listAdminInventoryItems,
+  createAdminInventoryItem,
+  updateAdminInventoryItem,
+} from '../../../services/adminOpsApi';
+import { resolveLiveOpsArenaScope } from '../../../utils/liveOpsScope';
+import { mapArenaInventoryItemToTableRow } from '../../../utils/arenaInventoryAdapter';
 
 const Inventory = () => {
-  const [inventoryData, setInventoryData] = useState(MOCK_DB.inventory);
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const arenaIdFromQuery = searchParams.get('arenaId');
+  const [inventoryData, setInventoryData] = useState([]);
   const [auditLog, setAuditLog] = useState([]);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -27,9 +45,44 @@ const Inventory = () => {
   // Adjustment form state
   const [adjustDelta, setAdjustDelta] = useState('');
 
+  const opsScope = useMemo(
+    () =>
+      resolveLiveOpsArenaScope(user, {
+        apiConfigured: isApiConfigured(),
+        hasToken: Boolean(getAuthToken()),
+        arenaIdFromQuery,
+      }),
+    [user, arenaIdFromQuery]
+  );
+
+  const refetchLiveInventory = useCallback(async () => {
+    if (!opsScope.live) return;
+    const data =
+      opsScope.channel === 'arena'
+        ? await listArenaAdminInventoryItems(opsScope.arenaId)
+        : await listAdminInventoryItems({ arenaId: opsScope.arenaId });
+    const rows = (data.items || []).map(mapArenaInventoryItemToTableRow);
+    setInventoryData(rows);
+  }, [opsScope]);
+
+  useEffect(() => {
+    if (!opsScope.live) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        await refetchLiveInventory();
+      } catch {
+        if (!cancelled) setInventoryData([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [opsScope, refetchLiveInventory]);
+
   const filteredData = inventoryData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.id.toLowerCase().includes(searchTerm.toLowerCase());
+                          String(item.id).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter;
     const isLow = item.stock > 0 && item.stock <= item.minStock;
     const isOut = item.stock === 0;
@@ -68,15 +121,38 @@ const Inventory = () => {
     },
   ];
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!newItem.name.trim()) return;
+    if (opsScope.live) {
+      try {
+        const body = {
+          arenaId: opsScope.arenaId,
+          name: newItem.name.trim(),
+          sku: String(newItem.sku || '').trim(),
+          quantity: parseInt(newItem.stock, 10) || 0,
+          unitPrice: Number(newItem.price) || 0,
+        };
+        if (opsScope.channel === 'arena') {
+          await createArenaAdminInventoryItem(body);
+        } else {
+          await createAdminInventoryItem(body);
+        }
+        await refetchLiveInventory();
+        addAuditEntry(newItem.name.trim(), 'New SKU registered via API');
+        setNewItem({ name: '', category: 'Equipment', sku: '', stock: 20, minStock: 5, price: 0 });
+        setShowAddItemModal(false);
+      } catch (e) {
+        alert(e.message || 'Failed to add item');
+      }
+      return;
+    }
     const entry = {
       id: `inv-${Date.now()}`,
       name: newItem.name,
       category: newItem.category,
-      stock: parseInt(newItem.stock) || 0,
-      minStock: parseInt(newItem.minStock) || 5,
-      price: parseInt(newItem.price) || 0,
+      stock: parseInt(newItem.stock, 10) || 0,
+      minStock: parseInt(newItem.minStock, 10) || 5,
+      price: parseInt(newItem.price, 10) || 0,
     };
     setInventoryData(prev => [entry, ...prev]);
     addAuditEntry(entry.name, `New SKU registered (+${entry.stock} units)`);
@@ -84,9 +160,29 @@ const Inventory = () => {
     setShowAddItemModal(false);
   };
 
-  const handleAdjustStock = () => {
-    const delta = parseInt(adjustDelta);
-    if (!selectedItem || isNaN(delta)) return;
+  const handleAdjustStock = async () => {
+    const delta = parseInt(adjustDelta, 10);
+    if (!selectedItem || Number.isNaN(delta)) return;
+    if (opsScope.live && selectedItem.fromApi) {
+      try {
+        const newStock = Math.max(0, selectedItem.stock + delta);
+        if (opsScope.channel === 'arena') {
+          await updateArenaAdminInventoryItem(selectedItem.id, { quantity: newStock });
+        } else {
+          await updateAdminInventoryItem(selectedItem.id, { quantity: newStock });
+        }
+        await refetchLiveInventory();
+        addAuditEntry(
+          selectedItem.name,
+          `Stock adjusted ${delta > 0 ? '+' : ''}${delta} units → ${newStock} remaining`
+        );
+        setAdjustDelta('');
+        setShowAdjustmentModal(false);
+      } catch (e) {
+        alert(e.message || 'Adjustment failed');
+      }
+      return;
+    }
     const newStock = Math.max(0, selectedItem.stock + delta);
     setInventoryData(prev =>
       prev.map(i => i.id === selectedItem.id ? { ...i, stock: newStock } : i)
@@ -141,6 +237,14 @@ const Inventory = () => {
               </button>
            </div>
         </div>
+
+        {user?.role === 'SUPER_ADMIN' && isApiConfigured() && getAuthToken() && !opsScope.live ? (
+          <div className="rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] font-semibold text-amber-950">
+            Live inventory (super admin): add{' '}
+            <span className="font-mono">?arenaId=&lt;24-char Mongo id&gt;</span> to this page&apos;s URL to load and edit stock via{' '}
+            <span className="font-mono">/api/admin/inventory</span>.
+          </div>
+        ) : null}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -311,6 +415,10 @@ const Inventory = () => {
                                             { label: 'Audit Trail', icon: FileText, color: '#36454F', action: () => { setShowHistoryModal(true); } },
                                             { label: 'Print SKU', icon: Printer, color: '#36454F' },
                                             { label: 'Archive SKU', icon: Trash2, color: '#ef4444', action: () => {
+                                                if (item.fromApi) {
+                                                  alert('Inventory deletion is not available in the arena portal.');
+                                                  return;
+                                                }
                                                 setInventoryData(prev => prev.filter(i => i.id !== item.id));
                                                 addAuditEntry(item.name, 'SKU archived and removed from catalog');
                                               }

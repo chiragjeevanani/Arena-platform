@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Filter, Briefcase, Calendar, 
@@ -7,75 +7,22 @@ import {
   Link as LinkIcon, BarChart3, PieChart, Users, DollarSign, Clock, Download,
   LayoutGrid, List, ChevronRight, Hash
 } from 'lucide-react';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { listAdminSponsors, createAdminSponsor, deleteAdminSponsor } from '../../../services/adminSponsorsApi';
 
-const EVENTS_DATA = [
-  { id: 1, title: 'Summer Smash 2026', type: 'Open Tournament' },
-  { id: 2, title: 'Junior Championship', type: 'U-17 Boys/Girls' },
-  { id: 3, title: 'Corporate League', type: 'Teams of 4' },
-];
+const EVENTS_DATA = [];
 
-const INITIAL_SPONSORS = [
-  { 
-    id: 1, 
-    name: 'Yonex Oman', 
-    type: 'Title Sponsor', 
-    contact: 'salim@yonex.om', 
-    phone: '+968 9876 5432',
-    status: 'Active', 
-    startDate: '2025-01-01',
-    contractEnd: '2026-12-30', 
-    equity: 12500, 
-    logo: 'Y',
-    color: '#CE2029'
-  },
-  { 
-    id: 2, 
-    name: 'RedBull Oman', 
-    type: 'Partner Sponsor', 
-    contact: 'sarah@redbull.om', 
-    phone: '+968 9123 4567',
-    status: 'Active', 
-    startDate: '2025-06-01',
-    contractEnd: '2027-01-15', 
-    equity: 8000, 
-    logo: 'RB',
-    color: '#36454F'
-  },
-  { 
-    id: 3, 
-    name: 'Decathlon Muscat', 
-    type: 'Event Sponsor', 
-    contact: 'ahmed@decathlon.om', 
-    phone: '+968 8888 7777',
-    status: 'Expired', 
-    startDate: '2024-03-01',
-    contractEnd: '2026-03-25', 
-    equity: 5500, 
-    logo: 'D',
-    color: '#0078D4'
-  },
-  { 
-    id: 4, 
-    name: 'Monster Energy', 
-    type: 'Banner Sponsor', 
-    contact: 'jake@monster.com', 
-    phone: '+968 7777 6666',
-    status: 'Active', 
-    startDate: '2025-08-01',
-    contractEnd: '2026-05-15', 
-    equity: 3500, 
-    logo: 'M',
-    color: '#6e9e10'
-  },
-];
+const INITIAL_SPONSORS = [];
 
-const INITIAL_MAPPINGS = [
-  { id: 101, eventId: 1, sponsorId: 1, type: 'Official Gear' },
-  { id: 102, eventId: 1, sponsorId: 2, type: 'Refreshment' },
-  { id: 103, eventId: 3, sponsorId: 3, type: 'Kit Partner' },
-];
+const INITIAL_MAPPINGS = [];
 
 const Sponsorships = () => {
+  const sponsorNameRef = useRef(null);
+  const sponsorEquityRef = useRef(null);
+  const sponsorStartRef = useRef(null);
+  const sponsorEndRef = useRef(null);
+
   const [activeTab, setActiveTab] = useState('directory'); // directory | mapping | reports
   const [sponsors, setSponsors] = useState(INITIAL_SPONSORS);
   const [mappings, setMappings] = useState(INITIAL_MAPPINGS);
@@ -91,26 +38,61 @@ const Sponsorships = () => {
   const totalEquity = sponsors.reduce((acc, sp) => acc + sp.equity, 0);
   const activeSponsors = sponsors.filter(sp => sp.status === 'Active').length;
   const expiredSponsors = sponsors.filter(sp => sp.status === 'Expired').length;
-  const expiringSoon = sponsors.filter(sp => {
+  const expiringSoon = sponsors.filter((sp) => {
+    if (!sp.contractEnd) return false;
     const diff = new Date(sp.contractEnd) - new Date();
     const days = diff / (1000 * 60 * 60 * 24);
     return sp.status === 'Active' && days > 0 && days < 45;
   }).length;
 
+  const loadSponsors = useCallback(async () => {
+    if (!isApiConfigured() || !getAuthToken()) return;
+    try {
+      const data = await listAdminSponsors();
+      const rows = (data.sponsors || []).map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.company || 'Partner',
+        status: s.status,
+        equity: Number(s.equity) || 0,
+        contractStart: s.contractStart,
+        contractEnd: s.contractEnd,
+        email: s.email || '',
+      }));
+      setSponsors(rows);
+    } catch {
+      setSponsors([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadSponsors();
+  }, [loadSponsors]);
+
   const filteredSponsors = useMemo(() => {
-    return sponsors.filter(sp => {
-      const matchesSearch = sp.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           sp.type.toLowerCase().includes(searchQuery.toLowerCase());
+    return sponsors.filter((sp) => {
+      const t = (sp.type || '').toLowerCase();
+      const matchesSearch =
+        sp.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.includes(searchQuery.toLowerCase());
       const matchesType = filterType === 'All' || sp.type === filterType;
       return matchesSearch && matchesType;
     });
   }, [sponsors, searchQuery, filterType]);
 
-  const handleDelete = (id) => {
-    if (window.confirm('Terminate this sponsorship agreement?')) {
-      setSponsors(prev => prev.filter(sp => sp.id !== id));
-      showToast('Sponsorship terminated successfully');
+  const handleDelete = async (id) => {
+    if (!window.confirm('Terminate this sponsorship agreement?')) return;
+    if (isApiConfigured() && getAuthToken()) {
+      try {
+        await deleteAdminSponsor(id);
+        await loadSponsors();
+        showToast('Sponsorship terminated successfully');
+      } catch (e) {
+        showToast(e.message || 'Delete failed');
+      }
+      return;
     }
+    setSponsors((prev) => prev.filter((sp) => sp.id !== id));
+    showToast('Sponsorship terminated successfully');
   };
 
   const handleIntegrateAsset = () => {
@@ -520,7 +502,13 @@ const Sponsorships = () => {
                 <div className="p-6 space-y-4">
                    <div className="space-y-1">
                       <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Brand Node Name</label>
-                      <input type="text" placeholder="e.g. Under Armour" defaultValue={editingSponsor?.name || ''} className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:ring-1 focus:ring-[#CE2029]/20 focus:border-[#CE2029]/40 transition-all" />
+                      <input
+                        ref={sponsorNameRef}
+                        type="text"
+                        placeholder="e.g. Under Armour"
+                        defaultValue={editingSponsor?.name || ''}
+                        className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:ring-1 focus:ring-[#CE2029]/20 focus:border-[#CE2029]/40 transition-all"
+                      />
                    </div>
 
                    <div className="grid grid-cols-2 gap-4">
@@ -534,24 +522,82 @@ const Sponsorships = () => {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Net Valuation</label>
-                        <input type="text" placeholder="1,200 OMR" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none" />
+                        <input
+                          ref={sponsorEquityRef}
+                          type="text"
+                          placeholder="1200"
+                          className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none"
+                        />
                       </div>
                    </div>
 
                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Start Protocol</label>
-                        <input type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
+                        <input ref={sponsorStartRef} type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">End Protocol</label>
-                        <input type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
+                        <input ref={sponsorEndRef} type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
                       </div>
                    </div>
 
                    <div className="pt-4 flex gap-2">
                       <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 text-[11px] font-bold uppercase hover:bg-slate-50 transition-all font-mono">Abort</button>
-                      <button onClick={() => setShowModal(false)} className="flex-[1.5] py-2.5 rounded-lg bg-[#CE2029] text-white text-[11px] font-bold uppercase tracking-widest shadow-md shadow-[#CE2029]/20 hover:bg-[#d43d35] transition-all flex items-center justify-center gap-2">Deploy <CheckCircle2 size={14} /></button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (editingSponsor) {
+                            setShowModal(false);
+                            return;
+                          }
+                          const name = sponsorNameRef.current?.value?.trim();
+                          if (!name) {
+                            showToast('Name is required');
+                            return;
+                          }
+                          const equityRaw = sponsorEquityRef.current?.value || '0';
+                          const equity = Number(String(equityRaw).replace(/[^0-9.]/g, '')) || 0;
+                          const contractStart = sponsorStartRef.current?.value || null;
+                          const contractEnd = sponsorEndRef.current?.value || null;
+                          if (!isApiConfigured() || !getAuthToken()) {
+                            setSponsors((prev) => [
+                              ...prev,
+                              {
+                                id: `local-${Date.now()}`,
+                                name,
+                                type: 'Partner',
+                                status: 'Active',
+                                equity,
+                                contractStart,
+                                contractEnd,
+                                email: '',
+                              },
+                            ]);
+                            setShowModal(false);
+                            showToast('Partner saved locally (API off)');
+                            return;
+                          }
+                          try {
+                            await createAdminSponsor({
+                              name,
+                              equity,
+                              status: 'Active',
+                              contractStart,
+                              contractEnd,
+                              company: 'Partner',
+                            });
+                            await loadSponsors();
+                            setShowModal(false);
+                            showToast('Partner saved');
+                          } catch (e) {
+                            showToast(e.message || 'Save failed');
+                          }
+                        }}
+                        className="flex-[1.5] py-2.5 rounded-lg bg-[#CE2029] text-white text-[11px] font-bold uppercase tracking-widest shadow-md shadow-[#CE2029]/20 hover:bg-[#d43d35] transition-all flex items-center justify-center gap-2"
+                      >
+                        Deploy <CheckCircle2 size={14} />
+                      </button>
                    </div>
                 </div>
              </motion.div>

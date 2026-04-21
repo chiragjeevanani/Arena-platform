@@ -1,11 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Star, CheckCircle2, Zap, Crown, Shield,
   Users, ArrowRight, Clock, Calendar, ChevronDown, ChevronUp, Gift, ArrowLeft
 } from 'lucide-react';
-import { MEMBERSHIP_PLANS, USER_MEMBERSHIP } from '../../../data/mockData';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { fetchPublicMembershipPlans } from '../../../services/membershipsPublicApi';
+import { listMyMemberships, purchaseMembership } from '../../../services/meApi';
+import { mapPublicPlanToCard } from '../../../utils/membershipPlanAdapter';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -20,6 +25,17 @@ const CAT = {
   individual:   { label: 'Individual', icon: Users,   color: '#22c55e', pill: 'bg-green-50 text-green-700 border-green-200' },
 };
 
+const NO_MEMBERSHIP = {
+  status: 'none',
+  planId: null,
+  planName: '',
+  category: '',
+  discountPercent: 0,
+  startDate: '',
+  expiryDate: '',
+  benefits: [],
+};
+
 // ── Plan Details Modal ───────────────────────────────────────────────────────
 const PlanDetailsModal = ({ plan, isCurrent, onClose, onBuy }) => {
   const meta = CAT[plan.category] || CAT['non-premium'];
@@ -28,7 +44,7 @@ const PlanDetailsModal = ({ plan, isCurrent, onClose, onBuy }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[300] flex items-center justify-center p-3 bg-slate-900/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-3 bg-slate-900/40 backdrop-blur-sm"
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -239,7 +255,7 @@ const ConfirmModal = ({ plan, onClose, onConfirm }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-4"
     >
       <motion.div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -287,7 +303,7 @@ const CancelModal = ({ plan, onClose, onConfirm }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-4"
     >
       <motion.div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -334,6 +350,8 @@ const MembershipPlans = () => {
   const [buying, setBuying] = useState(null);
   const [cancelling, setCancelling] = useState(null);
   const [viewingPlan, setViewingPlan] = useState(null);
+  const [planList, setPlanList] = useState([]);
+  const [userMembership, setUserMembership] = useState(NO_MEMBERSHIP);
   const tabsRef = useRef(null);
 
   useEffect(() => {
@@ -346,32 +364,153 @@ const MembershipPlans = () => {
       });
     }
   }, [filter]);
-  const [userMembership, setUserMembership] = useState(() => {
-    const saved = localStorage.getItem('userMembership');
-    return saved ? JSON.parse(saved) : USER_MEMBERSHIP;
-  });
 
-  const plans = filter === 'all'
-    ? MEMBERSHIP_PLANS
-    : MEMBERSHIP_PLANS.filter(p => p.category === filter);
+  useEffect(() => {
+    if (isApiConfigured() && getAuthToken()) return undefined;
+    try {
+      const saved = localStorage.getItem('userMembership');
+      if (saved) setUserMembership(JSON.parse(saved));
+    } catch {
+      setUserMembership(NO_MEMBERSHIP);
+    }
+    return undefined;
+  }, []);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { memberships } = await listMyMemberships();
+        if (cancelled) return;
+        const active = (memberships || []).find(
+          (m) => m.status === 'active' && new Date(m.expiresAt) > new Date()
+        );
+        if (!active) {
+          setUserMembership(NO_MEMBERSHIP);
+          return;
+        }
+        setUserMembership({
+          status: 'active',
+          planId: active.membershipPlanId,
+          planName: active.planName || 'Membership',
+          category: (active.discountPercent ?? 0) >= 15 ? 'premium' : 'non-premium',
+          discountPercent: active.discountPercent ?? 0,
+          startDate: active.startsAt ? String(active.startsAt).slice(0, 10) : '',
+          expiryDate: active.expiresAt
+            ? new Date(active.expiresAt).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })
+            : '',
+          benefits: [],
+        });
+      } catch {
+        if (!cancelled) setUserMembership(NO_MEMBERSHIP);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isApiConfigured()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { arenas } = await fetchPublicArenas();
+        const merged = [];
+        for (const a of arenas || []) {
+          try {
+            const data = await fetchPublicMembershipPlans(a.id);
+            const name = a.name || 'Arena';
+            for (const p of data.plans || []) {
+              merged.push(mapPublicPlanToCard(p, name));
+            }
+          } catch {
+            /* skip arena */
+          }
+        }
+        if (!cancelled) setPlanList(merged);
+      } catch {
+        if (!cancelled) setPlanList([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const plans = filter === 'all' ? planList : planList.filter((p) => p.category === filter);
+
+  const planStats = useMemo(() => {
+    if (!planList.length) {
+      return [
+        { label: 'Plans Available', value: '0' },
+        { label: 'Max Discount', value: '—' },
+        { label: 'From', value: '—' },
+      ];
+    }
+    return [
+      { label: 'Plans Available', value: String(planList.length) },
+      { label: 'Max Discount', value: `${Math.max(...planList.map((p) => p.discountPercent))}%` },
+      { label: 'From', value: `OMR ${Math.min(...planList.map((p) => p.price)).toFixed(3)}` },
+    ];
+  }, [planList]);
 
   const isActive = userMembership.status === 'active';
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!buying) return;
-    
-    // Navigate to payment page with plan details
+    if (isApiConfigured() && getAuthToken()) {
+      try {
+        await purchaseMembership(buying.id);
+        const { memberships } = await listMyMemberships();
+        const active = (memberships || []).find(
+          (m) => m.status === 'active' && new Date(m.expiresAt) > new Date()
+        );
+        if (active) {
+          setUserMembership({
+            status: 'active',
+            planId: active.membershipPlanId,
+            planName: active.planName || 'Membership',
+            category: (active.discountPercent ?? 0) >= 15 ? 'premium' : 'non-premium',
+            discountPercent: active.discountPercent ?? 0,
+            startDate: active.startsAt ? String(active.startsAt).slice(0, 10) : '',
+            expiryDate: active.expiresAt
+              ? new Date(active.expiresAt).toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })
+              : '',
+            benefits: [],
+          });
+        }
+        setBuying(null);
+      } catch (err) {
+        alert(err.message || 'Purchase failed. Ensure wallet has enough balance.');
+      }
+      return;
+    }
     navigate('/payment', {
       state: {
         amount: buying.price,
         plan: buying,
-        type: 'membership'
-      }
+        type: 'membership',
+      },
     });
     setBuying(null);
   };
 
   const handleCancel = () => {
+    if (isApiConfigured() && getAuthToken()) {
+      alert('Membership cancellation is not available in the app. Contact your arena; your plan will show as active until it expires.');
+      setCancelling(null);
+      return;
+    }
     const inactiveMembership = { ...userMembership, status: 'none', planId: null };
     localStorage.setItem('userMembership', JSON.stringify(inactiveMembership));
     setUserMembership(inactiveMembership);
@@ -468,11 +607,7 @@ const MembershipPlans = () => {
 
         {/* Plan stats summary row */}
         <div className="grid grid-cols-3 gap-2">
-          {[
-            { label: 'Plans Available', value: MEMBERSHIP_PLANS.length },
-            { label: 'Max Discount', value: `${Math.max(...MEMBERSHIP_PLANS.map(p => p.discountPercent))}%` },
-            { label: 'From', value: `OMR ${Math.min(...MEMBERSHIP_PLANS.map(p => p.price)).toFixed(3)}` },
-          ].map((s, i) => (
+          {planStats.map((s, i) => (
             <div key={i} className="bg-white rounded-xl border border-slate-100 shadow-sm p-2.5 text-center">
               <p className="text-base font-black text-[#CE2029]">{s.value}</p>
               <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{s.label}</p>
@@ -483,7 +618,13 @@ const MembershipPlans = () => {
         {/* Plans Grid */}
         <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <AnimatePresence mode="popLayout">
-            {plans.map(plan => (
+            {plans.length === 0 && (
+              <p className="col-span-full text-center text-sm text-slate-500 py-10">
+                No membership plans published yet. Add plans in the admin API for your arenas, or set{' '}
+                <span className="font-mono">VITE_API_URL</span>.
+              </p>
+            )}
+            {plans.map((plan) => (
               <PlanCard
                 key={plan.id}
                 plan={plan}

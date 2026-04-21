@@ -4,146 +4,152 @@ import { motion } from 'framer-motion';
 import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X, Calendar, BarChart3 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
-import { ARENAS, USER_BOOKINGS, COACHING_BATCHES, USER_MEMBERSHIP } from '../../../data/mockData';
 import { AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { listMyBookings } from '../../../services/bookingsApi';
+import { getMyWallet, listMyMemberships, listMyEnrollments } from '../../../services/meApi';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+
+const DEFAULT_AVATAR =
+  'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop';
+const DEFAULT_COACH_IMG =
+  'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop';
+
+function formatShortDate(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return '—';
+  }
+}
+
+function pickNextBooking(bookings) {
+  const today = new Date().toISOString().slice(0, 10);
+  const active = (bookings || []).filter(
+    (b) => ['pending', 'confirmed'].includes(b.status) && b.date >= today
+  );
+  active.sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) || String(a.timeSlot || '').localeCompare(String(b.timeSlot || ''))
+  );
+  return active[0] || null;
+}
+
+const NO_MEMBERSHIP = {
+  status: 'none',
+  planId: null,
+  planName: '',
+  category: '',
+  discountPercent: 0,
+  startDate: '',
+  expiryDate: '',
+  benefits: [],
+};
 
 const Profile = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { user, logout } = useAuth();
 
-  // Mock Data logic for "Next Match"
-  const nextMatch = USER_BOOKINGS.filter(b => b.status === "Upcoming")[0];
-  const activeCoaching = COACHING_BATCHES[0];
-  const favoriteArenas = ARENAS; // Mock favorite arenas
+  const [nextMatch, setNextMatch] = useState(null);
+  const [activeCoaching, setActiveCoaching] = useState(null);
+  const [membership, setMembership] = useState(NO_MEMBERSHIP);
+  const [favoriteArenas] = useState([]);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [stats, setStats] = useState({ arenasVisited: 0, bookingsTotal: 0 });
 
-  // Performance Matrix Mock Data
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!isApiConfigured() || !getAuthToken()) return;
+      try {
+        const [bookingsRes, walletRes, memRes, enrRes] = await Promise.all([
+          listMyBookings(),
+          getMyWallet(),
+          listMyMemberships(),
+          listMyEnrollments(),
+        ]);
+        if (cancelled) return;
+        const bookings = bookingsRes.bookings || [];
+        const nb = pickNextBooking(bookings);
+        setNextMatch(
+          nb
+            ? {
+                arenaName: nb.arenaName || 'Arena',
+                courtName: nb.courtName || 'Court',
+                arenaImage: DEFAULT_AVATAR,
+                timeLabel: nb.timeSlot || '',
+                dateLabel: nb.date || '',
+              }
+            : null
+        );
+        setWalletBalance(Number(walletRes.wallet?.balance ?? 0));
+        const arenaIds = new Set(bookings.map((b) => b.arenaId).filter(Boolean));
+        setStats({ arenasVisited: arenaIds.size, bookingsTotal: bookings.length });
+
+        const activeMem = (memRes.memberships || []).find((m) => m.status === 'active');
+        if (activeMem) {
+          setMembership({
+            status: 'active',
+            planId: activeMem.membershipPlanId,
+            planName: activeMem.planName || 'Membership',
+            category: 'standard',
+            discountPercent: activeMem.discountPercent ?? 0,
+            startDate: formatShortDate(activeMem.startsAt),
+            expiryDate: formatShortDate(activeMem.expiresAt),
+            benefits: [],
+          });
+        } else {
+          const expired = (memRes.memberships || []).find((m) => m.status === 'expired');
+          if (expired) {
+            setMembership({
+              status: 'expired',
+              planId: expired.membershipPlanId,
+              planName: expired.planName || 'Membership',
+              category: 'standard',
+              discountPercent: expired.discountPercent ?? 0,
+              startDate: formatShortDate(expired.startsAt),
+              expiryDate: formatShortDate(expired.expiresAt),
+              benefits: [],
+            });
+          } else {
+            setMembership(NO_MEMBERSHIP);
+          }
+        }
+
+        const enr = (enrRes.enrollments || []).find((e) =>
+          ['pending', 'confirmed'].includes(e.status)
+        );
+        setActiveCoaching(
+          enr
+            ? {
+                coachName: enr.batchTitle || 'Coaching batch',
+                image: DEFAULT_COACH_IMG,
+              }
+            : null
+        );
+      } catch {
+        /* keep fallbacks */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [performanceMode, setPerformanceMode] = useState('weekly');
   const [showReportCard, setShowReportCard] = useState(false);
 
+  const emptyPerf = { overall: 0, trend: '—', categories: [] };
   const performanceData = {
-    weekly: {
-      overall: 84,
-      trend: '+4%',
-      categories: [
-        { 
-          name: 'Foundations', 
-          score: 8.5,
-          metrics: [
-            { name: 'Grip', score: 8 },
-            { name: 'Footwork (Front)', score: 9 },
-            { name: 'Footwork (Back)', score: 8.5 }
-          ]
-        },
-        { 
-          name: 'Service', 
-          score: 7.0,
-          metrics: [
-            { name: 'Serve (Front)', score: 7.5 },
-            { name: 'Serve (Back)', score: 6.5 }
-          ]
-        },
-        { 
-          name: 'Forehand', 
-          score: 9.2,
-          metrics: [
-            { name: 'Forehand Toss', score: 8.5 },
-            { name: 'Forehand Smash', score: 9.5 },
-            { name: 'Forehand Drop', score: 8.9 },
-            { name: 'Forehand Dribble', score: 8.0 }
-          ]
-        },
-        { 
-          name: 'Backhand', 
-          score: 6.5,
-          metrics: [
-            { name: 'Backhand Drive', score: 6.0 },
-            { name: 'Backhand Smash', score: 7.0 },
-            { name: 'Backhand Drop', score: 8.0 },
-            { name: 'Backhand Dribble', score: 7.5 }
-          ]
-        },
-        { 
-          name: 'Physical & Mental', 
-          score: 8.0,
-          metrics: [
-            { name: 'Leg Strength', score: 8.5 },
-            { name: 'Arm Strength', score: 8.0 },
-            { name: 'Movement Speed', score: 8.5 },
-            { name: 'Game Strategy', score: 7.5 },
-            { name: 'Mental Strength', score: 8.0 }
-          ]
-        },
-        { 
-          name: 'Consistency', 
-          score: 9.4,
-          metrics: [
-            { name: 'Attendance', score: 9.4 }
-          ]
-        }
-      ]
-    },
-    monthly: {
-      overall: 78,
-      trend: '+12%',
-      categories: [
-        { 
-          name: 'Foundations', 
-          score: 7.8,
-          metrics: [
-            { name: 'Grip', score: 7.5 },
-            { name: 'Footwork (Front)', score: 8.0 },
-            { name: 'Footwork (Back)', score: 7.8 }
-          ]
-        },
-        { 
-          name: 'Service', 
-          score: 6.5,
-          metrics: [
-            { name: 'Serve (Front)', score: 7.0 },
-            { name: 'Serve (Back)', score: 6.0 }
-          ]
-        },
-        { 
-          name: 'Forehand', 
-          score: 8.5,
-          metrics: [
-            { name: 'Forehand Toss', score: 8.0 },
-            { name: 'Forehand Smash', score: 8.8 },
-            { name: 'Forehand Drop', score: 8.2 },
-            { name: 'Forehand Dribble', score: 8.0 }
-          ]
-        },
-        { 
-          name: 'Backhand', 
-          score: 5.8,
-          metrics: [
-            { name: 'Backhand Drive', score: 5.5 },
-            { name: 'Backhand Smash', score: 6.1 },
-            { name: 'Backhand Drop', score: 6.0 },
-            { name: 'Backhand Dribble', score: 5.8 }
-          ]
-        },
-        { 
-          name: 'Physical & Mental', 
-          score: 7.5,
-          metrics: [
-            { name: 'Leg Strength', score: 7.0 },
-            { name: 'Arm Strength', score: 7.5 },
-            { name: 'Movement Speed', score: 7.8 },
-            { name: 'Game Strategy', score: 7.2 },
-            { name: 'Mental Strength', score: 8.0 }
-          ]
-        },
-        { 
-          name: 'Consistency', 
-          score: 9.0,
-          metrics: [
-            { name: 'Attendance', score: 9.0 }
-          ]
-        }
-      ]
-    }
+    weekly: emptyPerf,
+    monthly: emptyPerf,
   };
+
+  const displayName = user?.name?.trim() || 'Your profile';
+  const roleLabel = user?.role ? String(user.role).replace(/_/g, ' ') : 'Member';
 
   const menuItems = [
     { icon: History, label: 'Booking History', path: '/bookings' },
@@ -178,7 +184,7 @@ const Profile = () => {
                 <div className="relative group cursor-pointer" onClick={() => navigate('/profile/edit')}>
                   <div className="w-11 h-11 rounded-full overflow-hidden border-2 p-0.5 shadow-md border-white/20">
                     <img
-                      src={localStorage.getItem('userProfileImage') || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop"}
+                      src={user?.avatar || localStorage.getItem('userProfileImage') || DEFAULT_AVATAR}
                       alt="User"
                       className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
                     />
@@ -186,11 +192,11 @@ const Profile = () => {
                 </div>
                 <div>
                   <h1 className="text-xl font-black font-display leading-tight tracking-tight text-white shadow-sm">
-                    Muhammad <span className="text-white/80">A.</span>
+                    {displayName}
                   </h1>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Lvl 4 Premium</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">{roleLabel}</span>
                   </div>
                 </div>
               </div>
@@ -228,7 +234,9 @@ const Profile = () => {
                       <div className="flex flex-col justify-center">
                         <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#CE2029]/10 text-[#CE2029] mb-1.5 w-max">
                           <Zap size={10} className="fill-[#CE2029]" />
-                          <span className="text-[9px] font-bold uppercase tracking-wider">Today, 7:00 PM</span>
+                          <span className="text-[9px] font-bold uppercase tracking-wider">
+                            {nextMatch.dateLabel} · {nextMatch.timeLabel}
+                          </span>
                         </div>
                         <h4 className={`text-sm md:text-base font-bold leading-tight line-clamp-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                           {nextMatch.arenaName}
@@ -277,7 +285,9 @@ const Profile = () => {
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-white/80 text-sm font-bold">OMR </span>
-                    <span className="text-white text-2xl md:text-3xl font-black tracking-tight">1.450</span>
+                    <span className="text-white text-2xl md:text-3xl font-black tracking-tight">
+                      {walletBalance.toFixed(3)}
+                    </span>
                   </div>
                 </div>
 
@@ -302,6 +312,11 @@ const Profile = () => {
                 <h3 className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Book It Again</h3>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar snap-x">
+                {favoriteArenas.length === 0 && (
+                  <p className={`text-xs py-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Book an arena to see quick links here.
+                  </p>
+                )}
                 {favoriteArenas.map((arena) => (
                   <div key={arena.id} onClick={() => navigate(`/arenas/${arena.id}`)} className={`min-w-[190px] md:min-w-[220px] p-2.5 rounded-2xl border cursor-pointer group transition-all snap-start shadow-sm hover:shadow-md ${
                     isDark ? 'bg-[#12141a] border-white/5 hover:border-[#CE2029]/30' : 'bg-white border-slate-100 hover:border-[#CE2029]/40'
@@ -361,7 +376,7 @@ const Profile = () => {
           {/* MY MEMBERSHIP SECTION */}
           <div className="mt-6">
             <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Membership</h3>
-            {USER_MEMBERSHIP.status === 'none' ? (
+            {membership.status === 'none' ? (
               <div
                 onClick={() => navigate('/membership')}
                 className={`cursor-pointer rounded-2xl border border-dashed p-4 flex items-center gap-3 transition-all hover:border-[#CE2029]/40 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50 hover:bg-[#CE2029]/5'}`}
@@ -378,13 +393,13 @@ const Profile = () => {
               <motion.div
                 whileHover={{ y: -1 }}
                 className={`rounded-2xl border p-4 shadow-sm relative overflow-hidden transition-all ${
-                  USER_MEMBERSHIP.category === 'premium'
+                  membership.category === 'premium'
                     ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200'
                     : isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'
                 }`}
               >
                 {/* Expired overlay */}
-                {USER_MEMBERSHIP.status === 'expired' && (
+                {membership.status === 'expired' && (
                   <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
                     <div className="text-center">
                       <p className="text-xs font-black text-red-600 uppercase tracking-widest">Membership Expired</p>
@@ -398,39 +413,39 @@ const Profile = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-100' : 'bg-indigo-50'
+                      membership.category === 'premium' ? 'bg-amber-100' : 'bg-indigo-50'
                     }`}>
-                      <Crown size={18} className={USER_MEMBERSHIP.category === 'premium' ? 'text-amber-500' : 'text-indigo-500'} />
+                      <Crown size={18} className={membership.category === 'premium' ? 'text-amber-500' : 'text-indigo-500'} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{USER_MEMBERSHIP.planName}</h4>
+                        <h4 className={`text-sm font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{membership.planName}</h4>
                         <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
-                          USER_MEMBERSHIP.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'
-                        }`}>{USER_MEMBERSHIP.status}</span>
+                          membership.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'
+                        }`}>{membership.status}</span>
                       </div>
                       <p className={`text-[10px] font-bold mt-0.5 ${
-                        USER_MEMBERSHIP.category === 'premium' ? 'text-amber-600' : 'text-indigo-600'
+                        membership.category === 'premium' ? 'text-amber-600' : 'text-indigo-600'
                       } uppercase tracking-widest`}>
-                        {USER_MEMBERSHIP.category === 'premium' ? 'Premium' : USER_MEMBERSHIP.category === 'individual' ? 'Individual' : 'Standard'} · {USER_MEMBERSHIP.discountPercent}% off bookings
+                        {membership.category === 'premium' ? 'Premium' : membership.category === 'individual' ? 'Individual' : 'Standard'} · {membership.discountPercent}% off bookings
                       </p>
                       <div className={`flex items-center gap-2 mt-1.5 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        <span>{USER_MEMBERSHIP.startDate} → {USER_MEMBERSHIP.expiryDate}</span>
+                        <span>{membership.startDate} → {membership.expiryDate}</span>
                       </div>
                     </div>
                   </div>
-                  <CheckCircle2 size={16} className={USER_MEMBERSHIP.status === 'active' ? 'text-green-500' : 'text-red-400'} />
+                  <CheckCircle2 size={16} className={membership.status === 'active' ? 'text-green-500' : 'text-red-400'} />
                 </div>
 
                 {/* Benefits preview */}
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {USER_MEMBERSHIP.benefits.slice(0, 2).map((b, i) => (
+                  {membership.benefits.slice(0, 2).map((b, i) => (
                     <span key={i} className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${
-                      USER_MEMBERSHIP.category === 'premium' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'
+                      membership.category === 'premium' ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'
                     }`}>{b}</span>
                   ))}
-                  {USER_MEMBERSHIP.benefits.length > 2 && (
-                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>+{USER_MEMBERSHIP.benefits.length - 2} more</span>
+                  {membership.benefits.length > 2 && (
+                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>+{membership.benefits.length - 2} more</span>
                   )}
                 </div>
 
@@ -481,17 +496,24 @@ const Profile = () => {
                     <span className={`text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Overall Mastery</span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <h4 className={`text-3xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>{performanceData[performanceMode].overall}%</h4>
-                    <div className="flex items-center gap-0.5 text-emerald-500 font-bold text-[10px]">
-                      <TrendingUp size={10} />
-                      <span>{performanceData[performanceMode].trend}</span>
-                    </div>
+                    <h4 className={`text-3xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {performanceData[performanceMode].categories.length
+                        ? `${performanceData[performanceMode].overall}%`
+                        : '—'}
+                    </h4>
+                    {performanceData[performanceMode].categories.length > 0 && (
+                      <div className="flex items-center gap-0.5 text-emerald-500 font-bold text-[10px]">
+                        <TrendingUp size={10} />
+                        <span>{performanceData[performanceMode].trend}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <button 
                   onClick={() => setShowReportCard(true)}
-                  className="mt-3 w-full flex items-center justify-center gap-2 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-[9px] font-black uppercase tracking-widest hover:bg-[#CE2029] hover:text-white transition-all group"
+                  disabled={!performanceData[performanceMode].categories.length}
+                  className="mt-3 w-full flex items-center justify-center gap-2 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-[9px] font-black uppercase tracking-widest hover:bg-[#CE2029] hover:text-white transition-all group disabled:opacity-40 disabled:pointer-events-none"
                 >
                   <FileText size={12} className="group-hover:scale-110 transition-transform" /> Full Report
                 </button>
@@ -502,22 +524,28 @@ const Profile = () => {
                 isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100 shadow-sm'
               }`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                  {performanceData[performanceMode].categories.map((cat, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className={`text-[9px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{cat.name}</span>
-                        <span className="text-[9px] font-black text-[#CE2029]">{cat.score}/10</span>
+                  {performanceData[performanceMode].categories.length === 0 ? (
+                    <p className={`text-xs col-span-full py-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Coaching performance scores will appear here when your academy syncs assessments.
+                    </p>
+                  ) : (
+                    performanceData[performanceMode].categories.map((cat, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className={`text-[9px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{cat.name}</span>
+                          <span className="text-[9px] font-black text-[#CE2029]">{cat.score}/10</span>
+                        </div>
+                        <div className={`h-1 w-full rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${cat.score * 10}%` }}
+                            transition={{ duration: 1, ease: "easeOut", delay: idx * 0.1 }}
+                            className="h-full bg-[#CE2029] rounded-full"
+                          />
+                        </div>
                       </div>
-                      <div className={`h-1 w-full rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${cat.score * 10}%` }}
-                          transition={{ duration: 1, ease: "easeOut", delay: idx * 0.1 }}
-                          className="h-full bg-[#CE2029] rounded-full"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -530,8 +558,10 @@ const Profile = () => {
             <div className="md:col-span-4 flex flex-row md:flex-col gap-3">
               <div className={`flex-1 p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
                 <div>
-                  <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Courts Conquered</p>
-                  <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>12</h4>
+                  <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Arenas visited</p>
+                  <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                    {stats.arenasVisited || '—'}
+                  </h4>
                 </div>
                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
                   <Trophy size={16} />
@@ -539,8 +569,10 @@ const Profile = () => {
               </div>
               <div className={`flex-1 p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'}`}>
                 <div>
-                  <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Hours Played</p>
-                  <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>38<span className="text-sm">h</span></h4>
+                  <p className={`text-[9px] uppercase font-bold tracking-widest mb-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Bookings</p>
+                  <h4 className={`font-black font-display text-xl ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                    {stats.bookingsTotal || '—'}
+                  </h4>
                 </div>
                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                   <TrendingUp size={16} />
@@ -573,7 +605,11 @@ const Profile = () => {
               </div>
 
               <button 
-                onClick={() => navigate('/login')}
+                type="button"
+                onClick={async () => {
+                  await logout();
+                  navigate('/login');
+                }}
                 className={`w-full mt-3 px-4 py-3 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest shadow-sm ${
                   isDark 
                     ? 'bg-red-500/5 border-red-500/10 text-red-500 hover:bg-red-500/10' 
@@ -603,7 +639,42 @@ const Profile = () => {
 const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
   if (!isOpen) return null;
 
-  const chartData = data.categories.map(cat => ({
+  const categories = data?.categories || [];
+  if (!categories.length) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4 backdrop-blur-md bg-black/70"
+        >
+          <motion.div
+            initial={{ scale: 0.95, y: 10, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.95, y: 10, opacity: 0 }}
+            className={`relative w-full max-w-md rounded-2xl border p-6 shadow-2xl ${
+              isDark ? 'bg-[#0f1115] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
+            }`}
+          >
+            <h3 className="text-lg font-black mb-2">No report yet</h3>
+            <p className="text-sm opacity-80 mb-6">
+              Performance breakdowns will be available after your coach or system publishes assessment data.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-3 rounded-xl bg-[#CE2029] text-white text-xs font-black uppercase tracking-widest"
+            >
+              Close
+            </button>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  const chartData = categories.map(cat => ({
     subject: cat.name,
     A: cat.score,
   }));
@@ -627,7 +698,7 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
             <div className="print-header-visible border-b-4 border-[#CE2029] pb-6 mb-8 w-full">
               <div className="text-center mb-6">
                 <h1 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] text-slate-900 leading-none">
-                  AMM Sports Arena
+                  Arena CRM
                 </h1>
               </div>
               <div className="flex justify-between items-end border-t border-slate-100 pt-4">
@@ -651,7 +722,7 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
                     Performance <span className="text-[#CE2029]">Snapshot</span>
                   </h2>
                   <p className={`text-[8px] font-black uppercase tracking-widest opacity-50 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {mode} Assessment · Level 4
+                    {mode} assessment
                   </p>
                 </div>
               </div>
@@ -665,19 +736,19 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
             <div className="flex flex-wrap gap-x-12 gap-y-4 mb-8 text-[9px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-6 print:flex">
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Student Name</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">MUHAMMAD A.</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Student ID</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">AS202492</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Batch Name</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">MORNING ELITE</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Membership</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">INDIVIDUAL ANNUAL</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
               </div>
             </div>
 
@@ -700,9 +771,9 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
                 {/* Stats Grid */}
                 <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 border-l border-white/5">
                   {[
-                    { label: 'Overall Mastery', value: `${data.overall}%`, trend: '+4.2%', icon: Activity, color: '#CE2029' },
-                    { label: 'Attendance Rate', value: '94%', trend: 'Elite', icon: CheckCircle2, color: '#22c55e' },
-                    { label: 'Training Load', value: '38.5h', trend: 'Active', icon: Zap, color: '#f59e0b' },
+                    { label: 'Overall Mastery', value: `${data.overall}%`, trend: '—', icon: Activity, color: '#CE2029' },
+                    { label: 'Attendance Rate', value: '—', trend: '—', icon: CheckCircle2, color: '#22c55e' },
+                    { label: 'Training Load', value: '—', trend: '—', icon: Zap, color: '#f59e0b' },
                   ].map((stat, i) => (
                     <div key={i} className={`p-4 border-r border-b border-white/5 flex flex-col justify-center`}>
                       <p className="text-[7px] font-black uppercase tracking-widest text-slate-500 mb-1 leading-none">{stat.label}</p>
@@ -718,7 +789,7 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
                     </div>
                     <div>
                       <p className="text-[7px] font-black uppercase tracking-widest text-[#CE2029]">Ranking</p>
-                      <p className="text-[10px] font-black uppercase italic leading-none text-slate-900 dark:text-white">Advanced Elite</p>
+                      <p className="text-[10px] font-black uppercase italic leading-none text-slate-900 dark:text-white">—</p>
                     </div>
                   </div>
                 </div>

@@ -6,6 +6,9 @@ import gsap from 'gsap';
 import ShuttleButton from '../components/ShuttleButton';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
+import { shouldPersistBookingSuccessToUserBookings } from '../../../utils/bookingSuccessPersistence';
 
 // Shuttlecock particle for confetti
 const ShuttleParticle = ({ delay, x, y, isDark }) => (
@@ -78,22 +81,23 @@ const BookingSuccess = () => {
       } else if (state.batch) {
         // Coaching enrollment
         newBooking = {
-          id: `AC-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-          arenaName: "Academy Hub",
+          id: state.enrollment?.id ? String(state.enrollment.id) : `AC-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+          arenaName: 'Academy Hub',
           arenaImage: state.batch.image,
-          location: "Premium Class",
+          location: 'Premium Class',
           coachName: state.batch.coachName,
           courtName: state.batch.level,
           date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           slot: state.batch.timing,
           status: 'Upcoming',
           type: 'Coaching',
-          price: state.amount
+          price: state.amount,
         };
       } else {
         // Arena booking
+        const apiId = state.booking?.id ? String(state.booking.id) : null;
         newBooking = {
-          id: `BK-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+          id: apiId || `BK-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
           arenaName: state.arena?.name,
           arenaImage: state.arena?.image,
           location: state.arena?.location,
@@ -106,8 +110,16 @@ const BookingSuccess = () => {
         };
       }
 
-      // Prevent duplicate saving on re-renders
-      if (!existingBookings.find(b => b.id === newBooking.id)) {
+      const persist = shouldPersistBookingSuccessToUserBookings(state, {
+        apiConfigured: isApiConfigured(),
+        hasToken: Boolean(getAuthToken()),
+      });
+      // Prevent duplicate saving on re-renders; skip local row when server is source of truth
+      if (
+        persist &&
+        newBooking.id &&
+        !existingBookings.find((b) => b.id === newBooking.id)
+      ) {
         localStorage.setItem('userBookings', JSON.stringify([newBooking, ...existingBookings]));
       }
     }
