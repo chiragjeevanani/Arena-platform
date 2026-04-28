@@ -4,3 +4,7 @@ coverage/
 *.log
 tests/
 *.test.js
+
+# Ignore all scratch scripts in the root of Backend
+/*.js
+!jest.config.js
