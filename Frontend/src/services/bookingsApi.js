@@ -8,6 +8,13 @@ export function fetchCourtAvailability(courtId, dateYmd) {
   });
 }
 
+export function fetchBookingPricing(arenaId) {
+  return apiJson('/api/me/bookings/pricing', {
+    method: 'POST',
+    body: { arenaId }
+  });
+}
+
 /**
  * Creates a court booking. Omit `amount` so the server applies membership + arena hourly pricing.
  */

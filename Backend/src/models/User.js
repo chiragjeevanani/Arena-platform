@@ -22,6 +22,9 @@ const userSchema = new mongoose.Schema(
     assignedArenaId: { type: String, default: null },
     avatarUrl: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerifyToken: { type: String, default: null, select: false },
+    emailVerifyExpires: { type: Date, default: null, select: false },
   },
   { timestamps: true }
 );
@@ -31,7 +34,7 @@ function toPublicUser(doc) {
   return {
     id: doc._id.toString(),
     email: doc.email,
-    name: doc.name,
+    name: doc.name || `${doc.firstName || ''} ${doc.lastName || ''}`.trim(),
     role: doc.role,
     assignedArenaId: doc.assignedArenaId,
     avatarUrl: doc.avatarUrl || '',

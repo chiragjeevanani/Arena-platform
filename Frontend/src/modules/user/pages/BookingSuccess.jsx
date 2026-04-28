@@ -78,17 +78,17 @@ const BookingSuccess = () => {
           benefits: state.plan?.benefits
         };
         localStorage.setItem('userMembership', JSON.stringify(membershipData));
-      } else if (state.batch) {
+      } else if (state.type === 'coaching' || state.batch) {
         // Coaching enrollment
         newBooking = {
           id: state.enrollment?.id ? String(state.enrollment.id) : `AC-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-          arenaName: 'Academy Hub',
-          arenaImage: state.batch.image,
-          location: 'Premium Class',
-          coachName: state.batch.coachName,
-          courtName: state.batch.level,
+          arenaName: state.batch?.arenaName || state.arena?.name || 'Arena',
+          arenaImage: state.batch?.image || state.arena?.image,
+          location: state.batch?.location || state.arena?.location || 'Arena',
+          coachName: state.batch?.coachName,
+          courtName: state.batch?.level || 'Coaching',
           date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-          slot: state.batch.timing,
+          slot: state.batch?.timing,
           status: 'Upcoming',
           type: 'Coaching',
           price: state.amount,

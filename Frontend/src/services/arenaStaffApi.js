@@ -51,13 +51,34 @@ export const listMyBookings = (params = {}) => {
 };
 
 // Walk-in Booking
-export const getWalkinCourts = () => apiJson(`${BASE}/walkin/courts`);
+export const getWalkinCourts = (arenaId) => 
+  apiJson(`${BASE}/walkin/courts`, { 
+    headers: arenaId ? { 'X-Arena-Id': arenaId } : {} 
+  });
 
-export const getWalkinSlots = (courtId, date) =>
-  apiJson(`${BASE}/walkin/slots?courtId=${encodeURIComponent(courtId)}&date=${encodeURIComponent(date)}`);
+export const getWalkinSlots = (courtId, date, arenaId) =>
+  apiJson(`${BASE}/walkin/slots?courtId=${encodeURIComponent(courtId)}&date=${encodeURIComponent(date)}`, {
+    headers: arenaId ? { 'X-Arena-Id': arenaId } : {}
+  });
 
-export const createWalkinBooking = (body) =>
-  apiJson(`${BASE}/walkin/book`, { method: 'POST', body });
+export const createWalkinBooking = (body, arenaId) =>
+  apiJson(`${BASE}/walkin/book`, { 
+    method: 'POST', 
+    body,
+    headers: arenaId ? { 'X-Arena-Id': arenaId } : {}
+  });
+
+export const searchWalkinCustomers = (query, arenaId) =>
+  apiJson(`${BASE}/walkin/customers/search?q=${encodeURIComponent(query)}`, {
+    headers: arenaId ? { 'X-Arena-Id': arenaId } : {}
+  });
+
+export const createWalkinCustomer = (body, arenaId) =>
+  apiJson(`${BASE}/walkin/customers`, {
+    method: 'POST',
+    body,
+    headers: arenaId ? { 'X-Arena-Id': arenaId } : {}
+  });
 
 export const updateMyBooking = (id, body) =>
   apiJson(`${BASE}/bookings/${encodeURIComponent(id)}`, { method: 'PATCH', body });

@@ -5,7 +5,7 @@ import {
   Package, Plus, Search, Filter, AlertTriangle, ArrowUpDown, 
   MoreHorizontal, History, RefreshCw, X, Tag, ArrowRight,
   Eye, Settings2, FileText, Printer, Trash2, Activity, 
-  Hash, Clock, ShieldCheck
+  Hash, Clock, ShieldCheck, MapPin
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
@@ -14,11 +14,14 @@ import {
   listArenaAdminInventoryItems,
   createArenaAdminInventoryItem,
   updateArenaAdminInventoryItem,
+  deleteArenaAdminInventoryItem,
 } from '../../../services/arenaAdminApi';
 import {
   listAdminInventoryItems,
   createAdminInventoryItem,
   updateAdminInventoryItem,
+  deleteAdminInventoryItem,
+  listAdminArenas,
 } from '../../../services/adminOpsApi';
 import { resolveLiveOpsArenaScope } from '../../../utils/liveOpsScope';
 import { mapArenaInventoryItemToTableRow } from '../../../utils/arenaInventoryAdapter';
@@ -39,30 +42,67 @@ const Inventory = () => {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All Listings');
 
+  const [arenas, setArenas] = useState([]);
+  const [selectedArenaId, setSelectedArenaId] = useState(arenaIdFromQuery || '');
+  const [loadingArenas, setLoadingArenas] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
   // Add Item form state
-  const [newItem, setNewItem] = useState({ name: '', category: 'Equipment', sku: '', stock: 20, minStock: 5, price: 0 });
+  const [newItem, setNewItem] = useState({ 
+    name: '', 
+    category: 'Equipment', 
+    sku: '', 
+    stock: 20, 
+    minStock: 5, 
+    price: 0 
+  });
 
   // Adjustment form state
   const [adjustDelta, setAdjustDelta] = useState('');
+
+  // Fetch arenas for Super Admin
+  useEffect(() => {
+    if (user?.role === 'SUPER_ADMIN') {
+      (async () => {
+        setLoadingArenas(true);
+        try {
+          const res = await listAdminArenas();
+          setArenas(res.arenas || []);
+          if (!selectedArenaId && res.arenas?.length > 0) {
+            setSelectedArenaId(res.arenas[0].id);
+          }
+        } catch (e) {
+          console.error('Failed to load arenas', e);
+        } finally {
+          setLoadingArenas(false);
+        }
+      })();
+    }
+  }, [user, selectedArenaId]);
 
   const opsScope = useMemo(
     () =>
       resolveLiveOpsArenaScope(user, {
         apiConfigured: isApiConfigured(),
         hasToken: Boolean(getAuthToken()),
-        arenaIdFromQuery,
+        arenaIdFromQuery: selectedArenaId,
       }),
-    [user, arenaIdFromQuery]
+    [user, selectedArenaId]
   );
 
   const refetchLiveInventory = useCallback(async () => {
-    if (!opsScope.live) return;
-    const data =
-      opsScope.channel === 'arena'
-        ? await listArenaAdminInventoryItems(opsScope.arenaId)
-        : await listAdminInventoryItems({ arenaId: opsScope.arenaId });
-    const rows = (data.items || []).map(mapArenaInventoryItemToTableRow);
-    setInventoryData(rows);
+    if (!opsScope.live || !opsScope.arenaId) return;
+    try {
+      const data =
+        opsScope.channel === 'arena'
+          ? await listArenaAdminInventoryItems(opsScope.arenaId)
+          : await listAdminInventoryItems({ arenaId: opsScope.arenaId });
+      const rows = (data.items || []).map(mapArenaInventoryItemToTableRow);
+      setInventoryData(rows);
+    } catch (e) {
+      console.error('Inventory fetch failed', e);
+      setInventoryData([]);
+    }
   }, [opsScope]);
 
   useEffect(() => {
@@ -131,32 +171,54 @@ const Inventory = () => {
           sku: String(newItem.sku || '').trim(),
           quantity: parseInt(newItem.stock, 10) || 0,
           unitPrice: Number(newItem.price) || 0,
+          category: newItem.category,
+          minStock: parseInt(newItem.minStock, 10) || 5,
         };
-        if (opsScope.channel === 'arena') {
-          await createArenaAdminInventoryItem(body);
+
+        if (isEditing && selectedItem) {
+          if (opsScope.channel === 'arena') {
+            await updateArenaAdminInventoryItem(selectedItem.id, body);
+          } else {
+            await updateAdminInventoryItem(selectedItem.id, body);
+          }
+          addAuditEntry(newItem.name.trim(), 'SKU metadata updated via API');
         } else {
-          await createAdminInventoryItem(body);
+          if (opsScope.channel === 'arena') {
+            await createArenaAdminInventoryItem(body);
+          } else {
+            await createAdminInventoryItem(body);
+          }
+          addAuditEntry(newItem.name.trim(), 'New SKU registered via API');
         }
+
         await refetchLiveInventory();
-        addAuditEntry(newItem.name.trim(), 'New SKU registered via API');
         setNewItem({ name: '', category: 'Equipment', sku: '', stock: 20, minStock: 5, price: 0 });
+        setIsEditing(false);
+        setSelectedItem(null);
         setShowAddItemModal(false);
       } catch (e) {
-        alert(e.message || 'Failed to add item');
+        alert(e.message || 'Operation failed');
       }
       return;
     }
+    // Demo fallback
     const entry = {
-      id: `inv-${Date.now()}`,
+      id: isEditing ? selectedItem.id : `inv-${Date.now()}`,
       name: newItem.name,
       category: newItem.category,
       stock: parseInt(newItem.stock, 10) || 0,
       minStock: parseInt(newItem.minStock, 10) || 5,
       price: parseInt(newItem.price, 10) || 0,
     };
-    setInventoryData(prev => [entry, ...prev]);
-    addAuditEntry(entry.name, `New SKU registered (+${entry.stock} units)`);
+    if (isEditing) {
+      setInventoryData(prev => prev.map(i => i.id === selectedItem.id ? entry : i));
+    } else {
+      setInventoryData(prev => [entry, ...prev]);
+    }
+    addAuditEntry(entry.name, isEditing ? 'SKU updated (offline)' : `New SKU registered (+${entry.stock} units)`);
     setNewItem({ name: '', category: 'Equipment', sku: '', stock: 20, minStock: 5, price: 0 });
+    setIsEditing(false);
+    setSelectedItem(null);
     setShowAddItemModal(false);
   };
 
@@ -192,6 +254,26 @@ const Inventory = () => {
     setShowAdjustmentModal(false);
   };
 
+  const handleDeleteItem = async (item) => {
+    if (!window.confirm(`Are you sure you want to delete ${item.name}?`)) return;
+    if (opsScope.live && item.fromApi) {
+      try {
+        if (opsScope.channel === 'arena') {
+          await deleteArenaAdminInventoryItem(item.id);
+        } else {
+          await deleteAdminInventoryItem(item.id);
+        }
+        await refetchLiveInventory();
+        addAuditEntry(item.name, 'SKU archived and removed from catalog');
+      } catch (e) {
+        alert(e.message || 'Deletion failed');
+      }
+      return;
+    }
+    setInventoryData(prev => prev.filter(i => i.id !== item.id));
+    addAuditEntry(item.name, 'SKU archived and removed from catalog');
+  };
+
   const addAuditEntry = (itemName, action) => {
     const entry = {
       id: Date.now(),
@@ -217,9 +299,25 @@ const Inventory = () => {
                  <Activity size={10} /> Central Logistics
               </div>
               <h2 className="text-xl md:text-2xl font-bold text-[#36454F] tracking-tight leading-none uppercase">Inventory Registry</h2>
-              <p className="text-[9px] font-medium text-slate-600 uppercase tracking-widest mt-2 flex items-center gap-2">
-                 <span className="w-1 h-1 rounded-full bg-slate-400" /> Tracking facility assets and consumables across all active nodes
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
+                <p className="text-[9px] font-medium text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                   <span className="w-1 h-1 rounded-full bg-slate-400" /> Tracking facility assets and consumables
+                </p>
+                {user?.role === 'SUPER_ADMIN' && (
+                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-1.5 px-3">
+                    <MapPin size={12} className="text-[#CE2029]" />
+                    <select 
+                      value={selectedArenaId} 
+                      onChange={e => setSelectedArenaId(e.target.value)}
+                      className="bg-transparent text-[10px] font-black text-[#36454F] outline-none border-none cursor-pointer uppercase tracking-widest min-w-[150px]"
+                    >
+                      {loadingArenas ? <option>Loading Arenas...</option> : arenas.map(a => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
            </div>
            
            <div className="flex items-center gap-2 w-full md:w-auto">
@@ -230,21 +328,17 @@ const Inventory = () => {
                  <History size={16} strokeWidth={2.5} />
               </button>
               <button 
-                 onClick={() => setShowAddItemModal(true)}
+                 onClick={() => {
+                   setIsEditing(false);
+                   setNewItem({ name: '', category: 'Equipment', sku: '', stock: 20, minStock: 5, price: 0 });
+                   setShowAddItemModal(true);
+                 }}
                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-sm bg-[#36454F] text-white hover:bg-black transition-all text-[9.5px] font-bold uppercase tracking-widest shadow-md active:translate-y-0.5"
               >
                  <Plus size={14} strokeWidth={3} /> Add SKU
               </button>
            </div>
         </div>
-
-        {user?.role === 'SUPER_ADMIN' && isApiConfigured() && getAuthToken() && !opsScope.live ? (
-          <div className="rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] font-semibold text-amber-950">
-            Live inventory (super admin): add{' '}
-            <span className="font-mono">?arenaId=&lt;24-char Mongo id&gt;</span> to this page&apos;s URL to load and edit stock via{' '}
-            <span className="font-mono">/api/admin/inventory</span>.
-          </div>
-        ) : null}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -299,8 +393,8 @@ const Inventory = () => {
         </div>
 
         {/* Inventory Table */}
-        <div className="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
-          <div className="overflow-x-auto scrollbar-hide">
+        <div className="bg-white rounded-sm border border-slate-200 shadow-sm min-h-[400px]">
+          <div className="overflow-x-auto scrollbar-hide pb-40">
             <table className="w-full text-left whitespace-nowrap min-w-[900px]">
                 <thead>
                    <tr className="bg-slate-50/50 border-b border-slate-200 text-[8.5px] font-black uppercase tracking-[0.2em] text-slate-700">
@@ -406,23 +500,32 @@ const Inventory = () => {
                                         initial={{ opacity: 0, scale: 0.98, y: 5 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.98, y: 5 }}
-                                        className={`absolute right-0 ${idx >= filteredData.length - 2 ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 p-1.5 rounded-sm border border-slate-200 bg-white shadow-xl z-20`}
+                                        className={`absolute right-0 ${idx >= filteredData.length - 1 && filteredData.length > 3 ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 p-1.5 rounded-sm border border-slate-200 bg-white shadow-xl z-20`}
                                       >
                                         <div className="space-y-0.5">
                                           {[
                                             { label: 'View Logistics', icon: Eye, color: '#36454F' },
-                                            { label: 'Manual Edit', icon: Settings2, color: '#36454F' },
-                                            { label: 'Audit Trail', icon: FileText, color: '#36454F', action: () => { setShowHistoryModal(true); } },
-                                            { label: 'Print SKU', icon: Printer, color: '#36454F' },
-                                            { label: 'Archive SKU', icon: Trash2, color: '#ef4444', action: () => {
-                                                if (item.fromApi) {
-                                                  alert('Inventory deletion is not available in the arena portal.');
-                                                  return;
-                                                }
-                                                setInventoryData(prev => prev.filter(i => i.id !== item.id));
-                                                addAuditEntry(item.name, 'SKU archived and removed from catalog');
+                                            { 
+                                              label: 'Manual Edit', 
+                                              icon: Settings2, 
+                                              color: '#36454F',
+                                              action: () => {
+                                                setSelectedItem(item);
+                                                setNewItem({
+                                                  name: item.name,
+                                                  category: item.category,
+                                                  sku: item.sku,
+                                                  stock: item.stock,
+                                                  minStock: item.minStock,
+                                                  price: item.price
+                                                });
+                                                setIsEditing(true);
+                                                setShowAddItemModal(true);
                                               }
                                             },
+                                            { label: 'Audit Trail', icon: FileText, color: '#36454F', action: () => { setShowHistoryModal(true); } },
+                                            { label: 'Print SKU', icon: Printer, color: '#36454F' },
+                                            { label: 'Archive SKU', icon: Trash2, color: '#ef4444', action: () => handleDeleteItem(item) },
                                           ].map((opt, i) => (
                                             <button
                                               key={i}
@@ -459,10 +562,14 @@ const Inventory = () => {
               className="relative w-full max-w-sm rounded-sm bg-white border border-white/10 shadow-2xl overflow-hidden font-sans">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white text-[#36454F]">
                 <div>
-                  <h3 className="text-xl font-bold uppercase tracking-tight italic">Catalog Registry</h3>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-1">Initialize new asset node</p>
+                  <h3 className="text-xl font-bold uppercase tracking-tight italic">
+                    {isEditing ? 'Modify SKU' : 'Catalog Registry'}
+                  </h3>
+                  <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-600 mt-1">
+                    {isEditing ? 'Update existing asset node' : 'Initialize new asset node'}
+                  </p>
                 </div>
-                <button onClick={() => setShowAddItemModal(false)} className="text-slate-300 hover:text-[#36454F] transition-colors"><X size={18} /></button>
+                <button onClick={() => { setShowAddItemModal(false); setIsEditing(false); setSelectedItem(null); }} className="text-slate-300 hover:text-[#36454F] transition-colors"><X size={18} /></button>
               </div>
 
               <div className="p-6 space-y-4 bg-[#F9FAFB]/30">
@@ -473,6 +580,17 @@ const Inventory = () => {
                     placeholder="e.g. Victor Thruster K-Series"
                     value={newItem.name}
                     onChange={e => setNewItem(p => ({ ...p, name: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#CE2029] uppercase transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold uppercase tracking-widest text-[#36454F] block">SKU / Serial</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. VCT-TK-001"
+                    value={newItem.sku}
+                    onChange={e => setNewItem(p => ({ ...p, sku: e.target.value }))}
                     className="w-full h-10 px-3 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none focus:border-[#CE2029] uppercase transition-all"
                   />
                 </div>
@@ -527,7 +645,7 @@ const Inventory = () => {
                      className="w-full h-12 rounded-sm bg-[#36454F] text-white text-[10px] font-bold uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md disabled:opacity-40"
                      disabled={!newItem.name.trim()}
                    >
-                     Confirm Catalog Point <ArrowRight size={14} />
+                     {isEditing ? 'Commit Metadata Change' : 'Confirm Catalog Point'} <ArrowRight size={14} />
                    </button>
                 </div>
               </div>

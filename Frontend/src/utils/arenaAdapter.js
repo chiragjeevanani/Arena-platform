@@ -22,6 +22,7 @@ export function normalizeListArena(a) {
     category: a.category || 'Badminton',
     amenities,
     description: a.description || '',
+    isPublished: a.isPublished !== false,
   };
 }
 
@@ -33,6 +34,7 @@ export function normalizeDetailArena(payload) {
     arenaId: a.id,
     name: c.name,
     type: c.type || 'Court',
+    image: c.imageUrl && String(c.imageUrl).trim() ? c.imageUrl : CourtImage,
   }));
   return {
     ...normalizeListArena({

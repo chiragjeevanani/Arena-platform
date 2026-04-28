@@ -4,11 +4,12 @@ import { motion } from 'framer-motion';
 import { 
   Building2, MapPin, Star, Plus, 
   ChevronRight, Search, Filter, 
-  Target, Users, ArrowLeft
+  Target, Users, ArrowLeft, Trash2, Power
 } from 'lucide-react';
 import { fetchPublicArenas } from '../../../services/arenasApi';
 import { normalizeListArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
+import { patchAdminArena, deleteAdminArena } from '../../../services/adminOpsApi';
 
 const ArenaListAdmin = () => {
   const navigate = useNavigate();
@@ -41,6 +42,27 @@ const ArenaListAdmin = () => {
     a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (a.location || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleToggleActive = async (e, arena) => {
+    e.stopPropagation();
+    try {
+      await patchAdminArena(arena.id, { isPublished: !arena.isPublished });
+      setArenas(prev => prev.map(a => a.id === arena.id ? { ...a, isPublished: !arena.isPublished } : a));
+    } catch (err) {
+      alert(err.message || 'Failed to update status');
+    }
+  };
+
+  const handleDelete = async (e, arenaId) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this arena? All associated courts will be deleted.')) return;
+    try {
+      await deleteAdminArena(arenaId);
+      setArenas(prev => prev.filter(a => a.id !== arenaId));
+    } catch (err) {
+      alert(err.message || 'Failed to delete arena');
+    }
+  };
 
   return (
     <div className="space-y-4 max-w-[1400px] mx-auto px-4 py-4 min-h-screen">
@@ -99,14 +121,39 @@ const ArenaListAdmin = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={() => navigate(`/admin/arena/details/${arena.id}`)}
-            className="group bg-white rounded-sm border border-slate-100 p-2.5 shadow-sm hover:shadow-lg hover:border-[#CE2029]/30 transition-all cursor-pointer relative overflow-hidden flex flex-col h-fit"
+            className={`group bg-white rounded-sm border ${arena.isPublished === false ? 'opacity-70 border-slate-200 grayscale-[0.5]' : 'border-slate-100'} p-2.5 shadow-sm hover:shadow-lg hover:border-[#CE2029]/30 transition-all cursor-pointer relative overflow-hidden flex flex-col h-fit`}
           >
+            {/* Actions overlay */}
+            <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button 
+                onClick={(e) => handleToggleActive(e, arena)}
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md transition-all hover:scale-110 ${arena.isPublished !== false ? 'bg-amber-500 hover:bg-amber-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
+                title={arena.isPublished !== false ? "Deactivate" : "Activate"}
+              >
+                <Power size={12} strokeWidth={3} />
+              </button>
+              <button 
+                onClick={(e) => handleDelete(e, arena.id)}
+                className="w-7 h-7 rounded-full bg-[#CE2029] hover:bg-red-700 text-white shadow-md flex items-center justify-center transition-all hover:scale-110"
+                title="Delete Arena"
+              >
+                <Trash2 size={12} strokeWidth={3} />
+              </button>
+            </div>
+
             {/* Image Header */}
             <div className="relative h-28 rounded-sm overflow-hidden mb-2.5 bg-slate-50 border border-slate-50">
               <img src={arena.image} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700" />
-              <div className="absolute top-1.5 right-1.5 bg-[#CE2029] px-1.5 py-0.5 rounded-sm flex items-center gap-1">
-                <Star size={9} className="text-[#FFD600] fill-[#FFD600]" />
-                <span className="text-[9px] font-black text-white">{arena.rating}</span>
+              <div className="absolute top-1.5 right-1.5 flex gap-1">
+                 {arena.isPublished === false && (
+                    <div className="bg-slate-800 px-1.5 py-0.5 rounded-sm flex items-center">
+                      <span className="text-[9px] font-black text-white uppercase">Inactive</span>
+                    </div>
+                 )}
+                 <div className="bg-[#CE2029] px-1.5 py-0.5 rounded-sm flex items-center gap-1">
+                   <Star size={9} className="text-[#FFD600] fill-[#FFD600]" />
+                   <span className="text-[9px] font-black text-white">{arena.rating}</span>
+                 </div>
               </div>
               <div className="absolute bottom-1.5 left-1.5 flex gap-1 font-bold">
                  <span className="bg-white px-1.5 py-0.5 rounded-sm text-[8px] uppercase tracking-wider text-[#CE2029] font-black shadow-sm">

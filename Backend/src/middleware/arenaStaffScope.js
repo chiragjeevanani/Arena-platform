@@ -6,8 +6,9 @@ const InventoryItem = require('../models/InventoryItem');
 const CmsContent = require('../models/CmsContent');
 const Court = require('../models/Court');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
+const PosSale = require('../models/PosSale');
 
-const STAFF_ROLES = ['ARENA_ADMIN', 'RECEPTIONIST'];
+const STAFF_ROLES = ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'];
 
 async function requireArenaStaff(req, res, next) {
   if (!req.auth) {
@@ -20,10 +21,21 @@ async function requireArenaStaff(req, res, next) {
   if (!user || !user.isActive) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  const aid = user.assignedArenaId;
-  if (!aid || !mongoose.isValidObjectId(aid)) {
-    return res.status(403).json({ error: 'Staff user has no assigned arena' });
+
+  let aid = user.assignedArenaId;
+
+  // SUPER_ADMIN can specify arenaId via header or query
+  if (user.role === 'SUPER_ADMIN') {
+    const headerAid = req.headers['x-arena-id'];
+    const queryAid = req.query.arenaId;
+    const bodyAid = req.body.arenaId;
+    aid = headerAid || queryAid || bodyAid;
   }
+
+  if (!aid || !mongoose.isValidObjectId(aid)) {
+    return res.status(403).json({ error: 'Operational scope (arenaId) is required for this request.' });
+  }
+
   req.arenaScopeId = String(aid);
   return next();
 }
@@ -140,6 +152,21 @@ async function requireBlockInArenaScope(req, res, next) {
   return next();
 }
 
+async function requireSaleInArenaScope(req, res, next) {
+  const { saleId } = req.params;
+  if (!mongoose.isValidObjectId(saleId)) {
+    return res.status(400).json({ error: 'Invalid sale id' });
+  }
+  const sale = await PosSale.findById(saleId);
+  if (!sale) {
+    return res.status(404).json({ error: 'Transaction not found' });
+  }
+  if (String(sale.arenaId) !== req.arenaScopeId) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  return next();
+}
+
 module.exports = {
   requireArenaStaff,
   requireQueryArenaMatchesScope,
@@ -150,4 +177,5 @@ module.exports = {
   requireCmsContentInArenaScope,
   requireCourtInArenaScope,
   requireBlockInArenaScope,
+  requireSaleInArenaScope,
 };

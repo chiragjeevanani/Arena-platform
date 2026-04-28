@@ -16,7 +16,7 @@ const userMembershipSchema = new mongoose.Schema(
     arenaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Arena',
-      required: true,
+      required: false,
       index: true,
     },
     startsAt: { type: Date, required: true },
@@ -39,7 +39,7 @@ function toPublic(doc, extras = {}) {
     id: o._id.toString(),
     userId: String(o.userId),
     membershipPlanId: String(o.membershipPlanId),
-    arenaId: String(o.arenaId),
+    arenaId: o.arenaId ? String(o.arenaId) : null,
     startsAt: o.startsAt,
     expiresAt: o.expiresAt,
     status: o.status,

@@ -3,7 +3,6 @@ const Court = require('../models/Court');
 const CourtSlot = require('../models/CourtSlot');
 const Booking = require('../models/Booking');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
-const { getStandardDaySlots } = require('../services/daySlots');
 
 const timeToMinutes = (t) => {
   if (!t) return 0;
@@ -60,13 +59,8 @@ async function getCourtAvailability(req, res) {
     status: 'Available'
   }).sort({ startTime: 1 }).lean();
 
-  // 2. Fallback to standard if none configured
-  let baseSlots = [];
-  if (configuredSlots.length > 0) {
-    baseSlots = configuredSlots.map(s => ({ timeSlot: s.timeSlot }));
-  } else {
-    baseSlots = getStandardDaySlots();
-  }
+  // 2. Map configured slots
+  const baseSlots = configuredSlots.map(s => ({ timeSlot: s.timeSlot }));
 
   // 3. Fetch Bookings and AvailabilityBlocks
   const [booked, blocks] = await Promise.all([

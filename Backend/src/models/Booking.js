@@ -8,6 +8,11 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    bookedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     arenaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Arena',

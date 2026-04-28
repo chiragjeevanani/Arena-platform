@@ -35,12 +35,15 @@ async function patchAdminUser(req, res) {
   const user = await User.findById(id);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const { name, email, role, assignedArenaId, isActive } = req.body;
+  const { name, email, role, assignedArenaId, isActive, phone } = req.body;
   if (name != null && String(name).trim()) {
     user.name = String(name).trim();
   }
   if (email != null && String(email).trim()) {
     user.email = String(email).trim().toLowerCase();
+  }
+  if (phone != null) {
+    user.phone = String(phone).trim();
   }
   if (role != null) {
     if (!ROLES.includes(role)) {
@@ -65,7 +68,7 @@ async function patchAdminUser(req, res) {
 }
 
 async function createAdminUser(req, res) {
-  const { name, email, password, role, assignedArenaId } = req.body;
+  const { name, email, password, role, assignedArenaId, phone } = req.body;
 
   if (!name || !email || !password || !role) {
     return res.status(400).json({ error: 'Name, email, password, and role are required' });
@@ -83,7 +86,9 @@ async function createAdminUser(req, res) {
       passwordHash,
       role,
       assignedArenaId: assignedArenaId ? String(assignedArenaId) : null,
+      phone: phone ? String(phone).trim() : '',
       isActive: true,
+      isEmailVerified: true,
     });
 
     return res.status(201).json({ user: User.toPublic(user) });

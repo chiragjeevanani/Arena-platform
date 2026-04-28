@@ -5,7 +5,7 @@ function mapSlot(doc) {
   return {
     id: doc._id.toString(),
     arenaId: doc.arenaId.toString(),
-    courtId: doc.courtId,
+    courtId: doc.courtId.toString(),
     dayOfWeek: doc.dayOfWeek,
     timeSlot: doc.timeSlot,
     startTime: doc.startTime,
@@ -21,7 +21,26 @@ async function listCourtSlots(req, res) {
   const { arenaId, courtId } = req.params;
   const { day } = req.query;
 
+  if (!mongoose.isValidObjectId(arenaId) || !mongoose.isValidObjectId(courtId)) {
+    return res.json({ slots: [] });
+  }
+
   const query = { arenaId, courtId };
+  if (day) query.dayOfWeek = day;
+
+  const slots = await CourtSlot.find(query).sort({ startTime: 1, timeSlot: 1 });
+  return res.json({ slots: slots.map(mapSlot) });
+}
+
+async function listArenaSlots(req, res) {
+  const { arenaId } = req.params;
+  const { day } = req.query;
+
+  if (!mongoose.isValidObjectId(arenaId)) {
+    return res.json({ slots: [] });
+  }
+
+  const query = { arenaId };
   if (day) query.dayOfWeek = day;
 
   const slots = await CourtSlot.find(query).sort({ startTime: 1, timeSlot: 1 });
@@ -70,6 +89,7 @@ async function deleteCourtSlot(req, res) {
 
 module.exports = {
   listCourtSlots,
+  listArenaSlots,
   createCourtSlot,
   deleteCourtSlot,
 };

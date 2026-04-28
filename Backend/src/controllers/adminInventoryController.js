@@ -3,7 +3,7 @@ const InventoryItem = require('../models/InventoryItem');
 const Arena = require('../models/Arena');
 
 async function createInventoryItem(req, res) {
-  const { arenaId, name, sku, quantity, unitPrice } = req.body;
+  const { arenaId, name, sku, quantity, unitPrice, category, minStock } = req.body;
   if (!arenaId || !name) {
     return res.status(400).json({ error: 'arenaId and name are required' });
   }
@@ -19,9 +19,11 @@ async function createInventoryItem(req, res) {
   const item = await InventoryItem.create({
     arenaId,
     name: String(name).trim(),
-    sku: sku != null ? String(sku) : '',
+    sku: sku != null ? String(sku).trim() : '',
     quantity: quantity != null ? Number(quantity) : 0,
     unitPrice: unitPrice != null ? Number(unitPrice) : 0,
+    category: category != null ? String(category).trim() : 'Equipment',
+    minStock: minStock != null ? Number(minStock) : 5,
   });
 
   return res.status(201).json({ item: InventoryItem.toPublic(item) });
@@ -48,14 +50,35 @@ async function updateInventoryItem(req, res) {
     return res.status(404).json({ error: 'Item not found' });
   }
 
-  const { name, sku, quantity, unitPrice } = req.body;
+  const { name, sku, quantity, unitPrice, category, minStock } = req.body;
   if (name !== undefined) item.name = String(name).trim();
-  if (sku !== undefined) item.sku = String(sku);
+  if (sku !== undefined) item.sku = String(sku).trim();
   if (quantity !== undefined) item.quantity = Number(quantity);
   if (unitPrice !== undefined) item.unitPrice = Number(unitPrice);
+  if (category !== undefined) item.category = String(category).trim();
+  if (minStock !== undefined) item.minStock = Number(minStock);
 
   await item.save();
   return res.json({ item: InventoryItem.toPublic(item) });
 }
 
-module.exports = { createInventoryItem, listInventoryItems, updateInventoryItem };
+async function deleteInventoryItem(req, res) {
+  const { itemId } = req.params;
+  if (!mongoose.isValidObjectId(itemId)) {
+    return res.status(400).json({ error: 'Invalid item id' });
+  }
+
+  const item = await InventoryItem.findByIdAndDelete(itemId);
+  if (!item) {
+    return res.status(404).json({ error: 'Item not found' });
+  }
+
+  return res.json({ message: 'Inventory item deleted successfully' });
+}
+
+module.exports = { 
+  createInventoryItem, 
+  listInventoryItems, 
+  updateInventoryItem, 
+  deleteInventoryItem 
+};

@@ -1,30 +1,36 @@
 const mongoose = require('mongoose');
 const MembershipPlan = require('../models/MembershipPlan');
 const Arena = require('../models/Arena');
+const UserMembership = require('../models/UserMembership');
+const User = require('../models/User');
 
 async function createMembershipPlan(req, res) {
-  const { arenaId, name, price, durationDays, discountPercent, description } = req.body;
+  const { arenaId, isGlobal, name, price, durationDays, discountPercent, description, applicableTransactions } = req.body;
 
-  if (!arenaId || !name || price === undefined || price === null || !durationDays) {
-    return res.status(400).json({ error: 'arenaId, name, price, and durationDays are required' });
+  if (!isGlobal && (!arenaId || !mongoose.isValidObjectId(arenaId))) {
+    return res.status(400).json({ error: 'arenaId is required for non-global plans' });
   }
 
-  if (!mongoose.isValidObjectId(arenaId)) {
-    return res.status(400).json({ error: 'Invalid arena id' });
+  if (!name || price === undefined || price === null || !durationDays) {
+    return res.status(400).json({ error: 'name, price, and durationDays are required' });
   }
 
-  const arena = await Arena.findById(arenaId);
-  if (!arena) {
-    return res.status(404).json({ error: 'Arena not found' });
+  if (arenaId && mongoose.isValidObjectId(arenaId)) {
+    const arena = await Arena.findById(arenaId);
+    if (!arena) {
+      return res.status(404).json({ error: 'Arena not found' });
+    }
   }
 
   const plan = await MembershipPlan.create({
-    arenaId,
+    arenaId: isGlobal ? null : arenaId,
+    isGlobal: !!isGlobal,
     name: String(name).trim(),
     description: description != null ? String(description) : '',
     price: Number(price),
     durationDays: Number(durationDays),
     discountPercent: discountPercent != null ? Number(discountPercent) : 0,
+    applicableTransactions: Array.isArray(applicableTransactions) ? applicableTransactions : [],
   });
 
   return res.status(201).json({ plan: MembershipPlan.toPublic(plan) });
@@ -32,11 +38,24 @@ async function createMembershipPlan(req, res) {
 
 async function listMembershipPlans(req, res) {
   const { arenaId } = req.query;
-  if (!arenaId || !mongoose.isValidObjectId(arenaId)) {
-    return res.status(400).json({ error: 'Valid arenaId query is required' });
+  
+  let query = {};
+  if (arenaId && mongoose.isValidObjectId(arenaId)) {
+    // Return plans for this arena OR global plans
+    query = {
+      $or: [
+        { arenaId: arenaId },
+        { isGlobal: true }
+      ]
+    };
+  } else {
+    // If no specific arena requested, maybe return all or just global
+    // For admin list, usually we want to see everything or filter by arena
+    // Let's return all if no arenaId is specified, as superadmin might want to see all
+    query = {};
   }
 
-  const list = await MembershipPlan.find({ arenaId }).sort({ createdAt: -1 }).lean();
+  const list = await MembershipPlan.find(query).sort({ createdAt: -1 }).lean();
   return res.json({ plans: list.map((p) => MembershipPlan.toPublic(p)) });
 }
 
@@ -56,6 +75,7 @@ async function patchMembershipPlan(req, res) {
     durationDays,
     discountPercent,
     description,
+    applicableTransactions,
     isActive,
   } = req.body;
 
@@ -82,10 +102,125 @@ async function patchMembershipPlan(req, res) {
     }
     plan.discountPercent = x;
   }
+  if (applicableTransactions !== undefined && Array.isArray(applicableTransactions)) {
+    plan.applicableTransactions = applicableTransactions;
+  }
   if (typeof isActive === 'boolean') plan.isActive = isActive;
 
   await plan.save();
   return res.json({ plan: MembershipPlan.toPublic(plan) });
 }
 
-module.exports = { createMembershipPlan, listMembershipPlans, patchMembershipPlan };
+async function deleteMembershipPlan(req, res) {
+  const { planId } = req.params;
+  if (!mongoose.isValidObjectId(planId)) {
+    return res.status(400).json({ error: 'Invalid plan id' });
+  }
+  const plan = await MembershipPlan.findById(planId);
+  if (!plan) {
+    return res.status(404).json({ error: 'Plan not found' });
+  }
+
+  await MembershipPlan.findByIdAndDelete(planId);
+  return res.json({ success: true, deletedId: planId });
+}
+
+async function adminMembershipStats(req, res) {
+  const { arenaId } = req.query;
+  const match = {};
+  if (arenaId && mongoose.isValidObjectId(arenaId)) {
+    match.$or = [
+      { arenaId: new mongoose.Types.ObjectId(arenaId) },
+      { arenaId: null } // Include global plans
+    ];
+  }
+
+  const now = new Date();
+  
+  // Total Revenue & Users
+  const revenueAgg = await UserMembership.aggregate([
+    { $match: match },
+    {
+      $lookup: {
+        from: 'membershipplans',
+        localField: 'membershipPlanId',
+        foreignField: '_id',
+        as: 'plan'
+      }
+    },
+    { $unwind: '$plan' },
+    { $group: { _id: null, totalRevenue: { $sum: '$plan.price' }, count: { $sum: 1 } } }
+  ]);
+
+  const totalRevenue = revenueAgg[0]?.totalRevenue || 0;
+  const totalUsers = revenueAgg[0]?.count || 0;
+  const avgRevenuePerUser = totalUsers > 0 ? (totalRevenue / totalUsers) : 0;
+
+  // Active Users
+  const activeMatch = { ...match, status: 'active', expiresAt: { $gt: now } };
+  const totalActiveUsers = await UserMembership.countDocuments(activeMatch);
+
+  // Expiring soon: within next 7 days
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const expiringSoonCount = await UserMembership.countDocuments({
+    ...match,
+    status: 'active',
+    expiresAt: { $gt: now, $lte: nextWeek }
+  });
+
+  // Churn rate
+  const cancelledCount = await UserMembership.countDocuments({
+    ...match,
+    status: 'cancelled'
+  });
+  const churnRate = totalUsers > 0 ? (cancelledCount / totalUsers * 100) : 0;
+
+  // Conversion rate is mocked or calculated if we have total platform users
+  const conversionRate = 4.2;
+
+  return res.json({
+    avgRevenuePerUser,
+    churnRate,
+    conversionRate,
+    expiringSoonCount,
+    totalActiveUsers,
+    totalRevenue
+  });
+}
+
+async function listUserMemberships(req, res) {
+  const { arenaId, status } = req.query;
+  const match = {};
+  if (arenaId && mongoose.isValidObjectId(arenaId)) {
+    match.$or = [
+      { arenaId: new mongoose.Types.ObjectId(arenaId) },
+      { arenaId: null }
+    ];
+  }
+  if (status && status !== 'ALL') {
+    match.status = status.toLowerCase();
+  }
+
+  const list = await UserMembership.find(match)
+    .populate('userId', 'name firstName lastName email phone')
+    .populate('membershipPlanId')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return res.json({
+    memberships: list.map((m) => UserMembership.toPublic(m, {
+      user: User.toPublic(m.userId),
+      plan: m.membershipPlanId ? MembershipPlan.toPublic(m.membershipPlanId) : null
+    }))
+  });
+}
+
+module.exports = { 
+  createMembershipPlan, 
+  listMembershipPlans, 
+  patchMembershipPlan, 
+  deleteMembershipPlan, 
+  adminMembershipStats,
+  listUserMemberships
+};

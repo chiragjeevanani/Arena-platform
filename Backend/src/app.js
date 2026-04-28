@@ -15,7 +15,13 @@ function createApp() {
   const app = express();
 
   app.use(helmet());
-  app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+  
+  const corsOrigin = process.env.CORS_ORIGIN;
+  const origin = corsOrigin && corsOrigin.includes(',') 
+    ? corsOrigin.split(',').map(o => o.trim()) 
+    : (corsOrigin || true);
+    
+  app.use(cors({ origin }));
   app.use(express.json());
 
   app.use('/api', healthRoutes);

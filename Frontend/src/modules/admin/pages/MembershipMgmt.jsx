@@ -15,6 +15,8 @@ import {
   listAdminMembershipPlans,
   createAdminMembershipPlan,
   patchAdminMembershipPlan,
+  deleteAdminMembershipPlan,
+  getAdminMembershipStats,
 } from '../../../services/adminOpsApi';
 
 function durationDaysToLabel(d) {
@@ -46,8 +48,10 @@ function mapApiPlanToUi(p, idx) {
     duration: durationDaysToLabel(p.durationDays),
     durationDays: p.durationDays,
     discountPercent: p.discountPercent ?? 0,
+    applicableTransactions: p.applicableTransactions || [],
     category: 'premium',
     status: p.isActive ? 'active' : 'draft',
+    isGlobal: !!p.isGlobal,
     benefits,
     color,
     bestValue: false,
@@ -62,8 +66,16 @@ const MembershipMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [editingPlan, setEditingPlan] = useState(null);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
+  const [viewMode, setViewMode] = useState('grid');
   const [loadError, setLoadError] = useState('');
+  const [stats, setStats] = useState({
+    avgRevenuePerUser: 0,
+    churnRate: 0,
+    conversionRate: 0,
+    expiringSoonCount: 0,
+    totalActiveUsers: 0,
+    totalRevenue: 0
+  });
 
   const loadPlans = useCallback(async () => {
     if (!isApiConfigured() || !getAuthToken() || !selectedArenaId) {
@@ -72,9 +84,15 @@ const MembershipMgmt = () => {
     }
     setLoadError('');
     try {
-      const data = await listAdminMembershipPlans(selectedArenaId);
+      const [data, statsData] = await Promise.all([
+        listAdminMembershipPlans(selectedArenaId),
+        getAdminMembershipStats(selectedArenaId)
+      ]);
       const list = (data.plans || []).map((p, i) => mapApiPlanToUi(p, i));
       setPlans(list);
+      if (statsData) {
+        setStats(statsData);
+      }
     } catch (e) {
       setLoadError(e.message || 'Failed to load plans');
       setPlans([]);
@@ -121,13 +139,13 @@ const MembershipMgmt = () => {
   };
 
   const deletePlan = async (id) => {
-    if (!window.confirm('Deactivate this plan?')) return;
+    if (!window.confirm('Are you sure you want to completely delete this plan? This action cannot be undone.')) return;
     if (!isApiConfigured() || !getAuthToken()) return;
     try {
-      await patchAdminMembershipPlan(id, { isActive: false });
+      await deleteAdminMembershipPlan(id);
       await loadPlans();
     } catch (e) {
-      setLoadError(e.message || 'Failed');
+      setLoadError(e.message || 'Failed to delete plan');
     }
   };
 
@@ -140,11 +158,13 @@ const MembershipMgmt = () => {
     try {
       if (editingPlan.isNew) {
         await createAdminMembershipPlan({
-          arenaId: selectedArenaId,
+          arenaId: editingPlan.isGlobal ? null : selectedArenaId,
+          isGlobal: !!editingPlan.isGlobal,
           name: editingPlan.name.trim(),
           price: Number(editingPlan.price) || 0,
           durationDays,
           discountPercent: Number(editingPlan.discountPercent) || 0,
+          applicableTransactions: editingPlan.applicableTransactions || [],
           description: desc,
         });
       } else {
@@ -153,6 +173,7 @@ const MembershipMgmt = () => {
           price: Number(editingPlan.price) || 0,
           durationDays,
           discountPercent: Number(editingPlan.discountPercent) || 0,
+          applicableTransactions: editingPlan.applicableTransactions || [],
           description: desc,
           isActive,
         });
@@ -211,7 +232,9 @@ const MembershipMgmt = () => {
                 duration: '12 Months',
                 benefits: [],
                 status: 'draft',
+                isGlobal: false,
                 discountPercent: 0,
+                applicableTransactions: ['booking'],
                 color: '#f59e0b',
               })
             }
@@ -271,12 +294,11 @@ const MembershipMgmt = () => {
       </div>
 
       {/* Analytics Snapshot */}
-      <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'Avg Revenue/User', value: 'OMR 115', delta: '+12%', icon: CustomDollarSign, color: '#10b981' },
-          { label: 'Conversion Rate', value: '4.2%', delta: '+0.5%', icon: CustomTrendingUp, color: '#3b82f6' },
-          { label: 'Churn Rate', value: '2.1%', delta: '-0.3%', icon: CustomUserMinus, color: '#f43f5e' },
-          { label: 'Expiring Soon', value: '45 Users', delta: 'Requires Action', icon: Calendar, color: '#f59e0b' },
+          { label: 'Total Revenue', value: `OMR ${stats.totalRevenue.toFixed(2)}`, delta: `Avg OMR ${stats.avgRevenuePerUser.toFixed(2)}/user`, icon: CustomDollarSign, color: '#10b981' },
+          { label: 'Active Users', value: `${stats.totalActiveUsers}`, delta: 'Currently Subscribed', icon: Users, color: '#3b82f6' },
+          { label: 'Expiring Soon', value: `${stats.expiringSoonCount} Users`, delta: 'Next 7 Days', icon: Calendar, color: '#f59e0b' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
              <div className="flex items-center justify-between mb-2">
@@ -311,6 +333,12 @@ const MembershipMgmt = () => {
                       {plan.status}
                     </div>
                 </div>
+
+                {plan.isGlobal && (
+                  <div className="absolute top-0 left-6 z-10 px-3 py-1.5 rounded-b-xl bg-[#36454F] text-white text-[8px] font-black uppercase tracking-[0.2em] shadow-md">
+                    GLOBAL
+                  </div>
+                )}
 
                 <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
@@ -351,6 +379,7 @@ const MembershipMgmt = () => {
                         </button>
                         <button 
                             onClick={() => toggleStatus(plan.id)}
+                            title={plan.status === 'active' ? "Move to Draft" : "Publish Plan"}
                             className={`p-2.5 rounded-xl transition-all ${
                                 plan.status === 'active' 
                                 ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' 
@@ -361,6 +390,7 @@ const MembershipMgmt = () => {
                         </button>
                         <button 
                             onClick={() => deletePlan(plan.id)}
+                            title="Permanently Delete Plan"
                             className="p-2.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
                         >
                             <Trash2 size={18} />
@@ -393,7 +423,10 @@ const MembershipMgmt = () => {
                           <Crown size={18} />
                         </div>
                         <div>
-                          <p className="text-sm font-black text-[#36454F] tracking-tight leading-none mb-0.5">{plan.name}</p>
+                          <p className="text-sm font-black text-[#36454F] tracking-tight leading-none mb-0.5">
+                            {plan.name}
+                            {plan.isGlobal && <span className="ml-2 px-1.5 py-0.5 bg-[#36454F] text-white text-[8px] rounded uppercase">Global</span>}
+                          </p>
                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{plan.category}</p>
                         </div>
                       </div>
@@ -422,8 +455,11 @@ const MembershipMgmt = () => {
                       </button>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                       <button onClick={() => setEditingPlan(plan)} className="p-2 text-slate-400 hover:text-[#CE2029] transition-colors"><Pencil size={18} /></button>
-                       <button onClick={() => deletePlan(plan.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
+                       <button onClick={() => setEditingPlan(plan)} title="Edit Plan" className="p-2 text-slate-400 hover:text-[#CE2029] transition-colors"><Pencil size={18} /></button>
+                       <button onClick={() => toggleStatus(plan.id)} title={plan.status === 'active' ? "Draft Plan" : "Publish Plan"} className="p-2 text-slate-400 hover:text-amber-500 transition-colors">
+                           {plan.status === 'active' ? <EyeOff size={18} /> : <Eye size={18} />}
+                       </button>
+                       <button onClick={() => deletePlan(plan.id)} title="Delete Plan" className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
                     </td>
                   </tr>
                 ))}
@@ -597,6 +633,39 @@ const MembershipMgmt = () => {
                     </div>
                   </div>
 
+                  {/* SECTION: DISCOUNT SCOPE */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 border-l-4 border-[#eb483f] pl-3">Discount Scope</h3>
+                    <p className="text-[10px] text-slate-500 font-bold leading-tight">Select which transaction types this membership discount applies to.</p>
+                    <div className="flex flex-wrap gap-3">
+                      {['booking', 'event', 'coaching'].map(type => (
+                         <label key={type} className={`flex items-center gap-2 px-4 py-2.5 rounded-[12px] border-2 cursor-pointer transition-all ${
+                            (editingPlan.applicableTransactions || []).includes(type)
+                              ? 'border-[#eb483f]/30 bg-[#eb483f]/5 text-[#eb483f]'
+                              : 'border-transparent bg-[#f9fafb] text-slate-500 hover:bg-slate-50'
+                         }`}>
+                           <input
+                             type="checkbox"
+                             checked={(editingPlan.applicableTransactions || []).includes(type)}
+                             onChange={(e) => {
+                               let current = [...(editingPlan.applicableTransactions || [])];
+                               if (e.target.checked) current.push(type);
+                               else current = current.filter(t => t !== type);
+                               setEditingPlan({ ...editingPlan, applicableTransactions: current });
+                             }}
+                             className="hidden"
+                           />
+                           <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                              (editingPlan.applicableTransactions || []).includes(type) ? 'border-[#eb483f] bg-[#eb483f]' : 'border-slate-300'
+                           }`}>
+                             {(editingPlan.applicableTransactions || []).includes(type) && <CheckCircle2 size={10} className="text-white" />}
+                           </div>
+                           <span className="text-[11px] font-black uppercase tracking-widest">{type}</span>
+                         </label>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* SECTION: APPEARANCE */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 border-l-4 border-[#eb483f] pl-3">Appearance</h3>
@@ -633,6 +702,23 @@ const MembershipMgmt = () => {
                   {/* SECTION: VISIBILITY */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 border-l-4 border-[#eb483f] pl-3">Visibility</h3>
+                    <div className="p-4 bg-[#f9fafb] rounded-[16px] flex items-center justify-between group transition-all hover:bg-slate-50">
+                       <div className="flex flex-col">
+                           <span className="text-sm font-black text-slate-700">Global Plan</span>
+                           <span className="text-[10px] font-bold text-slate-400">Valid across all arenas</span>
+                       </div>
+                       <button 
+                        type="button"
+                        disabled={!editingPlan.isNew}
+                        onClick={() => setEditingPlan({ ...editingPlan, isGlobal: !editingPlan.isGlobal })}
+                        className={`w-14 h-8 rounded-full p-1 transition-all duration-300 ${editingPlan.isGlobal ? 'bg-[#CE2029] shadow-lg shadow-[#CE2029]/20' : 'bg-slate-300'} ${!editingPlan.isNew ? 'opacity-50 cursor-not-allowed' : ''}`}
+                       >
+                          <div className={`w-6 h-6 bg-white rounded-full transition-all duration-300 transform ${editingPlan.isGlobal ? 'translate-x-6' : 'translate-x-0'} shadow-sm flex items-center justify-center`}>
+                             {editingPlan.isGlobal ? <ShieldCheck size={14} className="text-[#CE2029]" /> : <Layout size={14} className="text-slate-400" />}
+                          </div>
+                       </button>
+                    </div>
+
                     <div className="p-4 bg-[#f9fafb] rounded-[16px] flex items-center justify-between group transition-all hover:bg-slate-50">
                        <div className="flex flex-col">
                           <span className="text-sm font-black text-slate-700">Display Status</span>

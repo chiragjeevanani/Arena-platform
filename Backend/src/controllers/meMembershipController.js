@@ -39,9 +39,11 @@ async function purchaseMembership(req, res) {
     return res.status(404).json({ error: 'Membership plan not found' });
   }
 
-  const arena = await Arena.findById(plan.arenaId);
-  if (!arena) {
-    return res.status(404).json({ error: 'Arena not found' });
+  if (!plan.isGlobal) {
+    const arena = await Arena.findById(plan.arenaId);
+    if (!arena) {
+      return res.status(404).json({ error: 'Arena not found' });
+    }
   }
 
   const wallet = await getOrCreateWallet(userId);
@@ -64,7 +66,7 @@ async function purchaseMembership(req, res) {
     amount: price,
     reason: 'membership_purchase',
     balanceAfter: updatedWallet.balance,
-    meta: { membershipPlanId: plan._id.toString(), arenaId: plan.arenaId.toString() },
+    meta: { membershipPlanId: plan._id.toString(), arenaId: plan.arenaId ? plan.arenaId.toString() : null },
   });
 
   const now = new Date();
@@ -73,7 +75,7 @@ async function purchaseMembership(req, res) {
   const membership = await UserMembership.create({
     userId,
     membershipPlanId: plan._id,
-    arenaId: plan.arenaId,
+    arenaId: plan.isGlobal ? null : plan.arenaId,
     startsAt: now,
     expiresAt,
     status: 'active',

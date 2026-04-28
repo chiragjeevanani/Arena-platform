@@ -24,15 +24,23 @@ const CoachingSummary = () => {
   const [enrolling, setEnrolling] = useState(false);
   const [enrollError, setEnrollError] = useState('');
 
-  const regFee = batch ? 500 : 0;
-  const monthlyFee = batch ? Number(batch.fees) || 0 : 0;
+  const regFee = batch?.registrationFee ?? 0;
+  const monthlyFee = batch ? (Number(batch.fees) || Number(batch.price) || 0) : 0;
   const total = monthlyFee + regFee;
-  const gst = total * 0.18;
+  const taxRate = (batch?.taxPercent ?? 18) / 100;
+  const gst = total * taxRate;
   const finalPayable = total + gst;
 
   const goToPayment = () => {
     if (!batch) return;
-    navigate('/payment', { state: { amount: finalPayable, batch } });
+    navigate('/payment', { 
+      state: { 
+        amount: finalPayable, 
+        batch, 
+        type: 'coaching',
+        registrationInfo: { batchId: batch.id } 
+      } 
+    });
   };
 
   const handleEnroll = async () => {
@@ -42,22 +50,23 @@ const CoachingSummary = () => {
       setEnrolling(true);
       try {
         const { enrollment } = await createMyEnrollment(batchId);
+        setEnrolling(false);
         navigate('/booking-success', {
           state: {
             type: 'coaching',
             batch,
             enrollment,
-            amount: 0,
+            amount: finalPayable,
           },
         });
-      } catch (e) {
-        setEnrollError(e.message || 'Enrollment failed');
-      } finally {
+      } catch (err) {
+        setEnrollError(err.message || 'Failed to enroll');
         setEnrolling(false);
       }
-      return;
+    } else {
+      // Fallback for mock/demo
+      goToPayment();
     }
-    goToPayment();
   };
 
   if (!batch) return (
@@ -157,18 +166,18 @@ const CoachingSummary = () => {
                   <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-1">
                     <div className="flex items-center gap-1 text-slate-400 font-bold text-[9px] uppercase tracking-wider">
                       <StarRoundedIcon style={{ fontSize: 12 }} className="text-amber-400" />
-                      4.95 Rating
+                      {batch.rating} Rating
                     </div>
                     <div className="flex items-center gap-1 text-slate-400 font-bold text-[9px] uppercase tracking-wider">
                       <GroupIcon style={{ fontSize: 12 }} className="text-blue-500" />
-                      500+ Students
+                      {batch.studentCount} Students
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2.5 mt-3">
                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:border-[#CE2029]/20 transition-colors">
                       <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Professional EXP</p>
-                      <p className="text-[10px] font-black text-[#0F172A]">8+ Years</p>
+                      <p className="text-[10px] font-black text-[#0F172A]">{batch.experienceYears}</p>
                     </div>
                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:border-[#CE2029]/20 transition-colors">
                       <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Training Level</p>
@@ -223,12 +232,7 @@ const CoachingSummary = () => {
                 <h5 className="text-[9px] font-black uppercase tracking-widest text-[#0F172A]">Academy Benefits</h5>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
-                {[
-                  "Assessment report",
-                  "Certified Elite Coach",
-                  "Sanitised Arena",
-                  "Tournament priority"
-                ].map((text, i) => (
+                {(batch.benefits || []).map((text, i) => (
                   <div key={i} className="flex gap-2 items-center group cursor-default">
                     <div className="w-4 h-4 rounded-[4px] bg-[#CE2029]/10 flex items-center justify-center group-hover:bg-[#CE2029] transition-colors shrink-0">
                       <CheckCircleIcon style={{ fontSize: 10 }} className="text-[#CE2029] group-hover:text-white" />
@@ -259,7 +263,7 @@ const CoachingSummary = () => {
                     <div className="flex justify-between items-center group">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-bold text-slate-500">Tax Reconciliation</span>
-                        <span className="text-[8px] bg-slate-100 px-1 py-0.5 rounded text-slate-400 font-black">18%</span>
+                        <span className="text-[8px] bg-slate-100 px-1 py-0.5 rounded text-slate-400 font-black">{(batch?.taxPercent ?? 18)}%</span>
                       </div>
                       <span className="text-xs font-black text-[#0F172A]">OMR {gst.toFixed(3)}</span>
                     </div>

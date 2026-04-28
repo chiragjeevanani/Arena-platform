@@ -214,7 +214,7 @@ const Profile = () => {
             
             {/* 1. Next Match Widget */}
             <div className="md:col-span-8 group">
-              <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Next Up</h3>
+              <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Next Up</h3>
               {nextMatch ? (
                 <motion.div 
                   whileHover={{ y: -2 }}
@@ -270,7 +270,7 @@ const Profile = () => {
 
             {/* 2. Wallet & Finance Snapshot */}
             <div className="md:col-span-4 group">
-              <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Wallet</h3>
+              <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>My Wallet</h3>
               <div className={`h-[90px] md:h-[102px] rounded-2xl border p-4 flex justify-between relative overflow-hidden transition-all shadow-sm ${
                 isDark 
                   ? 'bg-gradient-to-br from-[#16181f] to-[#12141a] border-white/5 group-hover:border-white/10' 
@@ -309,7 +309,7 @@ const Profile = () => {
             {/* 3. Favorite Arenas (Compact) */}
             <div className="md:col-span-7">
               <div className="flex items-center justify-between mb-2">
-                <h3 className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Book It Again</h3>
+                <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Book It Again</h3>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar snap-x">
                 {favoriteArenas.length === 0 && (
@@ -340,7 +340,7 @@ const Profile = () => {
 
             {/* 4. Active Coaching Combined */}
             <div className="md:col-span-5">
-               <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Coaching</h3>
+               <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>My Coaching</h3>
                {activeCoaching ? (
                  <div className={`p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between transition-all ${
                    isDark ? 'bg-[#12141a] border-white/5 hover:border-white/10' : 'bg-white border-slate-100 hover:border-slate-200'
@@ -375,7 +375,7 @@ const Profile = () => {
 
           {/* MY MEMBERSHIP SECTION */}
           <div className="mt-6">
-            <h3 className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>My Membership</h3>
+            <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>My Membership</h3>
             {membership.status === 'none' ? (
               <div
                 onClick={() => navigate('/membership')}
@@ -465,7 +465,7 @@ const Profile = () => {
           {/* PERFORMANCE ANALYTICS SECTION */}
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Performance Analytics</h3>
+              <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Performance Analytics</h3>
               <div className={`flex p-0.5 rounded-lg border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>
                 {['weekly', 'monthly'].map((mode) => (
                   <button

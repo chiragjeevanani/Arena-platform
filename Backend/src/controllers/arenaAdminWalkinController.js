@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const Booking = require('../models/Booking');
 const Court = require('../models/Court');
 const Arena = require('../models/Arena');
 const CourtSlot = require('../models/CourtSlot');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
+const User = require('../models/User');
 
 // Helper to convert time string to minutes for comparison
 const timeToMins = (t) => {
@@ -112,30 +115,97 @@ async function getWalkinSlots(req, res) {
 }
 
 /**
+ * GET /api/arena-admin/walkin/customers/search?q=
+ * Searches for existing users by name, email, or phone
+ */
+async function searchWalkinCustomers(req, res) {
+  const { q } = req.query;
+  const query = String(q || '').trim();
+  let users;
+
+  if (query.length < 2) {
+    // Return 10 most recent users if no query
+    users = await User.find().sort({ createdAt: -1 }).limit(10).lean();
+  } else {
+    const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    users = await User.find({
+      $or: [
+        { name: regex },
+        { email: regex },
+        { phone: regex }
+      ]
+    })
+    .limit(10)
+    .lean();
+  }
+
+  return res.json({
+    customers: users.map(u => User.toPublic(u))
+  });
+}
+
+/**
+ * POST /api/arena-admin/walkin/customers
+ * Quickly registers a new customer
+ */
+async function createWalkinCustomer(req, res) {
+  const { name, email, phone } = req.body;
+  
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
+
+  const existing = await User.findOne({ email: email.toLowerCase().trim() });
+  if (existing) {
+    return res.status(409).json({ error: 'A user with this email already exists' });
+  }
+
+  // Generate a random password for walk-in users (they can reset it later)
+  const randomPass = crypto.randomBytes(16).toString('hex');
+  const passwordHash = await bcrypt.hash(randomPass, 10);
+
+  const newUser = await User.create({
+    name: name.trim(),
+    email: email.toLowerCase().trim(),
+    phone: phone ? phone.trim() : '',
+    passwordHash,
+    role: 'CUSTOMER',
+    isEmailVerified: true, // Auto-verify walk-in users since they are physically present
+  });
+
+  return res.status(201).json({
+    customer: User.toPublic(newUser)
+  });
+}
+
+/**
  * POST /api/arena-admin/walkin/book
  * Creates a walk-in booking on behalf of a customer
- * Body: { courtId, date, timeSlot, customerName, customerPhone, paymentMethod, amount }
+ * Body: { courtId, date, timeSlot, customerId, paymentMethod, amount }
  */
 async function createWalkinBooking(req, res) {
   const {
     courtId,
     date,
     timeSlot,
-    customerName,
-    customerPhone,
+    customerId,
     paymentMethod = 'cash',
     amount,
   } = req.body;
 
-  if (!courtId || !date || !timeSlot || !customerName) {
+  if (!courtId || !date || !timeSlot || !customerId) {
     return res.status(400).json({
-      error: 'courtId, date, timeSlot, and customerName are required',
+      error: 'courtId, date, timeSlot, and customerId are required',
     });
   }
 
-  if (!mongoose.isValidObjectId(courtId)) {
-    return res.status(400).json({ error: 'Invalid courtId' });
+  if (!mongoose.isValidObjectId(courtId) || !mongoose.isValidObjectId(customerId)) {
+    return res.status(400).json({ error: 'Invalid courtId or customerId' });
   }
+
+  // Verify customer exists
+  const customer = await User.findById(customerId);
+  if (!customer) return res.status(404).json({ error: 'Customer not found' });
 
   // Verify court is in this arena
   const court = await Court.findOne({ _id: courtId, arenaId: req.arenaScopeId }).lean();
@@ -152,12 +222,11 @@ async function createWalkinBooking(req, res) {
     return res.status(409).json({ error: 'This slot is already booked' });
   }
 
-  // We need a userId. For walk-in customers, we use the staff member's userId as the booker.
-  // The customerName and phone are stored as metadata in the booking.
   const staffUserId = req.auth.sub;
 
   const booking = await Booking.create({
-    userId: staffUserId,
+    userId: customerId,
+    bookedBy: staffUserId,
     arenaId: req.arenaScopeId,
     courtId,
     date,
@@ -167,7 +236,6 @@ async function createWalkinBooking(req, res) {
     paymentMethod,
     amount: Number(amount) || 0,
     type: 'walkin',
-    // Store customer info in a notes-style field - we'll use existing schema fields
   });
 
   const arena = await Arena.findById(req.arenaScopeId).lean();
@@ -175,8 +243,9 @@ async function createWalkinBooking(req, res) {
   return res.status(201).json({
     booking: {
       id: booking._id.toString(),
-      customerName,
-      customerPhone: customerPhone || '',
+      customerName: customer.name,
+      customerPhone: customer.phone || '',
+      customerEmail: customer.email,
       courtName: court.name,
       arenaName: arena?.name || '',
       date: booking.date,
@@ -191,4 +260,10 @@ async function createWalkinBooking(req, res) {
   });
 }
 
-module.exports = { getWalkinCourts, getWalkinSlots, createWalkinBooking };
+module.exports = { 
+  getWalkinCourts, 
+  getWalkinSlots, 
+  createWalkinBooking,
+  searchWalkinCustomers,
+  createWalkinCustomer
+};

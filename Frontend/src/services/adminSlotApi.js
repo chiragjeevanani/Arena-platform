@@ -8,6 +8,14 @@ export function listAdminCourtSlots(arenaId, courtId, day) {
   });
 }
 
+export function listAdminArenaSlots(arenaId, day) {
+  const q = new URLSearchParams();
+  if (day) q.append('day', day);
+  return apiJson(`/api/admin/arenas/${encodeURIComponent(arenaId)}/slots?${q}`, {
+    method: 'GET',
+  });
+}
+
 export function createAdminCourtSlot(arenaId, courtId, body) {
   return apiJson(`/api/admin/arenas/${encodeURIComponent(arenaId)}/courts/${encodeURIComponent(courtId)}/slots`, {
     method: 'POST',

@@ -7,7 +7,7 @@ import PriceBreakdownCard from '../components/PriceBreakdownCard';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 import { isApiConfigured } from '../../../services/config';
 import { fetchPublicArenaById } from '../../../services/arenasApi';
-import { fetchCourtAvailability } from '../../../services/bookingsApi';
+import { fetchCourtAvailability, fetchBookingPricing } from '../../../services/bookingsApi';
 import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { isPrimeTimeSlot } from '../../../utils/slotTime';
@@ -91,6 +91,15 @@ const SlotSelection = () => {
   const [availabilityError, setAvailabilityError] = useState('');
 
   const useLiveSlots = isApiConfigured() && Boolean(activeCourtId);
+  const [serverPricing, setServerPricing] = useState(null);
+
+  useEffect(() => {
+    if (useLiveSlots && arenaId && isCustomer) {
+      fetchBookingPricing(arenaId)
+        .then(res => setServerPricing(res.pricing))
+        .catch(console.error);
+    }
+  }, [useLiveSlots, arenaId, isCustomer]);
 
   useEffect(() => {
     queueMicrotask(() => setSelectedSlot(null));
@@ -201,6 +210,7 @@ const SlotSelection = () => {
         dateYmd,
         slot: slotObj,
         useApiCheckout: useLiveSlots,
+        serverPricing,
       },
     });
   };
@@ -456,6 +466,12 @@ const SlotSelection = () => {
                       <div className="col-span-full text-center py-10 text-slate-400">
                         <p className="text-[10px] font-black uppercase tracking-widest">Loading availability…</p>
                       </div>
+                    ) : allDaySlots.length === 0 ? (
+                      <div className="col-span-full text-center py-10 text-slate-400">
+                        <p className="text-[10px] font-black uppercase tracking-widest">
+                          No slots available for this day
+                        </p>
+                      </div>
                     ) : filteredSlots.length === 0 ? (
                       <div className="col-span-full text-center py-10 text-slate-400">
                         <p className="text-[10px] font-black uppercase tracking-widest">
@@ -551,6 +567,7 @@ const SlotSelection = () => {
                   isMember={useLiveSlots ? isCustomer : true}
                   adminOverride={showApiRate ? priceOverride : null}
                   showOverrideBanner={!showApiRate}
+                  serverPricing={serverPricing}
                 />
               ) : (
                 <div className="rounded-[32px] p-10 bg-white border border-slate-100 shadow-sm text-center flex flex-col items-center justify-center min-h-[220px]">
@@ -587,6 +604,7 @@ const SlotSelection = () => {
             adminOverride={showApiRate ? priceOverride : null}
             showOverrideBanner={!showApiRate}
             compact
+            serverPricing={serverPricing}
           />
           <button
             type="button"

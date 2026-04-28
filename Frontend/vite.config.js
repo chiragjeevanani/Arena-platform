@@ -8,9 +8,14 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
   test: {
     globals: true,
-    environment: 'node',
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.jsx'],
     include: ['tests/**/*.test.{js,jsx}', 'src/**/*.test.{js,jsx}'],
     restoreMocks: true,
     clearMocks: true,

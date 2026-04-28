@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, Wallet, CreditCard } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
 import { createMyBooking } from '../../../services/bookingsApi';
+import { getMyWallet } from '../../../services/meApi';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
+import { useEffect } from 'react';
 
 function readStoredArenaSafe() {
   try {
@@ -25,9 +27,21 @@ const BookingSummary = () => {
   const { user } = useAuth();
   const [bookingError, setBookingError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' | 'wallet'
+  const [walletBalance, setWalletBalance] = useState(null);
 
   const storedArena = readStoredArenaSafe();
-  const { arena: stateArena, court: stateCourt, date, slot, useApiCheckout, dateYmd } = state || {};
+  const { arena: stateArena, court: stateCourt, date, slot, useApiCheckout, dateYmd, serverPricing } = state || {};
+
+  useEffect(() => {
+    if (user?.role === 'CUSTOMER') {
+      getMyWallet().then(data => {
+        setWalletBalance(data.wallet?.balance || 0);
+      }).catch(() => {
+        setWalletBalance(0);
+      });
+    }
+  }, [user]);
 
   const arena = stateArena || storedArena;
   const court = stateCourt || storedArena?.selectedCourt;
@@ -41,7 +55,12 @@ const BookingSummary = () => {
   }
 
   const useLiveCheckout = Boolean(useApiCheckout && isApiConfigured());
-  const subtotal = Number(slot?.price) || 0;
+  
+  // Use real server pricing if available, fallback to slot price.
+  const subtotal = serverPricing ? serverPricing.finalAmount : (Number(slot?.price) || 0);
+  const baseReservation = serverPricing ? serverPricing.baseAmount : subtotal;
+  const discountAmount = serverPricing ? serverPricing.discountAmount : 0;
+  
   const tax = useLiveCheckout ? 0 : subtotal * 0.18;
   const canApiBook = useLiveCheckout && user?.role === 'CUSTOMER';
 
@@ -60,7 +79,8 @@ const BookingSummary = () => {
           courtId: String(court.id),
           date: ymd,
           timeSlot,
-          paymentMethod: 'online',
+          paymentMethod,
+          amount: subtotal + tax,
         });
         navigate('/booking-success', {
           replace: true,
@@ -260,19 +280,68 @@ const BookingSummary = () => {
                         </div>
                      </div>
 
-                     {/* Ticket Perforation */}
-                     <div className="relative h-px flex items-center">
-                        <div className="absolute left-0 -translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
-                        <div className="w-full border-t border-dashed border-slate-100" />
-                        <div className="absolute right-0 translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
-                     </div>
+                      {/* Ticket Perforation */}
+                      <div className="relative h-px flex items-center">
+                         <div className="absolute left-0 -translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
+                         <div className="w-full border-t border-dashed border-slate-100" />
+                         <div className="absolute right-0 translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
+                      </div>
+
+                      {/* Payment Method Selection */}
+                      <div className="space-y-3">
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Select Payment Method</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => setPaymentMethod('online')}
+                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
+                              paymentMethod === 'online' 
+                                ? 'border-[#CE2029] bg-[#CE2029]/5 ring-1 ring-[#CE2029]' 
+                                : 'border-slate-100 hover:border-slate-200'
+                            }`}
+                          >
+                            <CreditCard size={18} className={paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-400'} />
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Online</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => setPaymentMethod('wallet')}
+                            disabled={walletBalance === null || walletBalance < (subtotal + tax)}
+                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all relative ${
+                              paymentMethod === 'wallet' 
+                                ? 'border-[#CE2029] bg-[#CE2029]/5 ring-1 ring-[#CE2029]' 
+                                : 'border-slate-100 hover:border-slate-200'
+                            } ${walletBalance !== null && walletBalance < (subtotal + tax) ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                          >
+                            <Wallet size={18} className={paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-400'} />
+                            <div className="flex flex-col items-center">
+                              <span className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Wallet</span>
+                              {walletBalance !== null && (
+                                <span className="text-[8px] font-bold text-slate-400">OMR {walletBalance.toFixed(3)}</span>
+                              )}
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Ticket Perforation */}
+                      <div className="relative h-px flex items-center">
+                         <div className="absolute left-0 -translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
+                         <div className="w-full border-t border-dashed border-slate-100" />
+                         <div className="absolute right-0 translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
+                      </div>
 
                      {/* Financial Breakdown */}
                      <div className="space-y-3">
                         <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                            <span>Base Reservation</span>
-                           <span className="text-slate-900 font-black">OMR {subtotal.toFixed(3)}</span>
+                           <span className="text-slate-900 font-black">OMR {baseReservation.toFixed(3)}</span>
                         </div>
+                        {discountAmount > 0 && (
+                          <div className="flex justify-between items-center text-[9px] font-bold text-green-500 uppercase tracking-widest">
+                             <span>Member Discount</span>
+                             <span className="text-green-600 font-black">-OMR {discountAmount.toFixed(3)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                            <span>{useLiveCheckout ? 'Tax' : 'Tax Reconciliation'}</span>
                            <span className="text-slate-900 font-black">OMR {tax.toFixed(3)}</span>
@@ -367,12 +436,56 @@ const BookingSummary = () => {
               <div className="h-px bg-slate-100" />
               <div className="space-y-3">
                   <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                    <span>Subtotal</span><span>OMR {subtotal.toFixed(3)}</span>
+                    <span>Base Reservation</span><span>OMR {baseReservation.toFixed(3)}</span>
                  </div>
+                 {discountAmount > 0 && (
+                   <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-green-500">
+                     <span>Member Discount</span><span className="text-green-600">-OMR {discountAmount.toFixed(3)}</span>
+                  </div>
+                 )}
                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
                     <span>Tax</span><span>OMR {tax.toFixed(3)}</span>
                  </div>
               </div>
+
+              {/* Mobile Payment Method Selection */}
+              <div className="space-y-3 pt-2">
+                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Select Payment Method</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setPaymentMethod('online')}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                      paymentMethod === 'online' 
+                        ? 'border-[#CE2029] bg-[#CE2029]/5' 
+                        : 'border-slate-100'
+                    }`}
+                  >
+                    <CreditCard size={14} className={paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-400'} />
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Online</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setPaymentMethod('wallet')}
+                    disabled={walletBalance === null || walletBalance < (subtotal + tax)}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                      paymentMethod === 'wallet' 
+                        ? 'border-[#CE2029] bg-[#CE2029]/5' 
+                        : 'border-slate-100'
+                    } ${walletBalance !== null && walletBalance < (subtotal + tax) ? 'opacity-50 grayscale' : ''}`}
+                  >
+                    <Wallet size={14} className={paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-400'} />
+                    <div className="flex flex-col items-start">
+                      <span className={`text-[9px] font-black uppercase tracking-widest ${paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Wallet</span>
+                    </div>
+                  </button>
+                </div>
+                {paymentMethod === 'wallet' && walletBalance !== null && (
+                  <p className="text-[8px] font-bold text-center text-slate-400 uppercase tracking-tight">
+                    Available Balance: OMR {walletBalance.toFixed(3)}
+                  </p>
+                )}
+              </div>
+
               <div className="bg-[#CE2029]/5 p-4 rounded-[20px] border border-[#CE2029]/10 flex justify-between items-end">
                  <div className="space-y-0.5">
                     <p className="text-[8px] font-black uppercase tracking-widest text-[#CE2029]">Price</p>

@@ -72,7 +72,7 @@ const ArenaDetails = () => {
   const firstCourt = courtsList[0];
 
   return (
-    <div className={`min-h-screen pb-48 relative overflow-hidden ${'bg-white'}`}>
+    <div className={`min-h-screen pb-32 relative overflow-hidden ${'bg-white'}`}>
       <div className={`absolute top-[400px] -right-24 w-64 h-64 rounded-full blur-[100px] pointer-events-none bg-[#CE2029]/[0.04]`} />
       <div className={`absolute top-[800px] -left-24 w-64 h-64 rounded-full blur-[100px] pointer-events-none bg-[#CE2029]/[0.03]`} />
 
@@ -170,7 +170,7 @@ const ArenaDetails = () => {
               >
                 <div className={`w-16 h-16 flex-shrink-0 rounded-[20px] overflow-hidden border transition-transform duration-500 group-hover:scale-105 ${'border-slate-100 shadow-inner'}`}>
                   <img
-                    src={CourtImage}
+                    src={court.image || CourtImage}
                     alt=""
                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500"
                   />
@@ -194,7 +194,7 @@ const ArenaDetails = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-[68px] md:bottom-0 left-0 right-0 z-[110] md:max-w-[450px] md:mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-[110] md:max-w-[450px] md:mx-auto">
         <div className={`h-[1px] ${'bg-slate-100'}`} />
         <div className={`backdrop-blur-xl p-4 flex items-center justify-between border-t ${'bg-white/95 border-slate-50 shadow-[0_-10px_30px_rgba(206, 32, 41,0.04)]'}`}>
           <div>

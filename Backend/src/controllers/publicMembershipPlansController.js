@@ -13,7 +13,13 @@ async function listPublishedArenaMembershipPlans(req, res) {
     return res.status(404).json({ error: 'Arena not found' });
   }
 
-  const plans = await MembershipPlan.find({ arenaId, isActive: true }).sort({ price: 1 }).lean();
+  const plans = await MembershipPlan.find({
+    $or: [
+      { arenaId: arena._id },
+      { isGlobal: true }
+    ],
+    isActive: true
+  }).sort({ price: 1 }).lean();
 
   return res.json({
     arenaId,

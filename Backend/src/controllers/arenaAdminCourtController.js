@@ -55,7 +55,7 @@ async function createMyCourt(req, res) {
 
 async function patchMyCourt(req, res) {
   const { courtId } = req.params;
-  const { name, type, status, imageUrl } = req.body;
+  const { name, type, status, imageUrl, pricePerHour } = req.body;
 
   const court = await Court.findOne({ _id: courtId, arenaId: req.arenaScopeId });
   if (!court) return res.status(404).json({ error: 'Court not found' });
@@ -64,6 +64,7 @@ async function patchMyCourt(req, res) {
   if (type !== undefined) court.type = type.trim();
   if (status !== undefined) court.status = status;
   if (imageUrl !== undefined) court.imageUrl = String(imageUrl || '');
+  if (pricePerHour !== undefined) court.pricePerHour = Number(pricePerHour) || 0;
 
   await court.save();
   return res.json({ court: mapCourt(court) });

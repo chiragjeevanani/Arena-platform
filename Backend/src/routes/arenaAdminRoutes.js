@@ -12,6 +12,7 @@ const {
   requireCmsContentInArenaScope,
   requireCourtInArenaScope,
   requireBlockInArenaScope,
+  requireSaleInArenaScope,
 } = require('../middleware/arenaStaffScope');
 const {
   listAdminBookings,
@@ -31,8 +32,9 @@ const {
   createInventoryItem,
   listInventoryItems,
   updateInventoryItem,
+  deleteInventoryItem,
 } = require('../controllers/adminInventoryController');
-const { createPosSale, listPosSales } = require('../controllers/adminPosController');
+const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/adminPosController');
 const {
   createCmsContent,
   listCmsContent,
@@ -62,6 +64,8 @@ const {
   getWalkinCourts,
   getWalkinSlots,
   createWalkinBooking,
+  searchWalkinCustomers,
+  createWalkinCustomer,
 } = require('../controllers/arenaAdminWalkinController');
 
 const upload = multer({
@@ -115,9 +119,19 @@ router.patch(
   asyncHandler(requireInventoryItemInArenaScope),
   asyncHandler(updateInventoryItem)
 );
+router.delete(
+  '/inventory/:itemId',
+  asyncHandler(requireInventoryItemInArenaScope),
+  asyncHandler(deleteInventoryItem)
+);
 
 router.post('/pos/sales', requireBodyArenaIdMatchesScope, asyncHandler(createPosSale));
 router.get('/pos/sales', requireQueryArenaMatchesScope, asyncHandler(listPosSales));
+router.get(
+  '/pos/sales/:saleId',
+  asyncHandler(requireSaleInArenaScope),
+  asyncHandler(getPosSaleById)
+);
 
 router.post('/cms', requireBodyArenaIdMatchesScope, asyncHandler(createCmsContent));
 router.get('/cms', requireQueryArenaMatchesScope, asyncHandler(listCmsContent));
@@ -156,6 +170,8 @@ router.delete('/blocks/:blockId', asyncHandler(requireBlockInArenaScope), asyncH
 // Walk-In Booking (staff can book on behalf of a customer)
 router.get('/walkin/courts', asyncHandler(getWalkinCourts));
 router.get('/walkin/slots', asyncHandler(getWalkinSlots));
+router.get('/walkin/customers/search', asyncHandler(searchWalkinCustomers));
+router.post('/walkin/customers', asyncHandler(createWalkinCustomer));
 router.post('/walkin/book', asyncHandler(createWalkinBooking));
 
 module.exports = router;

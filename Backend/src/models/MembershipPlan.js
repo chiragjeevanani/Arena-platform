@@ -5,14 +5,19 @@ const membershipPlanSchema = new mongoose.Schema(
     arenaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Arena',
-      required: true,
+      required: false,
       index: true,
     },
+    isGlobal: { type: Boolean, default: false },
     name: { type: String, required: true, trim: true },
     description: { type: String, default: '', trim: true },
     price: { type: Number, required: true, min: 0 },
     durationDays: { type: Number, required: true, min: 1 },
     discountPercent: { type: Number, required: true, min: 0, max: 100, default: 0 },
+    applicableTransactions: [{
+      type: String,
+      enum: ['booking', 'event', 'coaching'],
+    }],
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
@@ -23,12 +28,14 @@ function toPublic(doc) {
   const o = doc.toObject ? doc.toObject() : doc;
   return {
     id: o._id.toString(),
-    arenaId: String(o.arenaId),
+    arenaId: o.arenaId ? String(o.arenaId) : null,
+    isGlobal: !!o.isGlobal,
     name: o.name,
     description: o.description || '',
     price: o.price,
     durationDays: o.durationDays,
     discountPercent: o.discountPercent,
+    applicableTransactions: o.applicableTransactions || [],
     isActive: o.isActive,
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,

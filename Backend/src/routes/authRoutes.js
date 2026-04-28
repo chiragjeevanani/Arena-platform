@@ -9,6 +9,8 @@ const {
   resetPassword,
   verifyOtp,
   coachRegister,
+  verifyEmail,
+  resendVerification,
 } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/auth');
 const { asyncHandler } = require('../utils/asyncHandler');
@@ -25,6 +27,8 @@ router.post('/logout', authRateLimit, asyncHandler(logout));
 router.post('/forgot-password', authRateLimit, asyncHandler(forgotPassword));
 router.post('/reset-password', authRateLimit, asyncHandler(resetPassword));
 router.post('/verify-otp', authRateLimit, asyncHandler(verifyOtp));
+router.get('/verify-email', asyncHandler(verifyEmail));
+router.post('/resend-verification', authRateLimit, asyncHandler(resendVerification));
 router.get('/me', requireAuth, asyncHandler(me));
 
 module.exports = router;

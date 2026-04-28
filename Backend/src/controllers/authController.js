@@ -5,6 +5,7 @@ const User = require('../models/User');
 const RefreshToken = require('../models/RefreshToken');
 const PasswordResetToken = require('../models/PasswordResetToken');
 const AuditLog = require('../models/AuditLog');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
 
 function hashOpaqueToken(raw) {
   return crypto.createHash('sha256').update(raw, 'utf8').digest('hex');
@@ -39,13 +40,33 @@ async function register(req, res) {
 
   try {
     const passwordHash = await bcrypt.hash(parsed.password, 10);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const emailVerifyToken = hashOpaqueToken(verificationToken);
+    const emailVerifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const user = await User.create({
       email: parsed.email,
       passwordHash,
       name: parsed.name,
       role: 'CUSTOMER',
+      isEmailVerified: false,
+      emailVerifyToken,
+      emailVerifyExpires,
     });
-    return res.status(201).json({ user: User.toPublic(user) });
+
+    const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`;
+    await sendVerificationEmail(user.email, verificationUrl);
+
+    const response = {
+      message: 'Registration successful. Please check your email to verify your account.',
+      user: User.toPublic(user),
+    };
+
+    if (process.env.EMAIL_VERIFY_RETURN_TOKEN === 'true') {
+      response.verificationToken = verificationToken;
+    }
+
+    return res.status(201).json(response);
   } catch (err) {
     if (err.code === 11000) {
       return res.status(409).json({ error: 'An account with this email already exists' });
@@ -55,8 +76,9 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const email = (req.body.email || '').trim().toLowerCase();
-  const password = req.body.password || '';
+  const rawEmail = typeof req.body.email === 'string' ? req.body.email : '';
+  const email = rawEmail.trim().toLowerCase();
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -65,6 +87,11 @@ async function login(req, res) {
   const user = await User.findOne({ email }).select('+passwordHash');
   if (!user || !user.isActive) {
     return res.status(401).json({ error: 'Invalid email or password' });
+  }
+
+  const isPrivileged = ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'].includes(user.role);
+  if (!user.isEmailVerified && !isPrivileged && process.env.REQUIRE_EMAIL_VERIFICATION !== 'false') {
+    return res.status(403).json({ error: 'Please verify your email before logging in.' });
   }
 
   const match = await bcrypt.compare(password, user.passwordHash);
@@ -95,6 +122,56 @@ async function login(req, res) {
     refreshToken: rawRefresh,
     user: User.toPublic(user),
   });
+}
+
+async function verifyEmail(req, res) {
+  const { token } = req.query;
+  if (!token) {
+    return res.status(400).json({ error: 'Verification token is required' });
+  }
+
+  const tokenHash = hashOpaqueToken(token);
+  const user = await User.findOne({
+    emailVerifyToken: tokenHash,
+    emailVerifyExpires: { $gt: new Date() },
+  }).select('+emailVerifyToken +emailVerifyExpires');
+
+  if (!user) {
+    return res.status(400).json({ error: 'Invalid or expired verification token' });
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerifyToken = null;
+  user.emailVerifyExpires = null;
+  await user.save();
+
+  return res.json({ message: 'Email verified successfully. You can now log in.' });
+}
+
+async function resendVerification(req, res) {
+  const email = (req.body.email || '').trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  if (user.isEmailVerified) {
+    return res.status(400).json({ error: 'Email is already verified' });
+  }
+
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  user.emailVerifyToken = hashOpaqueToken(verificationToken);
+  user.emailVerifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  await user.save();
+
+  const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`;
+  await sendVerificationEmail(user.email, verificationUrl);
+
+  return res.json({ message: 'Verification email resent. Please check your inbox.' });
 }
 
 async function me(req, res) {
@@ -157,21 +234,25 @@ async function forgotPassword(req, res) {
     return res.status(400).json({ error: 'Email is required' });
   }
 
-  const payload = { ok: true };
   const user = await User.findOne({ email });
+  let raw = null;
   if (user && user.isActive) {
-    const raw = crypto.randomBytes(32).toString('base64url');
+    raw = crypto.randomBytes(32).toString('base64url');
     await PasswordResetToken.create({
       userId: user._id,
       tokenHash: hashOpaqueToken(raw),
       expiresAt: new Date(Date.now() + 60 * 60 * 1000),
     });
-    if (process.env.PASSWORD_RESET_RETURN_TOKEN === 'true') {
-      payload.resetToken = raw;
-    }
+
+    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${raw}`;
+    await sendPasswordResetEmail(user.email, resetUrl);
   }
 
-  return res.json(payload);
+  const response = { ok: true, message: 'If an account exists, a reset link has been sent.' };
+  if (raw && process.env.PASSWORD_RESET_RETURN_TOKEN === 'true') {
+    response.resetToken = raw;
+  }
+  return res.json(response);
 }
 
 async function resetPassword(req, res) {
@@ -214,9 +295,6 @@ async function resetPassword(req, res) {
   return res.json({ ok: true });
 }
 
-/**
- * SMS OTP is not implemented. When `DEV_OTP_ENABLED=true`, accepts a fixed code for local/dev flows only.
- */
 async function verifyOtp(req, res) {
   const code = String(req.body.code || '').trim();
   if (code.length !== 4 || !/^\d{4}$/.test(code)) {
@@ -245,13 +323,33 @@ async function coachRegister(req, res) {
   }
   try {
     const passwordHash = await bcrypt.hash(parsed.password, 10);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const emailVerifyToken = hashOpaqueToken(verificationToken);
+    const emailVerifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     const user = await User.create({
       email: parsed.email,
       passwordHash,
       name: parsed.name,
       role: 'COACH',
+      isEmailVerified: false,
+      emailVerifyToken,
+      emailVerifyExpires,
     });
-    return res.status(201).json({ user: User.toPublic(user) });
+
+    const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`;
+    await sendVerificationEmail(user.email, verificationUrl);
+
+    const response = {
+      message: 'Registration successful. Please check your email to verify your account.',
+      user: User.toPublic(user),
+    };
+
+    if (process.env.EMAIL_VERIFY_RETURN_TOKEN === 'true') {
+      response.verificationToken = verificationToken;
+    }
+
+    return res.status(201).json(response);
   } catch (err) {
     if (err.code === 11000) {
       return res.status(409).json({ error: 'An account with this email already exists' });
@@ -270,4 +368,6 @@ module.exports = {
   resetPassword,
   verifyOtp,
   coachRegister,
+  verifyEmail,
+  resendVerification,
 };

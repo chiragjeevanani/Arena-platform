@@ -6,6 +6,7 @@ const {
   createMyBooking,
   listMyBookings,
   cancelMyBooking,
+  computeBookingPricing,
 } = require('../controllers/meBookingController');
 const { getMyWallet, topUpMyWallet } = require('../controllers/meWalletController');
 const { listMyMemberships, purchaseMembership } = require('../controllers/meMembershipController');
@@ -13,6 +14,7 @@ const {
   createMyEnrollment,
   listMyEnrollments,
   cancelMyEnrollment,
+  getMyEnrollmentById,
 } = require('../controllers/meEnrollmentController');
 const { createPaymentIntent, listMyPayments } = require('../controllers/mePaymentController');
 const { patchMyProfile } = require('../controllers/meProfileController');
@@ -25,6 +27,7 @@ router.use(requireAuth);
 router.use(requireRole('CUSTOMER'));
 
 router.post('/bookings', asyncHandler(createMyBooking));
+router.post('/bookings/pricing', asyncHandler(computeBookingPricing));
 router.get('/bookings', asyncHandler(listMyBookings));
 router.patch('/bookings/:id/cancel', asyncHandler(cancelMyBooking));
 
@@ -36,6 +39,7 @@ router.post('/memberships/purchase', asyncHandler(purchaseMembership));
 
 router.post('/enrollments', asyncHandler(createMyEnrollment));
 router.get('/enrollments', asyncHandler(listMyEnrollments));
+router.get('/enrollments/:id', asyncHandler(getMyEnrollmentById));
 router.patch('/enrollments/:id/cancel', asyncHandler(cancelMyEnrollment));
 
 router.post('/payments/intent', asyncHandler(createPaymentIntent));

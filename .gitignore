@@ -1,0 +1,40 @@
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Scratch / Debug files (Root)
+debug_db.js
+seed_courts.js
+sync_registry.js
+test_create.js
+check_slots.js
+FRONTEND_API_COVERAGE.md
+*.pdf
+*.log
+
+# Tests (Global)
+**/tests/
+**/*.test.js
+**/*.test.jsx
+**/*.spec.js
+**/*.spec.jsx
+__tests__/
+
+# Build artifacts
+dist/
+build/
+coverage/

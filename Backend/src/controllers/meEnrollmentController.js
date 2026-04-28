@@ -47,10 +47,27 @@ async function createMyEnrollment(req, res) {
       userId,
       status: 'confirmed',
     });
+    const arena = await Arena.findById(batch.arenaId);
+    const b_price = Number(batch.price || 0);
+    const b_regFee = Number(batch.registrationFee || 0);
+    const b_tax = Number(batch.taxPercent || 18);
+    const base = b_price + b_regFee;
+    const total = base * (1 + (b_tax / 100));
+
     return res.status(201).json({
       enrollment: BatchEnrollment.toPublic(enrollment, {
         batchTitle: batch.title,
         arenaId: batch.arenaId.toString(),
+        arenaName: arena?.name || 'Arena',
+        arenaImage: arena?.images?.[0] || '',
+        location: arena?.location?.address || arena?.name || 'Arena',
+        price: total,
+        basePrice: base,
+        taxPercent: b_tax,
+        date: enrollment.createdAt,
+        timing: batch.scheduleTime || 'See schedule',
+        days: batch.schedule || 'Coaching',
+        coachName: batch.title || 'Certified Coach'
       }),
     });
   } catch (err) {
@@ -68,13 +85,36 @@ async function listMyEnrollments(req, res) {
   const batches = await CoachingBatch.find({ _id: { $in: batchIds } }).lean();
   const batchById = new Map(batches.map((b) => [b._id.toString(), b]));
 
-  const out = list.map((e) => {
-    const b = batchById.get(String(e.batchId));
+  const out = await Promise.all(list.map(async (e) => {
+    const eBatchId = e.batchId ? String(e.batchId) : '';
+    const b = batches.find(batch => String(batch._id) === eBatchId);
+    
+    let arena = null;
+    if (b && b.arenaId) {
+       arena = await Arena.findById(b.arenaId).lean();
+    }
+    
+    const b_price = Number(b?.price || 0);
+    const b_regFee = Number(b?.registrationFee || 0);
+    const b_tax = Number(b?.taxPercent || 18);
+    const base = b_price + b_regFee;
+    const total = base * (1 + (b_tax / 100));
+
     return BatchEnrollment.toPublic(e, {
-      batchTitle: b?.title || '',
+      batchTitle: b?.title || 'Coaching Program',
       arenaId: b ? String(b.arenaId) : '',
+      arenaName: arena?.name || b?.arenaName || 'Arena',
+      arenaImage: arena?.images?.[0] || '',
+      location: arena?.location?.address || arena?.name || b?.arenaName || 'Arena',
+      price: total,
+      basePrice: base,
+      taxPercent: b_tax,
+      date: e.createdAt,
+      timing: b?.scheduleTime || 'See schedule',
+      days: b?.schedule || 'Coaching',
+      coachName: b?.title || 'Certified Coach'
     });
-  });
+  }));
 
   return res.json({ enrollments: out });
 }
@@ -97,12 +137,70 @@ async function cancelMyEnrollment(req, res) {
   await enrollment.save();
 
   const batch = await CoachingBatch.findById(enrollment.batchId).lean();
+  const arena = await Arena.findById(batch.arenaId);
+  const b_price = Number(batch.price || 0);
+  const b_regFee = Number(batch.registrationFee || 0);
+  const b_tax = Number(batch.taxPercent || 18);
+  const base = b_price + b_regFee;
+  const total = base * (1 + (b_tax / 100));
+
   return res.json({
     enrollment: BatchEnrollment.toPublic(enrollment, {
-      batchTitle: batch?.title || '',
+      batchTitle: batch?.title || 'Coaching Program',
       arenaId: batch ? String(batch.arenaId) : '',
+      arenaName: arena?.name || 'Arena',
+      arenaImage: arena?.images?.[0] || '',
+      location: arena?.location?.address || arena?.name || 'Arena',
+      price: total,
+      basePrice: base,
+      taxPercent: b_tax,
+      date: enrollment.createdAt,
+      timing: batch.scheduleTime || 'See schedule',
+      days: batch.schedule || 'Coaching',
+      coachName: batch.title || 'Certified Coach'
     }),
   });
 }
 
-module.exports = { createMyEnrollment, listMyEnrollments, cancelMyEnrollment };
+async function getMyEnrollmentById(req, res) {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ error: 'Invalid enrollment id' });
+  }
+
+  const enrollment = await BatchEnrollment.findOne({ _id: id, userId: req.auth.sub }).lean();
+  if (!enrollment) {
+    return res.status(404).json({ error: 'Enrollment not found' });
+  }
+
+  const b = await CoachingBatch.findById(enrollment.batchId).lean();
+  let arena = null;
+  if (b && b.arenaId) {
+    arena = await Arena.findById(b.arenaId).lean();
+  }
+
+  const b_price = Number(b?.price || 0);
+  const b_regFee = Number(b?.registrationFee || 0);
+  const b_tax = Number(b?.taxPercent || 18);
+  const base = b_price + b_regFee;
+  const total = base * (1 + (b_tax / 100));
+
+  return res.json({
+    enrollment: BatchEnrollment.toPublic(enrollment, {
+      batchTitle: b?.title || 'Coaching Program',
+      arenaId: b ? String(b.arenaId) : '',
+      arenaName: arena?.name || b?.arenaName || 'Arena',
+      arenaImage: arena?.images?.[0] || '',
+      location: arena?.location?.address || arena?.name || b?.arenaName || 'Arena',
+      price: total,
+      basePrice: base,
+      taxPercent: b_tax,
+      date: enrollment.createdAt,
+      timing: b?.scheduleTime || 'See schedule',
+      days: b?.schedule || 'Coaching',
+      coachName: b?.title || 'Certified Coach'
+    }),
+  });
+}
+
+module.exports = { createMyEnrollment, listMyEnrollments, cancelMyEnrollment, getMyEnrollmentById };

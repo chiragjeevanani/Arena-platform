@@ -6,7 +6,15 @@ async function connectDB(uri) {
     throw new Error('MONGODB_URI is not set');
   }
   mongoose.set('strictQuery', true);
-  await mongoose.connect(connectionString);
+  // mongoose.set('debug', true); // Uncomment for full operation logs
+  
+  const options = {
+    connectTimeoutMS: 10000,
+    serverSelectionTimeoutMS: 10000,
+    family: 4, // Force IPv4 to avoid DNS resolution issues with SRV
+  };
+
+  await mongoose.connect(connectionString, options);
   return mongoose.connection;
 }
 

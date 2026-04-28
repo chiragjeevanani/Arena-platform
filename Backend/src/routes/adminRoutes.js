@@ -11,9 +11,11 @@ const {
   listAdminArenas,
   getAdminArena,
   updateCourt,
+  deleteArena,
 } = require('../controllers/adminArenaController');
 const {
   listCourtSlots,
+  listArenaSlots,
   createCourtSlot,
   deleteCourtSlot,
 } = require('../controllers/adminSlotController');
@@ -26,18 +28,23 @@ const {
   createMembershipPlan,
   listMembershipPlans,
   patchMembershipPlan,
+  deleteMembershipPlan,
+  adminMembershipStats,
+  listUserMemberships,
 } = require('../controllers/adminMembershipPlanController');
 const {
   createCoachingBatch,
   listCoachingBatches,
   updateCoachingBatch,
+  deleteCoachingBatch,
 } = require('../controllers/adminCoachingBatchController');
 const {
   createInventoryItem,
   listInventoryItems,
   updateInventoryItem,
+  deleteInventoryItem,
 } = require('../controllers/adminInventoryController');
-const { createPosSale, listPosSales } = require('../controllers/adminPosController');
+const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/adminPosController');
 const {
   createCmsContent,
   listCmsContent,
@@ -86,20 +93,26 @@ router.delete('/sponsors/:id', asyncHandler(deleteSponsor));
 router.get('/bookings', asyncHandler(listAdminBookings));
 router.patch('/bookings/:bookingId', asyncHandler(updateAdminBooking));
 
+router.get('/membership-plans/stats', asyncHandler(adminMembershipStats));
+router.get('/memberships', asyncHandler(listUserMemberships));
 router.post('/membership-plans', asyncHandler(createMembershipPlan));
 router.get('/membership-plans', asyncHandler(listMembershipPlans));
 router.patch('/membership-plans/:planId', asyncHandler(patchMembershipPlan));
+router.delete('/membership-plans/:planId', asyncHandler(deleteMembershipPlan));
 
 router.post('/coaching-batches', asyncHandler(createCoachingBatch));
 router.get('/coaching-batches', asyncHandler(listCoachingBatches));
 router.patch('/coaching-batches/:batchId', asyncHandler(updateCoachingBatch));
+router.delete('/coaching-batches/:batchId', asyncHandler(deleteCoachingBatch));
 
 router.post('/inventory', asyncHandler(createInventoryItem));
 router.get('/inventory', asyncHandler(listInventoryItems));
 router.patch('/inventory/:itemId', asyncHandler(updateInventoryItem));
+router.delete('/inventory/:itemId', asyncHandler(deleteInventoryItem));
 
 router.post('/pos/sales', asyncHandler(createPosSale));
 router.get('/pos/sales', asyncHandler(listPosSales));
+router.get('/pos/sales/:saleId', asyncHandler(getPosSaleById));
 
 router.post('/cms', asyncHandler(createCmsContent));
 router.get('/cms', asyncHandler(listCmsContent));
@@ -113,11 +126,13 @@ router.get('/arenas', asyncHandler(listAdminArenas));
 router.get('/arenas/:arenaId', asyncHandler(getAdminArena));
 router.post('/arenas', asyncHandler(createArena));
 router.patch('/arenas/:arenaId', asyncHandler(patchArena));
+router.delete('/arenas/:arenaId', asyncHandler(deleteArena));
 router.get('/arenas/:arenaId/blocks', asyncHandler(listAdminArenaBlocks));
 router.post('/arenas/:arenaId/courts', asyncHandler(createCourt));
 router.patch('/courts/:courtId', asyncHandler(updateCourt));
 router.delete('/courts/:courtId', asyncHandler(deleteCourt));
 
+router.get('/arenas/:arenaId/slots', asyncHandler(listArenaSlots));
 router.get('/arenas/:arenaId/courts/:courtId/slots', asyncHandler(listCourtSlots));
 router.post('/arenas/:arenaId/courts/:courtId/slots', asyncHandler(createCourtSlot));
 router.delete('/slots/:slotId', asyncHandler(deleteCourtSlot));

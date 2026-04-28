@@ -196,4 +196,16 @@ async function cancelMyBooking(req, res) {
   });
 }
 
-module.exports = { createMyBooking, listMyBookings, cancelMyBooking };
+async function computeBookingPricing(req, res) {
+  const { arenaId } = req.body;
+  if (!arenaId || !mongoose.isValidObjectId(arenaId)) {
+    return res.status(400).json({ error: 'Invalid arenaId' });
+  }
+  const arena = await Arena.findById(arenaId);
+  if (!arena) return res.status(404).json({ error: 'Arena not found' });
+
+  const pricing = await computeCourtBookingPrice(req.auth.sub, arena, 'booking');
+  return res.json({ pricing });
+}
+
+module.exports = { createMyBooking, listMyBookings, cancelMyBooking, computeBookingPricing };

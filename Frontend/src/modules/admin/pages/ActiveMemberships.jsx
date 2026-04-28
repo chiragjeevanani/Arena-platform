@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -8,15 +8,106 @@ import {
   ChevronDown, CheckCircle2, AlertCircle,
   XCircle, UserPlus, FileText, X, Trash2, ShieldCheck
 } from 'lucide-react';
+import { listAdminUserMemberships, getAdminMembershipStats } from '../../../services/adminOpsApi';
+import { fetchPublicArenas } from '../../../services/arenasApi';
+import { normalizeListArena } from '../../../utils/arenaAdapter';
+import { isApiConfigured } from '../../../services/config';
+import { getAuthToken } from '../../../services/apiClient';
 
 const ActiveMemberships = () => {
   const [members, setMembers] = useState([]);
+  const [statsData, setStatsData] = useState({
+    totalMembers: 0,
+    activePlans: 0,
+    lapsedExpiring: 0,
+    monthlyRevenue: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
   const [activeMenu, setActiveMenu] = useState(null); // Track which member's meatball menu is open
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [viewType, setViewType] = useState('TABLE'); // TABLE or LIST
+  const [arenas, setArenas] = useState([]);
+  const [selectedArenaId, setSelectedArenaId] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return;
+
+    const init = async () => {
+      try {
+        const ar = await fetchPublicArenas();
+        const list = (ar.arenas || []).map(normalizeListArena);
+        setArenas(list);
+        if (list.length > 0) {
+          setSelectedArenaId(list[0].id);
+        } else {
+          fetchData(); // Fetch without arenaId if none found
+        }
+      } catch (err) {
+        console.error('Error fetching arenas:', err);
+        fetchData();
+      }
+    };
+
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (selectedArenaId || arenas.length === 0) {
+      fetchData(selectedArenaId);
+    }
+  }, [selectedArenaId]);
+
+  const fetchData = async (arenaId) => {
+    setIsLoading(true);
+    try {
+      const [membersRes, statsRes] = await Promise.all([
+        listAdminUserMemberships({ arenaId, status: statusFilter }),
+        getAdminMembershipStats(arenaId).catch(() => null)
+      ]);
+
+      const mappedMembers = (membersRes.memberships || []).map(m => {
+        const name = m.user?.name || `${m.user?.firstName || ''} ${m.user?.lastName || ''}`.trim() || 'Unknown User';
+        const nameParts = name.split(' ');
+        const firstName = nameParts[0];
+        const surname = nameParts.slice(1).join(' ') || '';
+
+        return {
+          id: m.id,
+          firstName,
+          surname,
+          email: m.user?.email || 'N/A',
+          phone: m.user?.phone || 'N/A',
+          type: m.plan?.name || 'Standard',
+          price: m.plan?.price || 0,
+          startDate: new Date(m.startsAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          endDate: new Date(m.expiresAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          status: m.status.toUpperCase(),
+          slot: 'N/A',
+          courtNo: '—',
+          action: new Date(m.expiresAt) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) ? 'NEARING EXPIRY' : 'NO ACTION',
+          raw: m
+        };
+      });
+
+      setMembers(mappedMembers);
+
+      if (statsRes) {
+        setStatsData({
+          totalMembers: membersRes.memberships?.length || 0,
+          activePlans: statsRes.totalActiveUsers || 0,
+          lapsedExpiring: statsRes.expiringSoonCount || 0,
+          monthlyRevenue: statsRes.totalRevenue || 0
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching membership data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleExportExcel = () => {
     const headers = ['ID', 'Name', 'Type', 'Price', 'Slot', 'Court', 'Email', 'Phone', 'Start Date', 'End Date', 'Status'];
@@ -38,6 +129,7 @@ const ActiveMemberships = () => {
     return members.filter(member => {
       const matchesSearch = 
         member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.phone.includes(searchTerm);
       
@@ -48,6 +140,7 @@ const ActiveMemberships = () => {
   }, [members, searchTerm, statusFilter]);
 
   const toggleMemberStatus = (id) => {
+    // Ideally call API to toggle status
     setMembers(prev => prev.map(m => 
       m.id === id ? { ...m, status: m.status === 'ACTIVE' ? 'LAPSED' : 'ACTIVE', action: m.status === 'ACTIVE' ? 'NEARING EXPIRY' : 'NO ACTION' } : m
     ));
@@ -63,10 +156,10 @@ const ActiveMemberships = () => {
   };
 
   const stats = [
-    { label: 'Total Members', value: members.length, icon: UserPlus, color: '#3b82f6' },
-    { label: 'Active Plans', value: members.filter(m => m.status === 'ACTIVE').length, icon: CheckCircle2, color: '#10b981' },
-    { label: 'Lapsed/Expiring', value: members.filter(m => m.status === 'LAPSED').length, icon: AlertCircle, color: '#f43f5e' },
-    { label: 'Monthly Revenue', value: `OMR ${members.reduce((acc, curr) => acc + curr.price, 0).toLocaleString()}`, icon: CreditCard, color: '#eb483f' },
+    { label: 'Total Members', value: statsData.totalMembers, icon: UserPlus, color: '#3b82f6' },
+    { label: 'Active Plans', value: statsData.activePlans, icon: CheckCircle2, color: '#10b981' },
+    { label: 'Lapsed/Expiring', value: statsData.lapsedExpiring, icon: AlertCircle, color: '#f43f5e' },
+    { label: 'Monthly Revenue', value: `OMR ${statsData.monthlyRevenue.toLocaleString()}`, icon: CreditCard, color: '#eb483f' },
   ];
 
   return (
@@ -115,7 +208,7 @@ const ActiveMemberships = () => {
       {/* Filters Hub */}
       <div className="max-w-[1700px] mx-auto mb-6 bg-white p-4 rounded-[28px] border border-slate-100 shadow-sm flex flex-col lg:flex-row gap-4 justify-between items-center">
         <div className="flex items-center gap-3 w-full lg:w-auto">
-          <div className="relative flex-1 lg:w-96">
+          <div className="relative flex-1 lg:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
@@ -124,6 +217,21 @@ const ActiveMemberships = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-6 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-[#eb483f]/5 focus:bg-white focus:border-[#eb483f]/20 transition-all placeholder:text-slate-400"
             />
+          </div>
+
+          <div className="relative w-full lg:w-64">
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <select
+              value={selectedArenaId}
+              onChange={(e) => setSelectedArenaId(e.target.value)}
+              className="w-full pl-12 pr-10 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-[#eb483f]/5 focus:bg-white focus:border-[#eb483f]/20 transition-all appearance-none"
+            >
+              <option value="">All Arenas</option>
+              {arenas.map(a => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
           </div>
           
           <div className="hidden sm:flex items-center gap-1 p-1 bg-slate-50 rounded-2xl">
@@ -164,7 +272,16 @@ const ActiveMemberships = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 whitespace-nowrap">
-              {filteredMembers.map((member) => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="6" className="py-20 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-10 h-10 border-4 border-[#eb483f]/20 border-t-[#eb483f] rounded-full animate-spin" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Members...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
@@ -289,7 +406,7 @@ const ActiveMemberships = () => {
             </tbody>
           </table>
           
-          {filteredMembers.length === 0 && (
+          {!isLoading && filteredMembers.length === 0 && (
             <div className="py-20 text-center">
               <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search size={32} className="text-slate-300" />

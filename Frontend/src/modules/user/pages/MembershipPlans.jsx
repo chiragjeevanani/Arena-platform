@@ -421,19 +421,21 @@ const MembershipPlans = () => {
     (async () => {
       try {
         const { arenas } = await fetchPublicArenas();
-        const merged = [];
+        const planMap = new Map();
         for (const a of arenas || []) {
           try {
             const data = await fetchPublicMembershipPlans(a.id);
             const name = a.name || 'Arena';
             for (const p of data.plans || []) {
-              merged.push(mapPublicPlanToCard(p, name));
+              if (!planMap.has(p.id)) {
+                planMap.set(p.id, mapPublicPlanToCard(p, name));
+              }
             }
           } catch {
             /* skip arena */
           }
         }
-        if (!cancelled) setPlanList(merged);
+        if (!cancelled) setPlanList(Array.from(planMap.values()));
       } catch {
         if (!cancelled) setPlanList([]);
       }

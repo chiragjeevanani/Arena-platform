@@ -12,6 +12,8 @@ const inventoryItemSchema = new mongoose.Schema(
     sku: { type: String, default: '', trim: true },
     quantity: { type: Number, required: true, min: 0, default: 0 },
     unitPrice: { type: Number, required: true, min: 0, default: 0 },
+    category: { type: String, default: 'Equipment', trim: true },
+    minStock: { type: Number, default: 5, min: 0 },
   },
   { timestamps: true }
 );
@@ -26,6 +28,8 @@ function toPublic(doc) {
     sku: o.sku || '',
     quantity: o.quantity,
     unitPrice: o.unitPrice,
+    category: o.category || 'Equipment',
+    minStock: o.minStock != null ? o.minStock : 5,
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   };

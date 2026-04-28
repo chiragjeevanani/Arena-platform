@@ -19,6 +19,12 @@ import { useTheme } from '../context/ThemeContext';
 import { fetchPublishedEvents } from '../../../services/eventsApi';
 import { normalizeCmsEventForList } from '../../../utils/eventAdapter';
 
+// Module-level cache for public data
+let _homeCache = null;
+let _homeFetchPromise = null;
+let _homeFetchedAt = 0;
+const HOME_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 const UserHome = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,20 +44,76 @@ const UserHome = () => {
 
   useEffect(() => {
     if (!isApiConfigured()) return undefined;
+    
     let cancelled = false;
-    (async () => {
+
+    const fetchData = async () => {
+      const now = Date.now();
+      
+      // If we have valid cache, use it immediately
+      if (_homeCache && now - _homeFetchedAt < HOME_CACHE_TTL) {
+        if (!cancelled) {
+          setApiArenas(_homeCache.apiArenas);
+          setApiEvents(_homeCache.apiEvents);
+          setHeroBanners(_homeCache.heroBanners);
+          setCategoryCards(_homeCache.categoryCards);
+        }
+        return;
+      }
+
+      // If a fetch is already in progress, wait for it
+      if (_homeFetchPromise) {
+        try {
+          const cachedData = await _homeFetchPromise;
+          if (!cancelled) {
+            setApiArenas(cachedData.apiArenas);
+            setApiEvents(cachedData.apiEvents);
+            setHeroBanners(cachedData.heroBanners);
+            setCategoryCards(cachedData.categoryCards);
+          }
+        } catch (e) {
+          // Promise failed, let it fall through to retry
+        }
+        return;
+      }
+
+      // Otherwise, start a new fetch
+      _homeFetchPromise = Promise.all([
+        fetchPublicArenas(),
+        fetchPublishedEvents(),
+        fetchPublishedCms('hero'),
+        fetchPublishedCms('category'),
+      ]).then(([arenasRes, eventsRes, heroes, cats]) => {
+        const newApiArenas = (arenasRes.arenas || []).map(normalizeListArena);
+        const newApiEvents = (eventsRes.contents || []).map(normalizeCmsEventForList);
+        const newHeroBanners = (heroes.contents || []).map(mapCmsHeroForHome);
+        const newCategoryCards = (cats.contents || []).map((c, i) => mapCmsCategoryForHome(c, i));
+
+        const newData = {
+          apiArenas: newApiArenas,
+          apiEvents: newApiEvents,
+          heroBanners: newHeroBanners,
+          categoryCards: newCategoryCards
+        };
+
+        _homeCache = newData;
+        _homeFetchedAt = Date.now();
+        _homeFetchPromise = null; // Clear the promise once done
+
+        return newData;
+      }).catch(err => {
+        _homeFetchPromise = null;
+        throw err;
+      });
+
       try {
-        const [arenasRes, eventsRes, heroes, cats] = await Promise.all([
-          fetchPublicArenas(),
-          fetchPublishedEvents(),
-          fetchPublishedCms('hero'),
-          fetchPublishedCms('category'),
-        ]);
-        if (cancelled) return;
-        setApiArenas((arenasRes.arenas || []).map(normalizeListArena));
-        setApiEvents((eventsRes.contents || []).map(normalizeCmsEventForList));
-        setHeroBanners((heroes.contents || []).map(mapCmsHeroForHome));
-        setCategoryCards((cats.contents || []).map((c, i) => mapCmsCategoryForHome(c, i)));
+        const data = await _homeFetchPromise;
+        if (!cancelled) {
+          setApiArenas(data.apiArenas);
+          setApiEvents(data.apiEvents);
+          setHeroBanners(data.heroBanners);
+          setCategoryCards(data.categoryCards);
+        }
       } catch {
         if (!cancelled) {
           setApiArenas([]);
@@ -60,7 +122,10 @@ const UserHome = () => {
           setCategoryCards([]);
         }
       }
-    })();
+    };
+
+    fetchData();
+
     return () => {
       cancelled = true;
     };

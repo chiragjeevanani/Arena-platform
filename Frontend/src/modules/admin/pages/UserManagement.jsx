@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Users, UserPlus, Search, Filter, 
+  Users, UserPlus, Search, Filter, Phone,
   MoreVertical, Shield, MapPin, X, Mail, ArrowRight, ShieldCheck,
   Eye, UserCog, UserMinus, Key, CheckCircle2, AlertCircle, Fingerprint, Activity
 } from 'lucide-react';
@@ -20,6 +20,7 @@ const UserManagement = () => {
   const editArenaRef = useRef(null);
   const editNameRef = useRef(null);
   const editEmailRef = useRef(null);
+  const editPhoneRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
@@ -34,6 +35,7 @@ const UserManagement = () => {
     password: '',
     role: 'ARENA_ADMIN',
     arenaId: '',
+    phone: '',
   });
   const [isCreating, setIsCreating] = useState(false);
   const [me, setMe] = useState(null);
@@ -62,6 +64,7 @@ const UserManagement = () => {
           email: u.email,
           role: u.role,
           arenaId: u.assignedArenaId || 'all',
+          phone: u.phone || '',
           isActive: u.isActive !== false,
           status: u.isActive !== false ? 'Active' : 'Inactive',
         }))
@@ -102,7 +105,6 @@ const UserManagement = () => {
   };
 
   const filteredUsers = users.filter(user => {
-    if (user.role === 'CUSTOMER') return false;
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'All' || user.role === roleFilter;
@@ -180,6 +182,7 @@ const UserManagement = () => {
                 <tr className="text-[10px] font-black uppercase tracking-[0.15em]">
                   <th className="px-6 py-4">Identity Detail</th>
                   <th className="px-6 py-4">Authentication</th>
+                  <th className="px-6 py-4">Contact</th>
                   <th className="px-6 py-4">Operational Scope</th>
                   <th className="px-6 py-4 text-center">Status</th>
                   <th className="px-6 py-4 text-right pr-10">Ops</th>
@@ -214,6 +217,12 @@ const UserManagement = () => {
                         <Shield size={10} className={user.role === 'SUPER_ADMIN' ? 'text-[#CE2029]' : 'text-slate-400'} strokeWidth={3} />
                         {user.role.replace('_', ' ')}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-500 text-[11px] uppercase tracking-wider">
+                        <Phone size={12} className="text-slate-400" />
+                        {user.phone || 'N/A'}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 font-bold text-slate-500 text-[11px] uppercase tracking-wider">
@@ -382,6 +391,20 @@ const UserManagement = () => {
                   </div>
 
                   <div className="group">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Phone Number</label>
+                    <div className="relative">
+                       <input 
+                        type="text" 
+                        placeholder="+91 00000 00000"
+                        value={newUserForm.phone}
+                        onChange={e => setNewUserForm(p => ({ ...p, phone: e.target.value }))}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F] placeholder:text-slate-400"
+                      />
+                      <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                    </div>
+                  </div>
+
+                  <div className="group">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Access Password</label>
                     <div className="relative">
                        <input 
@@ -447,11 +470,12 @@ const UserManagement = () => {
                         email: newUserForm.email,
                         password: newUserForm.password,
                         role: newUserForm.role,
-                        assignedArenaId: newUserForm.arenaId === 'all' ? null : newUserForm.arenaId
+                        assignedArenaId: newUserForm.arenaId === 'all' ? null : newUserForm.arenaId,
+                        phone: newUserForm.phone
                       });
                       await loadStaffUsers();
                       setShowNewUserModal(false);
-                      setNewUserForm({ name: '', email: '', password: '', role: 'ARENA_ADMIN', arenaId: arenas[0]?.id || '' });
+                      setNewUserForm({ name: '', email: '', password: '', role: 'ARENA_ADMIN', arenaId: arenas[0]?.id || '', phone: '' });
                       showToast('Assignment initialized');
                     } catch (e) {
                       showToast(e.message || 'Identity initialization failed', 'error');
@@ -509,6 +533,7 @@ const UserManagement = () => {
                       { label: 'Super Admin', value: 'SUPER_ADMIN' },
                       { label: 'Admin', value: 'ARENA_ADMIN' },
                       { label: 'Coach', value: 'COACH' },
+                      { label: 'Customer', value: 'CUSTOMER' },
                     ].map(role => (
                       <button
                         key={role.value}
@@ -577,6 +602,15 @@ const UserManagement = () => {
                         className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
                       />
                     </div>
+                    <div className="group">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Phone Number</label>
+                      <input 
+                        ref={editPhoneRef}
+                        type="text" 
+                        defaultValue={editingUserDetails.phone}
+                        className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -616,6 +650,7 @@ const UserManagement = () => {
                       if (!editingUserDetails) return;
                       const name = editNameRef.current?.value;
                       const email = editEmailRef.current?.value;
+                      const phone = editPhoneRef.current?.value;
                       const role = editRoleRef.current?.value;
                       const arenaRaw = editArenaRef.current?.value;
                       const assignedArenaId = arenaRaw === 'all' || !arenaRaw ? null : arenaRaw;
@@ -624,6 +659,7 @@ const UserManagement = () => {
                         await patchAdminUser(editingUserDetails.id, {
                           name,
                           email,
+                          phone,
                           role,
                           assignedArenaId,
                         });

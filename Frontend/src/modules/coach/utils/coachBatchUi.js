@@ -6,10 +6,8 @@ export function mapApiBatchToCard(b) {
   for (let i = 0; i < id.length; i += 1) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   const color = palette[h % palette.length];
   const schedule = (b.schedule || '').trim();
-  const time =
-    schedule && schedule.includes('–')
-      ? schedule
-      : schedule || `${b.startDate || ''} – ${b.endDate || ''}`.trim() || '—';
+  const scheduleTime = (b.scheduleTime || '').trim();
+  const time = scheduleTime || (schedule && schedule.includes('–') ? schedule : schedule || `${b.startDate || ''} – ${b.endDate || ''}`.trim() || '—');
   return {
     id,
     name: b.title || 'Batch',
@@ -21,7 +19,7 @@ export function mapApiBatchToCard(b) {
     arena: b.arenaName || '—',
     court: '—',
     color,
-    type: /online|zoom|virtual/i.test(schedule + (b.description || '')) ? 'Online' : 'Offline',
+    type: /online|zoom|virtual/i.test(schedule + scheduleTime + (b.description || '')) ? 'Online' : 'Offline',
     raw: b,
   };
 }

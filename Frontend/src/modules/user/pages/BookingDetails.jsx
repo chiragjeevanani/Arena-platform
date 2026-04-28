@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { listMyBookings } from '../../../services/bookingsApi';
-import { listMyEventRegistrations } from '../../../services/meApi';
-import { mapMeBookingToDashboardCard } from '../../../utils/meBookingAdapter';
+import { listMyEventRegistrations, listMyEnrollments, getMyEnrollmentById } from '../../../services/meApi';
+import { mapMeBookingToDashboardCard, mapMeEnrollmentToDashboardCard } from '../../../utils/meBookingAdapter';
 import { mapEventRegistrationToDashboardCard } from '../../../utils/eventRegistrationAdapter';
 
 const BookingDetails = () => {
@@ -17,57 +17,85 @@ const BookingDetails = () => {
   const { isDark } = useTheme();
   const { id } = useParams();
   
-  // Try to get booking from state, fallback to localStorage/fetch
   const [booking, setBooking] = useState(state?.booking || null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (booking || !id) return undefined;
+    const fetchBookingDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    if (isApiConfigured() && getAuthToken()) {
-      let cancelled = false;
-      (async () => {
+        // 1. Try fetching specific enrollment first
         try {
-          const [bData, evData] = await Promise.all([
-            listMyBookings().catch(() => ({ bookings: [] })),
-            listMyEventRegistrations().catch(() => ({ registrations: [] }))
-          ]);
-          if (cancelled) return;
-
-          let raw = (bData.bookings || []).find((b) => String(b.id) === String(id));
-          if (raw) {
-             setBooking(mapMeBookingToDashboardCard(raw));
-          } else {
-             const evRaw = (evData.registrations || []).find((r) => String(r.id) === String(id));
-             if (evRaw) setBooking(mapEventRegistrationToDashboardCard(evRaw));
+          const res = await getMyEnrollmentById(id);
+          if (res.enrollment) {
+            setBooking(mapMeEnrollmentToDashboardCard(res.enrollment));
+            setLoading(false);
+            return;
           }
-        } catch {
-          if (!cancelled) {
-            const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-            const found = savedBookings.find((b) => String(b.id) === String(id));
-            if (found) setBooking(found);
+        } catch (e) {
+          // Continue to other lists
+        }
+
+        // 2. Fetch all lists in parallel
+        const [bData, evData, enData] = await Promise.all([
+          listMyBookings().catch(() => ({ bookings: [] })),
+          listMyEventRegistrations().catch(() => ({ registrations: [] })),
+          listMyEnrollments().catch(() => ({ enrollments: [] }))
+        ]);
+
+        const bRaw = (bData.bookings || []).find((b) => String(b.id) === String(id));
+        const enRaw = (enData.enrollments || []).find((e) => String(e.id) === String(id));
+        const evRaw = (evData.registrations || []).find((ev) => String(ev.id) === String(id));
+
+        if (bRaw) {
+          setBooking(mapMeBookingToDashboardCard(bRaw));
+        } else if (enRaw) {
+          setBooking(mapMeEnrollmentToDashboardCard(enRaw));
+        } else if (evRaw) {
+          setBooking(mapEventRegistrationToDashboardCard(evRaw));
+        } else {
+          // 3. Last fallback: check localStorage
+          const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+          const found = savedBookings.find((b) => String(b.id) === String(id));
+          if (found) {
+            setBooking(found);
+          } else {
+            setError('Booking not found or you are not authorized to view it.');
           }
         }
-      })();
-      return () => {
-        cancelled = true;
-      };
+      } catch (err) {
+        console.error('Fetch Details Error:', err);
+        setError('Failed to load booking details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchBookingDetails();
     }
+  }, [id]);
 
-    const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-    const found = savedBookings.find((b) => String(b.id) === String(id));
-    if (found) setBooking(found);
-    return undefined;
-  }, [booking, id]);
+  if (loading) return (
+    <div className={`p-20 text-center ${'text-slate-400'}`}>
+      <div className="animate-spin w-8 h-8 border-4 border-[#CE2029] border-t-transparent rounded-full mx-auto mb-4" />
+      Syncing details...
+    </div>
+  );
 
-  if (!booking) return (
-    <div className={`p-10 text-center ${'text-[#CE2029]/40'}`}>
-      No booking details found.
-      <button onClick={() => navigate(-1)} className="mt-4 text-blue-500 underline block mx-auto">Go Back</button>
+  if (error || !booking) return (
+    <div className={`p-10 text-center ${'text-[#CE2029]/60'}`}>
+      <div className="mb-4">{error || 'No booking details found.'}</div>
+      <ShuttleButton onClick={() => navigate(-1)} variant="outline" size="sm">Go Back</ShuttleButton>
     </div>
   );
 
   const priceParsed = parseFloat(booking.price?.toString().replace(/[^\d.]/g, '') || '0');
-  const baseRate = (priceParsed / 1.18);
+  const taxPct = Number(booking.taxPercent || 18);
+  const baseRate = booking.basePrice ? Number(booking.basePrice) : (priceParsed / (1 + (taxPct / 100)));
   const taxAmount = priceParsed - baseRate;
 
   return (

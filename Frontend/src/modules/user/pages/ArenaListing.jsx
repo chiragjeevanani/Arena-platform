@@ -39,7 +39,10 @@ const ArenaListing = () => {
   const filteredArenas = arenas.filter(a => {
     const matchesSearch = a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || a.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || 
+      a.category?.toLowerCase() === selectedCategory.toLowerCase() ||
+      a.amenities?.some(amenity => amenity.toLowerCase().includes(selectedCategory.toLowerCase())) ||
+      a.description?.toLowerCase().includes(selectedCategory.toLowerCase());
     return matchesSearch && matchesCategory;
   });
 

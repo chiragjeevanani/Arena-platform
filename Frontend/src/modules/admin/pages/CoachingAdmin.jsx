@@ -14,6 +14,7 @@ import { normalizeListArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { listAdminCoachingBatches } from '../../../services/adminOpsApi';
+import { listAdminUsers } from '../../../services/adminUsersApi';
 import { listAdminBookings } from '../../../services/adminBookingsApi';
 
 
@@ -36,11 +37,27 @@ const STUDENT_ATTENDANCE_STATS = {
   yearly: [],
 };
 const BOOKINGS_DATA = [];
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? '00' : '30';
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const hh = h % 12 || 12;
+  return `${String(hh).padStart(2, '0')}:${m} ${ampm}`;
+});
 
 const CoachingAdmin = () => {
   const [view, setView] = useState('students'); // students | batches | coaches | attendance | programs | bookings | student-attendance
   const [studentAttendanceMode, setStudentAttendanceMode] = useState('daily'); // daily | monthly | yearly
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
+  const [selectedBatchDays, setSelectedBatchDays] = useState([]);
+  const [batchStartTime, setBatchStartTime] = useState('07:00 AM');
+  const [batchEndTime, setBatchEndTime] = useState('08:00 AM');
+  const toggleDay = (day) => {
+    setSelectedBatchDays(prev => 
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showAttendanceStudentsModal, setShowAttendanceStudentsModal] = useState(false);
@@ -54,50 +71,6 @@ const CoachingAdmin = () => {
   const [students, setStudents] = useState(STUDENT_DIRECTORY);
   const [bookings, setBookings] = useState(BOOKINGS_DATA);
   const [showCoachModal, setShowCoachModal] = useState(false);
-
-  useEffect(() => {
-    if (!isApiConfigured() || !getAuthToken()) return undefined;
-    let cancelled = false;
-    (async () => {
-      try {
-        const ar = await fetchPublicArenas();
-        const list = (ar.arenas || []).map(normalizeListArena);
-        const aid = list[0]?.id;
-        if (!aid) return;
-        const [cb, bk] = await Promise.all([
-          listAdminCoachingBatches(String(aid)),
-          listAdminBookings({ arenaId: String(aid) }),
-        ]);
-        if (cancelled) return;
-        const br = (cb.batches || []).map((b) => ({
-          id: b.id,
-          name: b.title,
-          coach: '—',
-          capacity: b.capacity,
-          enrolled: 0,
-          fee: b.price ?? 0,
-          frequency: b.schedule || '',
-          time: '',
-          arena: list[0]?.name || '',
-        }));
-        if (br.length) setBatches(br);
-        const rows = (bk.bookings || []).slice(0, 20).map((b) => ({
-          id: b.id,
-          date: b.date,
-          court: b.courtName || '—',
-          player: `User …${String(b.userId || '').slice(-6)}`,
-          time: b.timeSlot || '',
-          status: b.status,
-        }));
-        if (rows.length) setBookings(rows);
-      } catch {
-        /* keep demo empty state */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
   const [editingCoach, setEditingCoach] = useState(null);
   const [coaches, setCoaches] = useState(COACHES_DATA);
   const [requestedCoaches, setRequestedCoaches] = useState(REQUESTED_COACHES);
@@ -106,8 +79,7 @@ const CoachingAdmin = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [toast, setToast] = useState(null);
   const [viewingCoachDetails, setViewingCoachDetails] = useState(null);
-
-  // Form refs
+  
   const nameRef = useRef();
   const roleRef = useRef();
   const specialtyRef = useRef();
@@ -117,6 +89,113 @@ const CoachingAdmin = () => {
   const batchNameRef = useRef();
   const batchCoachRef = useRef();
   const batchCapacityRef = useRef();
+  const batchArenaRef = useRef();
+  const batchPriceRef = useRef();
+  const batchStartDateRef = useRef();
+  const batchEndDateRef = useRef();
+  const batchScheduleRef = useRef();
+  const batchTimeRef = useRef();
+  const batchPublishedRef = useRef();
+  const batchRegistrationFeeRef = useRef();
+  const batchTaxPercentRef = useRef();
+  const batchLevelRef = useRef();
+  const batchRatingRef = useRef();
+  const batchStudentCountRef = useRef();
+  const batchExperienceYearsRef = useRef();
+  const batchBenefitsRef = useRef();
+
+  const [arenas, setArenas] = useState([]);
+  const [selectedArenaId, setSelectedArenaId] = useState('');
+  const [selectedBatchImage, setSelectedBatchImage] = useState(null);
+
+  const loadBatches = async (aid) => {
+    try {
+      const cb = await listAdminCoachingBatches(String(aid));
+      const br = (cb.batches || []).map((b) => ({
+        id: b.id,
+        name: b.title,
+        coach: b.coachName || '—',
+        coachId: b.coachId,
+        capacity: b.capacity,
+        enrolled: b.enrolledCount || 0,
+        fee: b.price ?? 0,
+        frequency: b.schedule || '',
+        time: b.scheduleTime || '',
+        arena: b.arenaName || '',
+        arenaId: b.arenaId,
+        startDate: b.startDate,
+        endDate: b.endDate,
+        isPublished: b.isPublished,
+        description: b.description,
+        registrationFee: b.registrationFee,
+        taxPercent: b.taxPercent,
+        level: b.level,
+        coachImage: b.coachImage,
+        rating: b.rating,
+        studentCount: b.studentCount,
+        experienceYears: b.experienceYears,
+        benefits: b.benefits || [],
+        enrolledCount: b.enrolledCount || 0
+      }));
+      setBatches(br);
+    } catch (err) {
+      console.error('Error loading batches:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (!isApiConfigured() || !getAuthToken()) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const ar = await fetchPublicArenas();
+        const list = (ar.arenas || []).map(normalizeListArena);
+        if (cancelled) return;
+        setArenas(list);
+        const aid = list[0]?.id;
+        if (!aid) return;
+        setSelectedArenaId(String(aid));
+        
+        await loadBatches(aid);
+        if (cancelled) return;
+
+        const bk = await listAdminBookings({ arenaId: String(aid) });
+        if (cancelled) return;
+        const rows = (bk.bookings || []).slice(0, 20).map((b) => ({
+          id: b.id,
+          date: b.date,
+          court: b.courtName || '—',
+          player: `User …${String(b.userId || '').slice(-6)}`,
+          time: b.timeSlot || '',
+          status: b.status,
+        }));
+        if (rows.length) setBookings(rows);
+        
+        const cu = await listAdminUsers({ role: 'COACH' });
+        if (cancelled) return;
+        const fetchedCoaches = (cu.users || []).map(user => ({
+          id: user.id,
+          name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown Coach',
+          role: 'Professional Coach',
+          specialty: 'Academy Training',
+          salary: 0,
+          experience: 'Staff',
+          status: user.isActive ? 'Active' : 'Inactive',
+          image: '',
+          students: 0,
+          rating: 5.0,
+          reviews: []
+        }));
+        setCoaches(fetchedCoaches);
+      } catch (err) {
+        console.error('Error fetching coaching data:', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -175,46 +254,123 @@ const CoachingAdmin = () => {
 
   const handleEditBatch = (batch) => {
     setEditingBatch(batch);
+    // Parse "Mon-Wed-Fri" into ["Mon", "Wed", "Fri"]
+    const days = (batch.frequency || '').split('-').filter(d => DAYS_OF_WEEK.includes(d));
+    setSelectedBatchDays(days);
+    
+    // Parse "07:30 AM – 08:30 AM" or "07:30 AM - 08:30 AM"
+    const times = (batch.time || '').split(/[-–]/).map(s => s.trim());
+    if (times.length === 2) {
+      setBatchStartTime(times[0]);
+      setBatchEndTime(times[1]);
+    } else {
+      setBatchStartTime('07:00 AM');
+      setBatchEndTime('08:00 AM');
+    }
+    
     setShowNewBatchModal(true);
   };
 
   const handleNewBatch = () => {
     setEditingBatch(null);
+    setSelectedBatchDays([]);
+    setBatchStartTime('07:00 AM');
+    setBatchEndTime('08:00 AM');
     setShowNewBatchModal(true);
   };
 
-  const handleSaveBatch = () => {
-    const name = batchNameRef.current.value;
-    const coach = batchCoachRef.current.value;
+  const handleSaveBatch = async () => {
+    const title = batchNameRef.current.value;
+    const coachId = batchCoachRef.current.value;
+    const arenaId = batchArenaRef.current.value;
     const capacity = Number(batchCapacityRef.current.value);
+    const price = Number(batchPriceRef.current.value);
+    const startDate = batchStartDateRef.current.value;
+    const endDate = batchEndDateRef.current.value;
+    const schedule = selectedBatchDays.join('-');
+    const scheduleTime = `${batchStartTime} – ${batchEndTime}`;
+    const isPublished = batchPublishedRef.current.checked;
+    const registrationFee = Number(batchRegistrationFeeRef.current.value);
+    const taxPercent = Number(batchTaxPercentRef.current.value);
+    const level = batchLevelRef.current.value;
+    const rating = Number(batchRatingRef.current.value);
+    const studentCount = batchStudentCountRef.current.value;
+    const experienceYears = batchExperienceYearsRef.current.value;
+    const benefits = (batchBenefitsRef.current.value || '').split(',').map(s => s.trim()).filter(Boolean);
 
-    if (!name || !coach) return;
+    const missingFields = [];
+    if (!title) missingFields.push('Program Name');
+    if (!coachId) missingFields.push('Coach');
+    if (!arenaId) missingFields.push('Arena');
+    if (!startDate) missingFields.push('Start Date');
+    if (!endDate) missingFields.push('End Date');
+    if (selectedBatchDays.length === 0) missingFields.push('Schedule Days');
 
-    if (editingBatch) {
-      setBatches(prev => prev.map(b => b.id === editingBatch.id ? {
-        ...b,
-        name,
-        coach,
-        capacity
-      } : b));
-      setToast('Batch updated successfully');
-    } else {
-      const newBatchObj = {
-        id: `B-${Date.now()}`,
-        name,
-        coach,
-        capacity,
-        enrolled: 0,
-        fee: 30,
-        frequency: 'Mon-Wed-Fri',
-        time: '07:30 AM',
-        arena: 'Amm Sports Arena'
-      };
-      setBatches(prev => [newBatchObj, ...prev]);
-      setToast('New batch created successfully');
+    if (missingFields.length > 0) {
+      setToast(`Missing: ${missingFields.join(', ')}`);
+      setTimeout(() => setToast(null), 4000);
+      return;
     }
 
-    setShowNewBatchModal(false);
+    try {
+      let finalCoachImage = editingBatch?.coachImage || '';
+
+      if (selectedBatchImage) {
+        setToast('Uploading image…');
+        const uploadRes = await import('../../../services/adminOpsApi').then(api => api.uploadAdminImage(selectedBatchImage));
+        finalCoachImage = uploadRes.url;
+      }
+
+      const payload = {
+        title,
+        coachId,
+        arenaId,
+        capacity,
+        price,
+        startDate,
+        endDate,
+        schedule,
+        scheduleTime,
+        isPublished,
+        registrationFee,
+        taxPercent,
+        level,
+        coachImage: finalCoachImage,
+        rating,
+        studentCount,
+        experienceYears,
+        benefits,
+      };
+
+      if (editingBatch) {
+        await import('../../../services/adminOpsApi').then(api => api.updateAdminCoachingBatch(editingBatch.id, payload));
+        setToast('Batch updated successfully');
+      } else {
+        await import('../../../services/adminOpsApi').then(api => api.createAdminCoachingBatch(payload));
+        setToast('New batch created successfully');
+      }
+      await loadBatches(selectedArenaId);
+      setShowNewBatchModal(false);
+      setEditingBatch(null);
+      setSelectedBatchImage(null);
+    } catch (err) {
+      console.error('Save batch error:', err);
+      alert(err.message || 'Failed to save batch');
+    }
+
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleDeleteBatch = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this batch?')) return;
+    try {
+      await import('../../../services/adminOpsApi').then(api => api.deleteAdminCoachingBatch(id));
+      setToast('Batch deleted successfully');
+      await loadBatches(selectedArenaId);
+    } catch (err) {
+      console.error('Delete batch error:', err);
+      alert(err.message || 'Failed to delete batch');
+    }
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -407,10 +563,10 @@ const CoachingAdmin = () => {
                  <div className="p-6 border-b border-slate-50 flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Student Registry</h3>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                          Real-time Enrollment Monitoring
-                      </p>
+                      </div>
                     </div>
                     <button onClick={handleAddStudent} className="px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[#1e293b] text-[10px] font-black uppercase tracking-widest hover:border-[#CE2029] transition-all">Add Student</button>
                  </div>
@@ -539,15 +695,23 @@ const CoachingAdmin = () => {
                       </div>
                       <div className="flex justify-between items-center text-[10px]">
                          <span className="font-black text-slate-400 uppercase tracking-widest">Time Slot</span>
-                         <span className="font-black text-[#CE2029] uppercase tracking-tighter">{batch.time}</span>
+                         <span className="font-black text-[#CE2029] uppercase tracking-tighter">{batch.time || '—'}</span>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => handleEditBatch(batch)}
-                      className="w-full py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all bg-[#CE2029] text-white hover:bg-[#CE2029]/90 shadow-lg shadow-[#CE2029]/10"
-                    >
-                      Manage Batch
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleEditBatch(batch)}
+                        className="flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all bg-[#CE2029] text-white hover:bg-[#CE2029]/90 shadow-lg shadow-[#CE2029]/10"
+                      >
+                        Manage
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteBatch(batch.id)}
+                        className="px-4 py-3.5 rounded-2xl border border-slate-100 text-slate-400 hover:text-[#CE2029] hover:bg-[#CE2029]/5 transition-all"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                 </motion.div>
                 ))}
               </div>
@@ -668,14 +832,14 @@ const CoachingAdmin = () => {
                                        {stat.present}
                                        <span className="text-[10px] text-slate-300 font-black">/ {stat.total}</span>
                                     </p>
-                                    <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5 leading-none">
+                                    <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5 leading-none">
                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                        Present Now
-                                    </p>
+                                    </div>
                                  </div>
                                  <div className="text-right">
                                     <p className="text-lg font-black text-[#CE2029] leading-none tracking-tighter">
-                                       {((stat.present / stat.total) * 100).toFixed(0)}%
+                                       {stat.total > 0 ? ((stat.present / stat.total) * 100).toFixed(0) : 0}%
                                     </p>
                                     <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mt-1.5 leading-none">Court Load</p>
                                  </div>
@@ -790,10 +954,10 @@ const CoachingAdmin = () => {
                    <div className="relative z-10">
                       <p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 mb-3 leading-none">Monthly Insight</p>
                       <h4 className="text-4xl font-black tracking-tighter italic text-[#CE2029]">98.5%</h4>
-                      <p className="text-[10px] uppercase font-black tracking-widest text-[#1e293b] mt-2 flex items-center gap-2">
+                      <div className="text-[10px] uppercase font-black tracking-widest text-[#1e293b] mt-2 flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] animate-ping" />
                          Exceptional Retention
-                      </p>
+                      </div>
                    </div>
                    <History className="absolute -right-4 -bottom-4 opacity-5 text-slate-200" size={120} />
                 </div>
@@ -841,10 +1005,10 @@ const CoachingAdmin = () => {
                  <div className="p-6 border-b border-slate-50 flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Global Booking Log</h3>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                          Centralized Court Reservation Monitoring
-                      </p>
+                      </div>
                     </div>
                     <button onClick={() => { setEditingBooking(null); setShowBookingModal(true); }} className="px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[#1e293b] text-[10px] font-black uppercase tracking-widest hover:border-[#CE2029] transition-all">New Booking</button>
                  </div>
@@ -880,7 +1044,7 @@ const CoachingAdmin = () => {
                               <p className="text-[10px] font-black text-[#1e293b] uppercase leading-none">{bk.time}</p>
                            </td>
                            <td className="px-6 py-4">
-                              <p className="text-[10px] font-black text-[#1e293b]">OMR {bk.amount.toFixed(2)}</p>
+                              <span className="text-[10px] font-black text-[#1e293b]">OMR {(bk.amount || 0).toFixed(2)}</span>
                            </td>
                            <td className="px-6 py-4">
                               <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
@@ -938,13 +1102,13 @@ const CoachingAdmin = () => {
                                 <div>
                                    <div className="flex items-center gap-2 mb-1">
                                       <span className="w-5 h-5 rounded bg-[#1e293b] flex items-center justify-center text-[7px] font-black text-white">G{prog.id}</span>
-                                      <p className="text-[10px] font-black text-[#1e293b] uppercase leading-none">{prog.title}</p>
+                                      <span className="text-[10px] font-black text-[#1e293b] uppercase leading-none">{prog.title}</span>
                                    </div>
-                                   <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Base Subscription Plan</p>
+                                   <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest block">Base Subscription Plan</span>
                                 </div>
                                 <div className="text-right">
-                                   <p className="text-[12px] font-black text-[#CE2029] tracking-tighter leading-none">OMR {prog.fee.toFixed(2)}</p>
-                                   <p className="text-[7px] font-black text-slate-300 uppercase mt-0.5">Per Month</p>
+                                   <span className="text-[12px] font-black text-[#CE2029] tracking-tighter leading-none block">OMR {(prog.fee || 0).toFixed(2)}</span>
+                                   <span className="text-[7px] font-black text-slate-300 uppercase mt-0.5 block">Per Month</span>
                                 </div>
                              </div>
                           ))}
@@ -970,10 +1134,11 @@ const CoachingAdmin = () => {
               className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
             <motion.div
+              key={editingBatch?.id || 'new'}
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-lg rounded-3xl border-2 border-slate-200 bg-white shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg max-h-[95vh] flex flex-col rounded-3xl border-2 border-slate-200 bg-white shadow-2xl overflow-hidden"
             >
               <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-xl font-black flex items-center gap-2">
@@ -981,7 +1146,7 @@ const CoachingAdmin = () => {
                 </h3>
                 <button onClick={() => setShowNewBatchModal(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
                  <div className="space-y-4">
                        <div>
                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Program Name</label>
@@ -989,15 +1154,148 @@ const CoachingAdmin = () => {
                        </div>
                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Coach</label>
-                            <select ref={batchCoachRef} defaultValue={editingBatch?.coach || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold">
-                               {coaches.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Arena</label>
+                            <select ref={batchArenaRef} defaultValue={editingBatch?.arenaId || selectedArenaId} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold">
+                               <option value="" disabled>Select Arena</option>
+                               {arenas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                             </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Coach</label>
+                            <select ref={batchCoachRef} defaultValue={editingBatch?.coachId || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold">
+                               <option value="" disabled>Select Coach</option>
+                               {coaches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                          </div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Monthly Fee (OMR)</label>
+                            <input ref={batchPriceRef} type="number" defaultValue={editingBatch?.fee || '0'} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
                           </div>
                           <div>
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Capacity</label>
                             <input ref={batchCapacityRef} type="number" defaultValue={editingBatch?.capacity || "15"} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
                           </div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Start Date</label>
+                            <input ref={batchStartDateRef} type="date" defaultValue={editingBatch?.startDate || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">End Date</label>
+                            <input ref={batchEndDateRef} type="date" defaultValue={editingBatch?.endDate || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold" />
+                          </div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                           <div>
+                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Schedule Days</label>
+                             <div className="flex flex-wrap gap-1.5">
+                                {DAYS_OF_WEEK.map(day => (
+                                   <button 
+                                     key={day}
+                                     type="button"
+                                     onClick={() => toggleDay(day)}
+                                     className={`px-3 py-1.5 rounded-lg text-[11px] font-black transition-all ${
+                                       selectedBatchDays.includes(day)
+                                         ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
+                                         : 'bg-slate-50 text-slate-400 border-2 border-slate-100 hover:border-slate-200'
+                                     }`}
+                                   >
+                                      {day}
+                                   </button>
+                                ))}
+                             </div>
+                             <input ref={batchScheduleRef} type="hidden" value={selectedBatchDays.join('-')} />
+                           </div>
+                           <div>
+                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Session Timing</label>
+                             <div className="grid grid-cols-2 gap-2">
+                                <select 
+                                  value={batchStartTime}
+                                  onChange={(e) => setBatchStartTime(e.target.value)}
+                                  className="w-full py-3 px-3 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold"
+                                >
+                                  {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                                <select 
+                                  value={batchEndTime}
+                                  onChange={(e) => setBatchEndTime(e.target.value)}
+                                  className="w-full py-3 px-3 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold"
+                                >
+                                  {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                             </div>
+                             <input ref={batchTimeRef} type="hidden" value={`${batchStartTime} – ${batchEndTime}`} />
+                           </div>
+                       </div>
+
+                       <div className="h-px bg-slate-100 my-2" />
+                       <p className="text-[9px] font-black text-[#CE2029] uppercase tracking-widest">Premium Details & Mocks</p>
+
+                       <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Level</label>
+                            <select ref={batchLevelRef} defaultValue={editingBatch?.level || 'Open'} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold">
+                               <option value="Open">Open</option>
+                               <option value="Beginner">Beginner</option>
+                               <option value="Intermediate">Intermediate</option>
+                               <option value="Advanced">Advanced</option>
+                               <option value="Elite">Elite</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Reg Fee</label>
+                            <input ref={batchRegistrationFeeRef} type="number" defaultValue={editingBatch?.registrationFee ?? 500} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Tax %</label>
+                            <input ref={batchTaxPercentRef} type="number" defaultValue={editingBatch?.taxPercent ?? 18} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                          </div>
+                       </div>
+
+                       <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Rating</label>
+                            <input ref={batchRatingRef} type="number" step="0.1" defaultValue={editingBatch?.rating ?? 5.0} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Registered Students</label>
+                            <input readOnly value={editingBatch?.enrolledCount || 0} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-100 outline-none text-[12px] font-black text-[#CE2029]" />
+                            <input ref={batchStudentCountRef} type="hidden" defaultValue={editingBatch?.enrolledCount || 0} />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Experience</label>
+                            <input ref={batchExperienceYearsRef} type="text" defaultValue={editingBatch?.experienceYears || "8+ Years"} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                          </div>
+                       </div>
+
+                       <div>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Academy Benefits (Comma separated)</label>
+                          <textarea ref={batchBenefitsRef} defaultValue={(editingBatch?.benefits || []).join(', ') || "Assessment report, Certified Elite Coach, Sanitised Arena, Tournament priority"} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold h-20 resize-none" />
+                       </div>
+
+                       <div>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Coach Image</label>
+                          <div className="flex items-center gap-4">
+                             {editingBatch?.coachImage && !selectedBatchImage && (
+                               <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-slate-100">
+                                 <img src={editingBatch.coachImage} className="w-full h-full object-cover" alt="Coach" />
+                               </div>
+                             )}
+                             <input 
+                               type="file" 
+                               accept="image/*"
+                               onChange={(e) => setSelectedBatchImage(e.target.files[0])}
+                               className="flex-1 text-[11px] font-bold text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-[#CE2029]/10 file:text-[#CE2029] hover:file:bg-[#CE2029]/20" 
+                             />
+                          </div>
+                       </div>
+
+                       <div className="flex items-center gap-3 py-1">
+                          <input ref={batchPublishedRef} id="batchPublished" type="checkbox" defaultChecked={editingBatch?.isPublished ?? false} className="w-5 h-5 accent-[#CE2029]" />
+                          <label htmlFor="batchPublished" className="text-[11px] font-black uppercase tracking-widest text-slate-600 cursor-pointer">Publish to User App</label>
                        </div>
                     <button 
                       onClick={handleSaveBatch}

@@ -267,6 +267,23 @@ async function updateCourt(req, res) {
   return res.json({ court: mapCourt(court) });
 }
 
+async function deleteArena(req, res) {
+  const { arenaId } = req.params;
+  if (!mongoose.isValidObjectId(arenaId)) {
+    return res.status(400).json({ error: 'Invalid arena id' });
+  }
+
+  const arena = await Arena.findByIdAndDelete(arenaId);
+  if (!arena) {
+    return res.status(404).json({ error: 'Arena not found' });
+  }
+
+  // Also delete all courts associated with this arena
+  await Court.deleteMany({ arenaId: arena._id });
+
+  return res.json({ ok: true });
+}
+
 async function listAdminArenas(req, res) {
   const arenas = await Arena.find().sort({ createdAt: -1 }).lean();
   return res.json({ arenas: arenas.map(mapArena) });
@@ -280,4 +297,5 @@ module.exports = {
   listAdminArenas,
   getAdminArena,
   updateCourt,
+  deleteArena,
 };

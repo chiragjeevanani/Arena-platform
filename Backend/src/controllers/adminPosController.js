@@ -8,7 +8,7 @@ function roundMoney(n) {
 }
 
 async function createPosSale(req, res) {
-  const { arenaId, lines } = req.body;
+  const { arenaId, lines, customer } = req.body;
   const recordedByUserId = req.auth.sub;
 
   if (!arenaId || !Array.isArray(lines) || lines.length === 0) {
@@ -76,6 +76,7 @@ async function createPosSale(req, res) {
       recordedByUserId,
       lines: normalized,
       totalAmount,
+      customer,
     });
 
     return res.status(201).json({ sale: PosSale.toPublic(sale) });
@@ -91,13 +92,46 @@ async function createPosSale(req, res) {
 }
 
 async function listPosSales(req, res) {
-  const { arenaId } = req.query;
-  if (!arenaId || !mongoose.isValidObjectId(arenaId)) {
-    return res.status(400).json({ error: 'Valid arenaId query is required' });
-  }
+  try {
+    const { arenaId } = req.query;
+    if (!arenaId || !mongoose.isValidObjectId(arenaId)) {
+      return res.status(400).json({ error: 'Valid arenaId query is required' });
+    }
 
-  const list = await PosSale.find({ arenaId }).sort({ createdAt: -1 }).limit(100).lean();
-  return res.json({ sales: list.map((s) => PosSale.toPublic(s)) });
+    const list = await PosSale.find({ arenaId }).sort({ createdAt: -1 }).limit(100).lean();
+    const publicSales = list.map((s) => {
+      try {
+        return PosSale.toPublic(s);
+      } catch (e) {
+        console.error('Error converting sale to public:', s?._id, e.message);
+        return null;
+      }
+    }).filter(Boolean);
+
+    return res.json({ sales: publicSales });
+  } catch (error) {
+    console.error('List POS Sales Error:', error);
+    return res.status(500).json({ error: 'Failed to retrieve sales history' });
+  }
 }
 
-module.exports = { createPosSale, listPosSales };
+async function getPosSaleById(req, res) {
+  try {
+    const { saleId } = req.params;
+    if (!saleId || !mongoose.isValidObjectId(saleId)) {
+      return res.status(400).json({ error: 'Invalid sale id' });
+    }
+
+    const sale = await PosSale.findById(saleId).lean();
+    if (!sale) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    return res.json({ sale: PosSale.toPublic(sale) });
+  } catch (error) {
+    console.error('Get POS Sale Error:', error);
+    return res.status(500).json({ error: 'Failed to retrieve transaction details' });
+  }
+}
+
+module.exports = { createPosSale, listPosSales, getPosSaleById };

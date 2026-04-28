@@ -30,6 +30,11 @@ const posSaleSchema = new mongoose.Schema(
     },
     lines: { type: [saleLineSchema], required: true },
     totalAmount: { type: Number, required: true, min: 0 },
+    customer: {
+      id: { type: String, default: 'GUEST-01' },
+      name: { type: String, default: 'Walk-in Customer' },
+      phone: { type: String, default: 'N/A' }
+    },
   },
   { timestamps: true }
 );
@@ -43,6 +48,7 @@ function toPublic(doc) {
     recordedByUserId: String(o.recordedByUserId),
     lines: o.lines,
     totalAmount: o.totalAmount,
+    customer: o.customer || { id: 'GUEST-01', name: 'Walk-in Customer', phone: 'N/A' },
     createdAt: o.createdAt,
   };
 }

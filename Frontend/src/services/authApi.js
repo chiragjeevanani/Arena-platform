@@ -54,6 +54,13 @@ export function resetPasswordRequest(token, newPassword) {
   });
 }
 
+export function verifyEmailRequest(token) {
+  return apiJson(`/api/auth/verify-email?token=${token}`, {
+    method: 'GET',
+    skipAuth: true,
+  });
+}
+
 export async function logoutRequest() {
   const rt = getRefreshToken();
   try {

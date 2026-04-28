@@ -6,7 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch --runInBand",
     "db:create-arenacrmtest": "node scripts/createArenacrmtestCollection.js"
@@ -23,11 +23,13 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.0",
-    "multer": "^2.1.1"
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.6"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "mongodb-memory-server": "^10.1.2",
+    "nodemon": "^3.1.14",
     "supertest": "^7.0.0"
   }
 }

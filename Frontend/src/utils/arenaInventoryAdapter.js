@@ -6,10 +6,10 @@ export function mapArenaInventoryItemToTableRow(item) {
   return {
     id: item.id,
     name: item.name,
-    category: 'Equipment',
+    category: item.category || 'Equipment',
     sku: item.sku || '',
     stock: Number(item.quantity) || 0,
-    minStock: 5,
+    minStock: item.minStock != null ? Number(item.minStock) : 5,
     price: Number(item.unitPrice) || 0,
     fromApi: true,
   };

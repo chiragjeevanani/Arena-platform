@@ -487,7 +487,7 @@ const Bookings = () => {
         {rescheduleModal && <RescheduleModal booking={rescheduleModal} onClose={() => setRescheduleModal(null)} onConfirm={handleReschedule} />}
         {refundModal && <RefundModal booking={refundModal} onClose={() => setRefundModal(null)} onConfirm={handleRefund} />}
         {cancelModal && <CancelModal booking={cancelModal} onClose={() => setCancelModal(null)} onConfirm={handleCancel} />}
-        {walkInModal && <WalkInBookingModal onClose={() => setWalkInModal(false)} onSuccess={handleWalkinSuccess} />}
+        {walkInModal && <WalkInBookingModal arenaId={currentArenaId} onClose={() => setWalkInModal(false)} onSuccess={handleWalkinSuccess} />}
       </AnimatePresence>
 
       {/* Filter Drawer */}

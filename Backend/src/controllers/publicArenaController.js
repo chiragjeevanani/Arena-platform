@@ -9,6 +9,7 @@ function mapCourt(c) {
     type: c.type,
     pricePerHour: c.pricePerHour,
     arenaId: c.arenaId.toString(),
+    imageUrl: c.imageUrl || '',
   };
 }
 

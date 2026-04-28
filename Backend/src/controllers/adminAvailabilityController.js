@@ -8,6 +8,11 @@ async function listAdminArenaBlocks(req, res) {
   const { arenaId } = req.params;
   const { date } = req.query;
 
+  const mongoose = require('mongoose');
+  if (!mongoose.Types.ObjectId.isValid(arenaId)) {
+    return res.json({ success: true, blocks: [] });
+  }
+
   const filter = { arenaId };
   if (date) filter.date = date;
 

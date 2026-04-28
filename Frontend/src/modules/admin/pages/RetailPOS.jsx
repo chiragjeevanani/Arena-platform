@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CreditCard, Search, ShoppingCart, User, Plus, Minus, 
   Trash2, CheckCircle2, Receipt, ChevronRight, 
-  Package, Store, Zap, ArrowRight, Tag, ShoppingBag, ArrowUpRight
+  Package, Store, Zap, ArrowRight, Tag, ShoppingBag, ArrowUpRight,
+  X, RefreshCw, UserPlus, PlusCircle, History, Clock
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
@@ -12,8 +13,10 @@ import { getAuthToken } from '../../../services/apiClient';
 import {
   listArenaAdminInventoryItems,
   createArenaAdminPosSale,
+  listArenaAdminPosSales,
+  searchArenaAdminCustomers,
 } from '../../../services/arenaAdminApi';
-import { listAdminInventoryItems, createAdminPosSale } from '../../../services/adminOpsApi';
+import { listAdminInventoryItems, createAdminPosSale, listAdminPosSales } from '../../../services/adminOpsApi';
 import { resolveLiveOpsArenaScope } from '../../../utils/liveOpsScope';
 import { mapArenaInventoryItemToPosProduct } from '../../../utils/arenaInventoryAdapter';
 
@@ -95,12 +98,57 @@ const RetailPOS = () => {
   const [lastOrder, setLastOrder] = useState(null);
   const [showReceipt, setShowReceipt] = useState(false);
 
-  const CUSTOMERS = [
-    { name: 'Walk-in Customer', id: 'GUEST-01', phone: 'N/A' },
-    { name: 'Aman Sharma', id: 'MEM-882', phone: '+968 9123 4567' },
-    { name: 'Sarah Al-Said', id: 'MEM-901', phone: '+968 9988 7766' },
-    { name: 'Rahul Varma', id: 'MEM-774', phone: '+968 9443 2211' },
-  ];
+  const [customerQuery, setCustomerQuery] = useState('');
+  const [customerResults, setCustomerResults] = useState([]);
+  const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
+  const [isAddingWalkin, setIsAddingWalkin] = useState(false);
+  const [walkinForm, setWalkinForm] = useState({ name: '', phone: '' });
+
+  const [view, setView] = useState('CATALOG'); // 'CATALOG' or 'HISTORY'
+  const [history, setHistory] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  const fetchHistory = useCallback(async () => {
+    if (!opsScope.live || view !== 'HISTORY') return;
+    setIsLoadingHistory(true);
+    try {
+      const data =
+        opsScope.channel === 'arena'
+          ? await listArenaAdminPosSales(opsScope.arenaId)
+          : await listAdminPosSales(opsScope.arenaId);
+      setHistory(data.sales || []);
+    } catch (e) {
+      console.error('Failed to fetch history:', e);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [opsScope, view]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  // Debounced Customer Search
+  useEffect(() => {
+    if (!showCustomerModal) {
+      setCustomerResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingCustomers(true);
+      try {
+        const res = await searchArenaAdminCustomers(customerQuery);
+        setCustomerResults(res.customers || []);
+      } catch (e) {
+        console.error('Customer search failed:', e);
+      } finally {
+        setIsSearchingCustomers(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [customerQuery, showCustomerModal]);
 
   const addToCart = (item) => {
     const existing = cart.find(i => i.id === item.id);
@@ -143,7 +191,15 @@ const RetailPOS = () => {
           qty: i.qty,
           unitPrice: i.price,
         }));
-        const saleBody = { arenaId: opsScope.arenaId, lines };
+        const saleBody = { 
+          arenaId: opsScope.arenaId, 
+          lines,
+          customer: {
+            id: selectedCustomer.id || selectedCustomer._id,
+            name: selectedCustomer.name,
+            phone: selectedCustomer.phone
+          }
+        };
         const { sale } =
           opsScope.channel === 'arena'
             ? await createArenaAdminPosSale(saleBody)
@@ -161,6 +217,7 @@ const RetailPOS = () => {
           change: method === 'CASH' ? Number(cashTendered) - currentTotal : 0,
         });
         setCart([]);
+        fetchHistory();
         setShowPaymentModal(false);
         setShowReceipt(true);
         setCashTendered('');
@@ -184,6 +241,7 @@ const RetailPOS = () => {
       change: method === 'CASH' ? Number(cashTendered) - currentTotal : 0
     });
     setCart([]);
+    fetchHistory();
     setShowPaymentModal(false);
     setShowReceipt(true);
     setCashTendered('');
@@ -213,29 +271,56 @@ const RetailPOS = () => {
           {/* Header & Categories (Sharp Edges) */}
           <div className="p-4 md:p-6 border-b border-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-oswald font-black text-[#36454F] uppercase tracking-wide">Terminal POS</h2>
-                <div className="flex items-center gap-2 mt-0.5">
-                   <div className="w-2 h-2 rounded-full bg-green-500" />
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Station #01</p>
+              <div className="flex items-center gap-4">
+                <div>
+                  <h2 className="text-xl font-oswald font-black text-[#36454F] uppercase tracking-wide">Terminal POS</h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                     <div className="w-2 h-2 rounded-full bg-green-500" />
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Station #01</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center bg-slate-100 p-1 rounded-sm ml-4">
+                  <button 
+                    onClick={() => setView('CATALOG')}
+                    className={`px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                      view === 'CATALOG' 
+                        ? 'bg-white text-[#CE2029] shadow-sm' 
+                        : 'text-slate-400 hover:text-[#36454F]'
+                    }`}
+                  >
+                    <Package size={14} /> Catalog
+                  </button>
+                  <button 
+                    onClick={() => setView('HISTORY')}
+                    className={`px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                      view === 'HISTORY' 
+                        ? 'bg-white text-[#CE2029] shadow-sm' 
+                        : 'text-slate-400 hover:text-[#36454F]'
+                    }`}
+                  >
+                    <History size={14} /> History
+                  </button>
                 </div>
               </div>
               
-              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-sm border border-slate-200">
-                {categoryOptions.map((cat) => (
-                  <button 
-                    key={cat} 
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all ${
-                      cat === selectedCategory 
-                        ? 'bg-[#36454F] text-white shadow-sm' 
-                        : 'text-slate-400 hover:text-[#36454F] hover:bg-white'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+              {view === 'CATALOG' && (
+                <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-sm border border-slate-200">
+                  {categoryOptions.map((cat) => (
+                    <button 
+                      key={cat} 
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all ${
+                        cat === selectedCategory 
+                          ? 'bg-[#36454F] text-white shadow-sm' 
+                          : 'text-slate-400 hover:text-[#36454F] hover:bg-white'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {user?.role === 'SUPER_ADMIN' && isApiConfigured() && getAuthToken() && !opsScope.live ? (
@@ -245,69 +330,134 @@ const RetailPOS = () => {
               </div>
             ) : null}
 
-            {/* Search Bar (Sharp Edges) */}
+            {/* Search Bar / Refresh History (Sharp Edges) */}
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={14} className="text-slate-400" />
-              </div>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search catalog (Name, SKU, Category)..."
-                className="w-full h-10 pl-10 pr-4 bg-white border border-slate-200 focus:border-[#36454F] outline-none text-[12px] font-bold text-[#36454F] transition-all placeholder:text-slate-300 rounded-sm"
-              />
+              {view === 'CATALOG' ? (
+                <>
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search size={14} className="text-slate-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search catalog (Name, SKU, Category)..."
+                    className="w-full h-10 pl-10 pr-4 bg-white border border-slate-200 focus:border-[#36454F] outline-none text-[12px] font-bold text-[#36454F] transition-all placeholder:text-slate-300 rounded-sm"
+                  />
+                </>
+              ) : (
+                <div className="flex items-center justify-between h-10 px-3 bg-slate-50 border border-slate-200 rounded-sm">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Showing recent 100 transactions</p>
+                   <button 
+                    onClick={fetchHistory}
+                    className="text-[#CE2029] hover:text-black transition-colors"
+                   >
+                     <RefreshCw size={14} className={isLoadingHistory ? 'animate-spin' : ''} />
+                   </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Product Grid (Compact High-Density) */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 content-start">
-            <AnimatePresence>
-              {filteredItems.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  whileHover={{ borderColor: '#CE2029', scale: 0.99 }}
-                  onClick={() => addToCart(item)}
-                  className={`flex flex-col group bg-white p-3 cursor-pointer border transition-all relative rounded-sm shadow-sm ${
-                    cart.find(c => c.id === item.id) 
-                      ? 'border-[#CE2029] ring-1 ring-[#CE2029]' 
-                      : 'border-slate-200'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-[9px] font-black tracking-widest text-[#CE2029] uppercase">
-                       {item.category.slice(0, 3)}
-                    </span>
-                    <span className="text-[9px] font-bold text-slate-300">#{item.sku}</span>
-                  </div>
+          {/* Product Grid / History List (Compact High-Density) */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 content-start">
+            {view === 'CATALOG' ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                <AnimatePresence>
+                  {filteredItems.map((item, i) => (
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      whileHover={{ borderColor: '#CE2029', scale: 0.99 }}
+                      onClick={() => addToCart(item)}
+                      className={`flex flex-col group bg-white p-3 cursor-pointer border transition-all relative rounded-sm shadow-sm ${
+                        cart.find(c => c.id === item.id) 
+                          ? 'border-[#CE2029] ring-1 ring-[#CE2029]' 
+                          : 'border-slate-200'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-[9px] font-black tracking-widest text-[#CE2029] uppercase">
+                           {item.category.slice(0, 3)}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-300">#{item.sku}</span>
+                      </div>
 
-                  <h3 className="text-[13px] font-bold text-[#36454F] leading-snug mb-2 line-clamp-2 min-h-[2.4rem]">
-                    {item.name}
-                  </h3>
+                      <h3 className="text-[13px] font-bold text-[#36454F] leading-snug mb-2 line-clamp-2 min-h-[2.4rem]">
+                        {item.name}
+                      </h3>
 
-                  <div className="mt-auto flex items-end justify-between pt-2 border-t border-slate-50">
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-1">Stock: {item.stock}</p>
-                      <p className="text-[15px] font-oswald font-black text-[#36454F]">
-                        <span className="text-[10px] mr-1">OMR</span>{item.price.toFixed(3)}
-                      </p>
-                    </div>
-                    <div className="w-6 h-6 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-[#CE2029] group-hover:text-white transition-colors group-hover:rotate-45">
-                      <Plus size={12} strokeWidth={3} />
-                    </div>
+                      <div className="mt-auto flex items-end justify-between pt-2 border-t border-slate-50">
+                        <div>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-1">Stock: {item.stock}</p>
+                          <p className="text-[15px] font-oswald font-black text-[#36454F]">
+                            <span className="text-[10px] mr-1">OMR</span>{item.price.toFixed(3)}
+                          </p>
+                        </div>
+                        <div className="w-6 h-6 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-[#CE2029] group-hover:text-white transition-colors group-hover:rotate-45">
+                          <Plus size={12} strokeWidth={3} />
+                        </div>
+                      </div>
+                      
+                      {cart.find(c => c.id === item.id) && (
+                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#CE2029] text-white flex items-center justify-center text-[9px] font-black shadow-md">
+                          {cart.find(c => c.id === item.id).qty}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {isLoadingHistory ? (
+                  <div className="py-20 text-center">
+                     <RefreshCw className="animate-spin text-slate-300 mx-auto mb-4" size={32} />
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Synchronizing Vault...</p>
                   </div>
-                  
-                  {cart.find(c => c.id === item.id) && (
-                    <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#CE2029] text-white flex items-center justify-center text-[9px] font-black shadow-md">
-                      {cart.find(c => c.id === item.id).qty}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                ) : history.length === 0 ? (
+                  <div className="py-20 text-center opacity-30">
+                     <History size={48} className="mx-auto mb-4 text-slate-300" />
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">No transactions recorded</p>
+                  </div>
+                ) : (
+                  <div className="grid divide-y divide-slate-100 bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                    {history.map((sale) => (
+                      <Link 
+                        key={sale.id} 
+                        to={`/arena/sales/${sale.id}`}
+                        className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group border-b border-slate-100 last:border-0 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-4">
+                           <div className="w-10 h-10 rounded-sm bg-slate-100 flex items-center justify-center text-[#36454F] group-hover:bg-[#CE2029]/10 group-hover:text-[#CE2029] transition-colors font-black text-[9px]">
+                             POS
+                           </div>
+                           <div>
+                             <p className="text-[11px] font-black text-[#36454F] uppercase tracking-tight">#{sale.id.slice(-8)}</p>
+                             <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 mt-0.5">
+                               <Clock size={10} />
+                               {new Date(sale.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                             </div>
+                           </div>
+                        </div>
+                        
+                        <div className="flex flex-col">
+                           <p className="text-[10px] font-black text-[#36454F] uppercase">{sale.customer?.name || 'Walk-in'}</p>
+                           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{sale.customer?.phone || 'No Phone'}</p>
+                        </div>
+
+                        <div className="text-right">
+                           <p className="text-[14px] font-oswald font-black text-[#CE2029]">OMR {Number(sale.totalAmount).toFixed(3)}</p>
+                           <p className="text-[8px] font-black uppercase text-slate-300 tracking-[0.2em] mt-0.5">Settle Success</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -329,7 +479,9 @@ const RetailPOS = () => {
                 </div>
                 <div>
                    <p className="text-[10px] font-black text-[#36454F] tracking-wide uppercase">{selectedCustomer.name}</p>
-                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">{selectedCustomer.id}</p>
+                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">
+                     {selectedCustomer.id} {selectedCustomer.phone && `• ${selectedCustomer.phone}`}
+                   </p>
                 </div>
               </div>
               <button className="p-1.5 text-slate-300 group-hover:text-[#CE2029] transition-colors"><ArrowUpRight size={14} /></button>
@@ -429,25 +581,144 @@ const RetailPOS = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCustomerModal(false)} className="absolute inset-0 bg-[#36454F]/80 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-white w-full max-w-md rounded-xl overflow-hidden shadow-2xl">
               <div className="p-6 border-b border-slate-100 bg-[#36454F] text-white">
-                <h3 className="text-xl font-bold uppercase italic tracking-tight">Select Member</h3>
-                <p className="text-[9px] font-black uppercase tracking-widest text-[#CE2029]/80 mt-1">Associate checkout with a registered customer</p>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold uppercase italic tracking-tight">Select Member</h3>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-[#CE2029]/80 mt-1">Associate checkout with a registered customer</p>
+                  </div>
+                  <button onClick={() => setShowCustomerModal(false)} className="text-white/40 hover:text-white transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search by name, phone or email..."
+                    value={customerQuery}
+                    onChange={e => setCustomerQuery(e.target.value)}
+                    className="w-full h-10 pl-9 pr-4 bg-white/10 border border-white/10 rounded-sm text-xs font-bold text-white placeholder:text-white/20 focus:outline-none focus:bg-white/20 transition-all"
+                  />
+                  {isSearchingCustomers && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                       <RefreshCw className="animate-spin text-[#CE2029]" size={14} />
+                    </div>
+                  )}
+                </div>
               </div>
+
               <div className="p-4 max-h-[400px] overflow-y-auto space-y-2 bg-slate-50">
-                 {CUSTOMERS.map(c => (
-                   <button key={c.id} onClick={() => { setSelectedCustomer(c); setShowCustomerModal(false); }}
-                     className="w-full p-4 flex items-center justify-between bg-white border border-slate-100 rounded-lg hover:border-[#CE2029] hover:shadow-md transition-all group">
+                 {isAddingWalkin ? (
+                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-6 rounded-lg border-2 border-[#CE2029] shadow-lg space-y-4">
+                      <h4 className="text-[11px] font-black uppercase tracking-widest text-[#36454F] mb-2 flex items-center gap-2">
+                        <UserPlus size={14} className="text-[#CE2029]" /> Customer Details
+                      </h4>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Full Name</label>
+                          <input 
+                            autoFocus
+                            type="text" 
+                            placeholder="Enter Customer Name"
+                            value={walkinForm.name}
+                            onChange={e => setWalkinForm(p => ({ ...p, name: e.target.value }))}
+                            className="w-full h-10 px-4 bg-slate-50 border border-slate-200 rounded-sm text-xs font-bold focus:border-[#36454F] outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Phone Number</label>
+                          <input 
+                            type="text" 
+                            placeholder="e.g. +91 99999 00000"
+                            value={walkinForm.phone}
+                            onChange={e => setWalkinForm(p => ({ ...p, phone: e.target.value }))}
+                            className="w-full h-10 px-4 bg-slate-50 border border-slate-200 rounded-sm text-xs font-bold focus:border-[#36454F] outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button 
+                          onClick={() => setIsAddingWalkin(false)}
+                          className="flex-1 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          disabled={!walkinForm.name}
+                          onClick={() => {
+                            setSelectedCustomer({ 
+                              name: walkinForm.name, 
+                              id: 'GUEST-' + Date.now().toString().slice(-4), 
+                              phone: walkinForm.phone || 'N/A' 
+                            });
+                            setShowCustomerModal(false);
+                            setIsAddingWalkin(false);
+                          }}
+                          className={`flex-[2] py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest text-white transition-all ${
+                            walkinForm.name ? 'bg-[#36454F] hover:bg-black' : 'bg-slate-200'
+                          }`}
+                        >
+                          Confirm Guest
+                        </button>
+                      </div>
+                   </motion.div>
+                 ) : (
+                   <button 
+                    onClick={() => setIsAddingWalkin(true)}
+                    className={`w-full p-4 flex items-center justify-between bg-white border rounded-lg transition-all group hover:border-[#CE2029]/60 hover:shadow-md`}
+                   >
                       <div className="flex items-center gap-4 text-left">
-                         <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-[#36454F] group-hover:bg-[#CE2029]/10 group-hover:text-[#CE2029] transition-colors">
+                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors bg-slate-100 text-[#36454F] group-hover:bg-[#CE2029] group-hover:text-white`}>
+                            <User size={20} />
+                         </div>
+                         <div>
+                            <p className="text-[13px] font-black uppercase text-[#36454F]">Walk-in Customer</p>
+                            <p className="text-[9px] font-bold text-slate-400 tracking-widest">Capture details for guest checkout</p>
+                         </div>
+                      </div>
+                      <PlusCircle size={18} className="text-slate-200 group-hover:text-[#CE2029]" />
+                   </button>
+                 )}
+
+                 <div className="h-px bg-slate-200 my-4 flex items-center justify-center">
+                    <span className="bg-slate-50 px-3 text-[8px] font-black text-slate-300 uppercase tracking-widest">Database Results</span>
+                 </div>
+
+                 {customerResults.length === 0 && customerQuery.length >= 2 && !isSearchingCustomers && (
+                   <div className="py-10 text-center opacity-40">
+                      <p className="text-[10px] font-black uppercase tracking-widest">No matching members found</p>
+                   </div>
+                 )}
+
+                 {customerResults.map(c => (
+                   <button key={c.id} onClick={() => { setSelectedCustomer(c); setShowCustomerModal(false); }}
+                     className={`w-full p-4 flex items-center justify-between bg-white border rounded-lg transition-all group ${
+                       selectedCustomer.id === c.id ? 'border-[#CE2029] shadow-md' : 'border-slate-100 hover:border-[#CE2029]/40'
+                     }`}>
+                      <div className="flex items-center gap-4 text-left">
+                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                           selectedCustomer.id === c.id ? 'bg-[#CE2029] text-white' : 'bg-slate-100 text-[#36454F] group-hover:bg-[#CE2029]/10 group-hover:text-[#CE2029]'
+                         }`}>
                             <User size={20} />
                          </div>
                          <div>
                             <p className="text-[13px] font-black uppercase text-[#36454F]">{c.name}</p>
-                            <p className="text-[9px] font-bold text-slate-400 tracking-widest">{c.id} • {c.phone}</p>
+                            <p className="text-[9px] font-bold text-slate-400 tracking-widest">{c.email} • {c.phone || 'NO PHONE'}</p>
                          </div>
                       </div>
-                      <ChevronRight size={16} className="text-slate-200 group-hover:text-[#CE2029]" />
+                      {selectedCustomer.id === c.id ? <CheckCircle2 size={16} className="text-[#CE2029]" /> : <ChevronRight size={16} className="text-slate-200 group-hover:text-[#CE2029]" />}
                    </button>
                  ))}
+
+                 {customerQuery.length < 2 && (
+                   <div className="py-10 text-center opacity-30">
+                      <p className="text-[9px] font-black uppercase tracking-widest">Type to search existing members</p>
+                   </div>
+                 )}
               </div>
             </motion.div>
           </div>
@@ -587,7 +858,8 @@ const RetailPOS = () => {
                     <div>
                        <p className="font-bold uppercase mb-1">CUSTOMER</p>
                        <p className="text-slate-500">{lastOrder.customer.name}</p>
-                       <p className="text-[9px] opacity-60">{lastOrder.customer.id}</p>
+                       <p className="text-[9px] opacity-60">ID: {lastOrder.customer.id}</p>
+                       <p className="text-[9px] opacity-60">PH: {lastOrder.customer.phone || 'N/A'}</p>
                     </div>
                     <div className="text-right">
                        <p className="font-bold uppercase mb-1">METHOD</p>

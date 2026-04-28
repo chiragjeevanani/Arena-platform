@@ -66,6 +66,10 @@ export function updateArenaAdminInventoryItem(itemId, body) {
   });
 }
 
+export function deleteArenaAdminInventoryItem(itemId) {
+  return apiJson(`${BASE}/inventory/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+}
+
 export function createArenaAdminPosSale(body) {
   return apiJson(`${BASE}/pos/sales`, { method: 'POST', body });
 }
@@ -73,6 +77,11 @@ export function createArenaAdminPosSale(body) {
 export function listArenaAdminPosSales(arenaId) {
   if (!arenaId) return Promise.reject(new Error('arenaId is required'));
   return apiJson(`${BASE}/pos/sales?arenaId=${encodeURIComponent(arenaId)}`, { method: 'GET' });
+}
+
+export function getArenaAdminPosSaleById(saleId) {
+  if (!saleId) return Promise.reject(new Error('saleId is required'));
+  return apiJson(`${BASE}/pos/sales/${encodeURIComponent(saleId)}`, { method: 'GET' });
 }
 
 export function createArenaAdminCmsContent(body) {
@@ -99,4 +108,10 @@ export function updateArenaAdminCmsContent(contentId, body) {
 
 export function deleteArenaAdminCmsContent(contentId) {
   return apiJson(`${BASE}/cms/${encodeURIComponent(contentId)}`, { method: 'DELETE' });
+}
+
+export function searchArenaAdminCustomers(query) {
+  return apiJson(`${BASE}/walkin/customers/search?q=${encodeURIComponent(query)}`, {
+    method: 'GET'
+  });
 }

@@ -36,3 +36,24 @@ export function mapMeBookingToDashboardCard(b, extras = {}) {
     sortKey: b.date ? `${b.date}T12:00:00` : String(b.id || ''),
   };
 }
+
+export function mapMeEnrollmentToDashboardCard(e) {
+  return {
+    id: e.id,
+    kind: 'enrollment',
+    type: 'COACHING',
+    arenaName: e.arenaName || 'Arena',
+    arenaImage: e.arenaImage || PLACEHOLDER,
+    location: e.location || '',
+    coachName: e.coachName || 'Certified Coach',
+    courtName: 'Batch enrollment',
+    date: e.date ? new Date(e.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A',
+    slot: e.timing || 'See schedule in Coaching',
+    status: e.status === 'confirmed' ? 'Upcoming' : e.status === 'cancelled' ? 'Cancelled' : 'Upcoming',
+    price: Number(e.price) || 0,
+    basePrice: Number(e.basePrice) || 0,
+    taxPercent: Number(e.taxPercent) || 18,
+    receiptUrl: `#receipt-${e.id}`,
+    sortKey: e.createdAt || String(e.id),
+  };
+}

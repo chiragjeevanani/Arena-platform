@@ -3,11 +3,11 @@ import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/st
 import { lazy, Suspense } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 
-// Layouts - Keep these static as they are wraps
-import UserLayout from './layouts/UserLayout';
-import AdminLayout from './layouts/AdminLayout';
-import CoachLayout from './layouts/CoachLayout';
-import ArenaLayout from './layouts/ArenaLayout';
+// Layouts - Lazy loaded to prevent loading admin/coach code on user app
+const UserLayout = lazy(() => import('./layouts/UserLayout'));
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
+const CoachLayout = lazy(() => import('./layouts/CoachLayout'));
+const ArenaLayout = lazy(() => import('./layouts/ArenaLayout'));
 
 // Loading Fallback
 const PageLoader = () => (
@@ -22,6 +22,7 @@ const Signup = lazy(() => import('./modules/user/pages/Signup'));
 const OTPVerification = lazy(() => import('./modules/user/pages/OTPVerification'));
 const ForgotPassword = lazy(() => import('./modules/user/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./modules/user/pages/ResetPassword'));
+const EmailVerifiedPage = lazy(() => import('./modules/user/pages/EmailVerifiedPage'));
 
 // User Pages
 const UserHome = lazy(() => import('./modules/user/pages/Home'));
@@ -60,6 +61,8 @@ const EventsAdmin = lazy(() => import('./modules/admin/pages/EventsAdmin'));
 const Sponsorships = lazy(() => import('./modules/admin/pages/Sponsorships'));
 const Inventory = lazy(() => import('./modules/admin/pages/Inventory'));
 const RetailPOS = lazy(() => import('./modules/admin/pages/RetailPOS'));
+const SalesHistory = lazy(() => import('./modules/admin/pages/SalesHistory'));
+const TransactionDetails = lazy(() => import('./modules/admin/pages/TransactionDetails'));
 const FinancialReports = lazy(() => import('./modules/admin/pages/FinancialReports'));
 const AccountSettings = lazy(() => import('./modules/admin/pages/AccountSettings'));
 const AdminLogin = lazy(() => import('./modules/admin/pages/AdminLogin'));
@@ -143,47 +146,13 @@ function App() {
         <ScrollToTop />
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Auth Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/otp-verify" element={<OTPVerification />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-
-            {/* User App Routes (Mobile-first) - Primary Entry */}
-            <Route path="/" element={<UserLayout />}>
-              <Route index element={<UserHome />} />
-              <Route path="arenas" element={<ArenaListing />} />
-              <Route path="arenas/:id" element={<ArenaDetails />} />
-              <Route path="events" element={<Events />} />
-              <Route path="events/:id" element={<EventDetail />} />
-              <Route path="bookings" element={<Dashboard />} />
-              <Route path="coaching" element={<Coaching />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="profile/edit" element={<EditProfile />} />
-              <Route path="profile/wallet" element={<Wallet />} />
-              <Route path="profile/attendance" element={<MyAttendance />} />
-              <Route path="profile/notifications" element={<Notifications />} />
-              <Route path="profile/privacy" element={<Privacy />} />
-              <Route path="profile/help" element={<Help />} />
-              <Route path="terms" element={<Terms />} />
-            </Route>
-
-            {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
-            <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
-            <Route path="/booking-summary" element={<BookingSummary />} />
-            <Route path="/coaching-summary" element={<CoachingSummary />} />
-            <Route path="/membership" element={<MembershipPlans />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/booking-success" element={<BookingSuccess />} />
-            <Route path="/bookings/:id" element={<BookingDetails />} />
-
             {/* Unified Admin Login */}
             <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* === ARENA PANEL (Standalone) === */}
             <Route path="/arena/login" element={<ArenaLogin />} />
             <Route path="/arena" element={<ArenaLayout />}>
+              <Route path="sales/:saleId" element={<TransactionDetails />} />
               <Route index element={<ArenaDashboard />} />
               <Route path="details" element={<ArenaDetailsPage />} />
               <Route path="courts" element={<CourtMgmtPage />} />
@@ -211,6 +180,8 @@ function App() {
               <Route path="sponsorships" element={<Sponsorships />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="pos" element={<RetailPOS />} />
+              <Route path="sales" element={<SalesHistory />} />
+              <Route path="sales/:saleId" element={<TransactionDetails />} />
               <Route path="reports" element={<FinancialReports />} />
               <Route path="pricing" element={<PricingManagement />} />
               <Route path="membership" element={<MembershipMgmt />} />
@@ -224,6 +195,42 @@ function App() {
               <Route path="settings" element={<AccountSettings />} />
               <Route path="arena-panel" element={<ArenaManagementPanel />} />
             </Route>
+
+            {/* Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/otp-verify" element={<OTPVerification />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/verify-email" element={<EmailVerifiedPage />} />
+
+            {/* User App Routes (Mobile-first) - Primary Entry */}
+            <Route path="/" element={<UserLayout />}>
+              <Route index element={<UserHome />} />
+              <Route path="arenas" element={<ArenaListing />} />
+              <Route path="events" element={<Events />} />
+              <Route path="events/:id" element={<EventDetail />} />
+              <Route path="bookings" element={<Dashboard />} />
+              <Route path="coaching" element={<Coaching />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="profile/edit" element={<EditProfile />} />
+              <Route path="profile/wallet" element={<Wallet />} />
+              <Route path="profile/attendance" element={<MyAttendance />} />
+              <Route path="profile/notifications" element={<Notifications />} />
+              <Route path="profile/privacy" element={<Privacy />} />
+              <Route path="profile/help" element={<Help />} />
+              <Route path="terms" element={<Terms />} />
+            </Route>
+
+            {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
+            <Route path="/arenas/:id" element={<ArenaDetails />} />
+            <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
+            <Route path="/booking-summary" element={<BookingSummary />} />
+            <Route path="/coaching-summary" element={<CoachingSummary />} />
+            <Route path="/membership" element={<MembershipPlans />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/booking-success" element={<BookingSuccess />} />
+            <Route path="/bookings/:id" element={<BookingDetails />} />
 
             {/* Coach Routes */}
             <Route path="/coach" element={<CoachLayout />}>

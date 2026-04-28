@@ -19,6 +19,9 @@ export function purchaseMembership(planId) {
 export function listMyEnrollments() {
   return apiJson('/api/me/enrollments', { method: 'GET' });
 }
+export function getMyEnrollmentById(id) {
+  return apiJson(`/api/me/enrollments/${encodeURIComponent(id)}`, { method: 'GET' });
+}
 
 export function createMyEnrollment(batchId) {
   return apiJson('/api/me/enrollments', { method: 'POST', body: { batchId } });

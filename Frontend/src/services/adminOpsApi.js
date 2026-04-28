@@ -23,6 +23,10 @@ export function updateAdminInventoryItem(itemId, body) {
   });
 }
 
+export function deleteAdminInventoryItem(itemId) {
+  return apiJson(`${BASE}/inventory/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+}
+
 export function createAdminPosSale(body) {
   return apiJson(`${BASE}/pos/sales`, { method: 'POST', body });
 }
@@ -30,6 +34,11 @@ export function createAdminPosSale(body) {
 export function listAdminPosSales(arenaId) {
   if (!arenaId) return Promise.reject(new Error('arenaId is required'));
   return apiJson(`${BASE}/pos/sales?arenaId=${encodeURIComponent(arenaId)}`, { method: 'GET' });
+}
+
+export function getAdminPosSaleById(saleId) {
+  if (!saleId) return Promise.reject(new Error('saleId is required'));
+  return apiJson(`${BASE}/pos/sales/${encodeURIComponent(saleId)}`, { method: 'GET' });
 }
 
 export function createAdminCmsContent(body) {
@@ -63,6 +72,11 @@ export function listAdminMembershipPlans(arenaId) {
   return apiJson(`${BASE}/membership-plans?arenaId=${encodeURIComponent(arenaId)}`, { method: 'GET' });
 }
 
+export function getAdminMembershipStats(arenaId) {
+  if (!arenaId) return Promise.reject(new Error('arenaId is required'));
+  return apiJson(`${BASE}/membership-plans/stats?arenaId=${encodeURIComponent(arenaId)}`, { method: 'GET' });
+}
+
 export function createAdminMembershipPlan(body) {
   return apiJson(`${BASE}/membership-plans`, { method: 'POST', body });
 }
@@ -71,12 +85,31 @@ export function patchAdminMembershipPlan(planId, body) {
   return apiJson(`${BASE}/membership-plans/${encodeURIComponent(planId)}`, { method: 'PATCH', body });
 }
 
+export function deleteAdminMembershipPlan(planId) {
+  return apiJson(`${BASE}/membership-plans/${encodeURIComponent(planId)}`, { method: 'DELETE' });
+}
+
+/**
+ * @param {{ arenaId?: string, status?: string }} query
+ */
+export function listAdminUserMemberships(query = {}) {
+  const q = new URLSearchParams();
+  if (query.arenaId) q.set('arenaId', query.arenaId);
+  if (query.status) q.set('status', query.status);
+  const qs = q.toString();
+  return apiJson(`${BASE}/memberships${qs ? `?${qs}` : ''}`, { method: 'GET' });
+}
+
 export function createAdminArena(body) {
   return apiJson(`${BASE}/arenas`, { method: 'POST', body });
 }
 
 export function patchAdminArena(arenaId, body) {
   return apiJson(`${BASE}/arenas/${encodeURIComponent(arenaId)}`, { method: 'PATCH', body });
+}
+
+export function deleteAdminArena(arenaId) {
+  return apiJson(`${BASE}/arenas/${encodeURIComponent(arenaId)}`, { method: 'DELETE' });
 }
 
 export function createAdminCourt(arenaId, body) {
@@ -94,6 +127,18 @@ export function updateAdminCourt(courtId, body) {
 export function listAdminCoachingBatches(arenaId) {
   if (!arenaId) return Promise.reject(new Error('arenaId is required'));
   return apiJson(`${BASE}/coaching-batches?arenaId=${encodeURIComponent(arenaId)}`, { method: 'GET' });
+}
+
+export function createAdminCoachingBatch(body) {
+  return apiJson(`${BASE}/coaching-batches`, { method: 'POST', body });
+}
+
+export function updateAdminCoachingBatch(batchId, body) {
+  return apiJson(`${BASE}/coaching-batches/${encodeURIComponent(batchId)}`, { method: 'PATCH', body });
+}
+
+export function deleteAdminCoachingBatch(batchId) {
+  return apiJson(`${BASE}/coaching-batches/${encodeURIComponent(batchId)}`, { method: 'DELETE' });
 }
 
 export function listEventRegistrations(eventId) {
@@ -130,3 +175,13 @@ export function uploadAdminImage(file) {
   formData.append('file', file);
   return apiMultipart(`${BASE}/upload/image`, formData);
 }
+
+export function listAdminUsers(query = {}) {
+  const q = new URLSearchParams();
+  if (query.role) q.set('role', query.role);
+  if (query.q) q.set('q', query.q);
+  const qs = q.toString();
+  return apiJson(`${BASE}/users${qs ? `?${qs}` : ''}`, { method: 'GET' });
+}
+
+

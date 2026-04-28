@@ -30,21 +30,27 @@ const PriceBreakdownCard = ({
   adminOverride = null,
   showOverrideBanner = true,
   compact = false,
+  serverPricing = null,
 }) => {
   if (!slot) return null;
 
   const isPrime = slot.type === 'prime';
-  const baseRate = isPrime ? PRICING_CONFIG.primeRate : PRICING_CONFIG.nonPrimeRate;
+  const fallbackBase = isPrime ? PRICING_CONFIG.primeRate : PRICING_CONFIG.nonPrimeRate;
   const apiStylePricing = adminOverride !== null && !showOverrideBanner;
-  const displayBase = apiStylePricing ? Number(adminOverride) : baseRate;
+  
+  const displayBase = serverPricing ? serverPricing.baseAmount : (apiStylePricing ? Number(adminOverride) : fallbackBase);
 
   // Calculate member discount
   let discountAmount = 0;
   let discountLabel = '';
-  if (isMember && PRICING_CONFIG.memberDiscountEnabled) {
+  
+  if (serverPricing) {
+    discountAmount = serverPricing.discountAmount || 0;
+    discountLabel = serverPricing.discountPercent ? `${serverPricing.discountPercent}% Member Discount` : 'Member Discount';
+  } else if (isMember && PRICING_CONFIG.memberDiscountEnabled) {
     if (PRICING_CONFIG.memberDiscountType === 'percentage') {
       const pct = isPrime ? PRICING_CONFIG.memberDiscountPrime : PRICING_CONFIG.memberDiscountNonPrime;
-      discountAmount = baseRate * (pct / 100);
+      discountAmount = displayBase * (pct / 100);
       discountLabel = `${pct}% Member Discount`;
     } else {
       discountAmount = isPrime ? PRICING_CONFIG.memberDiscountPrime : PRICING_CONFIG.memberDiscountNonPrime;
@@ -52,9 +58,9 @@ const PriceBreakdownCard = ({
     }
   }
 
-  const afterDiscount = baseRate - discountAmount;
-  const finalPrice = adminOverride !== null ? Number(adminOverride) : afterDiscount;
-  const isOverridden = adminOverride !== null && showOverrideBanner;
+  const afterDiscount = displayBase - discountAmount;
+  const finalPrice = serverPricing ? serverPricing.finalAmount : (adminOverride !== null && !serverPricing ? Number(adminOverride) - discountAmount : afterDiscount);
+  const isOverridden = adminOverride !== null && showOverrideBanner && !serverPricing;
 
   // ── COMPACT (mobile bottom bar) ──
   if (compact) {

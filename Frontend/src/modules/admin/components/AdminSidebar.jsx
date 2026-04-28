@@ -22,7 +22,9 @@ import {
   CalendarX2, 
   Layout, 
   Briefcase, 
-  Crown 
+  Crown,
+  ShoppingBag,
+  History
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -35,6 +37,7 @@ const SIDEBAR_STRUCTURE = [
     items: [
       { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/admin/reports', icon: PieChart, label: 'Reports' },
+      { path: '/admin/sales', icon: History, label: 'Sales History' },
     ]
   },
   {
@@ -47,6 +50,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/user/events', icon: Trophy, label: 'Event Management' },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
       { path: '/admin/coaching', icon: Users, label: 'Coaching' },
+      { path: '/admin/pos', icon: ShoppingBag, label: 'Retail POS' },
       { path: '/admin/inventory', icon: Package, label: 'Inventory' },
       { path: '/admin/membership', icon: Crown, label: 'Membership Plans', isMembershipMgmt: true },
       { path: '/admin/membership/active', icon: Users, label: 'Active Members', isMembershipMgmt: true },

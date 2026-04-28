@@ -19,6 +19,7 @@ import {
   patchAdminArena, 
   getAdminArenaById, 
   deleteAdminCourt, 
+  createAdminCourt,
   updateAdminCourt, 
   uploadAdminImage,
   listAdminArenaBlocks
@@ -207,6 +208,30 @@ const ArenaDetailsAdmin = () => {
       setCourts(data.courts || []);
     } catch (err) {
       showToast(err.message || 'Update failed');
+    } finally {
+      setUpdatingCourt(false);
+    }
+  };
+
+  const handleAddCourt = async () => {
+    if (id === 'new') {
+      showToast('Save the arena first before adding units');
+      return;
+    }
+    setUpdatingCourt(true);
+    try {
+      await createAdminCourt(id, {
+        name: `Court ${courts.length + 1}`,
+        type: 'Synthetic',
+        pricePerHour: form.pricePerHour || 0
+      });
+      showToast('Unit added successfully');
+      // Refresh
+      const data = await getAdminArenaById(id);
+      setCourts(data.courts || []);
+      setForm(prev => ({ ...prev, courtsCount: data.arena.courtsCount }));
+    } catch (err) {
+      showToast(err.message || 'Failed to add court');
     } finally {
       setUpdatingCourt(false);
     }
@@ -487,7 +512,7 @@ const ArenaDetailsAdmin = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-1 border-b border-slate-100 mb-6 sticky top-0 bg-white/80 backdrop-blur-md z-[100] py-2">
+      <div className="flex items-center gap-1 border-b border-slate-100 mb-6 py-2">
         {[
           { id: 'general', label: 'General Info', icon: Building2 },
           { id: 'courts', label: 'Physical Units', icon: Trophy },
@@ -661,6 +686,15 @@ const ArenaDetailsAdmin = () => {
                 ))}
               </div>
            </div>
+
+           <div className="flex justify-end pt-4">
+              <button 
+                onClick={() => setActiveTab('courts')}
+                className="bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+              >
+                Next Step: Physical Units <ChevronRight size={16} />
+              </button>
+           </div>
           </motion.div>
         )}
 
@@ -742,16 +776,6 @@ const ArenaDetailsAdmin = () => {
                         </motion.div>
                       ))}
 
-                      {/* Fallback for unsynced counter increase */}
-                      {courts.length < Number(form.courtsCount) && 
-                        Array.from({ length: Number(form.courtsCount) - courts.length }).map((_, i) => (
-                           <div key={`pending-${i}`} className="aspect-square bg-slate-50 border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-slate-300 opacity-50">
-                              <Plus size={16} />
-                              <span className="text-[7px] font-black uppercase tracking-widest mt-1">Pending Sync</span>
-                           </div>
-                        ))
-                      }
-
                       {/* Add Unit Action Card - Visible only in Edit Mode */}
                       <AnimatePresence>
                         {isEditingCourts && (
@@ -759,36 +783,72 @@ const ArenaDetailsAdmin = () => {
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
-                            onClick={() => setForm(prev => ({ ...prev, courtsCount: Number(prev.courtsCount) + 1 }))}
-                            className="aspect-square border-2 border-dashed border-[#CE2029]/30 rounded-sm flex flex-col items-center justify-center text-[#CE2029] hover:bg-[#CE2029]/[0.02] transition-all group/add"
+                            onClick={handleAddCourt}
+                            disabled={updatingCourt}
+                            className={`aspect-square border-2 border-dashed border-[#CE2029]/30 rounded-sm flex flex-col items-center justify-center text-[#CE2029] transition-all group/add ${updatingCourt ? 'opacity-50 cursor-wait' : 'hover:bg-[#CE2029]/[0.02]'}`}
                           >
-                             <Plus size={24} className="scale-110" />
+                             {updatingCourt ? (
+                               <Loader2 size={24} className="animate-spin text-[#CE2029]" />
+                             ) : (
+                               <Plus size={24} className="scale-110" />
+                             )}
                              <span className="text-[7px] font-black uppercase tracking-widest mt-1">Add Court</span>
                           </motion.button>
                         )}
                       </AnimatePresence>
-                      {(!form.courtsCount || form.courtsCount === 0) && (
+                      {courts.length === 0 && (
                         <div className="col-span-full py-10 border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-slate-300 gap-2">
                            <Cloud size={24} />
-                           <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Registry Sync...</p>
+                           <p className="text-[10px] font-black uppercase tracking-widest">No Units Available</p>
                         </div>
                       )}
                     </div>
                   
                   <div className="space-y-4 pt-6 mt-auto">
-                    <div className="flex items-center justify-between text-[11px] font-bold border-b border-slate-100 pb-2">
-                       <span className="text-slate-500">Active Booking Units</span>
+                    <div className="flex items-center justify-between text-[11px] font-bold border-b border-[#CE2029]/10 pb-2">
+                       <span className="text-[#CE2029]/70">Active Booking Units</span>
                        <span className="text-[#CE2029] font-black">{form.courtsCount} Units</span>
                     </div>
                   </div>
+
+                  <div className="flex justify-between items-center pt-6 mt-6 border-t border-[#CE2029]/10">
+                    <button 
+                      onClick={() => setActiveTab('general')}
+                      className="bg-white text-[#CE2029] border border-[#CE2029]/20 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-[#CE2029]/5 transition-all flex items-center justify-center gap-2"
+                    >
+                      <ArrowLeft size={16} /> Previous: General Info
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('availability')}
+                      className="bg-[#CE2029] text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                    >
+                      Next Step: Availability <ChevronRight size={16} />
+                    </button>
+                  </div>
+
                 </div>
               </div>
           </motion.div>
         )}
 
         {activeTab === 'availability' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-6">
              <AdminAvailabilityView arenaId={id} courts={courts} />
+
+             <div className="flex justify-between items-center bg-white p-6 border border-slate-100 shadow-sm mt-2">
+                <button 
+                  onClick={() => setActiveTab('courts')}
+                  className="bg-white text-slate-500 border border-slate-200 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-slate-50 hover:text-slate-700 transition-all flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft size={16} /> Previous: Physical Units
+                </button>
+                <button 
+                  onClick={handleSave}
+                  className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-600/20 hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                >
+                  <Save size={16} /> {id === 'new' ? 'Initialize New Facility' : 'Publish Changes'}
+                </button>
+             </div>
           </motion.div>
         )}
       </div>
@@ -803,6 +863,11 @@ const AdminAvailabilityView = ({ arenaId, courts }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (arenaId === 'new') {
+      setBlocks([]);
+      setLoading(false);
+      return;
+    }
     (async () => {
       setLoading(true);
       try {
