@@ -22,6 +22,8 @@ import Broadcaster from './ArenaPanel/Broadcaster';
 import PolicySettings from './ArenaPanel/PolicySettings';
 import MaintenanceScheduler from './ArenaPanel/MaintenanceScheduler';
 
+import CoachAttendance from './ArenaPanel/CoachAttendance';
+
 import { 
   Users, BarChart3, ShoppingCart, Wallet, UserCheck, 
   Megaphone, ShieldCheck, PenTool, Package, Trophy, Store,
@@ -87,6 +89,14 @@ const TABS = [
     shortLabel: 'Staff',
     icon: Users,
     description: 'Manage roles & permissions',
+    color: '#CE2029',
+  },
+  {
+    id: 'coach-attendance',
+    label: 'Coach Attendance',
+    shortLabel: 'Coach Att.',
+    icon: UserCheck,
+    description: 'Mark daily attendance for coaches',
     color: '#CE2029',
   },
   {
@@ -201,6 +211,7 @@ const ArenaManagementPanel = () => {
       case 'notices': return <Broadcaster />;
       case 'policies': return <PolicySettings />;
       case 'maintenance': return <MaintenanceScheduler />;
+      case 'coach-attendance': return <CoachAttendance />;
       case 'inventory': return <Inventory />;
       case 'events': return <EventsAdmin />;
       case 'retail': return <RetailPOS />;

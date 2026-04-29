@@ -19,7 +19,7 @@ const {
 const { createPaymentIntent, listMyPayments } = require('../controllers/mePaymentController');
 const { patchMyProfile } = require('../controllers/meProfileController');
 const { listMyAttendance } = require('../controllers/meAttendanceController');
-const { listMyEventRegistrations } = require('../controllers/meEventController');
+const { listMyEventRegistrations, cancelMyEventRegistration } = require('../controllers/meEventController');
 
 const router = express.Router();
 
@@ -48,5 +48,6 @@ router.get('/payments', asyncHandler(listMyPayments));
 router.patch('/profile', asyncHandler(patchMyProfile));
 router.get('/attendance', asyncHandler(listMyAttendance));
 router.get('/event-registrations', asyncHandler(listMyEventRegistrations));
+router.patch('/event-registrations/:id/cancel', asyncHandler(cancelMyEventRegistration));
 
 module.exports = router;

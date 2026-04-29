@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: { type: Boolean, default: false },
     emailVerifyToken: { type: String, default: null, select: false },
     emailVerifyExpires: { type: Date, default: null, select: false },
+    // Coach profile fields
+    bio: { type: String, default: '' },
+    experience: { type: String, default: '' },
+    achievements: { type: [String], default: [] },
+    hours: { type: String, default: '0' },
+    wins: { type: String, default: '0' },
   },
   { timestamps: true }
 );
@@ -40,6 +46,11 @@ function toPublicUser(doc) {
     avatarUrl: doc.avatarUrl || '',
     phone: doc.phone || '',
     isActive: doc.isActive !== false,
+    bio: doc.bio || '',
+    experience: doc.experience || '',
+    achievements: doc.achievements || [],
+    hours: doc.hours || '0',
+    wins: doc.wins || '0',
   };
 }
 

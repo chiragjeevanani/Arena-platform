@@ -16,3 +16,10 @@ export function shouldCancelEnrollmentViaApi(booking, apiConfigured, hasToken) {
   if (String(booking.kind) !== 'enrollment') return false;
   return isMongoObjectId(String(booking.id));
 }
+
+/** Event registration from `GET /api/me/event-registrations` — cancel via `PATCH .../event-registrations/:id/cancel`. */
+export function shouldCancelEventRegistrationViaApi(booking, apiConfigured, hasToken) {
+  if (!apiConfigured || !hasToken || !booking) return false;
+  if (String(booking.kind) !== 'event-registration') return false;
+  return isMongoObjectId(String(booking.id));
+}

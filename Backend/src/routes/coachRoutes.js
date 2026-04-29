@@ -20,6 +20,12 @@ const {
   deleteCoachRemark,
   patchCoachRemark,
 } = require('../controllers/coachProgressController');
+const {
+  listMyLeaves,
+  createLeave,
+  deleteLeave,
+} = require('../controllers/coachLeaveController');
+const { listStaffAttendance } = require('../controllers/adminStaffAttendanceController');
 
 const router = express.Router();
 
@@ -42,5 +48,14 @@ router.get('/remarks', asyncHandler(listCoachRemarks));
 router.post('/remarks', asyncHandler(createCoachRemark));
 router.delete('/remarks/:remarkId', asyncHandler(deleteCoachRemark));
 router.patch('/remarks/:remarkId', asyncHandler(patchCoachRemark));
+
+router.get('/leaves', asyncHandler(listMyLeaves));
+router.post('/leaves', asyncHandler(createLeave));
+router.delete('/leaves/:leaveId', asyncHandler(deleteLeave));
+
+router.get('/work-attendance', asyncHandler((req, res, next) => {
+  req.query.staffId = req.auth.sub;
+  return listStaffAttendance(req, res, next);
+}));
 
 module.exports = router;

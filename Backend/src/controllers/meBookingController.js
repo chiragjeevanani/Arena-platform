@@ -6,6 +6,7 @@ const Wallet = require('../models/Wallet');
 const WalletTransaction = require('../models/WalletTransaction');
 const { getOrCreateWallet } = require('../services/walletService');
 const { computeCourtBookingPrice, amountsMatch } = require('../services/pricing');
+const { createNotification } = require('../services/notificationService');
 
 async function createMyBooking(req, res) {
   const { arenaId, courtId, date, timeSlot, amount, paymentMethod } = req.body;
@@ -88,6 +89,14 @@ async function createMyBooking(req, res) {
       });
     }
 
+    await createNotification(
+      userId,
+      'Booking Confirmed',
+      `Your booking at ${arena.name} on ${date} at ${timeSlot} is confirmed.`,
+      'success',
+      { bookingId: booking._id.toString() }
+    );
+
     return res.status(201).json({
       booking: Booking.toPublic(booking, {
         arenaName: arena.name,
@@ -121,18 +130,19 @@ async function listMyBookings(req, res) {
     .sort({ date: -1, createdAt: -1 })
     .lean();
 
-  const out = await Promise.all(
+  const out = (await Promise.all(
     list.map(async (b) => {
       const [arena, court] = await Promise.all([
         Arena.findById(b.arenaId).lean(),
         Court.findById(b.courtId).lean(),
       ]);
+      if (!arena || !court) return null;
       return Booking.toPublic(b, {
         arenaName: arena?.name || '',
         courtName: court?.name || '',
       });
     })
-  );
+  )).filter(Boolean);
 
   return res.json({ bookings: out });
 }
@@ -187,6 +197,14 @@ async function cancelMyBooking(req, res) {
 
   const arena = await Arena.findById(booking.arenaId).lean();
   const court = await Court.findById(booking.courtId).lean();
+
+  await createNotification(
+    req.auth.sub,
+    'Booking Cancelled',
+    `Your booking at ${arena?.name || 'Arena'} for ${booking.date} has been cancelled.`,
+    'info',
+    { bookingId: booking._id.toString() }
+  );
 
   return res.json({
     booking: Booking.toPublic(booking, {

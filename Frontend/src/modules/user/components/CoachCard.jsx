@@ -23,7 +23,14 @@ const CoachCard = ({ batch, index = 0 }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-      className={`rounded-[20px] overflow-hidden group transition-all duration-400 border relative ${
+      onClick={() => {
+        if (batch.enrolled && batch.enrollmentId) {
+          navigate(`/bookings/${batch.enrollmentId}`);
+        } else {
+          navigate('/coaching-summary', { state: { batch } });
+        }
+      }}
+      className={`rounded-[20px] overflow-hidden group transition-all duration-400 border relative cursor-pointer ${
         isDark 
           ? 'glass-card border-white/10 bg-white/5 hover:border-[#CE2029]/40 shadow-xl shadow-black/20' 
           : 'bg-white border-slate-100 shadow-md shadow-slate-200/40 hover:shadow-lg hover:shadow-[#CE2029]/10 translate-y-0 hover:-translate-y-1'
@@ -114,10 +121,20 @@ const CoachCard = ({ batch, index = 0 }) => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/coaching-summary', { state: { batch } })}
-            className="flex items-center gap-1.5 bg-[#CE2029] text-white pl-3 pr-2 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider shadow-md shadow-[#CE2029]/20 transition-all group/btn"
+            onClick={() => {
+              if (batch.enrolled && batch.enrollmentId) {
+                navigate(`/bookings/${batch.enrollmentId}`);
+              } else {
+                navigate('/coaching-summary', { state: { batch } });
+              }
+            }}
+            className={`flex items-center gap-1.5 text-white pl-3 pr-2 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider shadow-md transition-all group/btn ${
+              batch.enrolled 
+                ? 'bg-emerald-600 shadow-emerald-600/20' 
+                : 'bg-[#CE2029] shadow-[#CE2029]/20'
+            }`}
           >
-            Join Class
+            {batch.enrolled ? 'Active Program' : 'Join Class'}
             <div className="w-5 h-5 bg-white/20 rounded-md flex items-center justify-center group-hover/btn:bg-white/40 transition-colors">
                <ChevronRight size={12} />
             </div>

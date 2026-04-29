@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const arenaAdminRoutes = require('./routes/arenaAdminRoutes');
 const meRoutes = require('./routes/meRoutes');
 const coachRoutes = require('./routes/coachRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const webhookRoutes = require('./routes/webhookRoutes');
 
 function createApp() {
@@ -30,6 +31,7 @@ function createApp() {
   app.use('/api/me', meRoutes);
   app.use('/api/webhooks', webhookRoutes);
   app.use('/api/coach', coachRoutes);
+  app.use('/api/notifications', notificationRoutes);
   app.use('/api/admin', adminRoutes);
   app.use('/api/arena-admin', arenaAdminRoutes);
 

@@ -9,6 +9,7 @@ export function mapPublicBatchToCoachCard(batch, arenaName = '') {
   const days = batch.schedule || arenaName || 'Arena program';
   return {
     ...batch,
+    id: String(batch.id || batch._id || ''),
     coachName: batch.title || 'Coaching program',
     timing,
     days,

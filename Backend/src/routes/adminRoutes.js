@@ -37,6 +37,7 @@ const {
   listCoachingBatches,
   updateCoachingBatch,
   deleteCoachingBatch,
+  listBatchStudentsWithProgress,
 } = require('../controllers/adminCoachingBatchController');
 const {
   createInventoryItem,
@@ -68,6 +69,7 @@ const {
   updateRegistrationStatus 
 } = require('../controllers/adminEventController');
 const { listAdminArenaBlocks } = require('../controllers/adminAvailabilityController');
+const { listStaffAttendance } = require('../controllers/adminStaffAttendanceController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -102,6 +104,7 @@ router.delete('/membership-plans/:planId', asyncHandler(deleteMembershipPlan));
 
 router.post('/coaching-batches', asyncHandler(createCoachingBatch));
 router.get('/coaching-batches', asyncHandler(listCoachingBatches));
+router.get('/coaching-batches/:batchId/students', asyncHandler(listBatchStudentsWithProgress));
 router.patch('/coaching-batches/:batchId', asyncHandler(updateCoachingBatch));
 router.delete('/coaching-batches/:batchId', asyncHandler(deleteCoachingBatch));
 
@@ -142,5 +145,8 @@ router.post(
   upload.single('file'),
   asyncHandler(uploadArenaImage)
 );
+
+// Staff Attendance Logs
+router.get('/staff-attendance', asyncHandler(listStaffAttendance));
 
 module.exports = router;

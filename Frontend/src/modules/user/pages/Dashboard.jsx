@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { listMyBookings, cancelMyBooking } from '../../../services/bookingsApi';
-import { listMyEnrollments, cancelMyEnrollment, listMyEventRegistrations } from '../../../services/meApi';
+import { listMyEnrollments, cancelMyEnrollment, listMyEventRegistrations, cancelMyEventRegistration } from '../../../services/meApi';
 import { mapMeBookingToDashboardCard } from '../../../utils/meBookingAdapter';
 import { mapEnrollmentToDashboardCard } from '../../../utils/enrollmentAdapter';
 import { mapEventRegistrationToDashboardCard } from '../../../utils/eventRegistrationAdapter';
@@ -198,9 +198,15 @@ const Dashboard = () => {
 
       console.log('DEBUG: Merged Dashboard Cards:', unique);
       setAllBookings(unique);
+      
+      // If we got valid data from server, we can safely clear old mock bookings 
+      // that are not on the server to prevent "ghost" bookings.
+      localStorage.setItem('userBookings', JSON.stringify([]));
     } catch (err) {
       console.error('DEBUG: Dashboard Fetch Error:', err);
-      setAllBookings(savedBookings);
+      // When API is active, we should NOT fallback to old local mock data 
+      // as it might contain bookings that were deleted/cancelled on server.
+      setAllBookings([]);
     }
   }, []);
 
@@ -219,6 +225,14 @@ const Dashboard = () => {
   const handleServerCancelEnrollment = useCallback(
     async (enrollmentId) => {
       await cancelMyEnrollment(enrollmentId);
+      await refetchBookings();
+    },
+    [refetchBookings]
+  );
+
+  const handleServerCancelEventRegistration = useCallback(
+    async (registrationId) => {
+      await cancelMyEventRegistration(registrationId);
       await refetchBookings();
     },
     [refetchBookings]
@@ -310,6 +324,7 @@ const Dashboard = () => {
                       booking={booking}
                       index={index}
                       onServerCancelBooking={apiLive ? handleServerCancelBooking : undefined}
+                      onServerCancelEventRegistration={apiLive ? handleServerCancelEventRegistration : undefined}
                     />
                   ))}
                 </div>

@@ -60,6 +60,13 @@ function toPublic(doc, extras = {}) {
     experienceYears: o.experienceYears,
     benefits: o.benefits || [],
     createdAt: o.createdAt,
+    coachName: o.coachId?.name || '',
+    coachAvatar: o.coachId?.avatarUrl || o.coachImage || '',
+    coachBio: o.coachId?.bio || '',
+    coachAchievements: o.coachId?.achievements || [],
+    coachHours: o.coachId?.hours || '',
+    coachWins: o.coachId?.wins || '',
+    coachExperience: o.coachId?.experience || o.experienceYears || '',
     ...extras,
   };
 }

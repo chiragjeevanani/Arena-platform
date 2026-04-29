@@ -139,7 +139,7 @@ const StudentRemarks = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-2xl bg-[#36454F] border border-slate-700 text-white flex items-center gap-3 min-w-[300px]`}
+            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-xl shadow-2xl bg-[#36454F] border border-slate-700 text-white flex items-center gap-3 min-w-[300px]`}
           >
             <CheckCircle2 size={18} className="text-[#CE2029]" />
             <span className="text-xs font-bold uppercase tracking-wider">{toast}</span>

@@ -23,8 +23,8 @@ export function getMyEnrollmentById(id) {
   return apiJson(`/api/me/enrollments/${encodeURIComponent(id)}`, { method: 'GET' });
 }
 
-export function createMyEnrollment(batchId) {
-  return apiJson('/api/me/enrollments', { method: 'POST', body: { batchId } });
+export function createMyEnrollment(batchId, extra = {}) {
+  return apiJson('/api/me/enrollments', { method: 'POST', body: { batchId, ...extra } });
 }
 
 export function cancelMyEnrollment(id) {
@@ -63,4 +63,7 @@ export function confirmMockPayment(paymentId, secret) {
 }
 export function listMyEventRegistrations() {
   return apiJson('/api/me/event-registrations', { method: 'GET' });
+}
+export function cancelMyEventRegistration(id) {
+  return apiJson(`/api/me/event-registrations/${encodeURIComponent(id)}/cancel`, { method: 'PATCH' });
 }

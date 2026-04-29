@@ -8,6 +8,7 @@ import Inventory from '../../admin/pages/Inventory';
 import EventsAdmin from '../../admin/pages/EventsAdmin';
 import RetailPOS from '../../admin/pages/RetailPOS';
 import AccountSettings from './AccountSettings';
+import CoachAttendance from '../../admin/pages/ArenaPanel/CoachAttendance';
 
 // Helper: wraps a light-theme page inside the dark arena layout content area
 const PageShell = ({ title, subtitle, component: Component, color = '#CE2029' }) => (
@@ -98,4 +99,13 @@ export const RetailPOSPage = () => (
 
 export const AccountSettingsPage = () => (
   <AccountSettings />
+);
+
+export const AttendancePage = () => (
+  <PageShell
+    title="Coach Attendance"
+    subtitle="Mark and monitor daily coach presence at the arena"
+    component={CoachAttendance}
+    color="#CE2029"
+  />
 );

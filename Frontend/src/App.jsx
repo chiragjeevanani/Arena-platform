@@ -76,6 +76,7 @@ const MyStudents = lazy(() => import('./modules/coach/pages/MyStudents'));
 const CoachLogin = lazy(() => import('./modules/coach/pages/CoachLogin'));
 const CoachSignup = lazy(() => import('./modules/coach/pages/CoachSignup'));
 const AttendanceRecords = lazy(() => import('./modules/coach/pages/AttendanceRecords'));
+const CoachWorkAttendance = lazy(() => import('./modules/coach/pages/CoachWorkAttendance'));
 const ScheduleCalendar = lazy(() => import('./modules/coach/pages/ScheduleCalendar'));
 const ProgressTracker = lazy(() => import('./modules/coach/pages/ProgressTracker'));
 const CoachBatches = lazy(() => import('./modules/coach/pages/CoachBatches'));
@@ -107,6 +108,7 @@ const InventoryPage = lazy(() => import('./modules/arena/pages/index.jsx').then(
 const EventsAdminPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.EventsAdminPage })));
 const RetailPOSPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.RetailPOSPage })));
 const AccountSettingsPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AccountSettingsPage })));
+const AttendancePage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AttendancePage })));
 
 
 // Components
@@ -163,6 +165,7 @@ function App() {
               <Route path="events" element={<EventsAdminPage />} />
               <Route path="retail" element={<RetailPOSPage />} />
               <Route path="ledger" element={<Bookings />} />
+              <Route path="attendance" element={<AttendancePage />} />
               <Route path="account-settings" element={<AccountSettingsPage />} />
             </Route>
 
@@ -242,6 +245,7 @@ function App() {
               <Route path="students/:id/performance" element={<StudentPerformance />} />
               <Route path="students" element={<MyStudents />} />
               <Route path="attendance" element={<AttendanceRecords />} />
+              <Route path="work-logs" element={<CoachWorkAttendance />} />
               <Route path="progress" element={<ProgressTracker />} />
               <Route path="profile" element={<CoachProfile />} />
             </Route>

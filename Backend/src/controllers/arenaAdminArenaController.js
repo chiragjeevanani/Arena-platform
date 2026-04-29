@@ -87,4 +87,17 @@ async function patchMyArena(req, res) {
   return res.json({ arena: mapArena(arena) });
 }
 
-module.exports = { getMyArena, patchMyArena };
+async function listArenaStaff(req, res) {
+  const User = require('../models/User');
+  const role = req.query.role;
+  const q = { assignedArenaId: req.arenaScopeId };
+  if (role) q.role = role;
+  
+  const users = await User.find(q).lean();
+  return res.json({
+    users: users.map(u => User.toPublic(u)),
+    total: users.length
+  });
+}
+
+module.exports = { getMyArena, patchMyArena, listArenaStaff };

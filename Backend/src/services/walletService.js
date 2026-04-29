@@ -1,4 +1,5 @@
 const Wallet = require('../models/Wallet');
+const WalletTransaction = require('../models/WalletTransaction');
 
 async function getOrCreateWallet(userId) {
   let wallet = await Wallet.findOne({ userId });
@@ -8,4 +9,29 @@ async function getOrCreateWallet(userId) {
   return wallet;
 }
 
-module.exports = { getOrCreateWallet };
+async function deductFromWallet(userId, amount, reason, meta = {}) {
+  const wallet = await getOrCreateWallet(userId);
+  if (wallet.balance < amount) {
+    throw new Error('Insufficient wallet balance');
+  }
+
+  const updated = await Wallet.findByIdAndUpdate(
+    wallet._id,
+    { $inc: { balance: -amount } },
+    { new: true }
+  );
+
+  await WalletTransaction.create({
+    walletId: wallet._id,
+    userId,
+    type: 'debit',
+    amount,
+    reason,
+    balanceAfter: updated.balance,
+    meta,
+  });
+
+  return updated;
+}
+
+module.exports = { getOrCreateWallet, deductFromWallet };

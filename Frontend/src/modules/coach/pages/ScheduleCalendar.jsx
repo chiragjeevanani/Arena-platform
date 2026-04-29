@@ -7,7 +7,7 @@ import {
 import { useTheme } from '../../user/context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { listCoachBatches } from '../../../services/coachApi';
+import { listCoachBatches, listCoachLeaves, createCoachLeave, deleteCoachLeave } from '../../../services/coachApi';
 import { mapApiBatchToCard } from '../utils/coachBatchUi';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -16,35 +16,92 @@ const HOURS = ['06 AM', '07 AM', '08 AM', '09 AM', '10 AM', '11 AM', '12 PM', '0
 const HOUR_START = 6;
 
 /** Derive calendar blocks from batch schedule text (best-effort) */
+/** Derive calendar blocks from batch schedule text (handles multiple days) */
 function batchesToSessions(batches) {
-  return batches.map((b, i) => {
-    const sched = `${b.raw?.schedule || ''} ${b.raw?.title || ''}`.toLowerCase();
-    let dayIdx = 2;
-    const dayMatch = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].findIndex((d) => sched.includes(d));
-    if (dayMatch >= 0) dayIdx = dayMatch;
-    else dayIdx = 1 + (i % 5);
+  const sessions = [];
+  const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+  batches.forEach((b) => {
+    const rawSched = (b.raw?.schedule || '').toLowerCase();
+    const rawTime = (b.raw?.scheduleTime || '').toLowerCase();
+    
+    // 1. Determine all active days
+    let activeDays = [];
+    dayNames.forEach((day, idx) => {
+      if (rawSched.includes(day)) activeDays.push(idx);
+    });
+
+    // Special keywords
+    if (rawSched.includes('weekday')) activeDays = [1, 2, 3, 4, 5];
+    if (rawSched.includes('weekend')) activeDays = [0, 6];
+    if (rawSched.includes('daily')) activeDays = [0, 1, 2, 3, 4, 5, 6];
+
+    // Fallback if no days found
+    if (activeDays.length === 0) activeDays = [1, 3, 5]; // Default to Mon/Wed/Fri if unclear
+
+    // 2. Parse Time (e.g., "06:00 PM - 07:00 PM")
     let startHour = 9;
-    const hm = sched.match(/(\d{1,2})\s*(?::(\d{2}))?\s*(am|pm)?/i);
-    if (hm) {
-      let h = parseInt(hm[1], 10);
-      const ap = (hm[3] || '').toLowerCase();
+    let duration = 1.5;
+
+    // Try to find the first time (start)
+    const startMatch = rawTime.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i) || 
+                       rawSched.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+    
+    if (startMatch) {
+      let h = parseInt(startMatch[1], 10);
+      const m = parseInt(startMatch[2] || '0', 10);
+      let ap = (startMatch[3] || '').toLowerCase();
+      
+      // If am/pm is missing from start, check if it's in the rest of the string
+      if (!ap) {
+        const fullStr = rawTime + ' ' + rawSched;
+        const apMatch = fullStr.match(/am|pm/i);
+        if (apMatch) ap = apMatch[0].toLowerCase();
+      }
+
       if (ap === 'pm' && h < 12) h += 12;
       if (ap === 'am' && h === 12) h = 0;
-      startHour = Math.min(20, Math.max(6, h));
-    } else {
-      startHour = 9 + (i % 4);
+      startHour = h + (m / 60);
     }
-    return {
-      id: b.id,
-      dayIdx,
-      startHour,
-      duration: 2,
-      batch: b.name,
-      students: b.students,
-      court: b.arena,
-      color: b.color,
-    };
+
+    // Try to find duration (look for a range)
+    const rangeMatch = (rawTime + ' ' + rawSched).match(/-\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+    if (rangeMatch) {
+      let eh = parseInt(rangeMatch[1], 10);
+      const em = parseInt(rangeMatch[2] || '0', 10);
+      let eap = (rangeMatch[3] || '').toLowerCase();
+      
+      if (!eap && startMatch && startMatch[3]) eap = startMatch[3].toLowerCase();
+      
+      if (eap === 'pm' && eh < 12) eh += 12;
+      if (eap === 'am' && eh === 12) eh = 0;
+      
+      const endHour = eh + (em / 60);
+      if (endHour > startHour) {
+        duration = endHour - startHour;
+      }
+    }
+
+    // Ensure within visible bounds [6, 20]
+    startHour = Math.min(19, Math.max(6, startHour));
+
+    // Create session for each day
+    activeDays.forEach(dayIdx => {
+      sessions.push({
+        id: `${b.id}-${dayIdx}`,
+        dayIdx,
+        startHour,
+        duration,
+        batch: b.name,
+        students: b.students,
+        court: b.arena,
+        color: b.color,
+        level: b.raw?.level || 'General'
+      });
+    });
   });
+
+  return sessions;
 }
 
 const getToday = () => new Date().getDay();
@@ -74,6 +131,8 @@ const ScheduleCalendar = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [leaves, setLeaves] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showNotificationBadge, setShowNotificationBadge] = useState(true);
   const weekDates = getWeekDates(weekOffset);
   const todayDayIdx = getToday();
@@ -88,13 +147,20 @@ const ScheduleCalendar = () => {
     if (!isApiConfigured() || !getAuthToken()) return undefined;
     let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
-        const data = await listCoachBatches();
+        const [batchData, leaveData] = await Promise.all([
+          listCoachBatches().catch(() => ({ batches: [] })),
+          listCoachLeaves().catch(() => ({ leaves: [] }))
+        ]);
         if (cancelled) return;
-        const cards = (data.batches || []).map((raw) => ({ ...mapApiBatchToCard(raw), raw }));
+        const cards = (batchData.batches || []).map((raw) => ({ ...mapApiBatchToCard(raw), raw }));
         setSessions(batchesToSessions(cards));
-      } catch {
-        if (!cancelled) setSessions([]);
+        setLeaves(leaveData.leaves || []);
+      } catch (err) {
+        console.error('Fetch Error:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -226,12 +292,31 @@ const ScheduleCalendar = () => {
                       {HOURS.map((_, hIdx) => (
                         <div key={hIdx} className={`absolute left-0 right-0 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`} style={{ top: (hIdx + 1) * cellHeight }} />
                       ))}
-                      {daySessions.map(session => (
-                        <motion.button key={session.id} onClick={() => setSelectedSession(session)} whileHover={{ scale: 1.02, zIndex: 10 }} className="absolute left-0.5 right-0.5 rounded-md px-1.5 py-1 text-left overflow-hidden shadow-md cursor-pointer" style={{ top: sessionTop(session.startHour), height: sessionHeight(session.duration), backgroundColor: session.color, zIndex: 5 }}>
-                          <p style={{ color: '#ffffff', fontSize: '11px', fontWeight: 500, lineHeight: '1.2' }} className="truncate">{session.batch}</p>
-                          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '9px' }} className="truncate">{session.students}👤 · {session.court}</p>
-                        </motion.button>
-                      ))}
+                      {daySessions.map(session => {
+                        const dateKey = weekDates[dayIdx].toISOString().split('T')[0];
+                        const isOnLeave = leaves.find(l => l.date === dateKey && (!l.batchId || l.batchId === session.id.split('-')[0]));
+                        return (
+                          <motion.button 
+                            key={session.id} 
+                            onClick={() => { setSelectedDate(weekDates[dayIdx]); setSelectedSession(session); }} 
+                            whileHover={{ scale: 1.02, zIndex: 10 }} 
+                            className={`absolute left-0.5 right-0.5 rounded-md px-1.5 py-1 text-left overflow-hidden shadow-md cursor-pointer border ${isOnLeave ? 'opacity-40 grayscale border-slate-400' : 'border-transparent'}`} 
+                            style={{ top: sessionTop(session.startHour), height: sessionHeight(session.duration), backgroundColor: isOnLeave ? '#94a3b8' : session.color, zIndex: 5 }}
+                          >
+                            <div className="flex flex-col h-full justify-between">
+                              <div>
+                                <p style={{ color: '#ffffff', fontSize: '11px', fontWeight: 700, lineHeight: '1.1' }} className="truncate">{session.batch}</p>
+                                <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '8px', fontWeight: 600 }} className="truncate mt-0.5">{session.court}</p>
+                              </div>
+                              {isOnLeave && (
+                                <div className="bg-white/20 rounded-sm px-1 py-0.5 mt-auto">
+                                  <p className="text-[7px] font-black uppercase text-white tracking-tighter">On Leave</p>
+                                </div>
+                              )}
+                            </div>
+                          </motion.button>
+                        );
+                      })}
                     </div>
                   );
                 })}
@@ -261,12 +346,18 @@ const ScheduleCalendar = () => {
                                 }`}>{date.getDate()}</span>
                             </div>
                             <div className="space-y-1.5">
-                                {daySessions.map(s => (
-                                    <div key={s.id} className="flex h-5 px-2 rounded-lg items-center gap-1.5 overflow-hidden" style={{ backgroundColor: `${s.color}22` }}>
-                                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.color }} />
-                                        <span className="text-[8px] font-black uppercase truncate" style={{ color: s.color }}>{s.batch}</span>
-                                    </div>
-                                ))}
+                                {daySessions.map(s => {
+                                    const dateKey = date.toISOString().split('T')[0];
+                                    const isOnLeave = leaves.find(l => l.date === dateKey && (!l.batchId || l.batchId === s.id.split('-')[0]));
+                                    return (
+                                        <div key={s.id} className={`flex h-5 px-2 rounded-lg items-center gap-1.5 overflow-hidden border ${isOnLeave ? 'bg-slate-100 border-slate-200 opacity-50' : ''}`} style={!isOnLeave ? { backgroundColor: `${s.color}22` } : {}}>
+                                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isOnLeave ? '#94a3b8' : s.color }} />
+                                            <span className={`text-[8px] font-black uppercase truncate ${isOnLeave ? 'text-slate-400 line-through' : ''}`} style={!isOnLeave ? { color: s.color } : {}}>
+                                                {s.batch} {isOnLeave && '(Leave)'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     );
@@ -471,7 +562,34 @@ const ScheduleCalendar = () => {
                     </div>
                   ))}
                 </div>
-                <button className="w-full py-2 rounded-xl bg-[#CE2029] text-white text-[9px] font-bold uppercase tracking-widest shadow-md">Attendance</button>
+                
+                {/* Leave Toggle */}
+                {(() => {
+                   const dateKey = selectedDate.toISOString().split('T')[0];
+                   const isOnLeave = leaves.find(l => l.date === dateKey && (!l.batchId || l.batchId === selectedSession.raw?.id));
+                   return (
+                     <button 
+                       onClick={async () => {
+                         if (isOnLeave) {
+                           await deleteCoachLeave(isOnLeave.id);
+                         } else {
+                           await createCoachLeave({ date: dateKey, batchId: selectedSession.raw?.id, reason: 'Coach Leave' });
+                         }
+                         const res = await listCoachLeaves();
+                         setLeaves(res.leaves || []);
+                       }}
+                       className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all mb-2 ${
+                         isOnLeave 
+                           ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                           : 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-100'
+                       }`}
+                     >
+                       {isOnLeave ? 'On Leave (Tap to Cancel)' : 'Mark as Leave'}
+                     </button>
+                   );
+                })()}
+
+                <button className="w-full py-2.5 rounded-xl bg-[#0F172A] text-white text-[10px] font-bold uppercase tracking-widest shadow-md">Attendance</button>
               </div>
             </motion.div>
           </>

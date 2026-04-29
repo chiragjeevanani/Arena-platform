@@ -8,19 +8,46 @@ import { useTheme } from '../context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
 import { fetchPublicArenas } from '../../../services/arenasApi';
 import { fetchPublicCoachingBatches } from '../../../services/coachingPublicApi';
+import { listMyEnrollments } from '../../../services/meApi';
 import { mapPublicBatchToCoachCard } from '../../../utils/coachingBatchAdapter';
+import { getAuthToken } from '../../../services/apiClient';
 
 const Coaching = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const [activeTab, setActiveTab] = useState('Weekdays');
+  const [activeTab, setActiveTab] = useState('Your Batches'); // 'Your Batches' or 'Live'
   const [batches, setBatches] = useState([]);
+  const [enrolledBatchIds, setEnrolledBatchIds] = useState(new Set());
+  const [batchEnrollmentMap, setBatchEnrollmentMap] = useState({}); // batchId -> enrollmentId
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isApiConfigured()) return undefined;
     let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
+        // 1. Fetch User Enrollments if logged in
+        let enrolledIds = new Set();
+        if (getAuthToken()) {
+          try {
+            const { enrollments } = await listMyEnrollments();
+            const activeEn = (enrollments || []).filter(e => e.status === 'confirmed' || e.status === 'pending');
+            
+            enrolledIds = new Set(activeEn.map(e => String(e.batchId)));
+            setEnrolledBatchIds(enrolledIds);
+            
+            const eMap = {};
+            activeEn.forEach(e => {
+              eMap[String(e.batchId)] = e.id;
+            });
+            setBatchEnrollmentMap(eMap);
+          } catch (e) {
+            console.error('Enrollments fetch failed', e);
+          }
+        }
+
+        // 2. Fetch Public Batches
         const { arenas } = await fetchPublicArenas();
         const out = [];
         for (const a of arenas || []) {
@@ -37,6 +64,8 @@ const Coaching = () => {
         if (!cancelled) setBatches(out);
       } catch {
         if (!cancelled) setBatches([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -67,82 +96,99 @@ const Coaching = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 lg:px-6 pt-6 md:pt-10 pb-16 relative z-10">
-        {/* Page Header Area - COMPACT */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-xl bg-white flex items-center justify-center border border-slate-100 text-[#CE2029] shadow-sm hover:shadow-md transition-all active:scale-95"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <div>
-              <h1 className="text-xl font-black text-[#1e293b] tracking-tighter uppercase italic leading-none">
-                Coaching <span className="text-[#CE2029] not-italic">Matrix</span>
-              </h1>
-              <p className="text-[8px] text-slate-400 font-bold tracking-[0.2em] uppercase mt-1">Official Training Programs</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex -space-x-2">
-              {[1,2,3].map(i => (
-                <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200" />
-              ))}
-            </div>
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">+120 Students Joined</p>
-          </div>
-        </div>
-
-        {/* NEW: Program & Pricing Section - THE COMPACT MATRIX */}
-        <div className="mb-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 border-b border-slate-100 pb-3">
-            <h2 className="text-xs font-black text-[#1e293b] tracking-widest uppercase">Select Frequency</h2>
-            
-            <div className="flex items-center gap-6">
-              {['Weekdays', 'Weekends', 'Special'].map((tab) => (
+        
+        {/* Tab Switcher */}
+        <div className="flex items-center justify-center mb-8">
+          <div className={`flex p-1 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10 shadow-lg shadow-black/20' : 'bg-white border-slate-100 shadow-sm shadow-slate-200/50'}`}>
+            {['Your Batches', 'Live'].map((tab) => {
+              const count = tab === 'Live' 
+                ? batches.filter(b => !enrolledBatchIds.has(String(b.id))).length
+                : batches.filter(b => enrolledBatchIds.has(String(b.id))).length;
+                
+              return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative py-1 text-[9px] font-black uppercase tracking-[0.2em] transition-all ${
+                  className={`relative px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                     activeTab === tab 
-                      ? 'text-[#CE2029]' 
-                      : 'text-[#36454F] hover:text-[#36454F]/80'
+                      ? 'bg-[#CE2029] text-white shadow-md shadow-[#CE2029]/20' 
+                      : isDark ? 'text-white/40 hover:text-white/60' : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
                   {tab}
-                  {activeTab === tab && (
-                    <motion.div 
-                      layoutId="activeTabUnderline"
-                      className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#CE2029] rounded-full"
-                    />
-                  )}
+                  <span className={`px-1.5 py-0.5 rounded-md text-[8px] ${
+                    activeTab === tab ? 'bg-white/20 text-white' : isDark ? 'bg-white/10 text-white/40' : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {count}
+                  </span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-
-          <p className="text-[11px] text-slate-500 font-medium leading-relaxed mb-4">
-            Published coaching batches from your arenas appear below. Program matrices here are removed in favor of live API data.
-          </p>
         </div>
 
-        {/* BATCH SECTION */}
-        <div className="flex items-center gap-3 mb-5">
-            <h3 className="text-xs font-black text-[#1e293b] tracking-widest uppercase italic">Active Batches</h3>
-            <div className="flex-1 h-[1px] bg-slate-100 opacity-50" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          {batches.length === 0 && (
-            <p className="col-span-full text-center text-sm text-slate-500 py-12">
-              No published coaching batches yet. Publish batches in the admin and set <span className="font-mono">VITE_API_URL</span>.
-            </p>
-          )}
-          {batches.map((batch, index) => (
-            <CoachCard key={batch.id} batch={batch} index={index} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 opacity-20">
+             <div className="w-8 h-8 border-4 border-[#CE2029] border-t-transparent rounded-full animate-spin mb-4" />
+             <p className="text-[10px] font-black uppercase tracking-[0.3em]">Loading Classes...</p>
+          </div>
+        ) : (
+          <div className="min-h-[400px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: activeTab === 'Live' ? -10 : 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: activeTab === 'Live' ? 10 : -10 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              >
+                {activeTab === 'Your Batches' ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                      {batches.filter(b => enrolledBatchIds.has(String(b.id))).length === 0 ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-20 opacity-30 text-center">
+                          <p className="text-[11px] font-black uppercase tracking-widest mb-2">No Active Batches</p>
+                          <p className="text-[9px] font-medium max-w-[200px]">You haven't joined any coaching programs yet.</p>
+                        </div>
+                      ) : (
+                        batches
+                          .filter(b => enrolledBatchIds.has(String(b.id)))
+                          .map((batch, index) => (
+                            <CoachCard 
+                              key={batch.id} 
+                              batch={{ 
+                                ...batch, 
+                                enrolled: true,
+                                enrollmentId: batchEnrollmentMap[String(batch.id)]
+                              }} 
+                              index={index} 
+                            />
+                          ))
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                      {batches.filter(b => !enrolledBatchIds.has(String(b.id))).length === 0 ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-20 opacity-30 text-center">
+                          <p className="text-[11px] font-black uppercase tracking-widest mb-2">No New Batches</p>
+                          <p className="text-[9px] font-medium max-w-[200px]">All available programs have been joined or are currently full.</p>
+                        </div>
+                      ) : (
+                        batches
+                          .filter(b => !enrolledBatchIds.has(String(b.id)))
+                          .map((batch, index) => (
+                            <CoachCard key={batch.id} batch={batch} index={index} />
+                          ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );

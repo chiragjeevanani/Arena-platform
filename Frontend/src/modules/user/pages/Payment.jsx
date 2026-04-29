@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Smartphone, CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Smartphone, CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Lock, Wallet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
@@ -8,6 +8,8 @@ import { isApiConfigured, getMockPaymentWebhookSecret } from '../../../services/
 import { getAuthToken } from '../../../services/apiClient';
 import { completeWalletTopUpViaMockPayment } from '../../../services/mockTopUpFlow';
 import { registerForEvent } from '../../../services/eventsApi';
+import { createMyEnrollment, getMyWallet } from '../../../services/meApi';
+import { useEffect } from 'react';
 
 const Payment = () => {
   const { state } = useLocation();
@@ -16,12 +18,22 @@ const Payment = () => {
   const [selectedMethod, setSelectedMethod] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
   const [payError, setPayError] = useState('');
+  const [walletBalance, setWalletBalance] = useState(null);
+
+  useEffect(() => {
+    if (getAuthToken()) {
+      getMyWallet().then(res => {
+        setWalletBalance(res.wallet?.balance || 0);
+      }).catch(err => console.error('Wallet fetch error', err));
+    }
+  }, []);
 
   // Fallback amount in case navigated without state
   const amount = state?.amount || 0;
 
   const paymentMethods = [
     { id: 'upi', name: 'UPI (GPay/PhonePe)', icon: Smartphone, color: 'text-[#CE2029]', bg: 'bg-[#CE2029]/10', desc: 'Instant & Secure' },
+    { id: 'wallet', name: 'Arena Wallet', icon: Wallet, color: 'text-emerald-500', bg: 'bg-emerald-500/10', desc: walletBalance !== null ? `Balance: OMR ${walletBalance.toFixed(3)}` : 'Pay from Credits' },
     { id: 'card', name: 'Credit / Debit Card', icon: CreditCard, color: 'text-blue-400', bg: 'bg-blue-400/10', desc: 'Full Security' },
     { id: 'netbanking', name: 'Net Banking', icon: Landmark, color: 'text-amber-400', bg: 'bg-amber-400/10', desc: 'All Major Banks' },
     { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-400/10', desc: 'On-Site Payment' },
@@ -53,17 +65,36 @@ const Payment = () => {
       return;
     }
 
+    if (selectedMethod === 'wallet' && walletBalance < amountNum) {
+      setPayError('Insufficient wallet balance. Please top up first.');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       if (state?.type === 'event' && state?.registrationInfo) {
-        await registerForEvent(state.registrationInfo);
+        await registerForEvent({ ...state.registrationInfo, paymentMethod: selectedMethod });
+      }
+      
+      let enrollment = null;
+      if (state?.type === 'coaching' && state?.registrationInfo?.batchId) {
+        const res = await createMyEnrollment(state.registrationInfo.batchId, {
+          paymentMethod: selectedMethod,
+          amount: amountNum
+        });
+        enrollment = res.enrollment;
       }
       
       // Artificial delay for premium experience
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setIsProcessing(false);
-      navigate('/booking-success', { state });
+      navigate('/booking-success', { 
+        state: { 
+          ...state, 
+          enrollment 
+        } 
+      });
     } catch (err) {
       console.error('Payment/Registration Error:', err);
       setPayError(err.message || 'Processing failed. Please try again.');

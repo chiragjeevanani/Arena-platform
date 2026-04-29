@@ -156,7 +156,7 @@ const CoachBatches = () => {
                         initial={{ opacity: 0, scale: 0.9, y: -10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                        className={`absolute right-0 mt-2 w-40 rounded-2xl shadow-2xl border z-50 overflow-hidden ${
+                        className={`absolute right-0 mt-2 w-40 rounded-2xl shadow-2xl border z-30 overflow-hidden ${
                           isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-100'
                         }`}
                       >

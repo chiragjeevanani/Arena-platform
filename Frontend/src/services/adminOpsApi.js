@@ -31,9 +31,12 @@ export function createAdminPosSale(body) {
   return apiJson(`${BASE}/pos/sales`, { method: 'POST', body });
 }
 
-export function listAdminPosSales(arenaId) {
+export function listAdminPosSales(arenaId, from = '', to = '') {
   if (!arenaId) return Promise.reject(new Error('arenaId is required'));
-  return apiJson(`${BASE}/pos/sales?arenaId=${encodeURIComponent(arenaId)}`, { method: 'GET' });
+  const q = new URLSearchParams({ arenaId });
+  if (from) q.set('from', from);
+  if (to) q.set('to', to);
+  return apiJson(`${BASE}/pos/sales?${q.toString()}`, { method: 'GET' });
 }
 
 export function getAdminPosSaleById(saleId) {
@@ -141,6 +144,11 @@ export function deleteAdminCoachingBatch(batchId) {
   return apiJson(`${BASE}/coaching-batches/${encodeURIComponent(batchId)}`, { method: 'DELETE' });
 }
 
+export function listAdminBatchStudents(batchId) {
+  if (!batchId) return Promise.reject(new Error('batchId is required'));
+  return apiJson(`${BASE}/coaching-batches/${encodeURIComponent(batchId)}/students`, { method: 'GET' });
+}
+
 export function listEventRegistrations(eventId) {
   const q = new URLSearchParams();
   if (eventId) q.set('eventId', eventId);
@@ -182,6 +190,15 @@ export function listAdminUsers(query = {}) {
   if (query.q) q.set('q', query.q);
   const qs = q.toString();
   return apiJson(`${BASE}/users${qs ? `?${qs}` : ''}`, { method: 'GET' });
+}
+
+export function listStaffAttendance(query = {}) {
+  const q = new URLSearchParams();
+  if (query.arenaId) q.set('arenaId', query.arenaId);
+  if (query.date) q.set('date', query.date);
+  if (query.staffId) q.set('staffId', query.staffId);
+  const qs = q.toString();
+  return apiJson(`${BASE}/staff-attendance${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }
 
 

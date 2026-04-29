@@ -43,30 +43,9 @@ const CoachingSummary = () => {
     });
   };
 
-  const handleEnroll = async () => {
-    setEnrollError('');
-    const batchId = batch?.id;
-    if (isApiConfigured() && getAuthToken() && batchId) {
-      setEnrolling(true);
-      try {
-        const { enrollment } = await createMyEnrollment(batchId);
-        setEnrolling(false);
-        navigate('/booking-success', {
-          state: {
-            type: 'coaching',
-            batch,
-            enrollment,
-            amount: finalPayable,
-          },
-        });
-      } catch (err) {
-        setEnrollError(err.message || 'Failed to enroll');
-        setEnrolling(false);
-      }
-    } else {
-      // Fallback for mock/demo
-      goToPayment();
-    }
+  const handleEnroll = () => {
+    if (!batch) return;
+    goToPayment();
   };
 
   if (!batch) return (
@@ -120,7 +99,7 @@ const CoachingSummary = () => {
               disabled={enrolling}
               onClick={handleEnroll}
             >
-              {enrolling ? 'Enrolling…' : isApiConfigured() && getAuthToken() && batch?.id ? 'Enroll (free)' : 'Enroll Now'}
+              {enrolling ? 'Processing…' : 'Proceed to Payment'}
             </button>
           </div>
         </div>
@@ -163,6 +142,11 @@ const CoachingSummary = () => {
                   <h3 className="text-xl font-black font-display tracking-tight text-[#0F172A] mb-1">
                     {batch.coachName}
                   </h3>
+                  {batch.coachBio && (
+                    <p className="text-[10px] font-medium text-slate-500 leading-relaxed mb-3 line-clamp-2">
+                      {batch.coachBio}
+                    </p>
+                  )}
                   <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-1">
                     <div className="flex items-center gap-1 text-slate-400 font-bold text-[9px] uppercase tracking-wider">
                       <StarRoundedIcon style={{ fontSize: 12 }} className="text-amber-400" />
@@ -177,7 +161,7 @@ const CoachingSummary = () => {
                   <div className="grid grid-cols-2 gap-2.5 mt-3">
                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:border-[#CE2029]/20 transition-colors">
                       <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Professional EXP</p>
-                      <p className="text-[10px] font-black text-[#0F172A]">{batch.experienceYears}</p>
+                      <p className="text-[10px] font-black text-[#0F172A]">{batch.coachExperience || batch.experienceYears}</p>
                     </div>
                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:border-[#CE2029]/20 transition-colors">
                       <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Training Level</p>
@@ -224,6 +208,44 @@ const CoachingSummary = () => {
                 </div>
               </div>
             </div>
+
+            {/* Coach Achievements Section */}
+            {batch.coachAchievements && batch.coachAchievements.length > 0 && (
+              <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-md shadow-slate-200/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <StarRoundedIcon style={{ fontSize: 16 }} className="text-amber-500" />
+                  <h5 className="text-[9px] font-black uppercase tracking-widest text-[#0F172A]">Coach Achievements</h5>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
+                  {batch.coachAchievements.map((text, i) => (
+                    <div key={i} className="flex gap-2 items-center group cursor-default">
+                      <div className="w-4 h-4 rounded-[4px] bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500 transition-colors shrink-0">
+                        <StarRoundedIcon style={{ fontSize: 10 }} className="text-amber-500 group-hover:text-white" />
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-600 group-hover:text-[#0F172A] transition-colors line-clamp-1">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Performance Matrix Stats */}
+            {(batch.coachHours || batch.coachWins) && (
+              <div className="grid grid-cols-2 gap-3">
+                {batch.coachHours && (
+                  <div className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
+                    <p className="text-lg font-black text-[#CE2029] leading-none mb-1">{batch.coachHours}</p>
+                    <p className="text-[7px] font-black uppercase text-slate-400">Training Hours</p>
+                  </div>
+                )}
+                {batch.coachWins && (
+                  <div className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
+                    <p className="text-lg font-black text-[#CE2029] leading-none mb-1">{batch.coachWins}</p>
+                    <p className="text-[7px] font-black uppercase text-slate-400">Success Rate</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Trust Factors - Horizontal on summary */}
             <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-md shadow-slate-200/30">
@@ -307,7 +329,7 @@ const CoachingSummary = () => {
                 onClick={handleEnroll}
                 disabled={enrolling}
               >
-                {enrolling ? 'Enrolling…' : 'Enroll Now'}
+                {enrolling ? 'Processing…' : 'Proceed to Payment'}
                 <ArrowForwardIcon style={{ fontSize: 16 }} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -324,10 +346,8 @@ const CoachingSummary = () => {
             disabled={enrolling}
           >
             {enrolling
-              ? 'Enrolling…'
-              : isApiConfigured() && getAuthToken() && batch?.id
-                ? 'Complete enrollment'
-                : `Pay OMR ${finalPayable.toFixed(3)} Now`}
+              ? 'Processing…'
+              : 'Proceed to Payment'}
             <ArrowForwardIcon style={{ fontSize: 18 }} />
           </button>
         </div>

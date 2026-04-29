@@ -3,6 +3,8 @@ const CoachingBatch = require('../models/CoachingBatch');
 const Arena = require('../models/Arena');
 const User = require('../models/User');
 const BatchEnrollment = require('../models/BatchEnrollment');
+const CoachStudentProgress = require('../models/CoachStudentProgress');
+const CoachingAttendance = require('../models/CoachingAttendance');
 
 async function createCoachingBatch(req, res) {
   const {
@@ -172,4 +174,66 @@ async function deleteCoachingBatch(req, res) {
   return res.json({ message: 'Batch deleted successfully' });
 }
 
-module.exports = { createCoachingBatch, listCoachingBatches, updateCoachingBatch, deleteCoachingBatch };
+async function listBatchStudentsWithProgress(req, res) {
+  const { batchId } = req.params;
+  if (!batchId || !mongoose.isValidObjectId(batchId)) {
+    return res.status(400).json({ error: 'Invalid batchId' });
+  }
+
+  const enrollments = await BatchEnrollment.find({
+    batchId,
+    status: { $in: ['confirmed', 'pending'] },
+  }).populate('userId').lean();
+
+  const userIds = enrollments.map(e => e.userId?._id).filter(Boolean);
+  
+  const [progressRecords, attendanceRecords] = await Promise.all([
+    CoachStudentProgress.find({ batchId, studentUserId: { $in: userIds } }).lean(),
+    CoachingAttendance.find({ batchId }).lean()
+  ]);
+
+  const progressMap = new Map(progressRecords.map(p => [p.studentUserId.toString(), p]));
+  
+  // Calculate attendance % per student
+  const attendanceStats = new Map();
+  attendanceRecords.forEach(record => {
+    (record.students || []).forEach(s => {
+      const sid = s.userId.toString();
+      if (!attendanceStats.has(sid)) {
+        attendanceStats.set(sid, { present: 0, total: 0 });
+      }
+      const stats = attendanceStats.get(sid);
+      stats.total += 1;
+      if (s.status === 'present') stats.present += 1;
+    });
+  });
+
+  const students = enrollments.map(e => {
+    const user = e.userId;
+    if (!user) return null;
+    const progress = progressMap.get(user._id.toString());
+    const stats = attendanceStats.get(user._id.toString()) || { present: 0, total: 0 };
+    
+    // Calculate average score from metrics
+    const metrics = progress?.metrics || [];
+    const avgScore = metrics.length > 0 
+      ? (metrics.reduce((acc, m) => acc + (m.score || 0), 0) / metrics.length).toFixed(1)
+      : '0.0';
+
+    return {
+      id: user._id.toString(),
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || 'Unknown',
+      email: user.email,
+      phone: user.phone,
+      enrollmentStatus: e.status,
+      attendancePercentage: stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : '0.0',
+      performanceScore: avgScore,
+      lastProgressUpdate: progress?.updatedAt || null,
+      metrics: progress?.metrics || []
+    };
+  }).filter(Boolean);
+
+  return res.json({ students });
+}
+
+module.exports = { createCoachingBatch, listCoachingBatches, updateCoachingBatch, deleteCoachingBatch, listBatchStudentsWithProgress };

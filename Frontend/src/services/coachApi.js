@@ -69,3 +69,19 @@ export function deleteCoachRemark(remarkId) {
 export function patchCoachRemark(remarkId, body) {
   return apiJson(`/api/coach/remarks/${encodeURIComponent(remarkId)}`, { method: 'PATCH', body });
 }
+
+export function listCoachLeaves() {
+  return apiJson('/api/coach/leaves', { method: 'GET' });
+}
+
+export function createCoachLeave(body) {
+  return apiJson('/api/coach/leaves', { method: 'POST', body });
+}
+
+export function deleteCoachLeave(leaveId) {
+  return apiJson(`/api/coach/leaves/${encodeURIComponent(leaveId)}`, { method: 'DELETE' });
+}
+
+export function listCoachWorkAttendance() {
+  return apiJson('/api/coach/work-attendance', { method: 'GET' });
+}

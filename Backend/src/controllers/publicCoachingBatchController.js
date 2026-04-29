@@ -14,7 +14,9 @@ async function listPublishedArenaCoachingBatches(req, res) {
     return res.status(404).json({ error: 'Arena not found' });
   }
 
-  const list = await CoachingBatch.find({ arenaId, isPublished: true }).sort({ createdAt: -1 }).lean();
+  const list = await CoachingBatch.find({ arenaId, isPublished: true })
+    .populate('coachId')
+    .sort({ createdAt: -1 });
 
   if (!list.length) {
     return res.json({ arenaId, batches: [] });

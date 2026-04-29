@@ -27,6 +27,7 @@ const {
   createCoachingBatch,
   listCoachingBatches,
   updateCoachingBatch,
+  listBatchStudentsWithProgress,
 } = require('../controllers/adminCoachingBatchController');
 const {
   createInventoryItem,
@@ -43,7 +44,8 @@ const {
 } = require('../controllers/adminCmsController');
 const {
   getMyArena,
-  patchMyArena
+  patchMyArena,
+  listArenaStaff
 } = require('../controllers/arenaAdminArenaController');
 const {
   listMyCourts,
@@ -67,6 +69,8 @@ const {
   searchWalkinCustomers,
   createWalkinCustomer,
 } = require('../controllers/arenaAdminWalkinController');
+
+const { markStaffAttendance, listStaffAttendance } = require('../controllers/adminStaffAttendanceController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -96,21 +100,17 @@ router.get(
   asyncHandler(listMembershipPlans)
 );
 
-router.post(
-  '/coaching-batches',
-  requireBodyArenaIdMatchesScope,
-  asyncHandler(createCoachingBatch)
-);
 router.get(
   '/coaching-batches',
   requireQueryArenaMatchesScope,
   asyncHandler(listCoachingBatches)
 );
-router.patch(
-  '/coaching-batches/:batchId',
+router.get(
+  '/coaching-batches/:batchId/students',
   asyncHandler(requireCoachingBatchInArenaScope),
-  asyncHandler(updateCoachingBatch)
+  asyncHandler(listBatchStudentsWithProgress)
 );
+// Removed POST and PATCH for coaching batches to maintain read-only access for Arena Staff
 
 router.post('/inventory', requireBodyArenaIdMatchesScope, asyncHandler(createInventoryItem));
 router.get('/inventory', requireQueryArenaMatchesScope, asyncHandler(listInventoryItems));
@@ -147,6 +147,7 @@ router.delete(
 
 // Arena self-management
 router.get('/arena', asyncHandler(getMyArena));
+router.get('/list-staff', asyncHandler(listArenaStaff));
 router.patch('/arena', asyncHandler(patchMyArena));
 router.post('/upload/image', upload.single('file'), asyncHandler(uploadArenaImage));
 
@@ -173,5 +174,9 @@ router.get('/walkin/slots', asyncHandler(getWalkinSlots));
 router.get('/walkin/customers/search', asyncHandler(searchWalkinCustomers));
 router.post('/walkin/customers', asyncHandler(createWalkinCustomer));
 router.post('/walkin/book', asyncHandler(createWalkinBooking));
+
+// Staff Attendance
+router.post('/staff-attendance', requireBodyArenaIdMatchesScope, asyncHandler(markStaffAttendance));
+router.get('/staff-attendance', requireQueryArenaMatchesScope, asyncHandler(listStaffAttendance));
 
 module.exports = router;

@@ -474,25 +474,126 @@ const FinancialReports = () => {
               </div>
             )}
 
-            {activeTab === 'membership' && (
+            {activeTab === 'retail' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">POS Net Inflow</h4>
+                    <p className="text-3xl font-black text-[#1e293b] tracking-tighter italic">
+                      {formatOMR(apiSummary?.pos?.totalAmount || 0)}<span className="text-[14px] text-slate-400 ml-1">OMR</span>
+                    </p>
+                    <div className="mt-4 flex items-center gap-2">
+                       <ShoppingBag className="text-[#CE2029]" size={16} />
+                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{apiSummary?.pos?.transactionCount || 0} Transactions</span>
+                    </div>
+                  </div>
+                  <div className="bg-[#1e293b] p-6 rounded-2xl shadow-xl relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Star size={60} className="text-[#CE2029] rotate-12" />
+                     </div>
+                     <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Event Revenue Lift</h4>
+                     <p className="text-3xl font-black text-white tracking-tighter italic">
+                        OMR 1,240.000
+                     </p>
+                     <div className="mt-4 flex items-center gap-2 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
+                        <TrendingUp size={14} /> +45% spike during Tournaments
+                     </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1e293b]">Inventory & POS Velocity</h3>
+                    <button className="text-[9px] font-black uppercase tracking-widest text-[#CE2029]">Sync Retail Data</button>
+                  </div>
+                  <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                     {[
+                       { label: 'Grip & Strings', count: 142, revenue: 284, growth: 12 },
+                       { label: 'Water & Sports Drinks', count: 890, revenue: 445, growth: 24 },
+                       { label: 'Apparel', count: 24, revenue: 512, growth: -5 }
+                     ].map((item, i) => (
+                       <div key={i} className="space-y-3">
+                          <div className="flex justify-between items-end">
+                             <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                                <p className="text-xl font-black text-[#1e293b] italic">OMR {item.revenue}.000</p>
+                             </div>
+                             <span className={`text-[10px] font-black ${item.growth > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                {item.growth > 0 ? '+' : ''}{item.growth}%
+                             </span>
+                          </div>
+                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                             <div className="h-full bg-[#CE2029]" style={{ width: `${Math.abs(item.growth) * 2}%` }} />
+                          </div>
+                       </div>
+                     ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'outstanding' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                   <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Membership Earned</h4>
-                      <p className="text-3xl font-black text-[#36454F]">{formatOMR(apiSummary?.membership?.totalRevenue || 0)}<span className="text-[14px] text-slate-400 ml-1">OMR</span></p>
-                      <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-emerald-500 uppercase tracking-widest bg-emerald-50 w-fit px-2 py-1 rounded-sm">
-                         <TrendingUp size={12} /> +12.4% vs last month
-                      </div>
+                   <div className="bg-[#CE2029] p-6 rounded-3xl shadow-xl shadow-red-200">
+                      <p className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em] mb-1">Total Outstanding</p>
+                      <p className="text-3xl font-black text-white tracking-tighter italic">OMR 1,420.500</p>
                    </div>
-                   <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Active Premium Members</h4>
-                      <p className="text-3xl font-black text-[#CE2029]">{apiSummary?.membership?.count || 0}</p>
-                      <p className="mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Across all hubs</p>
+                   <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Unpaid Coaching</p>
+                      <p className="text-3xl font-black text-[#1e293b] tracking-tighter italic">OMR 890.000</p>
                    </div>
-                   <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Conversion Rate</h4>
-                      <p className="text-3xl font-black text-[#64748b]">18.5%</p>
-                      <p className="mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trial to paid</p>
+                   <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Unpaid Bookings</p>
+                      <p className="text-3xl font-black text-[#1e293b] tracking-tighter italic">OMR 530.500</p>
+                   </div>
+                </div>
+
+                <div className="bg-white rounded-[32px] border border-slate-100 shadow-xl overflow-hidden">
+                   <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+                      <h3 className="text-[12px] font-black uppercase tracking-[0.25em] text-[#1e293b] italic">Receivables Ledger</h3>
+                      <button className="px-5 py-2 rounded-xl bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest hover:bg-[#CE2029] transition-all">Send Reminders</button>
+                   </div>
+                   <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                         <thead>
+                            <tr className="bg-slate-50/50">
+                               {['Customer', 'Category', 'Due Since', 'Amount', 'Status', 'Action'].map((h, i) => (
+                                 <th key={i} className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">{h}</th>
+                               ))}
+                            </tr>
+                         </thead>
+                         <tbody className="divide-y divide-slate-50">
+                            {[
+                              { name: 'Ahmed Al Balushi', category: 'Coaching', date: '2024-03-15', amount: 45, status: 'Overdue' },
+                              { name: 'Sarah Williams', category: 'Booking', date: '2024-03-18', amount: 12.5, status: 'Pending' },
+                              { name: 'Khalid Al Said', category: 'Coaching', date: '2024-03-10', amount: 120, status: 'Critical' },
+                            ].map((row, i) => (
+                              <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                 <td className="px-6 py-4">
+                                    <p className="text-[11px] font-black text-[#1e293b] uppercase italic">{row.name}</p>
+                                 </td>
+                                 <td className="px-6 py-4">
+                                    <span className="px-2 py-1 bg-slate-100 rounded text-[9px] font-black text-slate-500 uppercase">{row.category}</span>
+                                 </td>
+                                 <td className="px-6 py-4 text-[10px] font-bold text-slate-400">{row.date}</td>
+                                 <td className="px-6 py-4 text-[11px] font-black text-[#CE2029]">OMR {formatOMR(row.amount)}</td>
+                                 <td className="px-6 py-4">
+                                    <span className={`px-2 py-1 rounded-[6px] text-[8px] font-black uppercase tracking-widest ${
+                                      row.status === 'Critical' ? 'bg-red-50 text-red-600' : row.status === 'Overdue' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
+                                    }`}>
+                                       {row.status}
+                                    </span>
+                                 </td>
+                                 <td className="px-6 py-4">
+                                    <button className="p-2 rounded-lg bg-white border border-slate-100 text-[#CE2029] hover:bg-[#CE2029] hover:text-white transition-all shadow-sm">
+                                       <Mail size={12} />
+                                    </button>
+                                 </td>
+                              </tr>
+                            ))}
+                         </tbody>
+                      </table>
                    </div>
                 </div>
               </div>

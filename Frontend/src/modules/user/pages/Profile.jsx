@@ -7,7 +7,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { listMyBookings } from '../../../services/bookingsApi';
-import { getMyWallet, listMyMemberships, listMyEnrollments } from '../../../services/meApi';
+import { getMyWallet, listMyMemberships, listMyEnrollments, getMyEnrollmentById } from '../../../services/meApi';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 
@@ -122,14 +122,61 @@ const Profile = () => {
         const enr = (enrRes.enrollments || []).find((e) =>
           ['pending', 'confirmed'].includes(e.status)
         );
-        setActiveCoaching(
-          enr
-            ? {
-                coachName: enr.batchTitle || 'Coaching batch',
-                image: DEFAULT_COACH_IMG,
-              }
-            : null
-        );
+        if (enr) {
+          setActiveCoaching({
+            id: enr.id,
+            coachName: enr.batchTitle || 'Coaching batch',
+            image: DEFAULT_COACH_IMG,
+          });
+
+          // Fetch detailed metrics for the active enrollment
+          try {
+            const detailRes = await getMyEnrollmentById(enr.id);
+            if (detailRes.enrollment?.metrics?.length > 0) {
+              const rawMetrics = detailRes.enrollment.metrics;
+              
+              // Helper to group 29 metrics into readable categories
+              const categorize = (items) => {
+                const groups = {
+                  'Technical': [],
+                  'Physical': [],
+                  'Tactical': [],
+                  'Mental': [],
+                  'Discipline': []
+                };
+
+                items.forEach(m => {
+                  const n = m.name.toLowerCase();
+                  if (n.includes('attendance')) groups['Discipline'].push(m);
+                  else if (n.includes('speed') || n.includes('strength') || n.includes('movement') || n.includes('fitness')) groups['Physical'].push(m);
+                  else if (n.includes('strategy') || n.includes('positioning') || n.includes('gameplay')) groups['Tactical'].push(m);
+                  else if (n.includes('mental') || n.includes('focus') || n.includes('discipline')) groups['Mental'].push(m);
+                  else groups['Technical'].push(m);
+                });
+
+                return Object.entries(groups)
+                  .filter(([_, ms]) => ms.length > 0)
+                  .map(([name, ms]) => ({
+                    name,
+                    score: Math.round(ms.reduce((acc, i) => acc + i.score, 0) / ms.length),
+                    metrics: ms
+                  }));
+              };
+
+              const categories = categorize(rawMetrics);
+              const overall = Math.round(rawMetrics.reduce((acc, m) => acc + (m.score || 0), 0) / rawMetrics.length * 10);
+              
+              setPerformanceData({
+                weekly: { overall, trend: '+2.4%', categories },
+                monthly: { overall, trend: '+5.1%', categories },
+              });
+            }
+          } catch (err) {
+            console.error('Failed to fetch coaching metrics:', err);
+          }
+        } else {
+          setActiveCoaching(null);
+        }
       } catch {
         /* keep fallbacks */
       }
@@ -141,12 +188,10 @@ const Profile = () => {
 
   const [performanceMode, setPerformanceMode] = useState('weekly');
   const [showReportCard, setShowReportCard] = useState(false);
-
-  const emptyPerf = { overall: 0, trend: '—', categories: [] };
-  const performanceData = {
-    weekly: emptyPerf,
-    monthly: emptyPerf,
-  };
+  const [performanceData, setPerformanceData] = useState({
+    weekly: { overall: 0, trend: '—', categories: [] },
+    monthly: { overall: 0, trend: '—', categories: [] },
+  });
 
   const displayName = user?.name?.trim() || 'Your profile';
   const roleLabel = user?.role ? String(user.role).replace(/_/g, ' ') : 'Member';
@@ -342,26 +387,21 @@ const Profile = () => {
             <div className="md:col-span-5">
                <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>My Coaching</h3>
                {activeCoaching ? (
-                 <div className={`p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between transition-all ${
-                   isDark ? 'bg-[#12141a] border-white/5 hover:border-white/10' : 'bg-white border-slate-100 hover:border-slate-200'
+                 <div 
+                   onClick={() => navigate(`/bookings/${activeCoaching.id}`)}
+                   className={`p-3.5 md:p-4 rounded-2xl border shadow-sm flex items-center justify-between transition-all cursor-pointer group ${
+                   isDark ? 'bg-[#12141a] border-white/5 hover:border-[#CE2029]/20 hover:-translate-y-1' : 'bg-white border-slate-100 hover:border-[#CE2029]/30 hover:-translate-y-1'
                  }`}>
                    <div className="flex gap-3 items-center w-full">
                      <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-100 flex-shrink-0">
                        <img src={activeCoaching.image} alt="Coach" className="w-full h-full object-cover" />
                      </div>
                      <div className="flex-1">
-                       <div className="flex items-center justify-between mb-1.5">
+                       <div className="flex items-center justify-between">
                          <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{activeCoaching.coachName}</h4>
-                         <span className={`text-[9px] font-black tracking-wide text-[#CE2029]`}>12/15</span>
+                         <ChevronRight size={14} className="text-slate-400 group-hover:text-[#CE2029] transition-colors" />
                        </div>
-                       <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
-                          <motion.div 
-                            className="h-full bg-[#CE2029] rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: "80%" }}
-                            transition={{ duration: 1, ease: "easeOut" }}
-                          />
-                       </div>
+                       <p className={`text-[10px] font-medium mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Active Program</p>
                      </div>
                    </div>
                  </div>
@@ -630,13 +670,16 @@ const Profile = () => {
         isDark={isDark} 
         data={performanceData[performanceMode]}
         mode={performanceMode}
+        user={user}
+        activeCoaching={activeCoaching}
+        membership={membership}
       />
     </div>
   );
 };
 
 // REPORT CARD MODAL COMPONENT
-const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
+const ReportCardModal = ({ isOpen, onClose, isDark, data, mode, user, activeCoaching, membership }) => {
   if (!isOpen) return null;
 
   const categories = data?.categories || [];
@@ -736,19 +779,19 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
             <div className="flex flex-wrap gap-x-12 gap-y-4 mb-8 text-[9px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-6 print:flex">
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Student Name</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">{user?.name || '—'}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Student ID</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">{user?._id?.slice(-8).toUpperCase() || user?.id?.slice(-8).toUpperCase() || '—'}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Batch Name</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">{activeCoaching?.coachName || '—'}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="opacity-50">Membership</span>
-                <span className="text-slate-900 text-[11px] font-black tracking-tight">—</span>
+                <span className="text-slate-900 text-[11px] font-black tracking-tight">{membership?.planName || 'None'}</span>
               </div>
             </div>
 
@@ -805,7 +848,7 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode }) => {
                           <span className={`text-[11px] font-black ${isDark ? 'text-white' : 'text-[#CE2029]'}`}>{cat.score}.0</span>
                         </div>
                         <div className="space-y-3">
-                          {cat.metrics.map((m, midx) => (
+                          {cat.metrics && cat.metrics.map((m, midx) => (
                             <div key={midx}>
                               <div className="flex justify-between items-center text-[9px] font-bold mb-1 ml-0.5">
                                 <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{m.name}</span>

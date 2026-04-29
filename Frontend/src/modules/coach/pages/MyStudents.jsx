@@ -113,13 +113,13 @@ const MyStudents = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedStudent(null)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]" 
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]" 
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-[70] p-6 rounded-2xl border shadow-2xl overflow-y-auto max-h-[85vh] ${
+              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-[120] p-6 rounded-2xl border shadow-2xl overflow-y-auto max-h-[85vh] ${
                 isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'
               }`}
             >
@@ -329,7 +329,7 @@ const MyStudents = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center gap-2 relative z-50">
+      <div className="flex flex-col sm:flex-row items-center gap-2 relative z-30">
         <div className="w-full sm:flex-1 relative group">
           <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-white/20 group-focus-within:text-[#CE2029]' : 'text-slate-400 group-focus-within:text-[#CE2029]'}`} />
           <input

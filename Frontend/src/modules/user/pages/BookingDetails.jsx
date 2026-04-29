@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, ChevronRight, Download, Map, XCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, ChevronRight, Download, Map, XCircle, Trophy, Activity, UserCheck, Star } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
 import { useEffect, useState } from 'react';
@@ -201,6 +201,129 @@ const BookingDetails = () => {
                </div>
             </motion.div>
           </div>
+
+          {/* COACHING SPECIFIC DETAILS */}
+          {booking.type === 'COACHING' && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="lg:col-span-7 space-y-6"
+            >
+              {/* Timing & Schedule */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-[#CE2029]/5 flex items-center justify-center text-[#CE2029] group-hover:bg-[#CE2029] group-hover:text-white transition-all">
+                       <Calendar size={20} />
+                    </div>
+                    <div>
+                       <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Program Days</p>
+                       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{booking.days || 'Training Days'}</p>
+                    </div>
+                 </div>
+                 <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-500/5 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                       <Clock size={20} />
+                    </div>
+                    <div>
+                       <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Batch Timing</p>
+                       <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{booking.timing || 'See Schedule'}</p>
+                    </div>
+                 </div>
+              </div>
+
+              {/* Attendance Summary */}
+              <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+                 <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                          <UserCheck size={18} />
+                       </div>
+                       <div>
+                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Attendance Report</h3>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Recent Sessions</p>
+                       </div>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                       <span className="text-lg font-black text-emerald-600">
+                          {booking.attendance?.filter(a => a.status === 'present').length || 0}
+                       </span>
+                       <span className="text-[9px] font-black text-slate-300 uppercase">/ {booking.attendance?.length || 0}</span>
+                    </div>
+                 </div>
+                 <div className="p-2 lg:p-4">
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                       {booking.attendance?.length > 0 ? (
+                         booking.attendance.slice(0, 15).map((session, idx) => (
+                           <div key={idx} className="flex flex-col items-center gap-2 min-w-[50px]">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black border transition-all ${
+                                session.status === 'present' 
+                                  ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                                  : 'bg-red-50 text-red-600 border-red-100'
+                              }`}>
+                                 {session.status === 'present' ? 'P' : 'A'}
+                              </div>
+                              <span className="text-[7px] font-black text-slate-400 uppercase">{new Date(session.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                           </div>
+                         ))
+                       ) : (
+                         <p className="text-[10px] font-bold text-slate-400 py-4 px-2 italic">No attendance records found yet.</p>
+                       )}
+                    </div>
+                 </div>
+              </div>
+
+              {/* Performance Insights */}
+              <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+                 <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                          <Trophy size={18} />
+                       </div>
+                       <div>
+                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-900">Skill Matrix</h3>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Coach Insights</p>
+                       </div>
+                    </div>
+                 </div>
+                 <div className="p-6 space-y-4">
+                    {booking.metrics?.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                         {booking.metrics.map((m, idx) => (
+                            <div key={idx} className="space-y-1.5">
+                               <div className="flex justify-between items-center px-1">
+                                  <span className="text-[9px] font-black uppercase tracking-tight text-slate-500">{m.name}</span>
+                                  <span className="text-[10px] font-black text-[#CE2029]">{m.score.toFixed(1)}</span>
+                               </div>
+                               <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <motion.div 
+                                     initial={{ width: 0 }}
+                                     animate={{ width: `${(m.score / 10) * 100}%` }}
+                                     transition={{ duration: 1, delay: 0.2 + (idx * 0.05) }}
+                                     className="h-full bg-gradient-to-r from-[#CE2029] to-[#ff4d4d]"
+                                  />
+                               </div>
+                            </div>
+                         ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-10 space-y-3">
+                         <Activity size={32} className="mx-auto text-slate-200" />
+                         <p className="text-[10px] font-bold text-slate-400 italic">Matrix will be updated after your first assessment.</p>
+                      </div>
+                    )}
+
+                    {booking.remarks && (
+                      <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-100 relative group transition-all">
+                         <Star size={16} className="absolute -top-2 -left-2 text-amber-400 drop-shadow-sm group-hover:scale-110 transition-transform" />
+                         <p className="text-[9px] font-black uppercase tracking-widest text-[#CE2029] mb-1.5">Coach's Feed</p>
+                         <p className="text-[11px] font-bold text-slate-600 leading-relaxed italic">"{booking.remarks}"</p>
+                      </div>
+                    )}
+                 </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* RIGHT COLUMN: Receipt Block */}
           <div className="lg:col-span-5 relative">

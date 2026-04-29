@@ -53,6 +53,11 @@ export function mapMeEnrollmentToDashboardCard(e) {
     price: Number(e.price) || 0,
     basePrice: Number(e.basePrice) || 0,
     taxPercent: Number(e.taxPercent) || 18,
+    days: e.days || '',
+    timing: e.timing || '',
+    attendance: e.attendance || [],
+    metrics: e.metrics || [],
+    remarks: e.remarks || '',
     receiptUrl: `#receipt-${e.id}`,
     sortKey: e.createdAt || String(e.id),
   };

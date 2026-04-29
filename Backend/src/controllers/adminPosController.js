@@ -93,12 +93,20 @@ async function createPosSale(req, res) {
 
 async function listPosSales(req, res) {
   try {
-    const { arenaId } = req.query;
+    const { arenaId, from, to } = req.query;
     if (!arenaId || !mongoose.isValidObjectId(arenaId)) {
       return res.status(400).json({ error: 'Valid arenaId query is required' });
     }
 
-    const list = await PosSale.find({ arenaId }).sort({ createdAt: -1 }).limit(100).lean();
+    const q = { arenaId };
+    if (from && to) {
+      q.createdAt = {
+        $gte: new Date(from),
+        $lte: new Date(to + 'T23:59:59.999Z'),
+      };
+    }
+
+    const list = await PosSale.find(q).sort({ createdAt: -1 }).limit(100).lean();
     const publicSales = list.map((s) => {
       try {
         return PosSale.toPublic(s);

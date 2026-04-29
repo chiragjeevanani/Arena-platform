@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { shouldCancelBookingViaApi, shouldCancelEnrollmentViaApi } from '../../../utils/bookingCancelPolicy';
+import { shouldCancelBookingViaApi, shouldCancelEnrollmentViaApi, shouldCancelEventRegistrationViaApi } from '../../../utils/bookingCancelPolicy';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 
 /**
@@ -17,6 +17,7 @@ const BookingTimelineCard = ({
   onCancel,
   onServerCancelBooking,
   onServerCancelEnrollment,
+  onServerCancelEventRegistration,
 }) => {
   const [booking, setBooking] = useState(initialBooking);
   const [countdown, setCountdown] = useState('');
@@ -118,6 +119,17 @@ const BookingTimelineCard = ({
           setShowCancelModal(false);
           return;
         }
+      } else if (
+        onServerCancelEventRegistration &&
+        shouldCancelEventRegistrationViaApi(booking, isApiConfigured(), Boolean(getAuthToken()))
+      ) {
+        try {
+          await onServerCancelEventRegistration(booking.id);
+        } catch (e) {
+          alert(e.message || 'Could not cancel registration');
+          setShowCancelModal(false);
+          return;
+        }
       }
       setCancelDone(true);
       setTimeout(() => {
@@ -165,7 +177,13 @@ const BookingTimelineCard = ({
           <div className="absolute -top-6 left-6 w-[2px] h-6 bg-gradient-to-b from-transparent to-[#CE2029]/20" />
         )}
 
-        <div className={`rounded-xl transition-all duration-500 group border relative flex flex-col ${
+        <div 
+          onClick={(e) => {
+            // Prevent navigation if clicking on a button or modal area
+            if (e.target.closest('button')) return;
+            navigate(`/bookings/${booking.id || new Date().getTime()}`, { state: { booking } });
+          }}
+          className={`rounded-xl transition-all duration-500 group border relative flex flex-col cursor-pointer ${
           isCancelled ? 'opacity-50 grayscale' :
           isDark
             ? 'glass-card border-white/5 bg-white/5 hover:border-[#CE2029]/20 shadow-2xl shadow-black/40'

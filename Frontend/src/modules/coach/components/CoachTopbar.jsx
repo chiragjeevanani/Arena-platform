@@ -39,7 +39,7 @@ const CoachTopbar = ({ isCollapsed, setIsCollapsed }) => {
   };
 
   return (
-    <header className={`h-20 border-b flex items-center justify-between px-6 sticky top-0 z-40 transition-colors duration-500 bg-[#CE2029] border-white/10`}>
+    <header className={`h-20 border-b flex items-center justify-between px-6 sticky top-0 z-50 transition-colors duration-500 bg-[#CE2029] border-white/10`}>
       {/* Left part: Empty (Mobile Logo) */}
       <div className="flex items-center gap-3">
         {/* Mobile Logo Visibility */}
@@ -80,7 +80,7 @@ const CoachTopbar = ({ isCollapsed, setIsCollapsed }) => {
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className={`absolute right-[-80px] md:right-0 mt-3 w-[300px] rounded-[1.5rem] border shadow-2xl overflow-hidden z-50 origin-top-right transition-all duration-300 ${
+                className={`absolute right-[-80px] md:right-0 mt-3 w-[300px] rounded-[1.5rem] border shadow-2xl overflow-hidden z-[60] origin-top-right transition-all duration-300 ${
                   isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
                 }`}
               >
@@ -177,7 +177,7 @@ const CoachTopbar = ({ isCollapsed, setIsCollapsed }) => {
                 initial={{ opacity: 0, scale: 0.95, y: 10, x: 0 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className={`absolute right-0 mt-3 w-64 rounded-[1.5rem] border shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden py-2 z-50 ${
+                className={`absolute right-0 mt-3 w-64 rounded-[1.5rem] border shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden py-2 z-[60] ${
                   isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
                 }`}
               >

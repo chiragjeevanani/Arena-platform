@@ -19,6 +19,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/coach/batches', icon: Layers, label: 'Batches' },
       { path: '/coach/students', icon: Users, label: 'Students' },
       { path: '/coach/attendance', icon: ClipboardCheck, label: 'Attendance' },
+      { path: '/coach/work-logs', icon: UserCheck, label: 'Work Logs' },
       { path: '/coach/progress', icon: TrendingUp, label: 'Progress' },
     ]
   }

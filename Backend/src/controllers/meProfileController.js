@@ -16,6 +16,13 @@ async function patchMyProfile(req, res) {
     const s = String(avatarUrl).trim();
     user.avatarUrl = s.length > 500000 ? s.slice(0, 500000) : s;
   }
+  if (req.body.bio !== undefined) user.bio = String(req.body.bio).trim();
+  if (req.body.experience !== undefined) user.experience = String(req.body.experience).trim();
+  if (req.body.achievements !== undefined && Array.isArray(req.body.achievements)) {
+    user.achievements = req.body.achievements;
+  }
+  if (req.body.hours !== undefined) user.hours = String(req.body.hours).trim();
+  if (req.body.wins !== undefined) user.wins = String(req.body.wins).trim();
   await user.save();
   return res.json({ user: User.toPublic(user) });
 }

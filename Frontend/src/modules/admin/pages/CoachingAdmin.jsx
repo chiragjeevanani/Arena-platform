@@ -13,9 +13,11 @@ import { fetchPublicArenas } from '../../../services/arenasApi';
 import { normalizeListArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { listAdminCoachingBatches } from '../../../services/adminOpsApi';
+import { listAdminCoachingBatches, listStaffAttendance } from '../../../services/adminOpsApi';
 import { listAdminUsers } from '../../../services/adminUsersApi';
 import { listAdminBookings } from '../../../services/adminBookingsApi';
+import CoachingStudentMatrix from '../components/CoachingStudentMatrix';
+import { useAuth } from '../../../modules/user/context/AuthContext';
 
 
 
@@ -47,7 +49,10 @@ const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
 });
 
 const CoachingAdmin = () => {
-  const [view, setView] = useState('students'); // students | batches | coaches | attendance | programs | bookings | student-attendance
+  const { user } = useAuth();
+  const isReadOnly = user?.role === 'ARENA_ADMIN';
+
+  const [view, setView] = useState('students');
   const [studentAttendanceMode, setStudentAttendanceMode] = useState('daily'); // daily | monthly | yearly
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [selectedBatchDays, setSelectedBatchDays] = useState([]);
@@ -143,54 +148,93 @@ const CoachingAdmin = () => {
     }
   };
 
+  const [isRefreshingAtt, setIsRefreshingAtt] = useState(false);
+
+  const fetchAttendanceLogs = async () => {
+    try {
+      setIsRefreshingAtt(true);
+      const att = await listStaffAttendance();
+      const attRows = (att.attendance || []).map(a => ({
+        id: a._id,
+        coachName: a.staffId?.name || `${a.staffId?.firstName || ''} ${a.staffId?.lastName || ''}`.trim() || 'Unknown',
+        arenaName: a.arenaId?.name || '—',
+        checkIn: a.checkIn || '—',
+        checkOut: a.checkOut || '—',
+        status: a.status,
+        date: a.date
+      }));
+      setAttendance(attRows);
+    } catch (err) {
+      console.error('Error loading staff attendance:', err);
+    } finally {
+      setIsRefreshingAtt(false);
+    }
+  };
+
   useEffect(() => {
     if (!isApiConfigured() || !getAuthToken()) return undefined;
     let cancelled = false;
-    (async () => {
+
+    const loadInitialData = async () => {
       try {
         const ar = await fetchPublicArenas();
         const list = (ar.arenas || []).map(normalizeListArena);
         if (cancelled) return;
         setArenas(list);
+        
         const aid = list[0]?.id;
-        if (!aid) return;
-        setSelectedArenaId(String(aid));
-        
-        await loadBatches(aid);
-        if (cancelled) return;
+        if (aid) {
+          setSelectedArenaId(String(aid));
+          loadBatches(aid);
+          
+          // Independent fetches
+          listAdminBookings({ arenaId: String(aid) })
+            .then(bk => {
+              if (cancelled) return;
+              const rows = (bk.bookings || []).slice(0, 20).map((b) => ({
+                id: b.id,
+                date: b.date,
+                court: b.courtName || '—',
+                player: `User …${String(b.userId || '').slice(-6)}`,
+                time: b.timeSlot || '',
+                status: b.status,
+              }));
+              if (rows.length) setBookings(rows);
+            })
+            .catch(err => console.error('Error loading bookings:', err));
+        }
 
-        const bk = await listAdminBookings({ arenaId: String(aid) });
-        if (cancelled) return;
-        const rows = (bk.bookings || []).slice(0, 20).map((b) => ({
-          id: b.id,
-          date: b.date,
-          court: b.courtName || '—',
-          player: `User …${String(b.userId || '').slice(-6)}`,
-          time: b.timeSlot || '',
-          status: b.status,
-        }));
-        if (rows.length) setBookings(rows);
-        
-        const cu = await listAdminUsers({ role: 'COACH' });
-        if (cancelled) return;
-        const fetchedCoaches = (cu.users || []).map(user => ({
-          id: user.id,
-          name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown Coach',
-          role: 'Professional Coach',
-          specialty: 'Academy Training',
-          salary: 0,
-          experience: 'Staff',
-          status: user.isActive ? 'Active' : 'Inactive',
-          image: '',
-          students: 0,
-          rating: 5.0,
-          reviews: []
-        }));
-        setCoaches(fetchedCoaches);
+        // Fetch coaches independently
+        listAdminUsers({ role: 'COACH' })
+          .then(cu => {
+            if (cancelled) return;
+            const fetchedCoaches = (cu.users || []).map(user => ({
+              id: user.id,
+              name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown Coach',
+              role: 'Professional Coach',
+              specialty: 'Academy Training',
+              salary: 0,
+              experience: 'Staff',
+              status: user.isActive ? 'Active' : 'Inactive',
+              image: '',
+              students: 0,
+              rating: 5.0,
+              reviews: []
+            }));
+            setCoaches(fetchedCoaches);
+          })
+          .catch(err => console.error('Error loading coaches:', err));
+
+        // Fetch staff attendance independently
+        fetchAttendanceLogs();
+
       } catch (err) {
-        console.error('Error fetching coaching data:', err);
+        console.error('Error fetching arenas:', err);
       }
-    })();
+    };
+
+    loadInitialData();
+
     return () => {
       cancelled = true;
     };
@@ -530,114 +574,38 @@ const CoachingAdmin = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 p-1.5 bg-white border border-slate-100 rounded-[28px] shadow-sm w-fit">
-          {[
-            { id: 'students', label: 'Student Directory', icon: Users },
-            { id: 'batches', label: 'Batch Control', icon: Zap },
-            { id: 'coaches', label: 'Coaching Staff', icon: Award },
-            { id: 'bookings', label: 'Booking Registry', icon: Calendar },
-            { id: 'student-attendance', label: 'Academy Attendance', icon: UserCheck },
-            { id: 'attendance', label: 'Staff Logs', icon: Fingerprint },
-            { id: 'programs', label: 'Master Catalog', icon: Settings }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setView(tab.id)}
-              className={`flex items-center gap-2.5 px-6 py-3 rounded-[22px] text-[11px] font-black uppercase tracking-widest transition-all ${
-                view === tab.id 
-                  ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' 
-                  : 'text-[#36454F] hover:text-[#CE2029] hover:bg-[#CE2029]/5'
-              }`}
-            >
-              <tab.icon size={14} />
-              {tab.label}
-            </button>
-          ))}
+        <div className="max-w-full overflow-x-auto custom-scrollbar pb-2">
+          <div className="flex items-center gap-2 p-1.5 bg-white border border-slate-100 rounded-[28px] shadow-sm w-fit whitespace-nowrap">
+            {[
+              { id: 'students', label: 'Student Directory', icon: Users },
+              { id: 'batches', label: 'Batch Control', icon: Zap },
+              { id: 'coaches', label: 'Coaching Staff', icon: Award },
+              { id: 'bookings', label: 'Booking Registry', icon: Calendar },
+              { id: 'student-attendance', label: 'Academy Attendance', icon: UserCheck },
+              { id: 'attendance', label: 'Staff Logs', icon: Fingerprint },
+              { id: 'programs', label: 'Master Catalog', icon: Settings }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setView(tab.id)}
+                className={`flex items-center gap-2.5 px-6 py-3 rounded-[22px] text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                  view === tab.id 
+                    ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20' 
+                    : 'text-[#36454F] hover:text-[#CE2029] hover:bg-[#CE2029]/5'
+                }`}
+              >
+                <tab.icon size={14} />
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Content Area */}
         <div className="min-h-[600px]">
           {view === 'students' && (
              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-               <div className="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
-                 <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Student Registry</h3>
-                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
-                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                         Real-time Enrollment Monitoring
-                      </div>
-                    </div>
-                    <button onClick={handleAddStudent} className="px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[#1e293b] text-[10px] font-black uppercase tracking-widest hover:border-[#CE2029] transition-all">Add Student</button>
-                 </div>
-                 
-                 <div className="overflow-x-auto">
-                   <table className="w-full">
-                     <thead>
-                       <tr className="bg-slate-50/50">
-                         {['#', 'Student Name', 'Parent Name', 'Group', 'Coaching Type', 'Price', 'Time Slot', 'Level', 'Phone', 'Status', 'Date', 'Paid', 'Pending', 'Actions'].map((h, i) => (
-                           <th key={i} className="px-4 py-4 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 whitespace-nowrap">{h}</th>
-                         ))}
-                       </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-50">
-                       {filteredStudents.map((stu, i) => (
-                         <tr key={stu.id} className="hover:bg-slate-50 transition-colors group">
-                           <td className="px-4 py-4">
-                             <span className="text-[10px] font-black text-slate-300">{i + 1}</span>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[10px] font-black text-[#1e293b] uppercase leading-none whitespace-nowrap">{stu.name}</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[10px] font-black text-slate-500 uppercase leading-none whitespace-nowrap">{stu.parent}</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[9px] font-black text-[#1e293b]">G{stu.group}</span>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[10px] font-black text-[#CE2029] tracking-tighter uppercase leading-none whitespace-nowrap">{stu.type}</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[10px] font-black text-[#1e293b] whitespace-nowrap">OMR {stu.price}.00</p>
-                           </td>
-                           <td className="px-4 py-4 whitespace-nowrap">
-                              <p className="text-[10px] font-black text-[#1e293b] uppercase leading-none">{stu.slot}</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[9px] font-black text-[#CE2029] tracking-widest leading-none uppercase">{stu.level}</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[10px] font-black text-slate-400 leading-none">{stu.phone}</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
-                                stu.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'
-                              }`}>
-                                {stu.status}
-                              </span>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[10px] font-black text-slate-400 leading-none whitespace-nowrap">{stu.date}</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className="text-[10px] font-black text-emerald-600 whitespace-nowrap">OMR {stu.paid}.00</p>
-                           </td>
-                           <td className="px-4 py-4">
-                              <p className={`text-[10px] font-black whitespace-nowrap ${stu.pending > 0 ? 'text-orange-600' : 'text-slate-300'}`}>OMR {stu.pending}.00</p>
-                           </td>
-                           <td className="px-4 py-4">
-                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => handleEditStudent(stu)} className="p-1.5 rounded-lg bg-white border border-slate-100 text-slate-400 hover:text-[#CE2029] transition-all shadow-sm"><Edit3 size={11} /></button>
-                                <button onClick={() => handleDeleteStudent(stu.id)} className="p-1.5 rounded-lg bg-white border border-slate-100 text-slate-400 hover:text-[#CE2029] transition-all shadow-sm"><Trash2 size={11} /></button>
-                             </div>
-                           </td>
-                         </tr>
-                       ))}
-                     </tbody>
-                   </table>
-                 </div>
-               </div>
+                <CoachingStudentMatrix arenaId={selectedArenaId} batches={batches} />
              </motion.div>
           )}
 
@@ -651,12 +619,14 @@ const CoachingAdmin = () => {
                      Schedule & Load Monitoring
                   </div>
                 </div>
-                <button 
-                  onClick={handleNewBatch}
-                  className="px-6 py-3 bg-[#CE2029] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:-translate-y-1 transition-all"
-                >
-                  Create New Batch
-                </button>
+                {!isReadOnly && (
+                  <button 
+                    onClick={handleNewBatch}
+                    className="px-6 py-3 bg-[#CE2029] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:-translate-y-1 transition-all"
+                  >
+                    Create New Batch
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch content-start">
@@ -850,6 +820,47 @@ const CoachingAdmin = () => {
                   </div>
                )}
 
+               <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                     <h4 className="text-[12px] font-black uppercase text-[#1e293b] italic tracking-tighter flex items-center gap-2">
+                        <Users size={16} className="text-[#CE2029]" />
+                        Live Staff Presence
+                     </h4>
+                     <button onClick={() => setView('attendance')} className="text-[9px] font-black text-[#CE2029] uppercase tracking-widest hover:underline">View Detailed Logs</button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                     {attendance.slice(0, 4).map((log, i) => (
+                        <motion.div 
+                           key={i}
+                           initial={{ opacity: 0, x: -20 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           transition={{ delay: i * 0.1 }}
+                           className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4"
+                        >
+                           <div className="w-10 h-10 rounded-2xl bg-[#CE2029]/5 flex items-center justify-center text-[#CE2029] text-xs font-black border border-[#CE2029]/10">
+                              {log.coachName.charAt(0)}
+                           </div>
+                           <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-black text-[#1e293b] uppercase truncate">{log.coachName}</p>
+                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{log.arenaName}</p>
+                           </div>
+                           <div className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${
+                              log.status === 'present' ? 'bg-emerald-500/10 text-emerald-500' : 
+                              log.status === 'late' ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'
+                           }`}>
+                              {log.status}
+                           </div>
+                        </motion.div>
+                     ))}
+                     {attendance.length === 0 && (
+                        <div className="col-span-full py-10 bg-white rounded-3xl border border-slate-100 border-dashed text-center">
+                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No staff logs for today yet</p>
+                        </div>
+                     )}
+                  </div>
+               </div>
+
                {(studentAttendanceMode === 'monthly' || studentAttendanceMode === 'yearly') && (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                      <div className="lg:col-span-2 p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm h-[420px] relative">
@@ -967,25 +978,45 @@ const CoachingAdmin = () => {
                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
                   <div className="p-8 border-b border-slate-50 flex items-center justify-between">
                      <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Attendance Matrix</h3>
+                     <button 
+                        onClick={fetchAttendanceLogs}
+                        disabled={isRefreshingAtt}
+                        className={`px-4 py-2 rounded-xl border border-slate-100 text-[10px] font-black uppercase tracking-widest transition-all ${isRefreshingAtt ? 'opacity-50 cursor-not-allowed' : 'hover:border-[#CE2029] hover:text-[#CE2029]'}`}
+                     >
+                        {isRefreshingAtt ? 'Syncing...' : 'Refresh Logs'}
+                     </button>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-widest">
                           <th className="px-8 py-5 text-left">Coach</th>
-                          <th className="px-8 py-5 text-left">Entry</th>
-                          <th className="px-8 py-5 text-left">Exit</th>
+                          <th className="px-8 py-5 text-left">Arena</th>
+                          <th className="px-8 py-5 text-left">Date</th>
+                          <th className="px-8 py-5 text-left">Check-In</th>
+                          <th className="px-8 py-5 text-left">Check-Out</th>
                           <th className="px-8 py-5 text-left">Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {attendance.map(log => (
                           <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-8 py-5 text-[11px] font-black text-[#1e293b] uppercase italic tracking-tighter">{log.coachName}</td>
+                            <td className="px-8 py-5">
+                              <div className="flex flex-col">
+                                <span className="text-[11px] font-black text-[#1e293b] uppercase italic tracking-tighter">{log.coachName}</span>
+                                <span className="text-[8px] font-bold text-slate-400 uppercase">ID: {log.id.slice(-6).toUpperCase()}</span>
+                              </div>
+                            </td>
+                            <td className="px-8 py-5 text-[10px] font-black text-[#CE2029] uppercase tracking-widest">{log.arenaName}</td>
+                            <td className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">{log.date}</td>
                             <td className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.checkIn}</td>
                             <td className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.checkOut}</td>
                             <td className="px-8 py-5">
-                              <span className="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600">
+                              <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                                log.status === 'present' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                log.status === 'late' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                'bg-red-50 text-red-600 border border-red-100'
+                              }`}>
                                 {log.status}
                               </span>
                             </td>
