@@ -10,6 +10,7 @@ import { listMyBookings } from '../../../services/bookingsApi';
 import { listMyEventRegistrations, listMyEnrollments, getMyEnrollmentById } from '../../../services/meApi';
 import { mapMeBookingToDashboardCard, mapMeEnrollmentToDashboardCard } from '../../../utils/meBookingAdapter';
 import { mapEventRegistrationToDashboardCard } from '../../../utils/eventRegistrationAdapter';
+import { storage } from '../../../utils/storage';
 
 const BookingDetails = () => {
   const { state } = useLocation();
@@ -26,6 +27,19 @@ const BookingDetails = () => {
       try {
         setLoading(true);
         setError(null);
+
+        if (!isApiConfigured() || !getAuthToken()) {
+          // Fallback to local storage for demo/offline
+          const savedBookings = JSON.parse(storage.getItem('userBookings') || '[]');
+          const local = savedBookings.find(b => String(b.id) === String(id));
+          if (local) {
+            setBooking(local);
+          } else {
+            setError('Booking not found.');
+          }
+          setLoading(false);
+          return;
+        }
 
         // 1. Try fetching specific enrollment first
         try {
@@ -57,8 +71,8 @@ const BookingDetails = () => {
         } else if (evRaw) {
           setBooking(mapEventRegistrationToDashboardCard(evRaw));
         } else {
-          // 3. Last fallback: check localStorage
-          const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+          // 3. Last fallback: check storage
+          const savedBookings = JSON.parse(storage.getItem('userBookings') || '[]');
           const found = savedBookings.find((b) => String(b.id) === String(id));
           if (found) {
             setBooking(found);
@@ -78,6 +92,12 @@ const BookingDetails = () => {
       fetchBookingDetails();
     }
   }, [id]);
+  
+  useEffect(() => {
+    if (booking?.arenaName) {
+      document.title = `Booking at ${booking.arenaName} | AMM Sports`;
+    }
+  }, [booking]);
 
   if (loading) return (
     <div className={`p-20 text-center ${'text-slate-400'}`}>

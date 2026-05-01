@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Users, ClipboardCheck,
   ChevronLeft, ChevronRight, CalendarDays, TrendingUp, LayoutDashboard,
-  Layers
+  Layers, UserCheck
 } from 'lucide-react';
 import Logo from '../../../assets/Logo (3).png';
 import SidebarImage from '../../../assets/sidebarImage.png';

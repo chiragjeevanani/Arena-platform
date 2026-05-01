@@ -450,7 +450,7 @@ const EventBanners = () => {
           { label: 'Total Events', value: stats.totalEvents, icon: <EmojiEvents sx={{ fontSize: 20 }} />, color: '#CE2029' },
           { label: 'Upcoming', value: stats.upcoming.toString().padStart(2, '0'), icon: <CalendarMonth sx={{ fontSize: 20 }} />, color: '#3B82F6' },
           { label: 'Athletes', value: stats.athletes >= 1000 ? `${(stats.athletes / 1000).toFixed(1)}K` : stats.athletes.toString(), icon: <Groups sx={{ fontSize: 20 }} />, color: '#10B981' },
-          { label: 'Net Revenue', value: `${stats.revenue.toLocaleString()} OMR`, icon: <MonetizationOn sx={{ fontSize: 20 }} />, color: '#8B5CF6' }
+          { label: 'Net Revenue', value: `${stats.revenue.toLocaleString()} OMR`, icon: <MonetizationOn sx={{ fontSize: 20 }} />, color: '#06B6D4' }
         ].map((stat, i) => (
           <Grid item xs={12} sm={6} md={3} key={i}>
             <PremiumCard sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>

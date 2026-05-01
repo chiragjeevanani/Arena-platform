@@ -18,10 +18,6 @@ const isMongoContentId = (id) => typeof id === 'string' && /^[a-f0-9]{24}$/i.tes
 
 const CATEGORY_OPTIONS = [
   { label: 'All Arenas', value: '/arenas' },
-  { label: 'Badminton Arenas', value: '/arenas?category=Badminton' },
-  { label: 'Table Tennis Arenas', value: '/arenas?category=Table Tennis' },
-  { label: 'Tennis Arenas', value: '/arenas?category=Tennis' },
-  { label: 'Football Arenas', value: '/arenas?category=Football' },
   { label: 'Coaching Classes', value: '/coaching' },
   { label: 'Events & Tournaments', value: '/events' },
   { label: 'Membership Plans', value: '/membership' },

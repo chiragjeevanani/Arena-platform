@@ -9,6 +9,7 @@ import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { patchMyProfile } from '../../../services/meApi';
 import { meRequest } from '../../../services/authApi';
+import { storage } from '../../../utils/storage';
 
 const DEFAULT_AVATAR =
   'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop';
@@ -20,7 +21,7 @@ const EditProfile = () => {
 
   const fileInputRef = useRef(null);
   const [profileImage, setProfileImage] = useState(
-    localStorage.getItem('userProfileImage') || DEFAULT_AVATAR
+    storage.getItem('userProfileImage') || DEFAULT_AVATAR
   );
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -49,7 +50,7 @@ const EditProfile = () => {
     setSaveError('');
     setSaving(true);
     try {
-      localStorage.setItem('userProfileImage', profileImage);
+      storage.setItem('userProfileImage', profileImage);
       if (isApiConfigured() && getAuthToken()) {
         await patchMyProfile({
           name: name.trim(),
@@ -68,7 +69,7 @@ const EditProfile = () => {
           avatar: u.avatarUrl || profileImage || DEFAULT_AVATAR,
         };
         setUser(mapped);
-        localStorage.setItem('user', JSON.stringify(mapped));
+        storage.setItem('user', JSON.stringify(mapped));
       }
       navigate('/profile');
     } catch (e) {

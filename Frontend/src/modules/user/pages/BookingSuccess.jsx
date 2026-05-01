@@ -9,6 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { shouldPersistBookingSuccessToUserBookings } from '../../../utils/bookingSuccessPersistence';
+import { storage } from '../../../utils/storage';
 
 // Shuttlecock particle for confetti
 const ShuttleParticle = ({ delay, x, y, isDark }) => (
@@ -48,7 +49,7 @@ const BookingSuccess = () => {
   useEffect(() => {
     // Save booking/enrollment to localStorage for persistence in Dashboard
     if (state) {
-      const existingBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+      const existingBookings = JSON.parse(storage.getItem('userBookings') || '[]');
 
       let newBooking;
       if (state.type === 'membership') {
@@ -77,7 +78,7 @@ const BookingSuccess = () => {
           expiryDate: '2027-04-02', // 1 year approx for demo
           benefits: state.plan?.benefits
         };
-        localStorage.setItem('userMembership', JSON.stringify(membershipData));
+        storage.setItem('userMembership', JSON.stringify(membershipData));
       } else if (state.type === 'coaching' || state.batch) {
         // Coaching enrollment
         newBooking = {
@@ -120,7 +121,7 @@ const BookingSuccess = () => {
         newBooking.id &&
         !existingBookings.find((b) => b.id === newBooking.id)
       ) {
-        localStorage.setItem('userBookings', JSON.stringify([newBooking, ...existingBookings]));
+        storage.setItem('userBookings', JSON.stringify([newBooking, ...existingBookings]));
       }
     }
 

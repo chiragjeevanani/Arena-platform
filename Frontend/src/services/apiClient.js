@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config';
+import { storage } from '../utils/storage';
 
 const TOKEN_KEY = 'authToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
@@ -10,26 +11,26 @@ const inFlightGet = new Map();
 let refreshInFlight = null;
 
 export function getAuthToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return storage.getItem(TOKEN_KEY);
 }
 
 export function setAuthToken(token) {
-  if (token) localStorage.setItem(TOKEN_KEY, token);
-  else localStorage.removeItem(TOKEN_KEY);
+  if (token) storage.setItem(TOKEN_KEY, token);
+  else storage.removeItem(TOKEN_KEY);
 }
 
 export function getRefreshToken() {
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
+  return storage.getItem(REFRESH_TOKEN_KEY);
 }
 
 export function setRefreshToken(token) {
-  if (token) localStorage.setItem(REFRESH_TOKEN_KEY, token);
-  else localStorage.removeItem(REFRESH_TOKEN_KEY);
+  if (token) storage.setItem(REFRESH_TOKEN_KEY, token);
+  else storage.removeItem(REFRESH_TOKEN_KEY);
 }
 
 export function clearAuthTokens() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  storage.removeItem(TOKEN_KEY);
+  storage.removeItem(REFRESH_TOKEN_KEY);
 }
 
 function shouldAttempt401Refresh(path, skipAuth, retriedAfter401) {

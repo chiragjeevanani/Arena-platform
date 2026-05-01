@@ -16,6 +16,7 @@ import MatchBanner from '../components/MatchBanner';
 import ArenaCard from '../components/ArenaCard';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { fetchPublishedEvents } from '../../../services/eventsApi';
 import { normalizeCmsEventForList } from '../../../utils/eventAdapter';
 
@@ -27,7 +28,7 @@ const HOME_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 const UserHome = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn } = useAuth();
   const [apiArenas, setApiArenas] = useState([]);
   const [apiEvents, setApiEvents] = useState([]);
   const [heroBanners, setHeroBanners] = useState([]);
@@ -209,13 +210,30 @@ const UserHome = () => {
                 </span>
               </div>
 
-              {/* Mobile Icons */}
               <div className="flex items-center gap-2">
-                <button onClick={() => navigate('/profile')} className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm">
+                <button 
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      navigate('/login');
+                      return;
+                    }
+                    navigate('/profile');
+                  }} 
+                  className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm"
+                >
                   <PlayerAvatarIcon size={16} className="text-[#fffdd0]" />
                 </button>
 
-                <button onClick={() => navigate('/profile/notifications')} className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm">
+                <button 
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      navigate('/login');
+                      return;
+                    }
+                    navigate('/profile/notifications');
+                  }} 
+                  className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm"
+                >
                   <Bell size={16} className="text-[#fffdd0]" />
                   <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#fffdd0] rounded-full shadow-[0_0_5px_#fffdd0]" />
                 </button>

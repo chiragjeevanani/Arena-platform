@@ -7,6 +7,7 @@ import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { patchMyProfile } from '../../../services/meApi';
 import { meRequest } from '../../../services/authApi';
+import { storage } from '../../../utils/storage';
 
 const CoachProfile = () => {
   const { isDark } = useTheme();
@@ -72,7 +73,7 @@ const CoachProfile = () => {
           avatar: u.avatarUrl || profileData.avatar,
         };
         setUser(mapped);
-        localStorage.setItem('user', JSON.stringify(mapped));
+        storage.setItem('user', JSON.stringify(mapped));
         setProfileData((prev) => ({
           ...prev,
           name: mapped.name,

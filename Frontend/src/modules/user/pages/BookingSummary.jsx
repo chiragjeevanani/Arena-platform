@@ -9,11 +9,12 @@ import { isApiConfigured } from '../../../services/config';
 import { createMyBooking } from '../../../services/bookingsApi';
 import { getMyWallet } from '../../../services/meApi';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
+import { storage } from '../../../utils/storage';
 import { useEffect } from 'react';
 
 function readStoredArenaSafe() {
   try {
-    const raw = localStorage.getItem('selectedArena');
+    const raw = storage.getItem('selectedArena');
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;

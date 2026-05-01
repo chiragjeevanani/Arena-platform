@@ -140,6 +140,10 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
         <div className="relative">
           <button 
             onClick={() => {
+                if (!user) {
+                  navigate('/admin/login');
+                  return;
+                }
                 setShowProfileMenu(!showProfileMenu);
                 if (showNotificationsMenu) setShowNotificationsMenu(false);
             }}

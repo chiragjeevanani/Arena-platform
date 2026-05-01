@@ -148,6 +148,10 @@ const CoachTopbar = ({ isCollapsed, setIsCollapsed }) => {
         <div className="relative">
           <button 
             onClick={() => {
+              if (!user) {
+                navigate('/coach/login');
+                return;
+              }
               setShowProfileMenu(!showProfileMenu);
               setShowNotifications(false);
             }}

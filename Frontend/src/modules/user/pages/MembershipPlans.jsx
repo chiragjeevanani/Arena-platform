@@ -11,6 +11,7 @@ import { fetchPublicArenas } from '../../../services/arenasApi';
 import { fetchPublicMembershipPlans } from '../../../services/membershipsPublicApi';
 import { listMyMemberships, purchaseMembership } from '../../../services/meApi';
 import { mapPublicPlanToCard } from '../../../utils/membershipPlanAdapter';
+import { storage } from '../../../utils/storage';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -368,7 +369,7 @@ const MembershipPlans = () => {
   useEffect(() => {
     if (isApiConfigured() && getAuthToken()) return undefined;
     try {
-      const saved = localStorage.getItem('userMembership');
+      const saved = storage.getItem('userMembership');
       if (saved) setUserMembership(JSON.parse(saved));
     } catch {
       setUserMembership(NO_MEMBERSHIP);
@@ -514,7 +515,7 @@ const MembershipPlans = () => {
       return;
     }
     const inactiveMembership = { ...userMembership, status: 'none', planId: null };
-    localStorage.setItem('userMembership', JSON.stringify(inactiveMembership));
+    storage.setItem('userMembership', JSON.stringify(inactiveMembership));
     setUserMembership(inactiveMembership);
     setCancelling(null);
   };

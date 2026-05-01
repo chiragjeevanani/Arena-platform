@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { storage } from '../../../utils/storage';
 
 const ThemeContext = createContext();
 
@@ -26,7 +27,7 @@ export const ThemeProvider = ({ children }) => {
       root.classList.add('dark');
       root.classList.remove('light');
     }
-    localStorage.setItem('arena-theme', theme);
+    storage.setItem('arena-theme', theme);
   }, [theme]);
 
   return (

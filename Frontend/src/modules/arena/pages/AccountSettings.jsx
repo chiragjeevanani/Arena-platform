@@ -6,6 +6,7 @@ import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { patchMyProfile } from '../../../services/meApi';
 import { meRequest } from '../../../services/authApi';
+import { storage } from '../../../utils/storage';
 
 const AccountSettings = () => {
   const { user, setUser } = useAuth();
@@ -15,7 +16,7 @@ const AccountSettings = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [notificationPrefs, setNotificationPrefs] = useState([true, true, false, true]);
-  const [profileImg, setProfileImg] = useState(localStorage.getItem('arena_manager_img'));
+  const [profileImg, setProfileImg] = useState(storage.getItem('arena_manager_img'));
   const [showImgModal, setShowImgModal] = useState(false);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const AccountSettings = () => {
     setSaveError('');
     setIsSaving(true);
     try {
-      localStorage.setItem('arena_manager_img', profileImg || '');
+      storage.setItem('arena_manager_img', profileImg || '');
       if (isApiConfigured() && getAuthToken()) {
         await patchMyProfile({
           name: name.trim(),
@@ -53,7 +54,7 @@ const AccountSettings = () => {
           avatar: u.avatarUrl || profileImg || '',
         };
         setUser(mapped);
-        localStorage.setItem('user', JSON.stringify(mapped));
+        storage.setItem('user', JSON.stringify(mapped));
       }
     } catch (e) {
       setSaveError(e.message || 'Could not save');
@@ -68,7 +69,7 @@ const AccountSettings = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileImg(reader.result);
-        localStorage.setItem('arena_manager_img', reader.result);
+        storage.setItem('arena_manager_img', reader.result);
         // Dispatch event for other components to update
         window.dispatchEvent(new Event('storage_update'));
       };

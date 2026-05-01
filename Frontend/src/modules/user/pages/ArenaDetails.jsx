@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, MapPin, Star, Wifi, ParkingCircle, Coffee, ShowerHead
 import ShuttleButton from '../components/ShuttleButton';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 import CourtImage from '../../../assets/court.jpeg';
+import { storage } from '../../../utils/storage';
 
 import { isApiConfigured } from '../../../services/config';
 import { fetchPublicArenaById } from '../../../services/arenasApi';
@@ -40,6 +41,12 @@ const ArenaDetails = () => {
       cancelled = true;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (arena?.name) {
+      document.title = `${arena.name} | AMM Sports`;
+    }
+  }, [arena]);
 
   if (loadError && !arena) {
     return (
@@ -149,7 +156,7 @@ const ArenaDetails = () => {
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  localStorage.setItem('selectedArena', JSON.stringify({
+                  storage.setItem('selectedArena', JSON.stringify({
                     ...arena,
                     selectedCourt: court,
                   }));
@@ -158,7 +165,7 @@ const ArenaDetails = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    localStorage.setItem('selectedArena', JSON.stringify({
+                    storage.setItem('selectedArena', JSON.stringify({
                       ...arena,
                       selectedCourt: court,
                     }));
@@ -210,7 +217,7 @@ const ArenaDetails = () => {
             className="!bg-[#CE2029] !text-white hover:!bg-[#CE2029]/90 hover:shadow-[#CE2029]/20 px-8"
             onClick={() => {
               if (!firstCourt) return;
-              localStorage.setItem('selectedArena', JSON.stringify({
+              storage.setItem('selectedArena', JSON.stringify({
                 ...arena,
                 selectedCourt: firstCourt,
               }));

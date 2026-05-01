@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken, setAuthToken, setRefreshToken, clearAuthTokens } from '../../../services/apiClient';
 import { meRequest, logoutRequest } from '../../../services/authApi';
+import { storage } from '../../../utils/storage';
 
 const AuthContext = createContext();
 
@@ -29,7 +30,7 @@ function mapApiUser(u) {
 
 function readStoredUser() {
   try {
-    const saved = localStorage.getItem('user');
+    const saved = storage.getItem('user');
     return saved ? JSON.parse(saved) : null;
   } catch {
     return null;
@@ -50,8 +51,8 @@ export const AuthProvider = ({ children }) => {
   const clearSession = useCallback(() => {
     setUser(null);
     clearAuthTokens();
-    localStorage.removeItem('user');
-    localStorage.removeItem('isLoggedIn');
+    storage.removeItem('user');
+    storage.removeItem('isLoggedIn');
   }, []);
 
   useEffect(() => {
@@ -68,8 +69,8 @@ export const AuthProvider = ({ children }) => {
         if (cancelled) return;
         const mapped = mapApiUser(data.user);
         setUser(mapped);
-        localStorage.setItem('user', JSON.stringify(mapped));
-        localStorage.setItem('isLoggedIn', 'true');
+        storage.setItem('user', JSON.stringify(mapped));
+        storage.setItem('isLoggedIn', 'true');
       } catch {
         if (!cancelled) clearSession();
       }
@@ -92,8 +93,8 @@ export const AuthProvider = ({ children }) => {
         }
         const mapped = mapApiUser(payload.user);
         setUser(mapped);
-        localStorage.setItem('user', JSON.stringify(mapped));
-        localStorage.setItem('isLoggedIn', 'true');
+        storage.setItem('user', JSON.stringify(mapped));
+        storage.setItem('isLoggedIn', 'true');
         return;
       }
       setRefreshToken(null);
@@ -104,9 +105,9 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     await logoutRequest();
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userBookings');
+    storage.removeItem('user');
+    storage.removeItem('isLoggedIn');
+    storage.removeItem('userBookings');
   }, []);
 
   const hasPermission = useCallback(() => {

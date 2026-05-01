@@ -12,10 +12,11 @@ import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { isPrimeTimeSlot } from '../../../utils/slotTime';
 import { useAuth } from '../context/AuthContext';
+import { storage } from '../../../utils/storage';
 
 function readStoredArena() {
   try {
-    const raw = localStorage.getItem('selectedArena');
+    const raw = storage.getItem('selectedArena');
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;

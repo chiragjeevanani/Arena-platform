@@ -105,7 +105,13 @@ const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
         {/* Profile Dropdown */}
         <div className="relative">
           <button
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            onClick={() => {
+              if (!user) {
+                navigate('/arena/login');
+                return;
+              }
+              setShowProfileMenu(!showProfileMenu);
+            }}
             className="flex items-center gap-3 pl-3 pr-2 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-[#CE2029] hover:shadow-sm transition-all"
           >
             <div className="text-right hidden sm:block">

@@ -19,6 +19,7 @@ import {
 import { listAdminInventoryItems, createAdminPosSale, listAdminPosSales } from '../../../services/adminOpsApi';
 import { resolveLiveOpsArenaScope } from '../../../utils/liveOpsScope';
 import { mapArenaInventoryItemToPosProduct } from '../../../utils/arenaInventoryAdapter';
+import { fetchPublicArenas } from '../../../services/arenasApi';
 
 const STATIC_CATALOG = [
   { id: 1, name: 'Yonex Mavis 350 (Y)', price: 1.200, category: 'Equipment', stock: 42, sku: 'SN-001' },
@@ -33,8 +34,21 @@ const CATEGORIES_FULL = ['All', 'Equipment', 'Drinks', 'Accessories', 'Services'
 
 const RetailPOS = () => {
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const arenaIdFromQuery = searchParams.get('arenaId');
+
+  const [arenas, setArenas] = useState([]);
+  const [isLoadingArenas, setIsLoadingArenas] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === 'SUPER_ADMIN' && isApiConfigured()) {
+      setIsLoadingArenas(true);
+      fetchPublicArenas()
+        .then(res => setArenas(res.arenas || []))
+        .catch(err => console.error('Failed to load arenas for POS:', err))
+        .finally(() => setIsLoadingArenas(false));
+    }
+  }, [user]);
 
   const opsScope = useMemo(
     () =>
@@ -324,9 +338,37 @@ const RetailPOS = () => {
             </div>
 
             {user?.role === 'SUPER_ADMIN' && isApiConfigured() && getAuthToken() && !opsScope.live ? (
-              <div className="mb-4 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-semibold text-amber-950">
-                Live POS catalog: add <span className="font-mono">?arenaId=&lt;Mongo id&gt;</span> to this URL to sell from API inventory (
-                <span className="font-mono">/api/admin/pos/sales</span>).
+              <div className="mb-4 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-semibold text-amber-950 flex items-center justify-between">
+                <span>
+                  Live POS catalog: Select an arena to sell from API inventory.
+                </span>
+                <select 
+                  className="ml-4 bg-white border border-amber-300 rounded-sm px-2 py-1 outline-none text-[10px] font-bold"
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (id) {
+                      setSearchParams({ arenaId: id });
+                    }
+                  }}
+                  value={arenaIdFromQuery || ''}
+                >
+                  <option value="">Select Arena...</option>
+                  {arenas.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : user?.role === 'SUPER_ADMIN' && opsScope.live ? (
+              <div className="mb-4 rounded-sm border border-green-200 bg-green-50 px-3 py-2 text-[10px] font-semibold text-green-950 flex items-center justify-between">
+                <span>
+                  Live POS Mode: Selling for <span className="font-black uppercase">{arenas.find(a => a.id === opsScope.arenaId)?.name || 'Selected Arena'}</span>
+                </span>
+                <button 
+                  onClick={() => setSearchParams({})}
+                  className="text-[#CE2029] hover:underline uppercase text-[9px] font-black"
+                >
+                  Switch Arena
+                </button>
               </div>
             ) : null}
 

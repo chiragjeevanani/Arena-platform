@@ -15,6 +15,7 @@ import BookingCard from '../components/BookingCard';
 import NotificationToast, { useConflictToasts } from '../components/NotificationToast';
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
+import { storage } from '../../../utils/storage';
 
 // Full Receipt Modal
 const ReceiptModal = ({ receipt, onClose }) => (
@@ -150,7 +151,7 @@ const Dashboard = () => {
   const [allBookings, setAllBookings] = useState([]);
 
   const refetchBookings = useCallback(async () => {
-    const savedBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+    const savedBookings = JSON.parse(storage.getItem('userBookings') || '[]');
     if (!isApiConfigured() || !getAuthToken()) {
       setAllBookings(savedBookings);
       return;
@@ -201,7 +202,7 @@ const Dashboard = () => {
       
       // If we got valid data from server, we can safely clear old mock bookings 
       // that are not on the server to prevent "ghost" bookings.
-      localStorage.setItem('userBookings', JSON.stringify([]));
+      storage.setItem('userBookings', JSON.stringify([]));
     } catch (err) {
       console.error('DEBUG: Dashboard Fetch Error:', err);
       // When API is active, we should NOT fallback to old local mock data 

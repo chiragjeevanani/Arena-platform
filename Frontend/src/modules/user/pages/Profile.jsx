@@ -10,6 +10,7 @@ import { listMyBookings } from '../../../services/bookingsApi';
 import { getMyWallet, listMyMemberships, listMyEnrollments, getMyEnrollmentById } from '../../../services/meApi';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
+import { storage } from '../../../utils/storage';
 
 const DEFAULT_AVATAR =
   'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop';
@@ -59,6 +60,9 @@ const Profile = () => {
   const [favoriteArenas] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [stats, setStats] = useState({ arenasVisited: 0, bookingsTotal: 0 });
+  const [profileImage, setProfileImage] = useState(
+    storage.getItem('userProfileImage') || DEFAULT_AVATAR
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -129,13 +133,11 @@ const Profile = () => {
             image: DEFAULT_COACH_IMG,
           });
 
-          // Fetch detailed metrics for the active enrollment
           try {
             const detailRes = await getMyEnrollmentById(enr.id);
             if (detailRes.enrollment?.metrics?.length > 0) {
               const rawMetrics = detailRes.enrollment.metrics;
               
-              // Helper to group 29 metrics into readable categories
               const categorize = (items) => {
                 const groups = {
                   'Technical': [],
@@ -208,13 +210,10 @@ const Profile = () => {
   return (
     <div className={`min-h-screen pb-24 relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0a0a0c]' : 'bg-[#fafafa]'}`}>
       <div id="profile-page-content">
-        {/* Background Decorative Glows */}
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#CE2029]/10 rounded-full blur-[100px] pointer-events-none" />
         <div className={`absolute top-[40%] -left-32 w-[300px] h-[300px] rounded-full blur-[100px] pointer-events-none ${isDark ? 'bg-blue-500/10' : 'bg-blue-400/10'}`} />
 
-        {/* HEADER SECTION (Red Bar matching other global layouts) */}
         <div className={`px-4 md:px-6 py-6 pb-8 rounded-b-[2rem] relative overflow-hidden transition-all duration-500 z-[100] mb-6 shadow-xl bg-[#CE2029]`}>
-          {/* Subtle dynamic pattern overlay */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:16px_16px]" />
           
           <div className="flex items-center justify-between relative z-10 w-full max-w-5xl mx-auto">
@@ -229,7 +228,7 @@ const Profile = () => {
                 <div className="relative group cursor-pointer" onClick={() => navigate('/profile/edit')}>
                   <div className="w-11 h-11 rounded-full overflow-hidden border-2 p-0.5 shadow-md border-white/20">
                     <img
-                      src={user?.avatar || localStorage.getItem('userProfileImage') || DEFAULT_AVATAR}
+                      src={profileImage}
                       alt="User"
                       className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
                     />
@@ -254,10 +253,8 @@ const Profile = () => {
 
         <div className="px-4 md:px-6 max-w-5xl mx-auto relative z-20">
           
-          {/* HERO DASHBOARD GRID */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             
-            {/* 1. Next Match Widget */}
             <div className="md:col-span-8 group">
               <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Next Up</h3>
               {nextMatch ? (
@@ -313,13 +310,12 @@ const Profile = () => {
               )}
             </div>
 
-            {/* 2. Wallet & Finance Snapshot */}
             <div className="md:col-span-4 group">
               <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>My Wallet</h3>
               <div className={`h-[90px] md:h-[102px] rounded-2xl border p-4 flex justify-between relative overflow-hidden transition-all shadow-sm ${
                 isDark 
                   ? 'bg-gradient-to-br from-[#16181f] to-[#12141a] border-white/5 group-hover:border-white/10' 
-                  : 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-800' // Keep it dark and premium even on light mode
+                  : 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-800'
               }`}>
                 <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] bg-[size:12px_12px]" />
                 
@@ -348,10 +344,8 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* SECONDARY GRID */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-6">
             
-            {/* 3. Favorite Arenas (Compact) */}
             <div className="md:col-span-7">
               <div className="flex items-center justify-between mb-2">
                 <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Book It Again</h3>
@@ -383,7 +377,6 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* 4. Active Coaching Combined */}
             <div className="md:col-span-5">
                <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>My Coaching</h3>
                {activeCoaching ? (
@@ -413,7 +406,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* MY MEMBERSHIP SECTION */}
           <div className="mt-6">
             <h3 className={`text-xs font-black uppercase tracking-widest mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>My Membership</h3>
             {membership.status === 'none' ? (

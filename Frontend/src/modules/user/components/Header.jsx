@@ -123,7 +123,13 @@ const Header = () => {
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
               {/* Notification Bell */}
               <button
-                onClick={() => navigate('/profile/notifications')}
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    navigate('/login');
+                    return;
+                  }
+                  navigate('/profile/notifications');
+                }}
                 className="relative w-8 h-8 md:w-9 md:h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 hover:border-[#CE2029]/40 transition-all group"
                 title="Notifications"
               >
