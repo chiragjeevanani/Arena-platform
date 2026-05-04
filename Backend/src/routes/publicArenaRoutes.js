@@ -5,7 +5,7 @@ const {
   getPublishedArenaById,
 } = require('../controllers/publicArenaController');
 const { getCourtAvailability } = require('../controllers/publicAvailabilityController');
-const { listPublishedArenaMembershipPlans } = require('../controllers/publicMembershipPlansController');
+const { listPublishedArenaMembershipPlans, listGlobalMembershipPlans } = require('../controllers/publicMembershipPlansController');
 const { listPublishedArenaCoachingBatches } = require('../controllers/publicCoachingBatchController');
 const { listPublishedCms, getPublishedCmsById } = require('../controllers/publicCmsController');
 const { asyncHandler } = require('../utils/asyncHandler');
@@ -14,6 +14,7 @@ const router = express.Router();
 
 router.get('/arenas', asyncHandler(listPublishedArenas));
 router.get('/arenas/:id', asyncHandler(getPublishedArenaById));
+router.get('/membership-plans', asyncHandler(listGlobalMembershipPlans));
 router.get('/arenas/:arenaId/membership-plans', asyncHandler(listPublishedArenaMembershipPlans));
 router.get('/arenas/:arenaId/coaching-batches', asyncHandler(listPublishedArenaCoachingBatches));
 router.get('/courts/:courtId/availability', asyncHandler(getCourtAvailability));

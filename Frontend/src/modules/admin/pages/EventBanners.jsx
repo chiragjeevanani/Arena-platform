@@ -108,7 +108,7 @@ const EventBanners = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [editFormData, setEditFormData] = useState({ 
     name: '', type: '', status: '', banner: '', description: '', rules: '',
-    date: '', time: '', venue: '', entryFee: '', inclusions: ''
+    date: '', time: '', venue: '', entryFee: '', inclusions: '', sportCategory: 'Badminton'
   });
   const [isEditUploading, setIsEditUploading] = useState(false);
 
@@ -132,7 +132,7 @@ const EventBanners = () => {
       const formattedRules = (editFormData.rules || '').split('\n').map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n');
       const payload = {
         title: editFormData.name,
-        subtitle: `${editFormData.date} | ${editFormData.time} | ${editFormData.venue} | ${editFormData.entryFee || '0'} | ${editFormData.type}`,
+        subtitle: `${editFormData.date} | ${editFormData.time} | ${editFormData.venue} | ${editFormData.entryFee || '0'} | ${editFormData.type} | ${editFormData.sportCategory}`,
         imageUrl: editFormData.banner,
         body: `${editFormData.description || ''}\n\n${formattedRules}`,
         isPublished: editFormData.status === 'Active',
@@ -183,7 +183,8 @@ const EventBanners = () => {
           rules: (c.body || '').split('\n').filter(l => /^[-*•]\s+/.test(l.trim())).map(l => l.trim().replace(/^[-*•]\s+/, '')).join('\n'),
           body: c.body,
           isPublished: c.isPublished,
-          inclusions: c.inclusions || []
+          inclusions: c.inclusions || [],
+          sportCategory: parts[5] || 'Badminton'
         };
       });
       setEvents(mapped);
@@ -503,13 +504,23 @@ const EventBanners = () => {
                       label={event.status}
                       size="small"
                       sx={{
-                        bgcolor: event.status === 'Active' ? '#CE2029' : '#36454F',
-                        color: 'white',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }}
+                    />
+                    <Chip
+                      label={event.sportCategory}
+                      size="small"
+                      sx={{
+                        bgcolor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.8)',
+                        color: isDark ? 'white' : '#36454F',
                         height: 20,
-                        fontSize: '0.6rem',
+                        fontSize: '0.55rem',
                         textTransform: 'uppercase',
                         borderRadius: 1.5,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                        fontWeight: 900,
+                        ml: 0.5,
+                        backdropFilter: 'blur(4px)',
+                        border: '1px solid rgba(255,255,255,0.2)'
                       }}
                     />
                   </Box>
@@ -587,7 +598,8 @@ const EventBanners = () => {
                                   time: event.time || '',
                                   venue: event.venue || '',
                                   entryFee: event.entryFee || '',
-                                  inclusions: (event.inclusions || []).join(', ')
+                                  inclusions: (event.inclusions || []).join(', '),
+                                  sportCategory: event.sportCategory || 'Badminton'
                                 });
                                 setIsEditModalOpen(true);
                                 setActiveCardMenu(null);
@@ -788,6 +800,7 @@ const EventBanners = () => {
     const [formData, setFormData] = useState({
       name: '',
       type: 'Tournament',
+      sportCategory: 'Badminton',
       description: '',
       date: '',
       time: '',
@@ -823,7 +836,7 @@ const EventBanners = () => {
         const payload = {
           kind: 'event',
           title: formData.name,
-          subtitle: `${formData.date} | ${formData.time} | ${formData.venue} | ${formData.entryFee || '0'} | ${formData.type}`,
+          subtitle: `${formData.date} | ${formData.time} | ${formData.venue} | ${formData.entryFee || '0'} | ${formData.type} | ${formData.sportCategory}`,
           imageUrl: bannerPreview,
           isPublished: true, 
           body: `${formData.description || ''}\n\n${formattedRules}`,
@@ -906,6 +919,21 @@ const EventBanners = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <FormControl fullWidth variant="filled">
+                      <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Sport Category</InputLabel>
+                      <Select
+                        label="Sport Category"
+                        disableUnderline
+                        value={formData.sportCategory}
+                        onChange={handleField('sportCategory')}
+                        sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                      >
+                        <MenuItem value="Badminton">Badminton</MenuItem>
+                        <MenuItem value="Table Tennis">Table Tennis</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
                     {bannerPreview ? (
                       <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', height: 56, border: '2px solid #10B981' }}>
                         <img src={bannerPreview} alt="Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -1890,7 +1918,7 @@ const EventBanners = () => {
           </Box>
 
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
                 Event Type
               </Typography>
@@ -1907,12 +1935,34 @@ const EventBanners = () => {
                   }}
                 >
                   <MenuItem value="Tournament">Tournament</MenuItem>
+                  <MenuItem value="Coaching">Coaching</MenuItem>
                   <MenuItem value="Camp">Training Camp</MenuItem>
                   <MenuItem value="Special Event">Special Event</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Sport Category
+              </Typography>
+              <FormControl fullWidth>
+                <Select
+                  value={editFormData.sportCategory}
+                  onChange={(e) => setEditFormData({ ...editFormData, sportCategory: e.target.value })}
+                  sx={{ 
+                    borderRadius: 3, 
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CE202944' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#CE2029' }
+                  }}
+                >
+                  <MenuItem value="Badminton">Badminton</MenuItem>
+                  <MenuItem value="Table Tennis">Table Tennis</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
               <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
                 Deployment Status
               </Typography>

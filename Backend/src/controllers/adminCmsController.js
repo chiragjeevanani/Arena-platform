@@ -12,20 +12,29 @@ async function createCmsContent(req, res) {
     return res.status(400).json({ error: 'Invalid arena id' });
   }
 
-  const doc = await CmsContent.create({
-    kind,
-    arenaId: arenaId && arenaId !== '' ? arenaId : null,
-    title: String(title).trim(),
-    subtitle: subtitle != null ? String(subtitle) : '',
-    body: body != null ? String(body) : '',
-    imageUrl: imageUrl != null ? String(imageUrl) : '',
-    linkUrl: linkUrl != null ? String(linkUrl) : '',
-    sortOrder: sortOrder != null ? Number(sortOrder) : 0,
-    isPublished: Boolean(isPublished),
-    inclusions: Array.isArray(inclusions) ? inclusions : [],
-  });
+  try {
+    const doc = await CmsContent.create({
+      kind,
+      arenaId: arenaId && arenaId !== '' ? arenaId : null,
+      title: String(title).trim(),
+      subtitle: subtitle != null ? String(subtitle) : '',
+      body: body != null ? String(body) : '',
+      imageUrl: imageUrl != null ? String(imageUrl) : '',
+      linkUrl: linkUrl != null ? String(linkUrl) : '',
+      sortOrder: sortOrder != null ? Number(sortOrder) : 0,
+      isPublished: Boolean(isPublished),
+      inclusions: Array.isArray(inclusions) ? inclusions : [],
+    });
 
-  return res.status(201).json({ content: CmsContent.toPublic(doc) });
+    return res.status(201).json({ content: CmsContent.toPublic(doc) });
+  } catch (err) {
+    console.error('CMS Create Error:', err);
+    return res.status(500).json({
+      error: 'Failed to create CMS content',
+      details: err.message,
+      code: err.code // Helps identify MongoDB limits (e.g. 10334 for BSON size)
+    });
+  }
 }
 
 async function listCmsContent(req, res) {
@@ -88,3 +97,4 @@ async function deleteCmsContent(req, res) {
 }
 
 module.exports = { createCmsContent, listCmsContent, updateCmsContent, deleteCmsContent };
+

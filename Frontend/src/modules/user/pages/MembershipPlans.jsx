@@ -8,7 +8,7 @@ import {
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { fetchPublicArenas } from '../../../services/arenasApi';
-import { fetchPublicMembershipPlans } from '../../../services/membershipsPublicApi';
+import { fetchPublicMembershipPlans, fetchGlobalMembershipPlans } from '../../../services/membershipsPublicApi';
 import { listMyMemberships, purchaseMembership } from '../../../services/meApi';
 import { mapPublicPlanToCard } from '../../../utils/membershipPlanAdapter';
 import { storage } from '../../../utils/storage';
@@ -421,21 +421,40 @@ const MembershipPlans = () => {
     let cancelled = false;
     (async () => {
       try {
-        const { arenas } = await fetchPublicArenas();
         const planMap = new Map();
-        for (const a of arenas || []) {
-          try {
-            const data = await fetchPublicMembershipPlans(a.id);
-            const name = a.name || 'Arena';
-            for (const p of data.plans || []) {
-              if (!planMap.has(p.id)) {
-                planMap.set(p.id, mapPublicPlanToCard(p, name));
-              }
+        
+        // 1. Fetch Global Plans first
+        try {
+          const globalData = await fetchGlobalMembershipPlans();
+          for (const p of globalData.plans || []) {
+            if (!planMap.has(p.id)) {
+              planMap.set(p.id, mapPublicPlanToCard(p, 'Global'));
             }
-          } catch {
-            /* skip arena */
           }
+        } catch (e) {
+          console.error("Global plans fetch failed", e);
         }
+
+        // 2. Fetch Arena-specific plans
+        try {
+          const { arenas } = await fetchPublicArenas();
+          for (const a of arenas || []) {
+            try {
+              const data = await fetchPublicMembershipPlans(a.id);
+              const name = a.name || 'Arena';
+              for (const p of data.plans || []) {
+                if (!planMap.has(p.id)) {
+                  planMap.set(p.id, mapPublicPlanToCard(p, name));
+                }
+              }
+            } catch {
+              /* skip arena */
+            }
+          }
+        } catch {
+          /* No published arenas yet, that's okay */
+        }
+
         if (!cancelled) setPlanList(Array.from(planMap.values()));
       } catch {
         if (!cancelled) setPlanList([]);

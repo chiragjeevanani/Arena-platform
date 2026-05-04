@@ -209,8 +209,8 @@ export default function WalkInBookingModal({ onClose, onSuccess, arenaId }) {
         <div className="bg-[#36454F] px-6 py-5 text-white shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-[10px] text-white/50 font-black uppercase tracking-widest">Walk-In Booking</p>
-              <h2 className="text-lg font-black mt-0.5">New Reservation</h2>
+              <p className="text-[10px] text-white/70 font-black uppercase tracking-widest">Walk-In Booking</p>
+              <h2 className="text-xl font-black mt-0.5 text-white tracking-tight">New Reservation</h2>
             </div>
             <button onClick={onClose} className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all">
               <X size={16} />
@@ -221,18 +221,20 @@ export default function WalkInBookingModal({ onClose, onSuccess, arenaId }) {
           <div className="flex items-center gap-1.5">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-1.5 flex-1">
-                <div className={`flex items-center gap-1.5 flex-1 ${i > step ? 'opacity-40' : ''}`}>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border transition-all ${
-                    i < step ? 'bg-[#CE2029] border-[#CE2029] text-white' :
-                    i === step ? 'bg-white border-white text-[#36454F]' :
-                    'bg-transparent border-white/40 text-white/60'
+                <div className={`flex items-center gap-1.5 flex-1 ${i > step ? 'opacity-60' : ''}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all ${
+                    i < step ? 'bg-emerald-500 border-emerald-500 text-white' :
+                    i === step ? 'bg-white border-white text-[#36454F] shadow-lg shadow-white/20' :
+                    'bg-transparent border-white/20 text-white/80'
                   }`}>
-                    {i < step ? <CheckCircle2 size={12} /> : i + 1}
+                    {i < step ? <Check size={12} strokeWidth={4} /> : i + 1}
                   </div>
-                  <span className="text-[9px] font-black uppercase tracking-widest hidden sm:block">{stepLabel[i]}</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest hidden sm:block ${i === step ? 'text-white' : 'text-white/60'}`}>
+                    {stepLabel[i]}
+                  </span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <ChevronRight size={12} className="text-white/30 shrink-0" />
+                  <ChevronRight size={12} className="text-white/20 shrink-0" />
                 )}
               </div>
             ))}
@@ -255,8 +257,8 @@ export default function WalkInBookingModal({ onClose, onSuccess, arenaId }) {
             {/* STEP 0: Arena Selection */}
             {step === 0 && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                <p className="text-[11px] font-black uppercase tracking-widest text-[#36454F]/40 mb-4 flex items-center gap-2">
-                   <MapPin size={14} /> Select Operational Branch
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#36454F]/70 mb-4 flex items-center gap-2">
+                   <MapPin size={14} className="text-[#CE2029]" /> Select Operational Branch
                 </p>
                 {loadingArenas ? (
                   <div className="py-12 flex flex-col items-center justify-center gap-3">

@@ -18,6 +18,11 @@ const membershipPlanSchema = new mongoose.Schema(
       type: String,
       enum: ['booking', 'event', 'coaching'],
     }],
+    category: {
+      type: String,
+      enum: ['premium', 'non-premium', 'individual'],
+      default: 'non-premium'
+    },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
@@ -32,6 +37,7 @@ function toPublic(doc) {
     isGlobal: !!o.isGlobal,
     name: o.name,
     description: o.description || '',
+    category: o.category || 'non-premium',
     price: o.price,
     durationDays: o.durationDays,
     discountPercent: o.discountPercent,

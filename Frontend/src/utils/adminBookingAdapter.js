@@ -28,7 +28,8 @@ export function mapAdminBookingToLedgerRow(b) {
   return {
     bookingId: b.id,
     id: `#${String(b.id).slice(-8)}`,
-    customer: `User …${String(b.userId || '').slice(-6)}`,
+    customer: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+    customerPhone: b.userPhone || '',
     arena: b.arenaName || '—',
     court: b.courtName || '—',
     date: b.date || '—',

@@ -195,7 +195,8 @@ const CoachingAdmin = () => {
                 id: b.id,
                 date: b.date,
                 court: b.courtName || '—',
-                player: `User …${String(b.userId || '').slice(-6)}`,
+                player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+                phone: b.userPhone || '',
                 time: b.timeSlot || '',
                 status: b.status,
               }));
@@ -1060,8 +1061,11 @@ const CoachingAdmin = () => {
                               <span className="text-[10px] font-black text-[#1e293b]">{bk.id}</span>
                            </td>
                            <td className="px-6 py-4">
-                              <p className="text-[10px] font-black text-[#1e293b] uppercase leading-none">{bk.customer}</p>
-                           </td>
+                               <div className="flex flex-col gap-0.5">
+                                 <p className="text-[11px] font-black text-[#1e293b] uppercase leading-tight">{bk.customer}</p>
+                                 {bk.phone && <p className="text-[9px] font-bold text-slate-400">{bk.phone}</p>}
+                               </div>
+                            </td>
                            <td className="px-6 py-4">
                               <p className="text-[10px] font-black text-slate-500 uppercase leading-none">{bk.court}</p>
                            </td>

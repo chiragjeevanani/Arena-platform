@@ -58,7 +58,7 @@ function toPublicBooking(doc, extras = {}) {
   const o = doc.toObject ? doc.toObject() : doc;
   return {
     id: o._id.toString(),
-    userId: String(o.userId),
+    userId: o.userId?._id ? o.userId._id.toString() : String(o.userId),
     arenaId: String(o.arenaId),
     courtId: String(o.courtId),
     date: o.date,

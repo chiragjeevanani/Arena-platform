@@ -6,3 +6,10 @@ export function fetchPublicMembershipPlans(arenaId) {
     skipAuth: true,
   });
 }
+
+export function fetchGlobalMembershipPlans() {
+  return apiJson('/api/public/membership-plans', {
+    method: 'GET',
+    skipAuth: true,
+  });
+}

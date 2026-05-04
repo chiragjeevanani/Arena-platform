@@ -27,4 +27,15 @@ async function listPublishedArenaMembershipPlans(req, res) {
   });
 }
 
-module.exports = { listPublishedArenaMembershipPlans };
+async function listGlobalMembershipPlans(req, res) {
+  const plans = await MembershipPlan.find({
+    isGlobal: true,
+    isActive: true
+  }).sort({ price: 1 }).lean();
+
+  return res.json({
+    plans: plans.map((p) => MembershipPlan.toPublic(p)),
+  });
+}
+
+module.exports = { listPublishedArenaMembershipPlans, listGlobalMembershipPlans };

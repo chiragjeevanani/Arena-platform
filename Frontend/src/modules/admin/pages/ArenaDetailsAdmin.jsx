@@ -649,11 +649,16 @@ const ArenaDetailsAdmin = () => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] ml-1">Operational Taxonomy (Main Sport)</label>
-                  <input 
-                    type="text" value={form.category} onChange={e => setForm({...form, category: e.target.value})}
-                    placeholder="Badminton, Cricket, Football..."
-                    className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white shadow-inner"
-                  />
+                  <div className="relative">
+                    <select 
+                      value={form.category} onChange={e => setForm({...form, category: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white shadow-inner appearance-none cursor-pointer"
+                    >
+                      <option value="Badminton">Badminton</option>
+                      <option value="Table Tennis">Table Tennis</option>
+                    </select>
+                    <ChevronRight size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

@@ -15,7 +15,7 @@ async function listAdminBookings(req, res) {
     filter.date = date.trim();
   }
 
-  const list = await Booking.find(filter).sort({ createdAt: -1 }).limit(200).lean();
+  const list = await Booking.find(filter).populate('userId', 'name phone').sort({ createdAt: -1 }).limit(200).lean();
 
   const out = await Promise.all(
     list.map(async (b) => {
@@ -28,6 +28,8 @@ async function listAdminBookings(req, res) {
         courtName: court?.name || '',
         arenaImage: arena?.image || '',
         location: arena?.location || '',
+        userName: b.userId?.name || 'Unknown',
+        userPhone: b.userId?.phone || '',
       });
     })
   );
@@ -84,8 +86,11 @@ async function updateAdminBooking(req, res) {
 
   await booking.save();
 
-  const arena = await Arena.findById(booking.arenaId).lean();
-  const court = await Court.findById(booking.courtId).lean();
+  const [arena, court, userDoc] = await Promise.all([
+    Arena.findById(booking.arenaId).lean(),
+    Court.findById(booking.courtId).lean(),
+    mongoose.model('User').findById(booking.userId).lean(),
+  ]);
 
   return res.json({
     booking: Booking.toPublic(booking, {
@@ -93,6 +98,8 @@ async function updateAdminBooking(req, res) {
       courtName: court?.name || '',
       arenaImage: arena?.image || '',
       location: arena?.location || '',
+      userName: userDoc?.name || 'Unknown',
+      userPhone: userDoc?.phone || '',
     }),
   });
 }

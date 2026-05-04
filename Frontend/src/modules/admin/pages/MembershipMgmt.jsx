@@ -7,7 +7,6 @@ import {
   Calendar, ShieldCheck, X, Save, Info, Layout,
   CreditCard, CalendarX2, TrendingUp, UserMinus, DollarSign, List
 } from 'lucide-react';
-import { fetchPublicArenas } from '../../../services/arenasApi';
 import { normalizeListArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
@@ -17,6 +16,7 @@ import {
   patchAdminMembershipPlan,
   deleteAdminMembershipPlan,
   getAdminMembershipStats,
+  listAdminArenas,
 } from '../../../services/adminOpsApi';
 
 function durationDaysToLabel(d) {
@@ -49,7 +49,7 @@ function mapApiPlanToUi(p, idx) {
     durationDays: p.durationDays,
     discountPercent: p.discountPercent ?? 0,
     applicableTransactions: p.applicableTransactions || [],
-    category: 'premium',
+    category: p.category || 'non-premium',
     status: p.isActive ? 'active' : 'draft',
     isGlobal: !!p.isGlobal,
     benefits,
@@ -76,6 +76,7 @@ const MembershipMgmt = () => {
     totalActiveUsers: 0,
     totalRevenue: 0
   });
+  const [loadingArenas, setLoadingArenas] = useState(true);
 
   const loadPlans = useCallback(async () => {
     if (!isApiConfigured() || !getAuthToken() || !selectedArenaId) {
@@ -103,14 +104,33 @@ const MembershipMgmt = () => {
     if (!isApiConfigured() || !getAuthToken()) return undefined;
     let cancelled = false;
     (async () => {
+      setLoadingArenas(true);
       try {
-        const data = await fetchPublicArenas();
+        const data = await listAdminArenas();
         if (cancelled) return;
-        const list = (data.arenas || []).map(normalizeListArena);
+        const rawList = (data.arenas || []).map(normalizeListArena);
+        
+        // Deduplicate by name (case-insensitive)
+        const uniqueMap = new Map();
+        rawList.forEach(a => {
+          const normalizedName = a.name.trim().toLowerCase();
+          if (!uniqueMap.has(normalizedName)) {
+            uniqueMap.set(normalizedName, a);
+          }
+        });
+        
+        const list = Array.from(uniqueMap.values());
         setArenas(list);
-        if (list.length) setSelectedArenaId((prev) => prev || String(list[0].id));
-      } catch {
-        if (!cancelled) setArenas([]);
+        if (list.length) {
+          setSelectedArenaId((prev) => prev || String(list[0].id));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLoadError('Failed to load arenas for membership management.');
+          setArenas([]);
+        }
+      } finally {
+        if (!cancelled) setLoadingArenas(false);
       }
     })();
     return () => {
@@ -166,6 +186,7 @@ const MembershipMgmt = () => {
           discountPercent: Number(editingPlan.discountPercent) || 0,
           applicableTransactions: editingPlan.applicableTransactions || [],
           description: desc,
+          category: editingPlan.category,
         });
       } else {
         await patchAdminMembershipPlan(editingPlan.id, {
@@ -176,6 +197,7 @@ const MembershipMgmt = () => {
           applicableTransactions: editingPlan.applicableTransactions || [],
           description: desc,
           isActive,
+          category: editingPlan.category,
         });
       }
       setEditingPlan(null);
@@ -209,13 +231,20 @@ const MembershipMgmt = () => {
               id="arena-membership"
               value={selectedArenaId}
               onChange={(e) => setSelectedArenaId(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-[#36454F]"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-[#36454F] outline-none focus:border-[#CE2029] min-w-[200px]"
             >
-              {arenas.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
+              {loadingArenas && <option value="">Fetching Arenas...</option>}
+              {!loadingArenas && arenas.length === 0 && <option value="">No Arenas Found</option>}
+              {!loadingArenas && arenas.length > 0 && (
+                <>
+                  <option value="">Select an Arena</option>
+                  {arenas.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
           </div>
         </div>
@@ -267,11 +296,11 @@ const MembershipMgmt = () => {
                 onClick={() => setFilterCategory(cat)}
                 className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                   filterCategory === cat 
-                    ? 'bg-[#CE2029] text-white' 
+                    ? 'text-[#CE2029] bg-[#CE2029]/5' 
                     : 'text-slate-500 hover:bg-slate-50'
                 }`}
               >
-                {cat}
+                {cat === 'non-premium' ? 'standard' : cat.replace('-', ' ')}
               </button>
             ))}
           </div>
@@ -348,7 +377,9 @@ const MembershipMgmt = () => {
                         </div>
                         <div>
                             <h3 className="text-lg font-black text-[#36454F] tracking-tight leading-none mb-1">{plan.name}</h3>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{plan.category} · {plan.duration}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                {plan.category === 'non-premium' ? 'standard' : plan.category} · {plan.duration}
+                            </p>
                         </div>
                     </div>
 
@@ -427,7 +458,9 @@ const MembershipMgmt = () => {
                             {plan.name}
                             {plan.isGlobal && <span className="ml-2 px-1.5 py-0.5 bg-[#36454F] text-white text-[8px] rounded uppercase">Global</span>}
                           </p>
-                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{plan.category}</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                            {plan.category === 'non-premium' ? 'standard' : plan.category}
+                          </p>
                         </div>
                       </div>
                     </td>

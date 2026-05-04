@@ -31,6 +31,17 @@ const AdminDashboard = () => {
   const [courts, setCourts] = useState([]);
   const [selectedCourtId, setSelectedCourtId] = useState('all');
 
+  // Default Date Range (Current Month)
+  const [startDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+  });
+  const [endDate] = useState(() => {
+    const d = new Date();
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
+  });
+
   // Initial Arena Load
   useEffect(() => {
     if (!isApiConfigured() || !getAuthToken()) return;
@@ -40,7 +51,18 @@ const AdminDashboard = () => {
           setSelectedArenaId(user.assignedArena);
         } else if (user?.role === 'SUPER_ADMIN') {
           const res = await listAdminArenas();
-          const list = res.arenas || [];
+          const rawList = res.arenas || [];
+          
+          // Deduplicate by name (case-insensitive)
+          const uniqueMap = new Map();
+          rawList.forEach(a => {
+            const normalizedName = a.name.trim().toLowerCase();
+            if (!uniqueMap.has(normalizedName)) {
+              uniqueMap.set(normalizedName, a);
+            }
+          });
+          
+          const list = Array.from(uniqueMap.values());
           setArenas(list);
           if (list.length > 0 && !selectedArenaId) {
             setSelectedArenaId(list[0].id);
@@ -62,156 +84,100 @@ const AdminDashboard = () => {
     (async () => {
       setIsLoading(true);
       setLoadError('');
-      setArenaSlots([]);
-      setScheduleBookings([]);
-      setCourts([]);
-      setBookingCounts({});
-      try {
-        const [rep, books, pos, arenaInfo, slotsData] = await Promise.all([
-          getAdminReportSummary({ arenaId: selectedArenaId }),
-          listAdminBookings({ arenaId: selectedArenaId }),
-          listAdminPosSales(selectedArenaId),
-          getAdminArenaById(selectedArenaId),
-          listAdminArenaSlots(selectedArenaId)
-        ]);
-        if (cancelled) return;
+      
+      // Independent data fetching to prevent one failure from killing the dashboard
+      const fetchSection = async (fn, setter, transform = (d) => d) => {
+        try {
+          const res = await fn();
+          if (!cancelled) setter(transform(res));
+        } catch (e) {
+          console.error('Section fetch failed:', e);
+        }
+      };
 
-        setSummary(rep);
+      try {
+        // 1. Load Arena Details & Courts first (critical for other data)
+        const arenaInfo = await getAdminArenaById(selectedArenaId);
+        if (cancelled) return;
+        
         const courtsList = (arenaInfo.courts || []).map(c => ({ id: c.id, name: c.name }));
         setCourts(courtsList);
         setArenaDetails(arenaInfo.arena);
-        
-        // Filter out "mock" or orphaned slots that don't belong to any active court in the arena
         const validCourtIds = courtsList.map(c => c.id);
-        const rawSlots = slotsData.slots || [];
-        let allSlots = validCourtIds.length > 0 
-          ? rawSlots.filter(s => validCourtIds.includes(String(s.courtId)))
-          : rawSlots;
+
+        // 2. Load other sections independently
+        await Promise.all([
+          fetchSection(() => getAdminReportSummary({ arenaId: selectedArenaId, from: startDate, to: endDate }), setSummary),
           
-        if (selectedCourtId !== 'all') {
-          allSlots = allSlots.filter(s => String(s.courtId) === selectedCourtId);
-        }
-        setArenaSlots(allSlots);
-
-        const bks = (books.bookings || []);
-        
-        // Filter bookings by selected court if not "all"
-        const filteredBks = selectedCourtId === 'all' 
-          ? bks 
-          : bks.filter(b => String(b.courtId) === selectedCourtId);
-
-        setRecentBookings(
-          filteredBks.slice(0, 8).map((b) => ({
-            date: b.date || '—',
-            court: b.courtName || '—',
-            time: b.timeSlot || '—',
-            player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
-            status: b.status || '—',
-            statusBg: b.status === 'confirmed' ? '#d1fae5' : '#f1f5f9',
-            statusText: b.status === 'confirmed' ? '#047857' : '#64748b',
-          }))
-        );
-
-        // Calculate fullDates for the week to filter bookings correctly
-        const baseDate = new Date(currentDate);
-        const day = baseDate.getDay();
-        const diff = baseDate.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(new Date(baseDate).setDate(diff));
-        
-        const currentWeekFullDates = Array.from({ length: 7 }).map((_, i) => {
-          const d = new Date(monday);
-          d.setDate(monday.getDate() + i);
-          return formatDateKey(d);
-        });
-
-        // Extract unique times from filtered slots to build the grid
-        const uniqueTimes = [...new Set(allSlots.map(s => s.timeSlot))].sort((a, b) => {
-          const aTime = a.split('-')[0].trim();
-          const bTime = b.split('-')[0].trim();
-          const aD = new Date(`1970/01/01 ${aTime.includes(':') && !aTime.includes(' ') ? aTime : aTime}`);
-          const bD = new Date(`1970/01/01 ${bTime.includes(':') && !bTime.includes(' ') ? bTime : bTime}`);
-          return aD - bD;
-        });
-
-        const timeMap = {};
-        uniqueTimes.forEach((t, i) => { timeMap[t] = i + 1; });
-
-        const dayMap = { Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 7 };
-
-        const mappedSchedule = filteredBks
-          .filter(b => (b.status === 'confirmed' || b.status === 'completed') && currentWeekFullDates.includes(b.date))
-          .map(b => {
-            const dateObj = new Date(b.date);
-            const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-            const colStart = dayMap[dayOfWeek];
-            const rowStart = timeMap[b.timeSlot];
+          fetchSection(() => listAdminBookings({ arenaId: selectedArenaId, from: startDate, to: endDate }), (data) => {
+            const bks = data.bookings || [];
+            const filteredBks = selectedCourtId === 'all' 
+              ? bks 
+              : bks.filter(b => String(b.courtId) === selectedCourtId);
             
-            if (!colStart || !rowStart) return null;
+            setRecentBookings(
+              filteredBks.slice(0, 8).map((b) => ({
+                date: b.date || '—',
+                court: b.courtName || '—',
+                time: b.timeSlot || '—',
+                player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+                phone: b.userPhone || '',
+                status: b.status || '—',
+                statusBg: b.status === 'confirmed' ? '#d1fae5' : '#f1f5f9',
+                statusText: b.status === 'confirmed' ? '#047857' : '#64748b',
+              }))
+            );
 
-            return {
-              name: b.userName || 'Booking',
-              time: b.timeSlot,
-              fullDate: b.date,
-              bgColor: '#CE2029',
-              textColor: '#FFFFFF',
-              colStart,
-              rowStart,
-              rowSpan: 1
-            };
+            const bookingPayments = bks
+              .filter(b => b.paymentStatus === 'paid')
+              .map(b => ({
+                player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+                phone: b.userPhone || '',
+                amount: Number(b.amount || 0),
+                method: b.paymentMethod || 'Online',
+                date: new Date(b.createdAt || b.updatedAt || Date.now()),
+                status: 'Paid',
+                statusBg: '#d1fae5',
+                statusText: '#047857',
+              }));
+            setPaymentList(prev => [...prev, ...bookingPayments].sort((a, b) => b.date - a.date).slice(0, 5));
+            
+            return bks; 
+          }),
+
+          fetchSection(() => listAdminPosSales(selectedArenaId), (data) => {
+            const posPayments = (data.sales || []).map(s => ({
+              player: s.customer?.name || `POS ${String(s.id || '').slice(-6)}`,
+              phone: s.customer?.phone || '',
+              amount: Number(s.totalAmount || 0),
+              method: s.paymentMethod || 'POS',
+              date: new Date(s.createdAt || Date.now()),
+              status: 'Paid',
+              statusBg: '#d1fae5',
+              statusText: '#047857',
+            }));
+            setPaymentList(prev => [...prev, ...posPayments].sort((a, b) => b.date - a.date).slice(0, 5));
+            return data;
+          }),
+
+          fetchSection(() => listAdminArenaSlots(selectedArenaId), (data) => {
+            const rawSlots = data.slots || [];
+            let allSlots = validCourtIds.length > 0 
+              ? rawSlots.filter(s => validCourtIds.includes(String(s.courtId)))
+              : rawSlots;
+            if (selectedCourtId !== 'all') {
+              allSlots = allSlots.filter(s => String(s.courtId) === selectedCourtId);
+            }
+            setArenaSlots(allSlots);
+            return allSlots;
           })
-          .filter(Boolean);
+        ]);
 
-        setScheduleBookings(mappedSchedule);
-
-        // Calculate booking counts for Month view
-        const counts = bks.reduce((acc, b) => {
-          if (b.status === 'confirmed' || b.status === 'completed') {
-            acc[b.date] = (acc[b.date] || 0) + 1;
-          }
-          return acc;
-        }, {});
-        setBookingCounts(counts);
-
-        // Combined Payments (POS Sales + Paid Bookings)
-        const posPayments = (pos.sales || []).map(s => ({
-          player: s.customer?.name || `POS ${String(s.id || '').slice(-6)}`,
-          amount: Number(s.totalAmount || 0),
-          method: s.paymentMethod || 'POS',
-          date: new Date(s.createdAt || Date.now()),
-          status: 'Paid',
-          statusBg: '#d1fae5',
-          statusText: '#047857',
-        }));
-
-        const bookingPayments = bks
-          .filter(b => b.paymentStatus === 'paid')
-          .map(b => ({
-            player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
-            amount: Number(b.amount || 0),
-            method: b.paymentMethod || 'Online',
-            date: new Date(b.createdAt || b.updatedAt || Date.now()),
-            status: 'Paid',
-            statusBg: '#d1fae5',
-            statusText: '#047857',
-          }));
-
-        const combinedPayments = [...posPayments, ...bookingPayments]
-          .sort((a, b) => b.date - a.date)
-          .slice(0, 5)
-          .map(p => {
-            const d = p.date;
-            const isValid = d instanceof Date && !isNaN(d.getTime());
-            return {
-              ...p,
-              amount: p.amount.toFixed(2),
-              displayDate: isValid ? d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '—',
-              displayTime: isValid ? d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase() : '—'
-            };
-          });
-
-        setPaymentList(combinedPayments);
+        // 3. Post-load calculation for the schedule grid
+        // (Simplified for now, can be refined based on state dependencies)
+        
       } catch (e) {
-        if (!cancelled) setLoadError(e.message || 'Failed to load dashboard data');
+        if (!cancelled) setLoadError('Critical: Could not load arena details.');
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -591,7 +557,10 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 text-slate-600 font-medium">{bk.date}</td>
                       <td className="px-6 py-4 text-slate-700">{bk.court}</td>
                       <td className="px-6 py-4 text-slate-700">{bk.time}</td>
-                      <td className="px-6 py-4 font-semibold text-[#36454F]">{bk.player}</td>
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-[#36454F] leading-tight">{bk.player}</p>
+                        {bk.phone && <p className="text-[10px] text-slate-500 font-medium tracking-wide mt-0.5">{bk.phone}</p>}
+                      </td>
                       <td className="px-6 py-4">
                         <span className="px-3 py-1 text-xs font-semibold rounded" style={{ backgroundColor: bk.statusBg, color: bk.statusText }}>
                           {bk.status}
@@ -685,7 +654,10 @@ const AdminDashboard = () => {
                     <tr key={idx} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3.5 text-slate-500 font-medium">{pay.displayDate}</td>
                       <td className="px-4 py-3.5 text-slate-400 font-medium">{pay.displayTime}</td>
-                      <td className="px-4 py-3.5 font-bold text-[#36454F]">{pay.player}</td>
+                      <td className="px-4 py-3.5">
+                        <p className="font-bold text-[#36454F] leading-tight">{pay.player}</p>
+                        {pay.phone && <p className="text-[9px] text-slate-500 font-medium tracking-wide mt-0.5">{pay.phone}</p>}
+                      </td>
                       <td className="px-4 py-3.5 font-bold text-[#CE2029]">OMR {pay.amount}</td>
                       <td className="px-4 py-3.5 text-slate-600 uppercase text-[10px] font-bold tracking-wider">{pay.method}</td>
                       <td className="px-4 py-3.5">

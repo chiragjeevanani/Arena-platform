@@ -33,9 +33,20 @@ const emptyForm = () => ({
   subtitle: '',
   buttonText: '',
   image: '',
-  link: '',
+  link: '/',
   isPublished: true,
 });
+
+const APP_ROUTES = [
+  { label: 'Home Page', value: '/' },
+  { label: 'Arena Listing', value: '/arenas' },
+  { label: 'Events Page', value: '/events' },
+  { label: 'My Bookings', value: '/bookings' },
+  { label: 'Coaching Page', value: '/coaching' },
+  { label: 'Membership Plans', value: '/membership' },
+  { label: 'User Profile', value: '/profile' },
+  { label: 'Terms & Conditions', value: '/terms' },
+];
 
 const FrontendHeroMgmt = () => {
   const [banners, setBanners] = useState([]);
@@ -388,12 +399,18 @@ const FrontendHeroMgmt = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold uppercase tracking-widest text-[#CE2029] ml-1">Destination URL</label>
-                    <input
-                      type="text"
+                    <select
                       value={form.link}
                       onChange={(e) => setForm({ ...form, link: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#36454F] outline-none focus:border-[#CE2029] transition-colors"
-                    />
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-semibold text-[#36454F] outline-none focus:border-[#CE2029] transition-colors appearance-none cursor-pointer"
+                    >
+                      {APP_ROUTES.map((route) => (
+                        <option key={route.value} value={route.value}>
+                          {route.label} ({route.value})
+                        </option>
+                      ))}
+                      <option value="">No Link</option>
+                    </select>
                   </div>
 
                   <div className="space-y-1.5 md:col-span-2">

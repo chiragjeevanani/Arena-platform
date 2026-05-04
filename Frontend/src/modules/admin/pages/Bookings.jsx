@@ -31,7 +31,16 @@ const ViewDetailsModal = ({ booking, onClose }) => (
       </div>
       <div className="p-6 space-y-3">
         {[
-          { icon: Eye, label: 'Customer', value: booking.customer },
+          { 
+            icon: Eye, 
+            label: 'Customer', 
+            value: (
+              <div className="text-right">
+                <p className="font-black text-[#36454F] leading-tight">{booking.customer}</p>
+                {booking.customerPhone && <p className="text-[10px] text-slate-500 font-bold mt-0.5">{booking.customerPhone}</p>}
+              </div>
+            )
+          },
           { icon: MapPin, label: 'Arena', value: booking.arena },
           { icon: MapPin, label: 'Court', value: booking.court },
           { icon: Calendar, label: 'Date', value: booking.date },
@@ -44,7 +53,9 @@ const ViewDetailsModal = ({ booking, onClose }) => (
               <row.icon size={13} className="text-[#CE2029]" strokeWidth={2.5} />
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{row.label}</span>
             </div>
-            <span className="text-[13px] font-black text-[#36454F]">{row.value}</span>
+            {typeof row.value === 'string' ? (
+              <span className="text-[13px] font-black text-[#36454F]">{row.value}</span>
+            ) : row.value}
           </div>
         ))}
         <div className="mt-2 flex items-center justify-between p-4 rounded-2xl bg-[#CE2029]/5 border border-[#CE2029]/10">

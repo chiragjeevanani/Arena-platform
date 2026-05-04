@@ -156,8 +156,12 @@ const ArenaListAdmin = () => {
                  </div>
               </div>
               <div className="absolute bottom-1.5 left-1.5 flex gap-1 font-bold">
-                 <span className="bg-white px-1.5 py-0.5 rounded-sm text-[8px] uppercase tracking-wider text-[#CE2029] font-black shadow-sm">
-                   {arena.category}
+                 <span className={`px-2 py-0.5 rounded-sm text-[8px] uppercase tracking-wider font-black shadow-md backdrop-blur-md border ${
+                   arena.category === 'Table Tennis' 
+                   ? 'bg-blue-600/90 text-white border-blue-400/30' 
+                   : 'bg-emerald-600/90 text-white border-emerald-400/30'
+                 }`}>
+                   {arena.category || 'Badminton'}
                  </span>
               </div>
             </div>

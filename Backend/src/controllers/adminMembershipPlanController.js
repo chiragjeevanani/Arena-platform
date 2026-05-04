@@ -5,7 +5,7 @@ const UserMembership = require('../models/UserMembership');
 const User = require('../models/User');
 
 async function createMembershipPlan(req, res) {
-  const { arenaId, isGlobal, name, price, durationDays, discountPercent, description, applicableTransactions } = req.body;
+  const { arenaId, isGlobal, name, price, durationDays, discountPercent, description, applicableTransactions, category } = req.body;
 
   if (!isGlobal && (!arenaId || !mongoose.isValidObjectId(arenaId))) {
     return res.status(400).json({ error: 'arenaId is required for non-global plans' });
@@ -31,6 +31,7 @@ async function createMembershipPlan(req, res) {
     durationDays: Number(durationDays),
     discountPercent: discountPercent != null ? Number(discountPercent) : 0,
     applicableTransactions: Array.isArray(applicableTransactions) ? applicableTransactions : [],
+    category: category || 'non-premium',
   });
 
   return res.status(201).json({ plan: MembershipPlan.toPublic(plan) });
@@ -77,6 +78,7 @@ async function patchMembershipPlan(req, res) {
     description,
     applicableTransactions,
     isActive,
+    category,
   } = req.body;
 
   if (name !== undefined) plan.name = String(name).trim();
@@ -105,6 +107,7 @@ async function patchMembershipPlan(req, res) {
   if (applicableTransactions !== undefined && Array.isArray(applicableTransactions)) {
     plan.applicableTransactions = applicableTransactions;
   }
+  if (category !== undefined) plan.category = category;
   if (typeof isActive === 'boolean') plan.isActive = isActive;
 
   await plan.save();
