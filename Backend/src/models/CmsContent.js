@@ -19,6 +19,8 @@ const cmsContentSchema = new mongoose.Schema(
     sortOrder: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: false },
     inclusions: { type: [String], default: [] },
+    startDate: { type: Date, default: null },
+    endDate: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -38,6 +40,8 @@ function toPublic(doc) {
     sortOrder: o.sortOrder,
     isPublished: o.isPublished,
     inclusions: o.inclusions || [],
+    startDate: o.startDate ? o.startDate.toISOString() : null,
+    endDate: o.endDate ? o.endDate.toISOString() : null,
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   };

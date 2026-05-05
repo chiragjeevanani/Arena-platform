@@ -24,6 +24,8 @@ async function createCmsContent(req, res) {
       sortOrder: sortOrder != null ? Number(sortOrder) : 0,
       isPublished: Boolean(isPublished),
       inclusions: Array.isArray(inclusions) ? inclusions : [],
+      startDate: req.body.startDate ? new Date(req.body.startDate) : null,
+      endDate: req.body.endDate ? new Date(req.body.endDate) : null,
     });
 
     return res.status(201).json({ content: CmsContent.toPublic(doc) });
@@ -76,6 +78,12 @@ async function updateCmsContent(req, res) {
   if (isPublished !== undefined) doc.isPublished = Boolean(isPublished);
   if (inclusions !== undefined) {
     doc.inclusions = Array.isArray(inclusions) ? inclusions : [];
+  }
+  if (req.body.startDate !== undefined) {
+    doc.startDate = req.body.startDate ? new Date(req.body.startDate) : null;
+  }
+  if (req.body.endDate !== undefined) {
+    doc.endDate = req.body.endDate ? new Date(req.body.endDate) : null;
   }
 
   await doc.save();

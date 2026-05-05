@@ -24,6 +24,7 @@ async function createSponsor(req, res) {
     equity: Number.isFinite(Number(equity)) ? Math.max(0, Number(equity)) : 0,
     notes: notes != null ? String(notes) : '',
     linkedEventId: linkedEventId != null ? String(linkedEventId) : '',
+    logo: req.body.logo != null ? String(req.body.logo) : '',
   });
   return res.status(201).json({ sponsor: Sponsor.toPublic(doc) });
 }
@@ -34,7 +35,7 @@ async function patchSponsor(req, res) {
   const doc = await Sponsor.findById(id);
   if (!doc) return res.status(404).json({ error: 'Sponsor not found' });
 
-  const fields = ['name', 'email', 'company', 'status', 'notes', 'linkedEventId', 'equity'];
+  const fields = ['name', 'email', 'company', 'status', 'notes', 'linkedEventId', 'equity', 'logo'];
   for (const f of fields) {
     if (req.body[f] !== undefined) {
       if (f === 'equity') doc.equity = Math.max(0, Number(req.body[f]) || 0);

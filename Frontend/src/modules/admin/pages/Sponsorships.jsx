@@ -5,13 +5,11 @@ import {
   TrendingUp, MoreVertical, ExternalLink, X, ArrowRight, Mail, Building,
   Eye, RefreshCw, FileText, Settings, Trash2, CheckCircle2, AlertCircle,
   Link as LinkIcon, BarChart3, PieChart, Users, DollarSign, Clock, Download,
-  LayoutGrid, List, ChevronRight, Hash
+  LayoutGrid, List, ChevronRight, Hash, Image as ImageIcon, Upload, Camera
 } from 'lucide-react';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { listAdminSponsors, createAdminSponsor, deleteAdminSponsor } from '../../../services/adminSponsorsApi';
-
-const EVENTS_DATA = [];
 
 const INITIAL_SPONSORS = [];
 
@@ -25,6 +23,7 @@ const Sponsorships = () => {
 
   const [activeTab, setActiveTab] = useState('directory'); // directory | mapping | reports
   const [sponsors, setSponsors] = useState(INITIAL_SPONSORS);
+  const [events, setEvents] = useState([]);
   const [mappings, setMappings] = useState(INITIAL_MAPPINGS);
   const [showModal, setShowModal] = useState(false);
   const [editingSponsor, setEditingSponsor] = useState(null);
@@ -33,6 +32,37 @@ const Sponsorships = () => {
   const [toast, setToast] = useState(null);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [selectedSponsorId, setSelectedSponsorId] = useState('');
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'Partner Sponsor',
+    equity: '',
+    contractStart: '',
+    contractEnd: '',
+    logo: '',
+  });
+
+  useEffect(() => {
+    if (editingSponsor) {
+        setFormData({
+        name: editingSponsor.name || '',
+        type: editingSponsor.type || 'Partner Sponsor',
+        equity: String(editingSponsor.equity || ''),
+        contractStart: editingSponsor.contractStart || '',
+        contractEnd: editingSponsor.contractEnd || '',
+        logo: editingSponsor.logo || '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        type: 'Partner Sponsor',
+        equity: '',
+        contractStart: '',
+        contractEnd: '',
+        logo: '',
+      });
+    }
+  }, [editingSponsor, showModal]);
 
   // Stats
   const totalEquity = sponsors.reduce((acc, sp) => acc + sp.equity, 0);
@@ -58,6 +88,7 @@ const Sponsorships = () => {
         contractStart: s.contractStart,
         contractEnd: s.contractEnd,
         email: s.email || '',
+        logo: s.logo || '',
       }));
       setSponsors(rows);
     } catch {
@@ -65,9 +96,31 @@ const Sponsorships = () => {
     }
   }, []);
 
+  const loadEvents = useCallback(async () => {
+    if (!isApiConfigured() || !getAuthToken()) return;
+    try {
+      const { listAdminCms } = await import('../../../services/cmsApi');
+      const data = await listAdminCms('event');
+      setEvents(data.contents || []);
+    } catch (e) {
+      setEvents([]);
+    }
+  }, []);
+
   useEffect(() => {
     void loadSponsors();
-  }, [loadSponsors]);
+    void loadEvents();
+  }, [loadSponsors, loadEvents]);
+
+  const availableEvents = useMemo(() => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    return events.filter(ev => {
+      // If no end date, it's ongoing. If end date exists, must be today or future.
+      if (!ev.endDate) return true;
+      return new Date(ev.endDate) >= today;
+    });
+  }, [events]);
 
   const filteredSponsors = useMemo(() => {
     return sponsors.filter((sp) => {
@@ -102,8 +155,8 @@ const Sponsorships = () => {
     }
     const newMapping = {
       id: Date.now(),
-      eventId: Number(selectedEventId),
-      sponsorId: Number(selectedSponsorId),
+      eventId: selectedEventId,
+      sponsorId: selectedSponsorId,
       type: 'Linked Asset'
     };
     setMappings(prev => [...prev, newMapping]);
@@ -250,8 +303,12 @@ const Sponsorships = () => {
                            <tr key={sp.id} className="hover:bg-slate-50/50 transition-colors group">
                              <td className="px-5 py-3">
                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-lg border border-slate-100 bg-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:scale-105 transition-transform" style={{ color: sp.color }}>
-                                    {sp.logo}
+                                  <div className="w-10 h-10 rounded-lg border border-slate-100 bg-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
+                                    {sp.logo ? (
+                                      <img src={sp.logo} alt={sp.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <span style={{ color: sp.color }}>{sp.name.charAt(0)}</span>
+                                    )}
                                   </div>
                                   <div>
                                     <h4 className="text-[13px] font-bold text-[#0F172A] leading-tight">{sp.name}</h4>
@@ -280,8 +337,8 @@ const Sponsorships = () => {
                                </div>
                              </td>
                              <td className="px-5 py-3 text-right">
-                               <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#CE2029] transition-all">
+                               <div className="flex items-center justify-end gap-1.5 opacity-100 transition-opacity">
+                                  <button onClick={() => { setEditingSponsor(sp); setShowModal(true); }} className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#CE2029] transition-all">
                                     <Settings size={13} />
                                   </button>
                                   <button onClick={() => handleDelete(sp.id)} className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
@@ -317,7 +374,7 @@ const Sponsorships = () => {
                             <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Deployment Target</label>
                             <select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#CE2029]/40 transition-all">
                                <option value="">Select Event...</option>
-                               {EVENTS_DATA.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+                               {availableEvents.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
                             </select>
                          </div>
                          <div className="space-y-1">
@@ -364,17 +421,23 @@ const Sponsorships = () => {
                            </thead>
                            <tbody className="divide-y divide-slate-100">
                               {mappings.map(map => {
-                                const event = EVENTS_DATA.find(e => e.id === map.eventId);
+                                const event = events.find(e => e.id === map.eventId);
                                 const sponsor = sponsors.find(s => s.id === map.sponsorId);
                                 return (
                                   <tr key={map.id} className="hover:bg-slate-50/50 transition-colors">
                                      <td className="px-6 py-3">
-                                        <p className="text-[12px] font-bold text-[#0F172A]">{event?.title}</p>
-                                        <p className="text-[9px] font-medium text-slate-400">{event?.type}</p>
+                                        <p className="text-[12px] font-bold text-[#0F172A]">{event?.title || 'Unknown Event'}</p>
+                                        <p className="text-[9px] font-medium text-slate-400">{event?.subtitle || 'Active Deployment'}</p>
                                      </td>
                                      <td className="px-6 py-3 text-center">
                                         <div className="flex items-center justify-center gap-2">
-                                           <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold text-[10px]" style={{ color: sponsor?.color }}>{sponsor?.logo}</div>
+                                           <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center font-bold text-[10px] overflow-hidden" style={{ color: sponsor?.color }}>
+                                              {sponsor?.logo ? (
+                                                <img src={sponsor.logo} alt="" className="w-full h-full object-cover" />
+                                              ) : (
+                                                <span>{sponsor?.name?.charAt(0)}</span>
+                                              )}
+                                            </div>
                                            <p className="text-[11px] font-bold text-[#0F172A]">{sponsor?.name}</p>
                                         </div>
                                      </td>
@@ -500,13 +563,53 @@ const Sponsorships = () => {
                 </div>
 
                 <div className="p-6 space-y-4">
+                   {/* Logo Upload Section */}
+                   <div className="flex flex-col items-center gap-3 pb-2">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Brand Visual Identity</label>
+                      <div className="relative group">
+                         <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center overflow-hidden transition-all group-hover:border-[#CE2029]/40 group-hover:bg-white">
+                            {formData.logo ? (
+                               <img src={formData.logo} alt="Brand Logo" className="w-full h-full object-cover" />
+                            ) : (
+                               <div className="flex flex-col items-center text-slate-300 group-hover:text-[#CE2029]/60">
+                                  <Camera size={20} strokeWidth={2.5} />
+                                  <span className="text-[8px] font-bold uppercase mt-1">Logo</span>
+                               </div>
+                            )}
+                            <input 
+                               type="file" 
+                               accept="image/*"
+                               onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                     const reader = new FileReader();
+                                     reader.onloadend = () => {
+                                        setFormData(p => ({ ...p, logo: reader.result }));
+                                     };
+                                     reader.readAsDataURL(file);
+                                  }
+                               }}
+                               className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                         </div>
+                         {formData.logo && (
+                            <button 
+                               onClick={() => setFormData(p => ({ ...p, logo: '' }))}
+                               className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#CE2029] text-white flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform"
+                            >
+                               <X size={10} strokeWidth={3} />
+                            </button>
+                         )}
+                      </div>
+                   </div>
+
                    <div className="space-y-1">
                       <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Brand Node Name</label>
                       <input
-                        ref={sponsorNameRef}
                         type="text"
                         placeholder="e.g. Under Armour"
-                        defaultValue={editingSponsor?.name || ''}
+                        value={formData.name}
+                        onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                         className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:ring-1 focus:ring-[#CE2029]/20 focus:border-[#CE2029]/40 transition-all"
                       />
                    </div>
@@ -514,7 +617,11 @@ const Sponsorships = () => {
                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Category</label>
-                        <select className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none cursor-pointer">
+                        <select 
+                          value={formData.type}
+                          onChange={e => setFormData(p => ({ ...p, type: e.target.value }))}
+                          className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none cursor-pointer"
+                        >
                             <option>Title Sponsor</option>
                             <option>Event Sponsor</option>
                             <option>Partner Sponsor</option>
@@ -523,9 +630,10 @@ const Sponsorships = () => {
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Net Valuation</label>
                         <input
-                          ref={sponsorEquityRef}
                           type="text"
                           placeholder="1200"
+                          value={formData.equity}
+                          onChange={e => setFormData(p => ({ ...p, equity: e.target.value }))}
                           className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none"
                         />
                       </div>
@@ -534,11 +642,21 @@ const Sponsorships = () => {
                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">Start Protocol</label>
-                        <input ref={sponsorStartRef} type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
+                        <input 
+                           type="date" 
+                           value={formData.contractStart}
+                           onChange={e => setFormData(p => ({ ...p, contractStart: e.target.value }))}
+                           className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" 
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-0.5">End Protocol</label>
-                        <input ref={sponsorEndRef} type="date" className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" />
+                        <input 
+                           type="date" 
+                           value={formData.contractEnd}
+                           onChange={e => setFormData(p => ({ ...p, contractEnd: e.target.value }))}
+                           className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none" 
+                        />
                       </div>
                    </div>
 
@@ -547,56 +665,71 @@ const Sponsorships = () => {
                       <button
                         type="button"
                         onClick={async () => {
-                          if (editingSponsor) {
-                            setShowModal(false);
-                            return;
-                          }
-                          const name = sponsorNameRef.current?.value?.trim();
-                          if (!name) {
+                          const { name, equity: equityRaw, type, contractStart, contractEnd, logo } = formData;
+                          if (!name.trim()) {
                             showToast('Name is required');
                             return;
                           }
-                          const equityRaw = sponsorEquityRef.current?.value || '0';
                           const equity = Number(String(equityRaw).replace(/[^0-9.]/g, '')) || 0;
-                          const contractStart = sponsorStartRef.current?.value || null;
-                          const contractEnd = sponsorEndRef.current?.value || null;
+                          
                           if (!isApiConfigured() || !getAuthToken()) {
-                            setSponsors((prev) => [
-                              ...prev,
-                              {
-                                id: `local-${Date.now()}`,
+                            if (editingSponsor) {
+                              setSponsors(prev => prev.map(s => s.id === editingSponsor.id ? { ...s, name, type, equity, contractStart, contractEnd, logo } : s));
+                              showToast('Partner updated locally');
+                            } else {
+                              setSponsors((prev) => [
+                                ...prev,
+                                {
+                                  id: `local-${Date.now()}`,
+                                  name,
+                                  type,
+                                  status: 'Active',
+                                  equity,
+                                  contractStart,
+                                  contractEnd,
+                                  logo,
+                                  email: '',
+                                },
+                              ]);
+                              showToast('Partner saved locally');
+                            }
+                            setShowModal(false);
+                            return;
+                          }
+                          
+                          try {
+                            const { patchAdminSponsor, createAdminSponsor } = await import('../../../services/adminSponsorsApi');
+                            if (editingSponsor) {
+                              await patchAdminSponsor(editingSponsor.id, {
                                 name,
-                                type: 'Partner',
-                                status: 'Active',
                                 equity,
                                 contractStart,
                                 contractEnd,
-                                email: '',
-                              },
-                            ]);
-                            setShowModal(false);
-                            showToast('Partner saved locally (API off)');
-                            return;
-                          }
-                          try {
-                            await createAdminSponsor({
-                              name,
-                              equity,
-                              status: 'Active',
-                              contractStart,
-                              contractEnd,
-                              company: 'Partner',
-                            });
+                                logo,
+                                company: type,
+                              });
+                              showToast('Partner updated');
+                            } else {
+                              await createAdminSponsor({
+                                name,
+                                equity,
+                                status: 'Active',
+                                contractStart,
+                                contractEnd,
+                                logo,
+                                company: type,
+                              });
+                              showToast('Partner saved');
+                            }
                             await loadSponsors();
                             setShowModal(false);
-                            showToast('Partner saved');
                           } catch (e) {
-                            showToast(e.message || 'Save failed');
+                            showToast(e.message || 'Operation failed');
                           }
                         }}
                         className="flex-[1.5] py-2.5 rounded-lg bg-[#CE2029] text-white text-[11px] font-bold uppercase tracking-widest shadow-md shadow-[#CE2029]/20 hover:bg-[#d43d35] transition-all flex items-center justify-center gap-2"
                       >
-                        Deploy <CheckCircle2 size={14} />
+                        {editingSponsor ? 'Update' : 'Deploy'} <CheckCircle2 size={14} />
                       </button>
                    </div>
                 </div>

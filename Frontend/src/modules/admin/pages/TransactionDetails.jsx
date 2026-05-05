@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -17,6 +19,7 @@ const TransactionDetails = () => {
   const navigate = useNavigate();
   const [sale, setSale] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState(null);
 
   const location = useLocation();
@@ -40,6 +43,59 @@ const TransactionDetails = () => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownload = async () => {
+    const element = document.getElementById('receipt-content');
+    if (!element) return;
+    
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          // html2canvas crashes on oklch() colors. 
+          // We must remove or replace them in the cloned document's styles.
+          const style = clonedDoc.createElement('style');
+          style.innerHTML = `
+            * { 
+              -webkit-print-color-adjust: exact; 
+              box-shadow: none !important;
+              text-shadow: none !important;
+              animation: none !important;
+            }
+            /* Fallback for oklch colors which crash html2canvas */
+            [class*="bg-"], [class*="text-"], [class*="border-"] {
+              color: inherit;
+              border-color: #e2e8f0;
+            }
+            .text-white { color: #ffffff !important; }
+            .bg-[#36454F] { background-color: #36454F !important; }
+            .text-[#36454F] { color: #36454F !important; }
+            .bg-white { background-color: #ffffff !important; }
+            .text-[#CE2029] { color: #CE2029 !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Invoice-${sale.id.slice(-8)}.pdf`);
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
+      alert('PDF generation failed due to a complex style conflict. Opening Print dialog as fallback...');
+      window.print();
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   if (isLoading) {
@@ -89,8 +145,18 @@ const TransactionDetails = () => {
               >
                  <Printer size={16} /> Print Receipt
               </button>
-              <button className="px-6 py-3 bg-[#36454F] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-black transition-all shadow-lg shadow-black/10">
-                 <Download size={16} /> Download PDF
+              <button 
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="px-6 py-3 bg-[#36454F] rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-black transition-all shadow-lg shadow-black/10 disabled:opacity-50"
+                style={{ color: '#FFFFFF' }} // Force white text to avoid global light-mode red override
+              >
+                 {isDownloading ? (
+                   <RefreshCw size={16} className="animate-spin" />
+                 ) : (
+                   <Download size={16} style={{ color: '#FFFFFF' }} />
+                 )}
+                 {isDownloading ? 'Generating...' : 'Download PDF'}
               </button>
            </div>
         </div>
@@ -102,6 +168,7 @@ const TransactionDetails = () => {
               
               {/* Main Receipt Card */}
               <motion.div 
+                id="receipt-content"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden"

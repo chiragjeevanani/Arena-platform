@@ -418,7 +418,7 @@ const Bookings = () => {
     if (isApiConfigured() && getAuthToken() && mongoId) {
       try {
         const updateFn = isArenaPanel ? updateMyBooking : updateAdminBooking;
-        await updateFn(mongoId, { date: newDate });
+        await updateFn(mongoId, { date: newDate, status: 'rescheduled' });
         await refreshFromApi();
         return;
       } catch (e) {
@@ -429,11 +429,25 @@ const Bookings = () => {
     setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, date: newDate } : b)));
   };
 
-  const handleRefund = (id) => {
+  const handleRefund = async (id) => {
+    const booking = bookings.find(b => b.id === id);
+    const mongoId = booking?.bookingId;
+
+    if (isApiConfigured() && getAuthToken() && mongoId) {
+      try {
+        const updateFn = isArenaPanel ? updateMyBooking : updateAdminBooking;
+        await updateFn(mongoId, { paymentStatus: 'refunded', status: 'cancelled' });
+        await refreshFromApi();
+        return;
+      } catch (e) {
+        setLoadError(e.message || 'Refund failed');
+      }
+    }
+
     setBookings((prev) =>
       prev.map((b) =>
         b.id === id
-          ? { ...b, payment: 'Refunded', status: 'Cancelled', statusBg: '#ff6b6b' }
+          ? { ...b, payment: 'Refunded', status: 'Refunded', statusBg: '#64748b' }
           : b
       )
     );

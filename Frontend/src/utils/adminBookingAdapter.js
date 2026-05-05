@@ -2,6 +2,8 @@ const STATUS_BADGES = {
   Upcoming: { statusBg: '#E88E3E', statusText: '#ffffff' },
   Completed: { statusBg: '#76A87A', statusText: '#ffffff' },
   Cancelled: { statusBg: '#ff6b6b', statusText: '#ffffff' },
+  Rescheduled: { statusBg: '#3b82f6', statusText: '#ffffff' },
+  Refunded: { statusBg: '#64748b', statusText: '#ffffff' },
 };
 
 function paymentLabel(paymentStatus, paymentMethod) {
@@ -13,6 +15,8 @@ function paymentLabel(paymentStatus, paymentMethod) {
 function displayStatus(b) {
   if (b.status === 'cancelled') return 'Cancelled';
   if (b.status === 'completed') return 'Completed';
+  if (b.status === 'rescheduled') return 'Rescheduled';
+  if (b.paymentStatus === 'refunded') return 'Refunded';
   return 'Upcoming';
 }
 

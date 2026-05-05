@@ -3,7 +3,7 @@ const Booking = require('../models/Booking');
 const Arena = require('../models/Arena');
 const Court = require('../models/Court');
 
-const ADMIN_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed'];
+const ADMIN_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed', 'rescheduled'];
 
 async function listAdminBookings(req, res) {
   const { arenaId, date } = req.query;

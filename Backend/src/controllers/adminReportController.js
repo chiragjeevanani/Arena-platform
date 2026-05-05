@@ -58,16 +58,20 @@ async function adminReportSummary(req, res) {
   const enrollCount = await BatchEnrollment.countDocuments(enrollMatch);
 
   // Membership Stats
-  const membershipMatch = {};
-  if (aOid) membershipMatch.arenaId = aOid;
+  const membershipRevenueMatch = {};
+  if (aOid) membershipRevenueMatch.arenaId = aOid;
   if (from && to) {
-    membershipMatch.createdAt = {
+    membershipRevenueMatch.createdAt = {
         $gte: new Date(`${from}T00:00:00.000Z`),
         $lte: new Date(`${to}T23:59:59.999Z`),
     };
   }
-  const membershipAgg = await UserMembership.aggregate([
-    { $match: membershipMatch },
+
+  const membershipActiveMatch = { status: 'active' };
+  if (aOid) membershipActiveMatch.arenaId = aOid;
+
+  const membershipByPlan = await UserMembership.aggregate([
+    { $match: membershipActiveMatch },
     {
       $lookup: {
         from: 'membershipplans',
@@ -77,34 +81,76 @@ async function adminReportSummary(req, res) {
       }
     },
     { $unwind: '$plan' },
-    { $group: { _id: null, total: { $sum: '$plan.price' }, count: { $sum: 1 } } }
+    { $group: { _id: '$plan.name', revenue: { $sum: '$plan.price' }, count: { $sum: 1 } } }
   ]);
+
+  const membershipPeriodRevenueAgg = await UserMembership.aggregate([
+    { $match: membershipRevenueMatch },
+    {
+      $lookup: {
+        from: 'membershipplans',
+        localField: 'membershipPlanId',
+        foreignField: '_id',
+        as: 'plan'
+      }
+    },
+    { $unwind: '$plan' },
+    { $group: { _id: null, total: { $sum: '$plan.price' } } }
+  ]);
+
+  const membershipTotalRevenue = membershipPeriodRevenueAgg[0]?.total || 0;
+  const membershipTotalCount = await UserMembership.countDocuments(membershipActiveMatch);
 
   // 2. Weekly Revenue Velocity (Last 6 weeks)
   const now = new Date();
   const sixWeeksAgo = new Date(now.getTime() - 6 * 7 * 24 * 60 * 60 * 1000);
-  
-  const weeklyAgg = await Booking.aggregate([
-    {
-      $match: {
-        ...(aOid ? { arenaId: aOid } : {}),
-        status: { $in: ['confirmed', 'completed'] },
-        createdAt: { $gte: sixWeeksAgo }
-      }
-    },
-    {
-      $group: {
-        _id: { $week: '$createdAt' },
-        revenue: { $sum: '$amount' }
-      }
-    },
-    { $sort: { _id: 1 } }
+
+  const weeklyBookings = await Booking.aggregate([
+    { $match: { ...(aOid ? { arenaId: aOid } : {}), status: { $in: ['confirmed', 'completed'] }, createdAt: { $gte: sixWeeksAgo } } },
+    { $group: { _id: { $week: '$createdAt' }, revenue: { $sum: '$amount' } } }
   ]);
+
+  const weeklyPos = await PosSale.aggregate([
+    { $match: { ...(aOid ? { arenaId: aOid } : {}), createdAt: { $gte: sixWeeksAgo } } },
+    { $group: { _id: { $week: '$createdAt' }, revenue: { $sum: '$totalAmount' } } }
+  ]);
+
+  const weeklyMembership = await UserMembership.aggregate([
+    { $match: { ...(aOid ? { arenaId: aOid } : {}), createdAt: { $gte: sixWeeksAgo } } },
+    {
+      $lookup: { from: 'membershipplans', localField: 'membershipPlanId', foreignField: '_id', as: 'plan' }
+    },
+    { $unwind: '$plan' },
+    { $group: { _id: { $week: '$createdAt' }, revenue: { $sum: '$plan.price' } } }
+  ]);
+
+  const weeklyWeeks = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+    return { weekNum: getWeekNumber(d), date: d };
+  }).reverse();
+
+  function getWeekNumber(d) {
+    const onejan = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+  }
+
+  const weeklyRevenueData = weeklyWeeks.map(w => {
+    const wb = weeklyBookings.find(b => b._id === w.weekNum);
+    const wp = weeklyPos.find(p => p._id === w.weekNum);
+    const wm = weeklyMembership.find(m => m._id === w.weekNum);
+    return {
+      name: `W${w.weekNum}`,
+      courts: wb?.revenue || 0,
+      retail: wp?.revenue || 0,
+      membership: wm?.revenue || 0,
+      coaching: 0 // Approximate coaching is harder weekly without specific payment dates
+    };
+  });
 
   // 3. Revenue Source Distribution
   const courtRevenue = bookingAgg[0]?.revenue || 0;
   const retailRevenue = posAgg[0]?.total || 0;
-  const membershipRevenue = membershipAgg[0]?.total || 0;
+  const membershipRevenue = membershipTotalRevenue;
   
   // Coaching Revenue (approximate from enrollments if not explicitly in payments)
   const coachingBatchData = await CoachingBatch.find(aOid ? { arenaId: aOid } : {});
@@ -169,9 +215,9 @@ async function adminReportSummary(req, res) {
     },
     pos: { salesCount: posAgg[0]?.count || 0, totalAmount: retailRevenue },
     coaching: { activeEnrollments: enrollCount, totalRevenue: coachingRevenue },
-    membership: { count: membershipAgg[0]?.count || 0, totalRevenue: membershipRevenue },
+    membership: { count: membershipTotalCount, totalRevenue: membershipTotalRevenue, byPlan: membershipByPlan },
     charts: {
-      weeklyRevenue: weeklyAgg.map(w => ({ name: `Week ${w._id}`, courts: w.revenue, coaching: 0, membership: 0, retail: 0 })),
+      weeklyRevenue: weeklyRevenueData,
       sourceDistribution,
       courtPerformance: courtPerf
     },

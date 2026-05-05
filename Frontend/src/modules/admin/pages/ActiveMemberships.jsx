@@ -125,6 +125,85 @@ const ActiveMemberships = () => {
     document.body.removeChild(link);
   };
 
+  const handleDownloadDossier = (member) => {
+    const content = `
+MEMBER AUDIT DOSSIER
+--------------------
+ID: ${member.id}002934
+Name: ${member.firstName} ${member.surname}
+Email: ${member.email}
+Phone: ${member.phone}
+Plan Type: ${member.type === 'GAP' ? 'Gold Annual Premium' : 'General Annual'}
+Price: OMR ${member.price.toFixed(3)}
+Start Date: ${member.startDate}
+End Date: ${member.endDate}
+Status: ${member.status}
+Reserved Court: Arena Gate #${member.courtNo}
+Authorized Slot: ${member.slot}
+
+AUDIT TRAILS:
+- Membership Renewed (12-Mar-2026)
+- Payment Success (11-Mar-2026)
+- Member Registered (01-Jan-2025)
+
+Verification Progress: 65%
+
+Generated on: ${new Date().toLocaleString()}
+    `.trim();
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `dossier_${member.firstName}_${member.surname}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleContactMember = (member) => {
+    if (!member.phone || member.phone === 'N/A') {
+      alert('No phone number available for this member.');
+      return;
+    }
+    window.location.href = `tel:${member.phone}`;
+  };
+
+  const handleDownloadInvoice = (member) => {
+    const content = `
+OFFICIAL INVOICE
+------------------------------------------
+Invoice ID: INV-${String(member.id).slice(-6).toUpperCase()}
+Date Issued: ${new Date().toLocaleDateString('en-GB')}
+Status: PAID
+
+BILL TO:
+Name: ${member.firstName} ${member.surname}
+Email: ${member.email}
+Phone: ${member.phone}
+
+SUBSCRIPTION DETAILS:
+Plan: ${member.type === 'GAP' ? 'Gold Annual Premium' : 'General Annual Membership'}
+Duration: ${member.startDate} to ${member.endDate}
+Arena ID: ${selectedArenaId || 'N/A'}
+
+TOTAL AMOUNT: OMR ${member.price.toFixed(3)}
+Payment Method: Online
+
+------------------------------------------
+Thank you for choosing Arena Platform!
+    `.trim();
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `invoice_${member.firstName}_${member.surname}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const filteredMembers = useMemo(() => {
     return members.filter(member => {
       const matchesSearch = 
@@ -383,10 +462,16 @@ const ActiveMemberships = () => {
                                >
                                   <Clock size={14} className="text-[#eb483f]" /> Toggle Status
                                </button>
-                               <button className="w-full px-5 py-3 text-left text-[11px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors">
+                               <button 
+                                onClick={() => handleContactMember(member)}
+                                className="w-full px-5 py-3 text-left text-[11px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                               >
                                   <Phone size={14} className="text-blue-500" /> Contact Member
                                </button>
-                               <button className="w-full px-5 py-3 text-left text-[11px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors border-t border-slate-50">
+                               <button 
+                                onClick={() => handleDownloadInvoice(member)}
+                                className="w-full px-5 py-3 text-left text-[11px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors border-t border-slate-50"
+                               >
                                   <Download size={14} className="text-emerald-500" /> Invoicing
                                </button>
                                <button 
@@ -565,9 +650,12 @@ const ActiveMemberships = () => {
                  >
                     <Trash2 size={14} /> Archive Member
                  </button>
-                 <button className="flex-[2] py-4 bg-[#1e293b] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => handleDownloadDossier(selectedMember)}
+                    className="flex-[2] py-4 bg-[#1e293b] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-200 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                  >
                     <Download size={14} /> Download Dossier
-                 </button>
+                  </button>
               </div>
             </motion.div>
           </>

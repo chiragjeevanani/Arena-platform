@@ -474,6 +474,85 @@ const FinancialReports = () => {
               </div>
             )}
 
+            {activeTab === 'membership' && (
+              <div className="space-y-6">
+                 {/* Membership KPIs */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <DollarSign size={48} className="text-[#4287f5]" />
+                       </div>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Membership Inflow</p>
+                       <div className="flex items-baseline gap-1">
+                          <h3 className="text-3xl font-black text-[#36454F]">
+                             {formatOMR(apiSummary?.membership?.totalRevenue || 0)}
+                          </h3>
+                          <span className="text-sm font-bold text-slate-400 uppercase">OMR</span>
+                       </div>
+                       <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-[#4287f5] uppercase tracking-widest">
+                          <Crown size={14} /> Subscription Revenue Cluster
+                       </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <Users size={48} className="text-[#36454F]" />
+                       </div>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Subscriptions</p>
+                       <h3 className="text-3xl font-black text-[#36454F]">
+                          {apiSummary?.membership?.count || 0}
+                       </h3>
+                       <div className="mt-4 flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                          <Users size={14} /> Registered Members
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
+                       <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1e293b]">Membership Plan Distribution</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                       <table className="w-full text-left">
+                          <thead className="bg-slate-50/30 border-b border-slate-100 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                             <tr>
+                                <th className="px-6 py-4">Plan Category</th>
+                                <th className="px-6 py-4 text-center">Volume</th>
+                                <th className="px-6 py-4 text-right">Revenue Yield</th>
+                             </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                             {(apiSummary?.membership?.byPlan || []).map((plan, i) => (
+                               <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                  <td className="px-6 py-4">
+                                     <p className="text-[11px] font-bold text-[#36454F] uppercase tracking-tight">{plan._id}</p>
+                                     <p className="text-[9px] font-medium text-slate-400">Recurring Asset</p>
+                                  </td>
+                                  <td className="px-6 py-4 text-center">
+                                     <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-[10px] font-bold text-slate-500 uppercase">{plan.count} Users</span>
+                                  </td>
+                                  <td className="px-6 py-4 text-right">
+                                     <p className="text-[11px] font-black text-[#CE2029]">OMR {formatOMR(plan.revenue)}</p>
+                                     <p className="text-[8px] font-bold text-slate-400 uppercase">Gross Yield</p>
+                                  </td>
+                               </tr>
+                             ))}
+                             {(apiSummary?.membership?.byPlan || []).length === 0 && (
+                               <tr>
+                                 <td colSpan={3} className="px-6 py-12 text-center">
+                                    <div className="flex flex-col items-center gap-2 opacity-20">
+                                       <Layers size={32} />
+                                       <p className="text-[10px] font-bold uppercase tracking-widest">No active membership clusters detected</p>
+                                    </div>
+                                 </td>
+                               </tr>
+                             )}
+                          </tbody>
+                       </table>
+                    </div>
+                 </div>
+              </div>
+            )}
+
             {activeTab === 'retail' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

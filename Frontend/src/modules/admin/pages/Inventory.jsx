@@ -274,6 +274,54 @@ const Inventory = () => {
     addAuditEntry(item.name, 'SKU archived and removed from catalog');
   };
 
+  const handlePrintSKU = (item) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Pop-up blocked. Please allow pop-ups for this site to print SKUs.');
+      return;
+    }
+    const skuCode = item.sku || item.id.toUpperCase();
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print SKU - ${item.name}</title>
+          <style>
+            @page { size: auto; margin: 0mm; }
+            body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fff; }
+            .label-container { border: 2px dashed #36454F; padding: 30px; text-align: center; width: 350px; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+            .arena-logo { font-size: 10px; font-weight: 900; letter-spacing: 3px; color: #CE2029; margin-bottom: 20px; text-transform: uppercase; }
+            .category { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+            .name { font-size: 18px; font-weight: 900; color: #1e293b; margin-bottom: 15px; text-transform: uppercase; line-height: 1.2; }
+            .sku-box { background: #1e293b; color: #fff; padding: 10px 15px; font-size: 24px; font-weight: 900; letter-spacing: 1px; display: inline-block; margin-bottom: 15px; border-radius: 4px; }
+            .price { font-size: 16px; font-weight: 900; color: #CE2029; }
+            .barcode-placeholder { height: 40px; background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px); width: 100%; margin-top: 20px; opacity: 0.8; }
+            .footer { font-size: 8px; font-weight: 600; color: #94a3b8; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+          </style>
+        </head>
+        <body>
+          <div class="label-container">
+            <div class="arena-logo">Arena Platform Central Logistics</div>
+            <div class="category">${item.category}</div>
+            <div class="name">${item.name}</div>
+            <div class="sku-box">${skuCode}</div>
+            <div class="price">OMR ${Number(item.price).toFixed(3)}</div>
+            <div class="barcode-placeholder"></div>
+            <div class="footer">Asset Registry Node: ${item.id.toUpperCase()}</div>
+          </div>
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   const addAuditEntry = (itemName, action) => {
     const entry = {
       id: Date.now(),
@@ -524,7 +572,7 @@ const Inventory = () => {
                                               }
                                             },
                                             { label: 'Audit Trail', icon: FileText, color: '#36454F', action: () => { setShowHistoryModal(true); } },
-                                            { label: 'Print SKU', icon: Printer, color: '#36454F' },
+                                            { label: 'Print SKU', icon: Printer, color: '#36454F', action: () => handlePrintSKU(item) },
                                             { label: 'Archive SKU', icon: Trash2, color: '#ef4444', action: () => handleDeleteItem(item) },
                                           ].map((opt, i) => (
                                             <button

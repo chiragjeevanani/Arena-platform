@@ -84,6 +84,7 @@ const AdminDashboard = () => {
     (async () => {
       setIsLoading(true);
       setLoadError('');
+      setPaymentList([]);
       
       // Independent data fetching to prevent one failure from killing the dashboard
       const fetchSection = async (fn, setter, transform = (d) => d) => {
@@ -130,32 +131,42 @@ const AdminDashboard = () => {
 
             const bookingPayments = bks
               .filter(b => b.paymentStatus === 'paid')
-              .map(b => ({
-                player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
-                phone: b.userPhone || '',
-                amount: Number(b.amount || 0),
-                method: b.paymentMethod || 'Online',
-                date: new Date(b.createdAt || b.updatedAt || Date.now()),
-                status: 'Paid',
-                statusBg: '#d1fae5',
-                statusText: '#047857',
-              }));
+              .map(b => {
+                const payDate = new Date(b.createdAt || b.updatedAt || Date.now());
+                return {
+                  player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+                  phone: b.userPhone || '',
+                  amount: Number(b.amount || 0),
+                  method: b.paymentMethod || 'Online',
+                  date: payDate,
+                  displayDate: payDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                  displayTime: payDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+                  status: 'Paid',
+                  statusBg: '#d1fae5',
+                  statusText: '#047857',
+                };
+              });
             setPaymentList(prev => [...prev, ...bookingPayments].sort((a, b) => b.date - a.date).slice(0, 5));
             
             return bks; 
           }),
 
           fetchSection(() => listAdminPosSales(selectedArenaId), (data) => {
-            const posPayments = (data.sales || []).map(s => ({
-              player: s.customer?.name || `POS ${String(s.id || '').slice(-6)}`,
-              phone: s.customer?.phone || '',
-              amount: Number(s.totalAmount || 0),
-              method: s.paymentMethod || 'POS',
-              date: new Date(s.createdAt || Date.now()),
-              status: 'Paid',
-              statusBg: '#d1fae5',
-              statusText: '#047857',
-            }));
+            const posPayments = (data.sales || []).map(s => {
+              const payDate = new Date(s.createdAt || Date.now());
+              return {
+                player: s.customer?.name || `POS ${String(s.id || '').slice(-6)}`,
+                phone: s.customer?.phone || '',
+                amount: Number(s.totalAmount || 0),
+                method: s.paymentMethod || 'POS',
+                date: payDate,
+                displayDate: payDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                displayTime: payDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+                status: 'Paid',
+                statusBg: '#d1fae5',
+                statusText: '#047857',
+              };
+            });
             setPaymentList(prev => [...prev, ...posPayments].sort((a, b) => b.date - a.date).slice(0, 5));
             return data;
           }),

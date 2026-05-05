@@ -187,7 +187,6 @@ const CoachingAdmin = () => {
           setSelectedArenaId(String(aid));
           loadBatches(aid);
           
-          // Independent fetches
           listAdminBookings({ arenaId: String(aid) })
             .then(bk => {
               if (cancelled) return;
@@ -195,10 +194,13 @@ const CoachingAdmin = () => {
                 id: b.id,
                 date: b.date,
                 court: b.courtName || '—',
-                player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+                customer: b.userName || `User …${String(b.userId || '').slice(-6)}`,
                 phone: b.userPhone || '',
                 time: b.timeSlot || '',
-                status: b.status,
+                status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Confirmed',
+                arena: b.arenaName || '—',
+                payment: b.paymentStatus === 'paid' ? 'Paid' : b.paymentStatus === 'refunded' ? 'Refunded' : 'Pending',
+                amount: Number(b.amount) || 0,
               }));
               if (rows.length) setBookings(rows);
             })

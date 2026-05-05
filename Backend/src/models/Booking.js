@@ -28,7 +28,7 @@ const bookingSchema = new mongoose.Schema(
     timeSlot: { type: String, required: true, trim: true },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+      enum: ['pending', 'confirmed', 'cancelled', 'completed', 'rescheduled'],
       default: 'confirmed',
     },
     amount: { type: Number, required: true, min: 0 },
@@ -48,7 +48,7 @@ bookingSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      status: { $in: ['pending', 'confirmed'] },
+      status: { $in: ['pending', 'confirmed', 'rescheduled'] },
     },
   }
 );

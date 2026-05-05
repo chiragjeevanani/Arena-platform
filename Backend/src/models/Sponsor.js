@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const sponsorSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+    logo: { type: String, default: '' },
     email: { type: String, default: '', trim: true },
     company: { type: String, default: '', trim: true },
     status: { type: String, enum: ['Active', 'Expired', 'Draft'], default: 'Active' },
@@ -21,6 +22,7 @@ function toPublic(doc) {
   return {
     id: o._id.toString(),
     name: o.name,
+    logo: o.logo || '',
     email: o.email || '',
     company: o.company || '',
     status: o.status,
