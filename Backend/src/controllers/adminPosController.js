@@ -99,11 +99,10 @@ async function listPosSales(req, res) {
     }
 
     const q = { arenaId };
-    if (from && to) {
-      q.createdAt = {
-        $gte: new Date(from),
-        $lte: new Date(to + 'T23:59:59.999Z'),
-      };
+    if (from || to) {
+      q.createdAt = {};
+      if (from) q.createdAt.$gte = new Date(from);
+      if (to) q.createdAt.$lte = new Date(to + 'T23:59:59.999Z');
     }
 
     const list = await PosSale.find(q).sort({ createdAt: -1 }).limit(100).lean();

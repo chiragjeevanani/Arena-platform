@@ -22,20 +22,22 @@ const SalesHistory = () => {
   const [sales, setSales] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [toast, setToast] = useState(null);
 
   const loadSales = useCallback(async () => {
     if (!selectedArenaId || !isApiConfigured() || !getAuthToken()) return;
     setIsLoading(true);
     try {
-      const data = await listAdminPosSales(selectedArenaId);
+      const data = await listAdminPosSales(selectedArenaId, dateRange.from, dateRange.to);
       setSales(data.sales || []);
     } catch (e) {
       showToast(e.message || 'Failed to load sales', 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [selectedArenaId]);
+  }, [selectedArenaId, dateRange.from, dateRange.to]);
 
   useEffect(() => {
     if (!isApiConfigured() || !getAuthToken()) return;
@@ -69,6 +71,39 @@ const SalesHistory = () => {
     s.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.customer?.phone?.includes(searchTerm)
   );
+
+  const handleExportCSV = () => {
+    if (filteredSales.length === 0) {
+      showToast('No sales to export', 'error');
+      return;
+    }
+    
+    const headers = ['Receipt ID', 'Date', 'Customer', 'Phone', 'Items', 'Total Amount', 'Status'];
+    const rows = filteredSales.map(sale => [
+      sale.id,
+      new Date(sale.createdAt).toLocaleString(),
+      sale.customer?.name || 'Walk-in',
+      sale.customer?.phone || 'No Phone',
+      sale.lines.map(l => `${l.qty}x ${l.name}`).join('; '),
+      sale.totalAmount,
+      'Settled'
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `sales_report_${selectedArenaId}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('CSV Exported Successfully');
+  };
 
   return (
     <div className="bg-[#F4F7F6] min-h-screen p-4 md:p-6 lg:p-8">
@@ -118,11 +153,72 @@ const SalesHistory = () => {
               className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white text-sm font-bold text-[#36454F] outline-none transition-all focus:border-[#CE2029]/40 focus:ring-4 focus:ring-[#CE2029]/5"
             />
           </div>
-          <div className="md:col-span-4 flex gap-2">
-             <button className="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-4 flex items-center justify-center gap-2 text-xs font-bold text-slate-600 hover:bg-slate-50">
-               <Calendar size={16} /> Date Range
+          <div className="md:col-span-4 flex gap-2 relative">
+             <button 
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className={`flex-1 border rounded-2xl px-4 py-4 flex items-center justify-center gap-2 text-xs font-bold transition-all ${
+                dateRange.from || dateRange.to 
+                  ? 'bg-[#CE2029]/10 border-[#CE2029]/30 text-[#CE2029]' 
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+             >
+               <Calendar size={16} /> 
+               {dateRange.from || dateRange.to ? 'Filter Active' : 'Date Range'}
              </button>
-             <button className="flex-1 bg-[#36454F] text-white rounded-2xl px-4 py-4 flex items-center justify-center gap-2 text-xs font-bold hover:bg-black transition-all">
+
+             <AnimatePresence>
+                {showDatePicker && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 mt-2 z-[100] bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 w-72 space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">From Date</label>
+                        <input 
+                          type="date" 
+                          value={dateRange.from}
+                          onChange={e => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#36454F] outline-none focus:border-[#CE2029]/40"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">To Date</label>
+                        <input 
+                          type="date" 
+                          value={dateRange.to}
+                          onChange={e => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 text-xs font-bold text-[#36454F] outline-none focus:border-[#CE2029]/40"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                       <button 
+                        onClick={() => {
+                          setDateRange({ from: '', to: '' });
+                          setShowDatePicker(false);
+                        }}
+                        className="flex-1 py-2.5 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50"
+                       >
+                         Clear
+                       </button>
+                       <button 
+                        onClick={() => setShowDatePicker(false)}
+                        className="flex-1 py-2.5 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20"
+                       >
+                         Apply
+                       </button>
+                    </div>
+                  </motion.div>
+                )}
+             </AnimatePresence>
+
+             <button 
+              onClick={handleExportCSV}
+              className="flex-1 bg-[#36454F] text-white rounded-2xl px-4 py-4 flex items-center justify-center gap-2 text-xs font-bold hover:bg-black transition-all"
+             >
                <Download size={16} /> Export CSV
              </button>
           </div>

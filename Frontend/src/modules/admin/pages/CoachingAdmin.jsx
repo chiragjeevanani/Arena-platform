@@ -572,7 +572,6 @@ const CoachingAdmin = () => {
                   className="pl-11 pr-4 py-2.5 rounded-2xl bg-white border border-slate-100 text-xs font-bold w-64 focus:border-[#CE2029] outline-none shadow-sm transition-all"
                 />
              </div>
-             <button className="px-6 py-3 rounded-2xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:-translate-y-0.5 transition-all">Export Report</button>
           </div>
         </div>
 
