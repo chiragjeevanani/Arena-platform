@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   PoundSterling, CalendarDays,
   ChevronLeft, ChevronRight,
@@ -21,26 +21,18 @@ const AdminDashboard = () => {
   const [arenaDetails, setArenaDetails] = useState(null);
   const [arenaSlots, setArenaSlots] = useState([]);
   const [calendarView, setCalendarView] = useState('Week');
-  const [summary, setSummary] = useState(null);
-  const [scheduleBookings, setScheduleBookings] = useState([]);
-  const [recentBookings, setRecentBookings] = useState([]);
-  const [paymentList, setPaymentList] = useState([]);
-  const [bookingCounts, setBookingCounts] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [summary, setSummary] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [courts, setCourts] = useState([]);
   const [selectedCourtId, setSelectedCourtId] = useState('all');
 
-  // Default Date Range (Current Month)
-  const [startDate] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
-  });
-  const [endDate] = useState(() => {
-    const d = new Date();
-    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
-  });
+  // Derive Date Range from currentDate (Selected Month)
+  const startDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
+  const endDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()).padStart(2, '0')}`;
+
+  const [rawBookings, setRawBookings] = useState([]);
+  const [rawPosSales, setRawPosSales] = useState([]);
 
   // Initial Arena Load
   useEffect(() => {
@@ -84,9 +76,7 @@ const AdminDashboard = () => {
     (async () => {
       setIsLoading(true);
       setLoadError('');
-      setPaymentList([]);
       
-      // Independent data fetching to prevent one failure from killing the dashboard
       const fetchSection = async (fn, setter, transform = (d) => d) => {
         try {
           const res = await fn();
@@ -97,7 +87,6 @@ const AdminDashboard = () => {
       };
 
       try {
-        // 1. Load Arena Details & Courts first (critical for other data)
         const arenaInfo = await getAdminArenaById(selectedArenaId);
         if (cancelled) return;
         
@@ -106,87 +95,25 @@ const AdminDashboard = () => {
         setArenaDetails(arenaInfo.arena);
         const validCourtIds = courtsList.map(c => c.id);
 
-        // 2. Load other sections independently
         await Promise.all([
           fetchSection(() => getAdminReportSummary({ arenaId: selectedArenaId, from: startDate, to: endDate }), setSummary),
-          
           fetchSection(() => listAdminBookings({ arenaId: selectedArenaId, from: startDate, to: endDate }), (data) => {
-            const bks = data.bookings || [];
-            const filteredBks = selectedCourtId === 'all' 
-              ? bks 
-              : bks.filter(b => String(b.courtId) === selectedCourtId);
-            
-            setRecentBookings(
-              filteredBks.slice(0, 8).map((b) => ({
-                date: b.date || '—',
-                court: b.courtName || '—',
-                time: b.timeSlot || '—',
-                player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
-                phone: b.userPhone || '',
-                status: b.status || '—',
-                statusBg: b.status === 'confirmed' ? '#d1fae5' : '#f1f5f9',
-                statusText: b.status === 'confirmed' ? '#047857' : '#64748b',
-              }))
-            );
-
-            const bookingPayments = bks
-              .filter(b => b.paymentStatus === 'paid')
-              .map(b => {
-                const payDate = new Date(b.createdAt || b.updatedAt || Date.now());
-                return {
-                  player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
-                  phone: b.userPhone || '',
-                  amount: Number(b.amount || 0),
-                  method: b.paymentMethod || 'Online',
-                  date: payDate,
-                  displayDate: payDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                  displayTime: payDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
-                  status: 'Paid',
-                  statusBg: '#d1fae5',
-                  statusText: '#047857',
-                };
-              });
-            setPaymentList(prev => [...prev, ...bookingPayments].sort((a, b) => b.date - a.date).slice(0, 5));
-            
-            return bks; 
+            setRawBookings(data.bookings || []);
+            return data.bookings;
           }),
-
-          fetchSection(() => listAdminPosSales(selectedArenaId), (data) => {
-            const posPayments = (data.sales || []).map(s => {
-              const payDate = new Date(s.createdAt || Date.now());
-              return {
-                player: s.customer?.name || `POS ${String(s.id || '').slice(-6)}`,
-                phone: s.customer?.phone || '',
-                amount: Number(s.totalAmount || 0),
-                method: s.paymentMethod || 'POS',
-                date: payDate,
-                displayDate: payDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                displayTime: payDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
-                status: 'Paid',
-                statusBg: '#d1fae5',
-                statusText: '#047857',
-              };
-            });
-            setPaymentList(prev => [...prev, ...posPayments].sort((a, b) => b.date - a.date).slice(0, 5));
-            return data;
+          fetchSection(() => listAdminPosSales(selectedArenaId, startDate, endDate), (data) => {
+            setRawPosSales(data.sales || []);
+            return data.sales;
           }),
-
           fetchSection(() => listAdminArenaSlots(selectedArenaId), (data) => {
             const rawSlots = data.slots || [];
             let allSlots = validCourtIds.length > 0 
               ? rawSlots.filter(s => validCourtIds.includes(String(s.courtId)))
               : rawSlots;
-            if (selectedCourtId !== 'all') {
-              allSlots = allSlots.filter(s => String(s.courtId) === selectedCourtId);
-            }
             setArenaSlots(allSlots);
             return allSlots;
           })
         ]);
-
-        // 3. Post-load calculation for the schedule grid
-        // (Simplified for now, can be refined based on state dependencies)
-        
       } catch (e) {
         if (!cancelled) setLoadError('Critical: Could not load arena details.');
       } finally {
@@ -196,26 +123,7 @@ const AdminDashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedArenaId, user, currentDate, selectedCourtId]);
-
-  // Formatter for slot labels (e.g., 15:00-16:00 -> 03:00 PM - 04:00 PM)
-  const formatSlotLabel = (slotStr) => {
-    if (!slotStr) return '—';
-    if (!slotStr.includes('-')) return slotStr;
-    
-    const parts = slotStr.split('-').map(p => p.trim());
-    const formatTime = (t) => {
-      if (t.includes('AM') || t.includes('PM')) return t;
-      // Handle 24h format like 15:00
-      const [h, m] = t.split(':').map(Number);
-      if (isNaN(h)) return t;
-      const period = h >= 12 ? 'PM' : 'AM';
-      const hours = h % 12 || 12;
-      return `${String(hours).padStart(2, '0')}:${String(m || 0).padStart(2, '0')} ${period}`;
-    };
-
-    return `${formatTime(parts[0])} - ${formatTime(parts[1])}`;
-  };
+  }, [selectedArenaId, user, startDate, endDate]);
 
   // Helper for consistent date strings (YYYY-MM-DD)
   const formatDateKey = (d) => {
@@ -244,6 +152,122 @@ const AdminDashboard = () => {
 
   const weekDates = getWeekDates(currentDate);
 
+  const displayTimeSlots = [...new Set(arenaSlots.map(s => s.timeSlot))].sort((a, b) => {
+    const aTime = a.split('-')[0].trim();
+    const bTime = b.split('-')[0].trim();
+    return new Date(`1970/01/01 ${aTime}`) - new Date(`1970/01/01 ${bTime}`);
+  });
+
+  // Formatter for slot labels (e.g., 15:00-16:00 -> 03:00 PM - 04:00 PM)
+  const formatSlotLabel = (slotStr) => {
+    if (!slotStr) return '—';
+    if (!slotStr.includes('-')) return slotStr;
+    
+    const parts = slotStr.split('-').map(p => p.trim());
+    const formatTime = (t) => {
+      if (t.includes('AM') || t.includes('PM')) return t;
+      // Handle 24h format like 15:00
+      const [h, m] = t.split(':').map(Number);
+      if (isNaN(h)) return t;
+      const period = h >= 12 ? 'PM' : 'AM';
+      const hours = h % 12 || 12;
+      return `${String(hours).padStart(2, '0')}:${String(m || 0).padStart(2, '0')} ${period}`;
+    };
+
+    return `${formatTime(parts[0])} - ${formatTime(parts[1])}`;
+  };
+
+  // Derived Bookings based on Court Filter
+  const filteredBookings = useMemo(() => {
+    if (selectedCourtId === 'all') return rawBookings;
+    return rawBookings.filter(b => String(b.courtId) === selectedCourtId);
+  }, [rawBookings, selectedCourtId]);
+
+  // Calendar Schedule Data
+  const scheduleBookings = useMemo(() => {
+    return filteredBookings.map(b => {
+      const colIdx = weekDates.findIndex(wd => wd.fullDate === b.date);
+      const rowIdx = displayTimeSlots.indexOf(b.timeSlot);
+      
+      return {
+        ...b,
+        name: b.userName || 'Guest',
+        time: b.timeSlot,
+        fullDate: b.date,
+        colStart: colIdx !== -1 ? colIdx + 1 : null,
+        rowStart: rowIdx !== -1 ? rowIdx + 1 : null,
+        bgColor: b.status === 'confirmed' ? '#CE2029' : '#36454F',
+        textColor: '#FFFFFF'
+      };
+    }).filter(b => b.colStart !== null && b.rowStart !== null);
+  }, [filteredBookings, weekDates, displayTimeSlots]);
+
+  // Recent Bookings Table
+  const recentBookings = useMemo(() => {
+    return filteredBookings.slice(0, 8).map((b) => ({
+      date: b.date || '—',
+      court: b.courtName || '—',
+      time: b.timeSlot || '—',
+      player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+      phone: b.userPhone || '',
+      status: b.status || '—',
+      statusBg: b.status === 'confirmed' ? '#d1fae5' : '#f1f5f9',
+      statusText: b.status === 'confirmed' ? '#047857' : '#64748b',
+    }));
+  }, [filteredBookings]);
+
+  // Booking Counts for Month View
+  const bookingCounts = useMemo(() => {
+    const counts = {};
+    rawBookings.forEach(b => {
+      if (b.date) {
+        counts[b.date] = (counts[b.date] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [rawBookings]);
+
+  // Recent Payments List (Bookings + POS)
+  const paymentList = useMemo(() => {
+    const bookingPayments = rawBookings
+      .filter(b => b.paymentStatus === 'paid')
+      .map(b => {
+        const payDate = new Date(b.createdAt || b.updatedAt || Date.now());
+        return {
+          player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+          phone: b.userPhone || '',
+          amount: Number(b.amount || 0),
+          method: b.paymentMethod || 'Online',
+          date: payDate,
+          displayDate: payDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          displayTime: payDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+          status: 'Paid',
+          statusBg: '#d1fae5',
+          statusText: '#047857',
+        };
+      });
+
+    const posPayments = rawPosSales.map(s => {
+      const payDate = new Date(s.createdAt || Date.now());
+      return {
+        player: s.customer?.name || `POS ${String(s.id || '').slice(-6)}`,
+        phone: s.customer?.phone || '',
+        amount: Number(s.totalAmount || 0),
+        method: s.paymentMethod || 'POS',
+        date: payDate,
+        displayDate: payDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        displayTime: payDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        status: 'Paid',
+        statusBg: '#d1fae5',
+        statusText: '#047857',
+      };
+    });
+
+    return [...bookingPayments, ...posPayments]
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 5);
+  }, [rawBookings, rawPosSales]);
+
   const handleDayClick = (dayNum) => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNum);
     setCurrentDate(newDate);
@@ -268,11 +292,7 @@ const AdminDashboard = () => {
     setCurrentDate(newDate);
   };
 
-  const displayTimeSlots = [...new Set(arenaSlots.map(s => s.timeSlot))].sort((a, b) => {
-    const aTime = a.split('-')[0].trim();
-    const bTime = b.split('-')[0].trim();
-    return new Date(`1970/01/01 ${aTime}`) - new Date(`1970/01/01 ${bTime}`);
-  });
+
 
   if (isLoading) {
     return (
