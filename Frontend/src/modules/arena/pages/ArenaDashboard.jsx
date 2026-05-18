@@ -88,24 +88,24 @@ const ArenaDashboard = () => {
         try {
           const dayName = DAY_MAP[new Date(selectedDate).getDay()];
           // Fetch Mon (Weekday), Sat (Weekend) and Current
-          const [monRes, satRes, currentRes] = await Promise.all([
-            Promise.all(fetchedCourts.map(c => listMyCourtSlots(c.id, 'Mon'))),
+          const [sunRes, satRes, currentRes] = await Promise.all([
+            Promise.all(fetchedCourts.map(c => listMyCourtSlots(c.id, 'Sun'))),
             Promise.all(fetchedCourts.map(c => listMyCourtSlots(c.id, 'Sat'))),
             Promise.all(fetchedCourts.map(c => listMyCourtSlots(c.id, dayName)))
           ]);
           
-          const monMap = {};
+          const sunMap = {};
           const satMap = {};
           const currentMap = {};
           
           fetchedCourts.forEach((c, idx) => {
-            monMap[c.id] = monRes[idx].slots || [];
+            sunMap[c.id] = sunRes[idx].slots || [];
             satMap[c.id] = satRes[idx].slots || [];
             currentMap[c.id] = currentRes[idx].slots || [];
           });
           
           if (!cancelled) {
-            setWeekdayTemplate(monMap);
+            setWeekdayTemplate(sunMap);
             setWeekendTemplate(satMap);
             setCourtSlots(currentMap);
           }
@@ -220,7 +220,7 @@ const ArenaDashboard = () => {
 
   const isWeekend = useMemo(() => {
     const d = new Date(selectedDate).getDay();
-    return d === 0 || d === 6;
+    return d === 5 || d === 6;
   }, [selectedDate]);
 
   return (
@@ -289,8 +289,8 @@ const ArenaDashboard = () => {
       {/* Booking Schedule - Dual Dynamic Containers */}
       <div className="max-w-[1440px] mx-auto space-y-6 pb-12">
         {[
-          { id: 'weekday', label: 'WEEKDAYS (MON - FRI)', cols: WEEKDAY_COLS, template: weekdayTemplate, active: !isWeekend },
-          { id: 'weekend', label: 'WEEKEND (SAT - SUN)', cols: WEEKEND_COLS, template: weekendTemplate, active: isWeekend }
+          { id: 'weekday', label: 'WEEKDAYS (SUN - THU)', cols: WEEKDAY_COLS, template: weekdayTemplate, active: !isWeekend },
+          { id: 'weekend', label: 'WEEKEND (FRI - SAT)', cols: WEEKEND_COLS, template: weekendTemplate, active: isWeekend }
         ].map((section, sIdx) => (
           <div key={section.id} className="bg-white rounded-xl overflow-hidden shadow-[0_5px_20px_rgba(0,0,0,0.02)] border border-slate-100">
             <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: sIdx === 1 ? BRAND_RED : '#36454F' }}>

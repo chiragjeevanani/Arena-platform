@@ -39,6 +39,8 @@ const bookingSchema = new mongoose.Schema(
     },
     paymentMethod: { type: String, default: 'online', trim: true },
     type: { type: String, default: 'court' },
+    walletUsed: { type: Number, default: 0 },
+    paidAmount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
@@ -68,6 +70,8 @@ function toPublicBooking(doc, extras = {}) {
     paymentStatus: o.paymentStatus,
     paymentMethod: o.paymentMethod,
     type: o.type,
+    walletUsed: o.walletUsed || 0,
+    paidAmount: o.paidAmount || 0,
     createdAt: o.createdAt,
     ...extras,
   };

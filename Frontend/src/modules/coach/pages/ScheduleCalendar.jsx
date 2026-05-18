@@ -32,8 +32,8 @@ function batchesToSessions(batches) {
     });
 
     // Special keywords
-    if (rawSched.includes('weekday')) activeDays = [1, 2, 3, 4, 5];
-    if (rawSched.includes('weekend')) activeDays = [0, 6];
+    if (rawSched.includes('weekday')) activeDays = [0, 1, 2, 3, 4];
+    if (rawSched.includes('weekend')) activeDays = [5, 6];
     if (rawSched.includes('daily')) activeDays = [0, 1, 2, 3, 4, 5, 6];
 
     // Fallback if no days found

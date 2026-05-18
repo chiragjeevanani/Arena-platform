@@ -5,6 +5,8 @@ const User = require('../models/User');
 const RefreshToken = require('../models/RefreshToken');
 const PasswordResetToken = require('../models/PasswordResetToken');
 const AuditLog = require('../models/AuditLog');
+const Referral = require('../models/Referral');
+const ReferralSettings = require('../models/ReferralSettings');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
 
 function hashOpaqueToken(raw) {
@@ -39,6 +41,21 @@ async function register(req, res) {
   }
 
   try {
+    let referredByUser = null;
+    let settings = null;
+    if (req.body.referralCode) {
+      settings = await ReferralSettings.getSettings();
+      if (settings.referralSystemEnabled) {
+        referredByUser = await User.findOne({ referralCode: String(req.body.referralCode).trim() });
+        if (!referredByUser) {
+          return res.status(400).json({ error: 'Invalid referral code' });
+        }
+        if (referredByUser.email.toLowerCase() === parsed.email.toLowerCase()) {
+          return res.status(400).json({ error: 'You cannot refer yourself' });
+        }
+      }
+    }
+
     const passwordHash = await bcrypt.hash(parsed.password, 10);
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const emailVerifyToken = hashOpaqueToken(verificationToken);
@@ -52,7 +69,19 @@ async function register(req, res) {
       isEmailVerified: false,
       emailVerifyToken,
       emailVerifyExpires,
+      referredBy: referredByUser ? referredByUser._id : null,
     });
+
+    if (referredByUser && settings) {
+      await Referral.create({
+        referrerId: referredByUser._id,
+        referredUserId: user._id,
+        referralCode: String(req.body.referralCode).trim(),
+        rewardAmountReferrer: settings.referrerReward,
+        rewardAmountReferred: settings.newuserReward,
+        expiryDate: new Date(Date.now() + settings.referralExpiryDays * 24 * 60 * 60 * 1000),
+      });
+    }
 
     const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`;
     await sendVerificationEmail(user.email, verificationUrl);

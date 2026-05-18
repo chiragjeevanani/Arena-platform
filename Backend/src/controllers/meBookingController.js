@@ -4,6 +4,9 @@ const Court = require('../models/Court');
 const Arena = require('../models/Arena');
 const Wallet = require('../models/Wallet');
 const WalletTransaction = require('../models/WalletTransaction');
+const User = require('../models/User');
+const Referral = require('../models/Referral');
+const ReferralSettings = require('../models/ReferralSettings');
 const { getOrCreateWallet } = require('../services/walletService');
 const { computeCourtBookingPrice, amountsMatch } = require('../services/pricing');
 const { createNotification } = require('../services/notificationService');
@@ -44,23 +47,39 @@ async function createMyBooking(req, res) {
   }
 
   const finalAmount = pricing.finalAmount;
-  const method = paymentMethod || 'online';
+  const useWallet = req.body.useWallet === true || paymentMethod === 'wallet';
 
   let walletDebit = null;
-  if (method === 'wallet') {
-    const wallet = await getOrCreateWallet(userId);
-    const updated = await Wallet.findOneAndUpdate(
-      { _id: wallet._id, balance: { $gte: finalAmount } },
-      { $inc: { balance: -finalAmount } },
-      { new: true }
-    );
-    if (!updated) {
-      return res.status(400).json({ error: 'Insufficient wallet balance', pricing });
+  let walletDebitAmount = 0;
+
+  if (useWallet) {
+    const settings = await ReferralSettings.getSettings();
+    if (settings.walletUsageEnabled) {
+      const wallet = await getOrCreateWallet(userId);
+      walletDebitAmount = Math.min(wallet.balance, finalAmount);
+
+      if (paymentMethod === 'wallet' && wallet.balance < finalAmount) {
+        return res.status(400).json({ error: 'Insufficient wallet balance', pricing });
+      }
+
+      if (walletDebitAmount > 0) {
+        const updated = await Wallet.findOneAndUpdate(
+          { _id: wallet._id, balance: { $gte: walletDebitAmount } },
+          { $inc: { balance: -walletDebitAmount } },
+          { new: true }
+        );
+        if (!updated) {
+          return res.status(400).json({ error: 'Insufficient wallet balance', pricing });
+        }
+        walletDebit = { walletId: wallet._id, amount: walletDebitAmount, balanceAfter: updated.balance };
+      }
     }
-    walletDebit = { walletId: wallet._id, balanceAfter: updated.balance };
   }
 
   try {
+    const method = walletDebitAmount === finalAmount ? 'wallet' : (walletDebitAmount > 0 ? 'partial_wallet' : (paymentMethod || 'online'));
+    const payStatus = walletDebitAmount === finalAmount ? 'paid' : 'pending';
+
     const booking = await Booking.create({
       userId,
       arenaId,
@@ -69,8 +88,10 @@ async function createMyBooking(req, res) {
       timeSlot: String(timeSlot).trim(),
       amount: finalAmount,
       paymentMethod: method,
-      paymentStatus: method === 'wallet' ? 'paid' : 'pending',
+      paymentStatus: payStatus,
       status: 'confirmed',
+      walletUsed: walletDebitAmount,
+      paidAmount: finalAmount - walletDebitAmount,
     });
 
     if (walletDebit) {
@@ -78,7 +99,7 @@ async function createMyBooking(req, res) {
         walletId: walletDebit.walletId,
         userId,
         type: 'debit',
-        amount: finalAmount,
+        amount: walletDebit.amount,
         reason: 'booking_payment',
         balanceAfter: walletDebit.balanceAfter,
         meta: {
@@ -87,6 +108,88 @@ async function createMyBooking(req, res) {
           courtId: String(courtId),
         },
       });
+    }
+
+    // Check if this is the referred user's first successful booking for referral payout
+    const isFirstBooking = (await Booking.countDocuments({
+      userId,
+      status: 'confirmed',
+      _id: { $ne: booking._id },
+    })) === 0;
+
+    if (isFirstBooking) {
+      const referral = await Referral.findOne({
+        referredUserId: userId,
+        status: 'pending',
+        expiryDate: { $gt: new Date() },
+      });
+
+      if (referral) {
+        // Mark referral as completed
+        referral.status = 'completed';
+        referral.bookingId = booking._id;
+        await referral.save();
+
+        // Credit Referrer
+        const referrerWallet = await getOrCreateWallet(referral.referrerId);
+        const referrerWalletUpdated = await Wallet.findByIdAndUpdate(
+          referrerWallet._id,
+          { $inc: { balance: referral.rewardAmountReferrer } },
+          { new: true }
+        );
+        await WalletTransaction.create({
+          walletId: referrerWallet._id,
+          userId: referral.referrerId,
+          type: 'credit',
+          amount: referral.rewardAmountReferrer,
+          reason: 'referral_reward',
+          balanceAfter: referrerWalletUpdated.balance,
+          meta: {
+            bookingId: booking._id.toString(),
+            referredUserId: userId,
+          },
+        });
+
+        // Credit Referred User
+        const referredWallet = await getOrCreateWallet(userId);
+        const referredWalletUpdated = await Wallet.findByIdAndUpdate(
+          referredWallet._id,
+          { $inc: { balance: referral.rewardAmountReferred } },
+          { new: true }
+        );
+        await WalletTransaction.create({
+          walletId: referredWallet._id,
+          userId,
+          type: 'credit',
+          amount: referral.rewardAmountReferred,
+          reason: 'welcome_reward',
+          balanceAfter: referredWalletUpdated.balance,
+          meta: {
+            bookingId: booking._id.toString(),
+          },
+        });
+
+        // Notifications
+        const user = await User.findById(userId).lean();
+        const referrerUser = await User.findById(referral.referrerId).lean();
+        if (referrerUser) {
+          await createNotification(
+            referral.referrerId,
+            'Referral Reward Credited!',
+            `Congratulations! You earned ₹${referral.rewardAmountReferrer} wallet credit as your referred friend ${user?.name || 'a friend'} made their first booking.`,
+            'success',
+            { bookingId: booking._id.toString() }
+          );
+        }
+
+        await createNotification(
+          userId,
+          'Welcome Reward Credited!',
+          `Welcome to Arena! You've received ₹${referral.rewardAmountReferred} welcome wallet credit for signing up with a referral code.`,
+          'success',
+          { bookingId: booking._id.toString() }
+        );
+      }
     }
 
     await createNotification(
@@ -107,13 +210,13 @@ async function createMyBooking(req, res) {
   } catch (err) {
     if (err.code === 11000) {
       if (walletDebit) {
-        await Wallet.findByIdAndUpdate(walletDebit.walletId, { $inc: { balance: finalAmount } });
+        await Wallet.findByIdAndUpdate(walletDebit.walletId, { $inc: { balance: walletDebit.amount } });
         const refunded = await Wallet.findById(walletDebit.walletId);
         await WalletTransaction.create({
           walletId: walletDebit.walletId,
           userId,
           type: 'credit',
-          amount: finalAmount,
+          amount: walletDebit.amount,
           reason: 'refund',
           balanceAfter: refunded.balance,
           meta: { reason: 'booking_slot_conflict' },

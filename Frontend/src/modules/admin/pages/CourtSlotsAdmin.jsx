@@ -20,8 +20,8 @@ const CourtSlotsAdmin = () => {
   const [loading, setLoading] = useState(false);
 
   const GROUP_MAP = {
-    'Weekdays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    'Weekend': ['Sat', 'Sun']
+    'Weekdays': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'],
+    'Weekend': ['Fri', 'Sat']
   };
 
   const currentTabDays = isEachDay 
@@ -126,7 +126,7 @@ const CourtSlotsAdmin = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(`/admin/arena/details/${arenaId}`, { state: { activeTab: 'courts' } })}
               className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-[#CE2029] hover:border-[#CE2029]/20 transition-all shadow-sm"
             >
               <ArrowLeft size={18} />
@@ -184,7 +184,7 @@ const CourtSlotsAdmin = () => {
                onClick={() => {
                  const newIsEachDay = !isEachDay;
                  setIsEachDay(newIsEachDay);
-                 setSelectedDay(newIsEachDay ? 'Mon' : 'Weekdays');
+                 setSelectedDay(newIsEachDay ? 'Sun' : 'Weekdays');
                }}
                className="w-12 h-6 rounded-full transition-all flex items-center relative shadow-inner overflow-hidden border border-slate-100"
                style={{ backgroundColor: isEachDay ? '#CE2029' : '#E2E8F0' }}

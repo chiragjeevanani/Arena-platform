@@ -8,10 +8,10 @@ export function loginRequest(email, password) {
   });
 }
 
-export function registerRequest({ email, password, name }) {
+export function registerRequest({ email, password, name, referralCode }) {
   return apiJson('/api/auth/register', {
     method: 'POST',
-    body: { email, password, name },
+    body: { email, password, name, referralCode },
     skipAuth: true,
   });
 }

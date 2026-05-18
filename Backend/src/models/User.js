@@ -31,9 +31,32 @@ const userSchema = new mongoose.Schema(
     achievements: { type: [String], default: [] },
     hours: { type: String, default: '0' },
     wins: { type: String, default: '0' },
+    // Referral System fields
+    referralCode: { type: String, unique: true, sparse: true, index: true },
+    referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
   { timestamps: true }
 );
+
+userSchema.pre('save', async function (next) {
+  if (!this.referralCode) {
+    let code = '';
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 10) {
+      const prefix = (this.name || 'ARENA').replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase() || 'ARENA';
+      const suffix = Math.floor(1000 + Math.random() * 9000);
+      code = `${prefix}${suffix}`;
+      const existing = await this.constructor.findOne({ referralCode: code });
+      if (!existing) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+    this.referralCode = code;
+  }
+  next();
+});
 
 function toPublicUser(doc) {
   if (!doc) return null;
@@ -51,6 +74,8 @@ function toPublicUser(doc) {
     achievements: doc.achievements || [],
     hours: doc.hours || '0',
     wins: doc.wins || '0',
+    referralCode: doc.referralCode || '',
+    referredBy: doc.referredBy ? doc.referredBy.toString() : null,
   };
 }
 

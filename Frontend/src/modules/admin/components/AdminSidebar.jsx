@@ -24,7 +24,8 @@ import {
   Briefcase, 
   Crown,
   ShoppingBag,
-  History
+  History,
+  Gift
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -63,6 +64,7 @@ const SIDEBAR_STRUCTURE = [
     roles: ['SUPER_ADMIN'],
     items: [
       { path: '/admin/pricing', icon: DollarSign, label: 'Pricing Rules' },
+      { path: '/admin/referrals', icon: Gift, label: 'Referrals & Wallets' },
     ]
   },
 ];

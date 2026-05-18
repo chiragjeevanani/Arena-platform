@@ -12,12 +12,12 @@ import { showToast } from '../../../../utils/toast';
 const emptyForm = { startTime: '06:00', endTime: '07:00', type: 'nonPrime', status: 'Available' };
 
 const DAY_GROUPS = {
-  weekday: { label: 'Mon - Fri', days: [1, 2, 3, 4, 5] },
-  weekend: { label: 'Sat - Sun', days: [6, 0] }
+  weekday: { label: 'Sun - Thu', days: [0, 1, 2, 3, 4] },
+  weekend: { label: 'Fri - Sat', days: [5, 6] }
 };
 
 const DAY_MAP = {
-  1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 0: 'Sun'
+  0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat'
 };
 
 const SlotConfig = () => {
@@ -32,8 +32,8 @@ const SlotConfig = () => {
   const [saving, setSaving] = useState(false);
 
   const GROUP_MAP = {
-    'weekday': [1, 2, 3, 4, 5],
-    'weekend': [6, 0]
+    'weekday': [0, 1, 2, 3, 4],
+    'weekend': [5, 6]
   };
 
   const currentTabGroups = useMemo(() => isEachDay 
@@ -179,7 +179,7 @@ const SlotConfig = () => {
                    onClick={() => {
                      const newIsEachDay = !isEachDay;
                      setIsEachDay(newIsEachDay);
-                     setActiveTab(newIsEachDay ? 'Mon' : 'weekday');
+                     setActiveTab(newIsEachDay ? 'Sun' : 'weekday');
                    }}
                    className="w-10 h-5 rounded-full transition-all flex items-center relative shadow-inner overflow-hidden border border-slate-100"
                    style={{ backgroundColor: isEachDay ? '#CE2029' : '#E2E8F0' }}

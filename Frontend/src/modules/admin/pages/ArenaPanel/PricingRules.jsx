@@ -272,7 +272,7 @@ const PricingRules = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-bold text-[#36454F] text-xs uppercase tracking-widest">Weekend Price</h4>
-                        <p className="text-[9px] text-slate-600 mt-1">Surcharge for Sat & Sun</p>
+                        <p className="text-[9px] text-slate-600 mt-1">Surcharge for Fri & Sat</p>
                       </div>
                       <ToggleSwitch checked={pricing.weekendEnabled} onToggle={() => toggle('weekendEnabled')} />
                     </div>

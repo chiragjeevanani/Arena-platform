@@ -325,6 +325,7 @@ const CourtManagement = () => {
                       className="w-full py-4 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none appearance-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner"
                     >
                       <option value="Synthetic Pro">Synthetic Pro</option>
+                      <option value="BWF Approved">BWF Approved</option>
                       <option value="Wooden">Premium Wooden</option>
                       <option value="Hybrid Mat">Hybrid Mat</option>
                       <option value="Hard Court">Hard Court</option>

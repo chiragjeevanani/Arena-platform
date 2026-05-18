@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton, Checkbox, FormControlLabel } from '@mui/material';
 import { Person, Email, Lock, Phone, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { isApiConfigured } from '../../../services/config';
@@ -10,6 +11,7 @@ import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +19,7 @@ const Signup = () => {
   const [emailError, setEmailError] = useState('');
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [referralCode, setReferralCode] = useState(searchParams.get('ref') || '');
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -51,6 +54,7 @@ const Signup = () => {
           email,
           password,
           name: name.trim(),
+          referralCode: referralCode.trim(),
         });
         setIsRegistered(true);
       } catch (err) {
@@ -265,6 +269,33 @@ const Signup = () => {
                         <IconButton onClick={() => setShowPassword(!showPassword)} size="small">
                           {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
                         </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                    },
+                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Referral Code (Optional)"
+                  variant="outlined"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Gift size={18} className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                       </InputAdornment>
                     ),
                   }}

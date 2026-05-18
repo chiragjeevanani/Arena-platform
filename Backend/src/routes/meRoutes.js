@@ -20,6 +20,7 @@ const { createPaymentIntent, listMyPayments } = require('../controllers/mePaymen
 const { patchMyProfile } = require('../controllers/meProfileController');
 const { listMyAttendance } = require('../controllers/meAttendanceController');
 const { listMyEventRegistrations, cancelMyEventRegistration } = require('../controllers/meEventController');
+const { getMyReferrals } = require('../controllers/meReferralController');
 
 const router = express.Router();
 
@@ -33,6 +34,8 @@ router.patch('/bookings/:id/cancel', asyncHandler(cancelMyBooking));
 
 router.get('/wallet', asyncHandler(getMyWallet));
 router.post('/wallet/top-up', asyncHandler(topUpMyWallet));
+
+router.get('/referrals', asyncHandler(getMyReferrals));
 
 router.get('/memberships', asyncHandler(listMyMemberships));
 router.post('/memberships/purchase', asyncHandler(purchaseMembership));

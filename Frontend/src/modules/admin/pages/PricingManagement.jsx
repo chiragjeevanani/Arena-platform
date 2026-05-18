@@ -137,7 +137,7 @@ const PricingManagement = () => {
                   <input
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g. Weekend Surge"
+                    placeholder="e.g. Fri–Sat Surge"
                     className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
                       isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#CE2029]' : 'bg-slate-50 border-slate-300 text-[#36454F] focus:border-[#CE2029]'
                     }`}
@@ -184,7 +184,7 @@ const PricingManagement = () => {
                   <input
                     value={form.time}
                     onChange={e => setForm({ ...form, time: e.target.value })}
-                    placeholder="e.g. Mon–Fri, 17:00–20:00"
+                    placeholder="e.g. Sun–Thu, 17:00–20:00"
                     className={`w-full px-3 py-2 rounded-xl text-xs border outline-none transition-all font-semibold ${
                       isDark ? 'bg-white/5 border-white/20 text-white placeholder:text-white/20 focus:border-[#CE2029]' : 'bg-slate-50 border-slate-300 text-[#36454F] focus:border-[#CE2029]'
                     }`}

@@ -38,6 +38,7 @@ const Coaching = lazy(() => import('./modules/user/pages/Coaching'));
 const Profile = lazy(() => import('./modules/user/pages/Profile'));
 const EditProfile = lazy(() => import('./modules/user/pages/EditProfile'));
 const Wallet = lazy(() => import('./modules/user/pages/Wallet'));
+const ReferEarn = lazy(() => import('./modules/user/pages/ReferEarn'));
 const Notifications = lazy(() => import('./modules/user/pages/Notifications'));
 const Events = lazy(() => import('./modules/user/pages/Events'));
 const EventDetail = lazy(() => import('./modules/user/pages/EventDetail'));
@@ -94,6 +95,7 @@ const FrontendCategoryMgmt = lazy(() => import('./modules/admin/pages/FrontendCa
 const ArenaListAdmin = lazy(() => import('./modules/admin/pages/ArenaListAdmin'));
 const ArenaDetailsAdmin = lazy(() => import('./modules/admin/pages/ArenaDetailsAdmin'));
 const CourtSlotsAdmin = lazy(() => import('./modules/admin/pages/CourtSlotsAdmin'));
+const ReferralManagement = lazy(() => import('./modules/admin/pages/ReferralManagement'));
 
 // Arena Panel (Standalone)
 const ArenaLogin = lazy(() => import('./modules/arena/pages/ArenaLogin'));
@@ -197,6 +199,7 @@ function App() {
               <Route path="arena/slots/:arenaId/:courtId" element={<CourtSlotsAdmin />} />
               <Route path="settings" element={<AccountSettings />} />
               <Route path="arena-panel" element={<ArenaManagementPanel />} />
+              <Route path="referrals" element={<ReferralManagement />} />
             </Route>
 
             {/* Auth Routes */}
@@ -218,6 +221,7 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="profile/edit" element={<EditProfile />} />
               <Route path="profile/wallet" element={<Wallet />} />
+              <Route path="profile/refer-earn" element={<ReferEarn />} />
               <Route path="profile/attendance" element={<MyAttendance />} />
               <Route path="profile/notifications" element={<Notifications />} />
               <Route path="profile/privacy" element={<Privacy />} />

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Building2, MapPin, Phone, Mail, Globe,
@@ -43,6 +43,7 @@ const newArenaForm = () => ({
 const ArenaDetailsAdmin = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
   const fileInputRef = useRef(null);
   const courtImageInputRef = useRef(null);
   const [isEditingCourts, setIsEditingCourts] = useState(false);
@@ -50,7 +51,21 @@ const ArenaDetailsAdmin = () => {
 
   const [form, setForm] = useState(() => (id === 'new' ? newArenaForm() : { ...newArenaForm(), id }));
   const [courts, setCourts] = useState([]);
-  const [activeTab, setActiveTab] = useState('general'); // general, courts, availability
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem(`arena_tab_${id}`) || location.state?.activeTab || 'general';
+  });
+
+  useEffect(() => {
+    if (activeTab) {
+      sessionStorage.setItem(`arena_tab_${id}`, activeTab);
+    }
+  }, [activeTab, id]);
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state?.activeTab]);
 
   useEffect(() => {
     if (id === 'new') {
@@ -422,6 +437,7 @@ const ArenaDetailsAdmin = () => {
                       >
                          <option value="Wooden">Wooden</option>
                          <option value="Synthetic">Synthetic</option>
+                         <option value="BWF">BWF</option>
                          <option value="Turf">Turf</option>
                          <option value="Acrylic">Acrylic</option>
                          <option value="Sand">Sand</option>

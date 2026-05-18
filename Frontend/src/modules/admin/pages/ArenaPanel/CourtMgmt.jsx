@@ -334,6 +334,7 @@ const CourtMgmt = () => {
                     <label className="text-[8.5px] font-black uppercase tracking-widest text-[#36454F] block">Material Typology</label>
                     <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))} className="w-full h-10 px-2 rounded-sm border border-slate-200 bg-white text-[11px] font-bold outline-none uppercase cursor-pointer">
                       <option value="Wooden">Wooden</option>
+                      <option value="BWF Approved">BWF Approved</option>
                       <option value="Turf">Turf</option>
                       <option value="Acrylic">Acrylic</option>
                       <option value="Clay">Clay</option>

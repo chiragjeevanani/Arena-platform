@@ -70,6 +70,13 @@ const {
 } = require('../controllers/adminEventController');
 const { listAdminArenaBlocks } = require('../controllers/adminAvailabilityController');
 const { listStaffAttendance } = require('../controllers/adminStaffAttendanceController');
+const {
+  getReferralSettings,
+  updateReferralSettings,
+  getReferralsList,
+  getWalletsList,
+  adjustWalletBalance,
+} = require('../controllers/adminReferralController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -148,5 +155,12 @@ router.post(
 
 // Staff Attendance Logs
 router.get('/staff-attendance', asyncHandler(listStaffAttendance));
+
+// Referral System & Wallet Management
+router.get('/referrals/settings', asyncHandler(getReferralSettings));
+router.put('/referrals/settings', asyncHandler(updateReferralSettings));
+router.get('/referrals', asyncHandler(getReferralsList));
+router.get('/wallets', asyncHandler(getWalletsList));
+router.post('/wallets/adjust', asyncHandler(adjustWalletBalance));
 
 module.exports = router;

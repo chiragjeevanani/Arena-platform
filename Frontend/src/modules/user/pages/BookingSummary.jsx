@@ -30,6 +30,7 @@ const BookingSummary = () => {
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' | 'wallet'
   const [walletBalance, setWalletBalance] = useState(null);
+  const [useWallet, setUseWallet] = useState(false);
 
   const storedArena = readStoredArenaSafe();
   const { arena: stateArena, court: stateCourt, date, slot, useApiCheckout, dateYmd, serverPricing } = state || {};
@@ -63,6 +64,9 @@ const BookingSummary = () => {
   const discountAmount = serverPricing ? serverPricing.discountAmount : 0;
   
   const tax = useLiveCheckout ? 0 : subtotal * 0.18;
+  const totalAmount = subtotal + tax;
+  const walletDeduction = useWallet ? Math.min(walletBalance || 0, totalAmount) : 0;
+  const finalPayable = totalAmount - walletDeduction;
   const canApiBook = useLiveCheckout && user?.role === 'CUSTOMER';
 
   const handlePayOrBook = async () => {
@@ -80,8 +84,9 @@ const BookingSummary = () => {
           courtId: String(court.id),
           date: ymd,
           timeSlot,
-          paymentMethod,
+          paymentMethod: finalPayable === 0 ? 'wallet' : 'online',
           amount: subtotal + tax,
+          useWallet,
         });
         navigate('/booking-success', {
           replace: true,
@@ -288,41 +293,50 @@ const BookingSummary = () => {
                          <div className="absolute right-0 translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
                       </div>
 
-                      {/* Payment Method Selection */}
-                      <div className="space-y-3">
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Select Payment Method</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <button
-                            onClick={() => setPaymentMethod('online')}
-                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
-                              paymentMethod === 'online' 
-                                ? 'border-[#CE2029] bg-[#CE2029]/5 ring-1 ring-[#CE2029]' 
-                                : 'border-slate-100 hover:border-slate-200'
-                            }`}
-                          >
-                            <CreditCard size={18} className={paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-400'} />
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Online</span>
-                          </button>
-                          
-                          <button
-                            onClick={() => setPaymentMethod('wallet')}
-                            disabled={walletBalance === null || walletBalance < (subtotal + tax)}
-                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all relative ${
-                              paymentMethod === 'wallet' 
-                                ? 'border-[#CE2029] bg-[#CE2029]/5 ring-1 ring-[#CE2029]' 
-                                : 'border-slate-100 hover:border-slate-200'
-                            } ${walletBalance !== null && walletBalance < (subtotal + tax) ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
-                          >
-                            <Wallet size={18} className={paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-400'} />
-                            <div className="flex flex-col items-center">
-                              <span className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Wallet</span>
-                              {walletBalance !== null && (
-                                <span className="text-[8px] font-bold text-slate-400">OMR {walletBalance.toFixed(3)}</span>
-                              )}
+                      {/* Wallet Balance Apply Option */}
+                      {walletBalance !== null && walletBalance > 0 ? (
+                        <div className={`p-4 rounded-2xl border transition-all ${
+                          useWallet 
+                            ? 'border-[#CE2029] bg-[#CE2029]/5' 
+                            : 'border-slate-100 bg-slate-50/50'
+                        }`}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                                useWallet ? 'bg-[#CE2029]/10 text-[#CE2029]' : 'bg-slate-100 text-slate-400'
+                              }`}>
+                                <Wallet size={18} />
+                              </div>
+                              <div>
+                                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-800">Use Wallet Credit</h4>
+                                <p className="text-[9px] font-bold text-slate-400 mt-0.5">Available: OMR {walletBalance.toFixed(3)}</p>
+                              </div>
                             </div>
-                          </button>
+                            
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={useWallet} 
+                                onChange={(e) => setUseWallet(e.target.checked)} 
+                                className="sr-only peer"
+                              />
+                              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#CE2029]"></div>
+                            </label>
+                          </div>
+                          
+                          {useWallet && (
+                            <div className="mt-3 pt-3 border-t border-dashed border-[#CE2029]/20 flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-[#CE2029]">
+                              <span>Applied Deduction</span>
+                              <span>-OMR {walletDeduction.toFixed(3)}</span>
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 text-center">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">No wallet credits available</p>
+                          <span className="text-[8px] font-bold text-[#CE2029] uppercase tracking-wider mt-0.5 inline-block">Earn ₹150 by referring friends!</span>
+                        </div>
+                      )}
 
                       {/* Ticket Perforation */}
                       <div className="relative h-px flex items-center">
@@ -331,40 +345,51 @@ const BookingSummary = () => {
                          <div className="absolute right-0 translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
                       </div>
 
-                     {/* Financial Breakdown */}
-                     <div className="space-y-3">
-                        <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                           <span>Base Reservation</span>
-                           <span className="text-slate-900 font-black">OMR {baseReservation.toFixed(3)}</span>
-                        </div>
-                        {discountAmount > 0 && (
-                          <div className="flex justify-between items-center text-[9px] font-bold text-green-500 uppercase tracking-widest">
-                             <span>Member Discount</span>
-                             <span className="text-green-600 font-black">-OMR {discountAmount.toFixed(3)}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                           <span>{useLiveCheckout ? 'Tax' : 'Tax Reconciliation'}</span>
-                           <span className="text-slate-900 font-black">OMR {tax.toFixed(3)}</span>
-                        </div>
+                      {/* Financial Breakdown */}
+                      <div className="space-y-3">
+                         <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                            <span>Base Reservation</span>
+                            <span className="text-slate-900 font-black">OMR {baseReservation.toFixed(3)}</span>
+                         </div>
+                         {discountAmount > 0 && (
+                           <div className="flex justify-between items-center text-[9px] font-bold text-green-500 uppercase tracking-widest">
+                              <span>Member Discount</span>
+                              <span className="text-green-600 font-black">-OMR {discountAmount.toFixed(3)}</span>
+                           </div>
+                         )}
+                         <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                            <span>{useLiveCheckout ? 'Tax' : 'Tax Reconciliation'}</span>
+                            <span className="text-slate-900 font-black">OMR {tax.toFixed(3)}</span>
+                         </div>
+                         {walletDeduction > 0 && (
+                           <div className="flex justify-between items-center text-[9px] font-bold text-[#CE2029] uppercase tracking-widest">
+                              <span>Wallet Balance Applied</span>
+                              <span className="text-[#CE2029] font-black">-OMR {walletDeduction.toFixed(3)}</span>
+                           </div>
+                         )}
 
-                        {bookingError && (
-                          <p className="text-[10px] font-bold text-[#CE2029]">{bookingError}</p>
-                        )}
-                        {useLiveCheckout && !canApiBook && (
-                          <p className="text-[10px] font-bold text-amber-700">
-                            Sign in as a customer to confirm this booking with the server.
-                          </p>
-                        )}
+                         {bookingError && (
+                           <p className="text-[10px] font-bold text-[#CE2029]">{bookingError}</p>
+                         )}
+                         {useLiveCheckout && !canApiBook && (
+                           <p className="text-[10px] font-bold text-amber-700">
+                             Sign in as a customer to confirm this booking with the server.
+                           </p>
+                         )}
 
-                        <div className="pt-4 border-t border-slate-50 mt-4">
-                           <div className="flex items-center justify-between gap-4">
-                              <div className="space-y-0.5 shrink-0">
-                                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#CE2029]">Total Amount</p>
-                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-black font-display text-slate-950 tracking-tighter">OMR {(subtotal + tax).toFixed(3)}</span>
-                                 </div>
-                              </div>
+                         <div className="pt-4 border-t border-slate-50 mt-4">
+                            <div className="flex items-center justify-between gap-4">
+                               <div className="space-y-0.5 shrink-0">
+                                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#CE2029]">
+                                    {useWallet ? 'Final Payable' : 'Total Amount'}
+                                  </p>
+                                  <div className="flex flex-col items-start">
+                                     {useWallet && walletDeduction > 0 && (
+                                       <span className="text-[10px] line-through text-slate-400 font-bold">OMR {totalAmount.toFixed(3)}</span>
+                                     )}
+                                     <span className="text-2xl font-black font-display text-slate-950 tracking-tighter">OMR {finalPayable.toFixed(3)}</span>
+                                  </div>
+                               </div>
 
                               <div className="hidden lg:block flex-1 max-w-[180px]">
                                  <ShuttleButton
@@ -447,51 +472,60 @@ const BookingSummary = () => {
                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
                     <span>Tax</span><span>OMR {tax.toFixed(3)}</span>
                  </div>
-              </div>
-
-              {/* Mobile Payment Method Selection */}
-              <div className="space-y-3 pt-2">
-                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Select Payment Method</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setPaymentMethod('online')}
-                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                      paymentMethod === 'online' 
-                        ? 'border-[#CE2029] bg-[#CE2029]/5' 
-                        : 'border-slate-100'
-                    }`}
-                  >
-                    <CreditCard size={14} className={paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-400'} />
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${paymentMethod === 'online' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Online</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => setPaymentMethod('wallet')}
-                    disabled={walletBalance === null || walletBalance < (subtotal + tax)}
-                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                      paymentMethod === 'wallet' 
-                        ? 'border-[#CE2029] bg-[#CE2029]/5' 
-                        : 'border-slate-100'
-                    } ${walletBalance !== null && walletBalance < (subtotal + tax) ? 'opacity-50 grayscale' : ''}`}
-                  >
-                    <Wallet size={14} className={paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-400'} />
-                    <div className="flex flex-col items-start">
-                      <span className={`text-[9px] font-black uppercase tracking-widest ${paymentMethod === 'wallet' ? 'text-[#CE2029]' : 'text-slate-600'}`}>Wallet</span>
-                    </div>
-                  </button>
-                </div>
-                {paymentMethod === 'wallet' && walletBalance !== null && (
-                  <p className="text-[8px] font-bold text-center text-slate-400 uppercase tracking-tight">
-                    Available Balance: OMR {walletBalance.toFixed(3)}
-                  </p>
-                )}
-              </div>
-
-              <div className="bg-[#CE2029]/5 p-4 rounded-[20px] border border-[#CE2029]/10 flex justify-between items-end">
-                 <div className="space-y-0.5">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-[#CE2029]">Price</p>
-                    <span className="text-2xl font-black font-display text-[#CE2029]">OMR {(subtotal + tax).toFixed(3)}</span>
+                 {walletDeduction > 0 && (
+                   <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-[#CE2029]">
+                      <span>Wallet Balance Applied</span><span className="text-[#CE2029]">-OMR {walletDeduction.toFixed(3)}</span>
+                   </div>
+                 )}
+               </div>
+ 
+               {/* Mobile Wallet Balance Apply Option */}
+               {walletBalance !== null && walletBalance > 0 ? (
+                 <div className={`p-4 rounded-xl border transition-all ${
+                   useWallet 
+                     ? 'border-[#CE2029] bg-[#CE2029]/5' 
+                     : 'border-slate-100 bg-slate-50/50'
+                 }`}>
+                   <div className="flex items-center justify-between gap-3">
+                     <div className="flex items-center gap-3">
+                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                         useWallet ? 'bg-[#CE2029]/10 text-[#CE2029]' : 'bg-slate-100 text-slate-400'
+                       }`}>
+                         <Wallet size={16} />
+                       </div>
+                       <div>
+                         <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800">Use Wallet Credit</h4>
+                         <p className="text-[8px] font-bold text-slate-400 mt-0.5">OMR {walletBalance.toFixed(3)}</p>
+                       </div>
+                     </div>
+                     
+                     <label className="relative inline-flex items-center cursor-pointer">
+                       <input 
+                         type="checkbox" 
+                         checked={useWallet} 
+                         onChange={(e) => setUseWallet(e.target.checked)} 
+                         className="sr-only peer"
+                       />
+                       <div className="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-[#CE2029]"></div>
+                     </label>
+                   </div>
                  </div>
+               ) : (
+                 <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 text-center">
+                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">No wallet credits available</p>
+                 </div>
+               )}
+ 
+               <div className="bg-[#CE2029]/5 p-4 rounded-[20px] border border-[#CE2029]/10 flex justify-between items-end">
+                  <div className="space-y-0.5">
+                     <p className="text-[8px] font-black uppercase tracking-widest text-[#CE2029]">
+                       {useWallet ? 'Final Price' : 'Price'}
+                     </p>
+                     {useWallet && walletDeduction > 0 && (
+                       <span className="text-[9px] line-through text-slate-400 font-bold block">OMR {totalAmount.toFixed(3)}</span>
+                     )}
+                     <span className="text-2xl font-black font-display text-[#CE2029]">OMR {finalPayable.toFixed(3)}</span>
+                  </div>
                  <div className="px-2.5 py-1 rounded-full bg-white border border-[#CE2029]/10 text-[8px] font-black uppercase tracking-widest text-[#CE2029] flex items-center gap-1 shadow-sm">
                     <div className="w-1 h-1 rounded-full bg-current animate-pulse" /> Final Price
                  </div>
