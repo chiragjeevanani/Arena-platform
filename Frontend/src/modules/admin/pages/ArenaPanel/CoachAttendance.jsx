@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserCheck, Clock, Calendar, CheckCircle2, Search } from 'lucide-react';
 import { apiJson } from '../../../../services/apiClient';
+import { useArenaPanel } from '../../context/ArenaPanelContext';
 
 const CoachAttendance = () => {
   const [coaches, setCoaches] = useState([]);
@@ -10,31 +11,31 @@ const CoachAttendance = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState(null);
   const [attendanceMap, setAttendanceMap] = useState({}); // { coachId: { status, checkIn } }
-  const [arenaId, setArenaId] = useState('');
+  const { arenaId } = useArenaPanel();
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!arenaId) {
+        setCoaches([]);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        const [usersRes, arenaRes] = await Promise.all([
+        const [usersRes, attRes] = await Promise.all([
           apiJson('/api/arena-admin/list-staff?role=COACH'),
-          apiJson('/api/arena-admin/arena')
+          apiJson(`/api/arena-admin/staff-attendance?arenaId=${arenaId}&date=${date}`)
         ]);
         
-        console.log('CoachAttendance FETCH:', { usersRes, arenaRes });
+        console.log('CoachAttendance FETCH:', { usersRes, attRes });
         setCoaches(usersRes.users || []);
-        const aid = arenaRes?.arena?.id || arenaRes?.arena?._id;
-        setArenaId(aid);
 
-        if (aid) {
-          const attRes = await apiJson(`/api/arena-admin/staff-attendance?arenaId=${aid}&date=${date}`);
-          const map = {};
-          (attRes.attendance || []).forEach(a => {
-            const sid = a.staffId?._id || a.staffId?.id || a.staffId;
-            map[sid] = a;
-          });
-          setAttendanceMap(map);
-        }
+        const map = {};
+        (attRes.attendance || []).forEach(a => {
+          const sid = a.staffId?._id || a.staffId?.id || a.staffId;
+          map[sid] = a;
+        });
+        setAttendanceMap(map);
       } catch (err) {
         console.error('Failed to fetch coaches/attendance:', err);
       } finally {
@@ -42,7 +43,7 @@ const CoachAttendance = () => {
       }
     };
     fetchData();
-  }, [date]);
+  }, [date, arenaId]);
 
   const handleMarkAttendance = async (coachId, status) => {
     if (!arenaId) {

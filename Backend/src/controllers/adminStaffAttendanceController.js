@@ -41,16 +41,21 @@ async function markStaffAttendance(req, res) {
 }
 
 async function listStaffAttendance(req, res) {
-  const { arenaId, date, staffId } = req.query;
+  const { arenaId, date, staffId, startDate, endDate } = req.query;
   const filter = {};
   if (arenaId) filter.arenaId = arenaId;
-  if (date) filter.date = date;
   if (staffId) filter.staffId = staffId;
+
+  if (date) {
+    filter.date = date;
+  } else if (startDate && endDate) {
+    filter.date = { $gte: startDate, $lte: endDate };
+  }
 
   try {
     const list = await StaffAttendance.find(filter)
       .sort({ date: -1, createdAt: -1 })
-      .populate('staffId', 'name firstName lastName email phone')
+      .populate('staffId', 'name firstName lastName email phone role')
       .populate('arenaId', 'name')
       .populate('markedBy', 'name firstName lastName')
       .lean();

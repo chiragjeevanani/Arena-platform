@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
@@ -25,7 +25,14 @@ import {
   Crown,
   ShoppingBag,
   History,
-  Gift
+  Gift,
+  BarChart3,
+  Wallet,
+  UserCheck,
+  Megaphone,
+  PenTool,
+  ShieldCheck,
+  Store
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -48,15 +55,43 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/user/hero', icon: Package, label: 'Hero Banners', isSiteMgmt: true },
       { path: '/admin/user/booking', icon: Target, label: 'Service Categories', isSiteMgmt: true },
       { path: '/admin/arena/details', icon: Building2, label: 'Arena Details', isArenaMgmt: true },
+
+      // Arena Control Submenu
+      { path: '/admin/arena-panel?tab=details', icon: Building2, label: 'Arena Details', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=courts', icon: Target, label: 'Court Management', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=slots', icon: Clock, label: 'Slot Configuration', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=pricing', icon: DollarSign, label: 'Pricing Rules', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=availability', icon: CalendarX2, label: 'Availability Control', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=walkin', icon: ShoppingBag, label: 'Walk-in Terminal', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=analytics', icon: BarChart3, label: 'Court Analytics', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=income', icon: Wallet, label: 'Income Reports', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=guest', icon: UserCheck, label: 'Guest System', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=staff', icon: Users, label: 'Staff Management', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=coach-attendance', icon: UserCheck, label: 'Coach Attendance', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=notices', icon: Megaphone, label: 'Broadcaster', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=membership', icon: CreditCard, label: 'Membership Plans', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=maintenance', icon: PenTool, label: 'Maintenance', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=policies', icon: ShieldCheck, label: 'Policies', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=inventory', icon: Package, label: 'Inventory', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=events', icon: Trophy, label: 'Event Management', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=retail', icon: Store, label: 'Retail Hub', isArenaControl: true },
+
+      // Coach Control Submenu
+      { path: '/admin/coaching?view=students', icon: Users, label: 'Student Directory', isCoachControl: true },
+      { path: '/admin/coaching?view=batches', icon: Target, label: 'Batch Control', isCoachControl: true },
+      { path: '/admin/coaching?view=coaches', icon: Trophy, label: 'Coaching Staff', isCoachControl: true },
+      { path: '/admin/coaching?view=bookings', icon: CalendarClock, label: 'Booking Registry', isCoachControl: true },
+      { path: '/admin/coaching?view=student-attendance', icon: Users, label: 'Academy Attendance', isCoachControl: true },
+      { path: '/admin/coaching?view=attendance', icon: Clock, label: 'Staff Logs', isCoachControl: true },
+      { path: '/admin/coaching?view=programs', icon: Settings, label: 'Master Catalog', isCoachControl: true },
+
       { path: '/admin/user/events', icon: Trophy, label: 'Event Management' },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
-      { path: '/admin/coaching', icon: Users, label: 'Coaching' },
-      { path: '/admin/pos', icon: ShoppingBag, label: 'Retail POS' },
-      { path: '/admin/inventory', icon: Package, label: 'Inventory' },
       { path: '/admin/membership', icon: Crown, label: 'Membership Plans', isMembershipMgmt: true },
       { path: '/admin/membership/active', icon: Users, label: 'Active Members', isMembershipMgmt: true },
       { path: '/admin/sponsorships', icon: Briefcase, label: 'Sponsorships' },
       { path: '/admin/users', icon: Shield, label: 'Staff' },
+      { path: '/admin/coaching?view=attendance', icon: UserCheck, label: 'Staff Attendance', roles: ['SUPER_ADMIN'] },
     ]
   },
   {
@@ -71,6 +106,49 @@ const SIDEBAR_STRUCTURE = [
 
 const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
   const { user } = useAuth();
+  const location = useLocation();
+  const currentPathWithSearch = location.pathname + location.search;
+
+  const [expandedFolders, setExpandedFolders] = useState(() => {
+    const activeSite = SIDEBAR_STRUCTURE.some(s => s.items.some(i => i.isSiteMgmt && currentPathWithSearch === i.path));
+    const activeArenaMgmt = SIDEBAR_STRUCTURE.some(s => s.items.some(i => i.isArenaMgmt && currentPathWithSearch === i.path));
+    const activeArenaCtrl = currentPathWithSearch.includes('arena-panel');
+    const activeCoachCtrl = currentPathWithSearch.includes('coaching');
+    const activeMembership = SIDEBAR_STRUCTURE.some(s => s.items.some(i => i.isMembershipMgmt && currentPathWithSearch.startsWith(i.path)));
+    
+    return {
+      sitemanager: activeSite,
+      arenamanager: activeArenaMgmt,
+      arenacontrol: activeArenaCtrl,
+      coachcontrol: activeCoachCtrl,
+      membership: activeMembership
+    };
+  });
+
+  const toggleFolder = (folderId) => {
+    setExpandedFolders(prev => ({
+      ...prev,
+      [folderId]: !prev[folderId]
+    }));
+  };
+
+  useEffect(() => {
+    const activeSite = SIDEBAR_STRUCTURE.some(s => s.items.some(i => i.isSiteMgmt && currentPathWithSearch === i.path));
+    const activeArenaMgmt = SIDEBAR_STRUCTURE.some(s => s.items.some(i => i.isArenaMgmt && currentPathWithSearch === i.path));
+    const activeArenaCtrl = currentPathWithSearch.includes('arena-panel');
+    const activeCoachCtrl = currentPathWithSearch.includes('coaching');
+    const activeMembership = SIDEBAR_STRUCTURE.some(s => s.items.some(i => i.isMembershipMgmt && currentPathWithSearch.startsWith(i.path)));
+
+    setExpandedFolders(prev => {
+      const nextState = { ...prev };
+      if (activeSite) nextState.sitemanager = true;
+      if (activeArenaMgmt) nextState.arenamanager = true;
+      if (activeArenaCtrl) nextState.arenacontrol = true;
+      if (activeCoachCtrl) nextState.coachcontrol = true;
+      if (activeMembership) nextState.membership = true;
+      return nextState;
+    });
+  }, [currentPathWithSearch]);
 
   const userRole = user?.role;
 
@@ -127,19 +205,24 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                 const siteMgmtItems = section.items.filter(i => i.isSiteMgmt);
                 const arenaMgmtItems = section.items.filter(i => i.isArenaMgmt);
                 const membershipMgmtItems = section.items.filter(i => i.isMembershipMgmt);
-                const otherItems = section.items.filter(i => !i.isSiteMgmt && !i.isArenaMgmt && !i.isMembershipMgmt);
+                const arenaControlItems = section.items.filter(i => i.isArenaControl);
+                const coachControlItems = section.items.filter(i => i.isCoachControl);
+                const otherItems = section.items.filter(i => !i.isSiteMgmt && !i.isArenaMgmt && !i.isMembershipMgmt && !i.isArenaControl && !i.isCoachControl);
                 
                 return (
                   <>
                     {siteMgmtItems.length > 0 && (
-                      <div className="group/sitemanager relative mb-1.5">
-                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300">
-                          <Layout size={18} className="text-[#627D98] group-hover/sitemanager:text-[#CE2029]" />
+                      <div className="relative mb-1.5">
+                        <div 
+                          onClick={() => toggleFolder('sitemanager')}
+                          className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300"
+                        >
+                          <Layout size={18} className={`text-[#627D98] transition-colors ${expandedFolders.sitemanager ? 'text-[#CE2029]' : ''}`} />
                           {!isCollapsed && <span className="text-[13px] flex-1">Home Page Mgmt</span>}
-                          {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/sitemanager:rotate-90 transition-transform" />}
+                          {!isCollapsed && <ChevronRight size={14} className={`opacity-40 transition-transform ${expandedFolders.sitemanager ? 'rotate-90' : ''}`} />}
                         </div>
 
-                        <div className="hidden group-hover/sitemanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1">
+                        <div className={`${expandedFolders.sitemanager ? 'block' : 'hidden'} pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1`}>
                           {siteMgmtItems.map((item) => (
                             <NavLink
                               key={item.path}
@@ -161,14 +244,17 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                     )}
 
                     {arenaMgmtItems.length > 0 && (
-                      <div className="group/arenamanager relative mb-1.5">
-                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300">
-                          <Building2 size={18} className="text-[#627D98] group-hover/arenamanager:text-[#CE2029]" />
+                      <div className="relative mb-1.5">
+                        <div 
+                          onClick={() => toggleFolder('arenamanager')}
+                          className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300"
+                        >
+                          <Building2 size={18} className={`text-[#627D98] transition-colors ${expandedFolders.arenamanager ? 'text-[#CE2029]' : ''}`} />
                           {!isCollapsed && <span className="text-[13px] flex-1">Arena Management</span>}
-                          {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/arenamanager:rotate-90 transition-transform" />}
+                          {!isCollapsed && <ChevronRight size={14} className={`opacity-40 transition-transform ${expandedFolders.arenamanager ? 'rotate-90' : ''}`} />}
                         </div>
 
-                        <div className="hidden group-hover/arenamanager:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1">
+                        <div className={`${expandedFolders.arenamanager ? 'block' : 'hidden'} pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1`}>
                           {arenaMgmtItems.map((item) => (
                             <NavLink
                               key={item.path}
@@ -189,15 +275,84 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                       </div>
                     )}
 
-                    {membershipMgmtItems.length > 0 && (
-                      <div className="group/membership relative mb-1.5">
-                        <div className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300">
-                          <Crown size={18} className="text-[#627D98] group-hover/membership:text-[#CE2029]" />
-                          {!isCollapsed && <span className="text-[13px] flex-1">Membership Management</span>}
-                          {!isCollapsed && <ChevronRight size={14} className="opacity-40 group-hover/membership:rotate-90 transition-transform" />}
+                    {arenaControlItems.length > 0 && (
+                      <div className="relative mb-1.5">
+                        <div 
+                          onClick={() => toggleFolder('arenacontrol')}
+                          className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300"
+                        >
+                          <Building2 size={18} className={`text-[#627D98] transition-colors ${expandedFolders.arenacontrol ? 'text-[#CE2029]' : ''}`} />
+                          {!isCollapsed && <span className="text-[13px] flex-1">Arena Control</span>}
+                          {!isCollapsed && <ChevronRight size={14} className={`opacity-40 transition-transform ${expandedFolders.arenacontrol ? 'rotate-90' : ''}`} />}
                         </div>
 
-                        <div className="hidden group-hover/membership:block pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1">
+                        <div className={`${expandedFolders.arenacontrol ? 'block' : 'hidden'} pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1`}>
+                          {arenaControlItems.map((item) => {
+                            const isActive = currentPathWithSearch === item.path;
+                            return (
+                              <NavLink
+                                key={item.path}
+                                to={item.path}
+                                className={`flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
+                                  isActive 
+                                    ? `text-[#CE2029] font-bold` 
+                                    : `text-[#486581] hover:text-[#CE2029] font-medium`
+                                }`}
+                              >
+                                <item.icon size={14} className="shrink-0" />
+                                {!isCollapsed && <span className="text-[12px]">{item.label}</span>}
+                              </NavLink>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {coachControlItems.length > 0 && (
+                      <div className="relative mb-1.5">
+                        <div 
+                          onClick={() => toggleFolder('coachcontrol')}
+                          className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300"
+                        >
+                          <Users size={18} className={`text-[#627D98] transition-colors ${expandedFolders.coachcontrol ? 'text-[#CE2029]' : ''}`} />
+                          {!isCollapsed && <span className="text-[13px] flex-1">Coach Control</span>}
+                          {!isCollapsed && <ChevronRight size={14} className={`opacity-40 transition-transform ${expandedFolders.coachcontrol ? 'rotate-90' : ''}`} />}
+                        </div>
+
+                        <div className={`${expandedFolders.coachcontrol ? 'block' : 'hidden'} pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1`}>
+                          {coachControlItems.map((item) => {
+                            const isActive = currentPathWithSearch === item.path;
+                            return (
+                              <NavLink
+                                key={item.path}
+                                to={item.path}
+                                className={`flex items-center gap-4 px-9 py-2 rounded-[10px] transition-all duration-200 ${
+                                  isActive 
+                                    ? `text-[#CE2029] font-bold` 
+                                    : `text-[#486581] hover:text-[#CE2029] font-medium`
+                                }`}
+                              >
+                                <item.icon size={14} className="shrink-0" />
+                                {!isCollapsed && <span className="text-[12px]">{item.label}</span>}
+                              </NavLink>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {membershipMgmtItems.length > 0 && (
+                      <div className="relative mb-1.5">
+                        <div 
+                          onClick={() => toggleFolder('membership')}
+                          className="flex items-center gap-4 px-4 py-3 rounded-[12px] text-[#243B53] hover:bg-white/60 hover:text-[#36454F] font-semibold cursor-pointer transition-all duration-300"
+                        >
+                          <Crown size={18} className={`text-[#627D98] transition-colors ${expandedFolders.membership ? 'text-[#CE2029]' : ''}`} />
+                          {!isCollapsed && <span className="text-[13px] flex-1">Membership Management</span>}
+                          {!isCollapsed && <ChevronRight size={14} className={`opacity-40 transition-transform ${expandedFolders.membership ? 'rotate-90' : ''}`} />}
+                        </div>
+
+                        <div className={`${expandedFolders.membership ? 'block' : 'hidden'} pt-1 pb-2 space-y-1 bg-white/40 rounded-xl mt-1`}>
                           {membershipMgmtItems.map((item) => (
                             <NavLink
                               key={item.path}
@@ -218,37 +373,36 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
                       </div>
                     )}
 
-                    {otherItems.map((item) => (
-                      <NavLink
-                        key={item.path}
-                        to={item.path}
-                        end={item.path === '/admin'}
-                        className={({ isActive }) =>
-                          `relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
-                            isActive 
+                    {otherItems.map((item) => {
+                      const isItemActive = item.path.includes('?') 
+                        ? currentPathWithSearch === item.path 
+                        : location.pathname === item.path;
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          end={item.path === '/admin'}
+                          className={`relative flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-300 group overflow-hidden ${
+                            isItemActive 
                               ? `bg-white text-[#CE2029] shadow-md shadow-black/5 font-bold` 
                               : `text-[#36454F] hover:bg-white/60 hover:text-[#36454F] font-semibold`
-                          }`
-                        }
-                      >
-                        {({ isActive }) => (
-                          <>
-                            <item.icon
-                              size={18}
-                              strokeWidth={isActive ? 2.5 : 2}
-                              className={`shrink-0 transition-all duration-300 ${
-                                isActive ? 'text-[#CE2029]' : 'text-[#36454F] group-hover:text-[#CE2029]'
-                              }`}
-                            />
-                            {!isCollapsed && (
-                              <span className="whitespace-nowrap tracking-wide text-[13px]">
-                                {item.label}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </NavLink>
-                    ))}
+                          }`}
+                        >
+                          <item.icon
+                            size={18}
+                            strokeWidth={isItemActive ? 2.5 : 2}
+                            className={`shrink-0 transition-all duration-300 ${
+                              isItemActive ? 'text-[#CE2029]' : 'text-[#36454F] group-hover:text-[#CE2029]'
+                            }`}
+                          />
+                          {!isCollapsed && (
+                            <span className="whitespace-nowrap tracking-wide text-[13px]">
+                              {item.label}
+                            </span>
+                          )}
+                        </NavLink>
+                      );
+                    })}
                   </>
                 );
               })()}

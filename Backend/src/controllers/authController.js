@@ -7,6 +7,7 @@ const PasswordResetToken = require('../models/PasswordResetToken');
 const AuditLog = require('../models/AuditLog');
 const Referral = require('../models/Referral');
 const ReferralSettings = require('../models/ReferralSettings');
+const StaffAttendance = require('../models/StaffAttendance');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
 
 function hashOpaqueToken(raw) {
@@ -145,6 +146,33 @@ async function login(req, res) {
     tokenHash: hashOpaqueToken(rawRefresh),
     expiresAt,
   });
+
+  // Auto-log attendance for Arena Admin / Receptionist on successful login
+  if (['ARENA_ADMIN', 'RECEPTIONIST'].includes(user.role) && user.assignedArenaId) {
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const existing = await StaffAttendance.findOne({
+        staffId: user._id,
+        arenaId: user.assignedArenaId,
+        date: todayStr,
+      });
+      if (!existing) {
+        const d = new Date();
+        const nowTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        await StaffAttendance.create({
+          staffId: user._id,
+          arenaId: user.assignedArenaId,
+          date: todayStr,
+          checkIn: nowTime,
+          status: 'present',
+          markedBy: user._id,
+          remarks: 'Auto-logged on Login',
+        });
+      }
+    } catch (attErr) {
+      console.error('Failed to auto-log login attendance:', attErr);
+    }
+  }
 
   return res.json({
     token,

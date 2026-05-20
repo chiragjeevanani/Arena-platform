@@ -135,6 +135,16 @@ export async function apiJson(path, options = {}) {
       if (t) headers.Authorization = `Bearer ${t}`;
     }
 
+    const selectedArenaId = localStorage.getItem('selectedArenaId');
+    if (selectedArenaId) {
+      headers['X-Arena-Id'] = selectedArenaId;
+    }
+
+    const selectedCoachId = localStorage.getItem('selectedCoachId');
+    if (selectedCoachId) {
+      headers['X-Coach-Id'] = selectedCoachId;
+    }
+
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,

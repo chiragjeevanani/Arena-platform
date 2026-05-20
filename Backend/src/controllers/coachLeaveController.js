@@ -1,14 +1,25 @@
 const CoachLeave = require('../models/CoachLeave');
 const { asyncHandler } = require('../utils/asyncHandler');
 
+function resolveCoachId(req) {
+  let coachId = req.auth.sub;
+  if (req.auth.role === 'SUPER_ADMIN') {
+    const headerCoachId = req.headers['x-coach-id'];
+    const queryCoachId = req.query.coachId;
+    const bodyCoachId = req.body.coachId;
+    coachId = headerCoachId || queryCoachId || bodyCoachId || coachId;
+  }
+  return coachId;
+}
+
 const listMyLeaves = asyncHandler(async (req, res) => {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const leaves = await CoachLeave.find({ coachId }).sort({ date: -1 });
   res.json({ leaves: leaves.map(CoachLeave.toPublic) });
 });
 
 const createLeave = asyncHandler(async (req, res) => {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { date, batchId, reason } = req.body;
 
   if (!date) {
@@ -33,7 +44,7 @@ const createLeave = asyncHandler(async (req, res) => {
 });
 
 const deleteLeave = asyncHandler(async (req, res) => {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { leaveId } = req.params;
 
   const leave = await CoachLeave.findOneAndDelete({ _id: leaveId, coachId });
