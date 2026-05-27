@@ -89,6 +89,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
       { path: '/admin/membership', icon: Crown, label: 'Membership Plans', isMembershipMgmt: true },
       { path: '/admin/membership/active', icon: Users, label: 'Active Members', isMembershipMgmt: true },
+      { path: '/admin/slot-memberships', icon: CalendarClock, label: 'Slot Memberships', isMembershipMgmt: true },
       { path: '/admin/sponsorships', icon: Briefcase, label: 'Sponsorships' },
       { path: '/admin/users', icon: Shield, label: 'Staff' },
       { path: '/admin/coaching?view=attendance', icon: UserCheck, label: 'Staff Attendance', roles: ['SUPER_ADMIN'] },

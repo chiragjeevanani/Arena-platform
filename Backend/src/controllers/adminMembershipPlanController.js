@@ -5,7 +5,7 @@ const UserMembership = require('../models/UserMembership');
 const User = require('../models/User');
 
 async function createMembershipPlan(req, res) {
-  const { arenaId, isGlobal, name, price, durationDays, discountPercent, description, applicableTransactions, category } = req.body;
+  const { arenaId, isGlobal, name, price, durationDays, discountPercent, description, applicableTransactions, category, slotBased, pricePerSlot } = req.body;
 
   if (!isGlobal && (!arenaId || !mongoose.isValidObjectId(arenaId))) {
     return res.status(400).json({ error: 'arenaId is required for non-global plans' });
@@ -32,6 +32,8 @@ async function createMembershipPlan(req, res) {
     discountPercent: discountPercent != null ? Number(discountPercent) : 0,
     applicableTransactions: Array.isArray(applicableTransactions) ? applicableTransactions : [],
     category: category || 'non-premium',
+    slotBased: !!slotBased,
+    pricePerSlot: slotBased ? (Number(pricePerSlot) || 0) : 0,
   });
 
   return res.status(201).json({ plan: MembershipPlan.toPublic(plan) });
@@ -79,6 +81,8 @@ async function patchMembershipPlan(req, res) {
     applicableTransactions,
     isActive,
     category,
+    slotBased,
+    pricePerSlot,
   } = req.body;
 
   if (name !== undefined) plan.name = String(name).trim();
@@ -108,6 +112,10 @@ async function patchMembershipPlan(req, res) {
     plan.applicableTransactions = applicableTransactions;
   }
   if (category !== undefined) plan.category = category;
+  if (typeof slotBased === 'boolean') plan.slotBased = slotBased;
+  if (pricePerSlot !== undefined && pricePerSlot !== null) {
+    plan.pricePerSlot = Number(pricePerSlot) || 0;
+  }
   if (typeof isActive === 'boolean') plan.isActive = isActive;
 
   await plan.save();

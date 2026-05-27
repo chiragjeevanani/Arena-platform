@@ -21,6 +21,14 @@ const { patchMyProfile } = require('../controllers/meProfileController');
 const { listMyAttendance } = require('../controllers/meAttendanceController');
 const { listMyEventRegistrations, cancelMyEventRegistration } = require('../controllers/meEventController');
 const { getMyReferrals } = require('../controllers/meReferralController');
+const {
+  checkSlotAvailability,
+  previewSlotMembershipPricing,
+  getMySlotMemberships,
+  freeMySlot,
+  getMyPointsWallet,
+  getMyPointsTransactions,
+} = require('../controllers/meSlotMembershipController');
 
 const router = express.Router();
 
@@ -52,5 +60,15 @@ router.patch('/profile', asyncHandler(patchMyProfile));
 router.get('/attendance', asyncHandler(listMyAttendance));
 router.get('/event-registrations', asyncHandler(listMyEventRegistrations));
 router.patch('/event-registrations/:id/cancel', asyncHandler(cancelMyEventRegistration));
+
+// Slot Memberships
+router.get('/slot-memberships', asyncHandler(getMySlotMemberships));
+router.post('/slot-memberships/check-availability', asyncHandler(checkSlotAvailability));
+router.post('/slot-memberships/preview-pricing', asyncHandler(previewSlotMembershipPricing));
+router.post('/slot-memberships/:id/free-slot', asyncHandler(freeMySlot));
+
+// Bonus Points
+router.get('/points-wallet', asyncHandler(getMyPointsWallet));
+router.get('/points-transactions', asyncHandler(getMyPointsTransactions));
 
 module.exports = router;

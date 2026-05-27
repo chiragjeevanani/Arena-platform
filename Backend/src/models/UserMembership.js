@@ -26,6 +26,16 @@ const userMembershipSchema = new mongoose.Schema(
       enum: ['active', 'expired', 'cancelled'],
       default: 'active',
     },
+    bookedSlots: [
+      {
+        courtSlotId: { type: mongoose.Schema.Types.ObjectId, ref: 'CourtSlot' },
+        courtId: { type: mongoose.Schema.Types.ObjectId, ref: 'Court' },
+        arenaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Arena' },
+      },
+    ],
+    amountPaid: { type: Number, default: 0, min: 0 },
+    pointsUsed: { type: Number, default: 0, min: 0 },
+    bonusPointsEarned: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );
@@ -43,6 +53,14 @@ function toPublic(doc, extras = {}) {
     startsAt: o.startsAt,
     expiresAt: o.expiresAt,
     status: o.status,
+    bookedSlots: (o.bookedSlots || []).map((s) => ({
+      courtSlotId: s.courtSlotId ? String(s.courtSlotId) : null,
+      courtId: s.courtId ? String(s.courtId) : null,
+      arenaId: s.arenaId ? String(s.arenaId) : null,
+    })),
+    amountPaid: o.amountPaid || 0,
+    pointsUsed: o.pointsUsed || 0,
+    bonusPointsEarned: o.bonusPointsEarned || 0,
     createdAt: o.createdAt,
     ...extras,
   };

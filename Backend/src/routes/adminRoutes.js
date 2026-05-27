@@ -77,6 +77,17 @@ const {
   getWalletsList,
   adjustWalletBalance,
 } = require('../controllers/adminReferralController');
+const {
+  getSlotFreeConfig,
+  updateSlotFreeConfig,
+  getPointsDiscountConfig,
+  updatePointsDiscountConfig,
+  listFreedSlots,
+  markSlotResold,
+  listPointsWallets,
+  adjustPointsBalance,
+  listSlotMemberships,
+} = require('../controllers/adminSlotMembershipController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -162,5 +173,16 @@ router.put('/referrals/settings', asyncHandler(updateReferralSettings));
 router.get('/referrals', asyncHandler(getReferralsList));
 router.get('/wallets', asyncHandler(getWalletsList));
 router.post('/wallets/adjust', asyncHandler(adjustWalletBalance));
+
+// Slot Membership Management
+router.get('/slot-memberships', asyncHandler(listSlotMemberships));
+router.get('/slot-free-config/:arenaId', asyncHandler(getSlotFreeConfig));
+router.put('/slot-free-config/:arenaId', asyncHandler(updateSlotFreeConfig));
+router.get('/points-discount-config', asyncHandler(getPointsDiscountConfig));
+router.put('/points-discount-config', asyncHandler(updatePointsDiscountConfig));
+router.get('/freed-slots', asyncHandler(listFreedSlots));
+router.patch('/freed-slots/:id/resold', asyncHandler(markSlotResold));
+router.get('/points-wallets', asyncHandler(listPointsWallets));
+router.post('/points-wallets/adjust', asyncHandler(adjustPointsBalance));
 
 module.exports = router;
