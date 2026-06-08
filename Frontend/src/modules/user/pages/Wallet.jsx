@@ -34,10 +34,14 @@ const TopUpModal = ({ onClose, useLiveApi, onSuccess }) => {
     try {
       if (useLiveApi) {
         const mockSecret = getMockPaymentWebhookSecret();
-        if (mockSecret) {
+        try {
           await completeWalletTopUpViaMockPayment(finalAmount, mockSecret);
-        } else {
-          await topUpMyWallet(finalAmount);
+        } catch (err) {
+          if (err.message && err.message.includes('secret')) {
+            await topUpMyWallet(finalAmount);
+          } else {
+            throw err;
+          }
         }
         setDone(true);
         onSuccess?.();

@@ -80,6 +80,8 @@ const {
 const {
   getSlotFreeConfig,
   updateSlotFreeConfig,
+  getSlotPricingConfig,
+  updateSlotPricingConfig,
   getPointsDiscountConfig,
   updatePointsDiscountConfig,
   listFreedSlots,
@@ -178,6 +180,8 @@ router.post('/wallets/adjust', asyncHandler(adjustWalletBalance));
 router.get('/slot-memberships', asyncHandler(listSlotMemberships));
 router.get('/slot-free-config/:arenaId', asyncHandler(getSlotFreeConfig));
 router.put('/slot-free-config/:arenaId', asyncHandler(updateSlotFreeConfig));
+router.get('/slot-pricing-config/:arenaId', asyncHandler(getSlotPricingConfig));
+router.put('/slot-pricing-config/:arenaId', asyncHandler(updateSlotPricingConfig));
 router.get('/points-discount-config', asyncHandler(getPointsDiscountConfig));
 router.put('/points-discount-config', asyncHandler(updatePointsDiscountConfig));
 router.get('/freed-slots', asyncHandler(listFreedSlots));

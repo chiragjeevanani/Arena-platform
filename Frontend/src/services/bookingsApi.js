@@ -8,6 +8,13 @@ export function fetchCourtAvailability(courtId, dateYmd) {
   });
 }
 
+export function fetchCourtSlots(courtId) {
+  return apiJson(`/api/public/courts/${encodeURIComponent(courtId)}/slots`, {
+    method: 'GET',
+    skipAuth: true,
+  });
+}
+
 export function fetchBookingPricing(arenaId) {
   return apiJson('/api/me/bookings/pricing', {
     method: 'POST',

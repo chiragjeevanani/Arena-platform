@@ -488,7 +488,7 @@ const MembershipPlans = () => {
     if (!buying) return;
     if (isApiConfigured() && getAuthToken()) {
       try {
-        await purchaseMembership(buying.id);
+        await purchaseMembership({ planId: buying.id });
         const { memberships } = await listMyMemberships();
         const active = (memberships || []).find(
           (m) => m.status === 'active' && new Date(m.expiresAt) > new Date()

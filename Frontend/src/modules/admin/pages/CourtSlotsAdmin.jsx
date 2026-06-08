@@ -20,13 +20,14 @@ const CourtSlotsAdmin = () => {
   const [loading, setLoading] = useState(false);
 
   const GROUP_MAP = {
+    'All Days': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     'Weekdays': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'],
     'Weekend': ['Fri', 'Sat']
   };
 
   const currentTabDays = isEachDay 
     ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    : ['Weekdays', 'Weekend'];
+    : ['All Days', 'Weekdays', 'Weekend'];
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -184,7 +185,7 @@ const CourtSlotsAdmin = () => {
                onClick={() => {
                  const newIsEachDay = !isEachDay;
                  setIsEachDay(newIsEachDay);
-                 setSelectedDay(newIsEachDay ? 'Sun' : 'Weekdays');
+                 setSelectedDay(newIsEachDay ? 'Sun' : 'All Days');
                }}
                className="w-12 h-6 rounded-full transition-all flex items-center relative shadow-inner overflow-hidden border border-slate-100"
                style={{ backgroundColor: isEachDay ? '#CE2029' : '#E2E8F0' }}

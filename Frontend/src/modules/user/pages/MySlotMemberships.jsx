@@ -50,13 +50,13 @@ function isBeforeDeadline(date, timeSlot, freeWindowHours = 24) {
 
 function StatusPill({ status }) {
   const styles = {
-    active: 'bg-emerald-100 text-emerald-700',
-    expired: 'bg-slate-100 text-slate-500',
-    cancelled: 'bg-red-100 text-red-600',
+    active: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+    expired: 'bg-slate-50 text-slate-500 border border-slate-100',
+    cancelled: 'bg-red-50 text-red-600 border border-red-100',
   };
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${styles[status] || styles.expired}`}>
-      {status === 'active' && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />}
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8.5px] font-bold uppercase tracking-wider ${styles[status] || styles.expired}`}>
+      {status === 'active' && <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />}
       {status}
     </span>
   );
@@ -103,8 +103,8 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
       >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="text-base font-black text-[#36454F]">Free a Slot Day</h3>
-            <p className="text-[11px] text-slate-500 font-bold mt-0.5">{timeSlot} · {slot?.courtName}</p>
+            <h3 className="text-base font-bold text-[#36454F]">Free a Slot Day</h3>
+            <p className="text-[11px] text-slate-500 font-semibold mt-0.5">{timeSlot} · {slot?.courtName}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-50 transition-all">
             <X size={18} />
@@ -113,13 +113,13 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
 
         <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-2">
           <Gift size={14} className="text-amber-500 shrink-0 mt-0.5" />
-          <p className="text-[11px] font-bold text-amber-700 leading-snug">
+          <p className="text-[11px] font-semibold text-amber-700 leading-snug">
             Free a slot you can't attend and earn bonus points! The admin can then resell it.
           </p>
         </div>
 
         {eligibleDates.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 text-sm font-bold">
+          <div className="text-center py-8 text-slate-400 text-sm font-semibold">
             No eligible upcoming dates — all are past the free-window deadline.
           </div>
         ) : (
@@ -131,11 +131,7 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
                 <button
                   key={date}
                   onClick={() => setSelectedDate(date)}
-                  className={`py-3 px-4 rounded-2xl text-xs font-black transition-all border-2 ${
-                    selectedDate === date
-                      ? 'border-[#CE2029] bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
-                      : 'border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200'
-                  }`}
+                  className="py-2.5 px-3 rounded-xl text-xs font-bold transition-all border-2 border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200"
                 >
                   {label}
                 </button>
@@ -147,16 +143,16 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
         {err && (
           <div className="mb-4 p-3 bg-red-50 rounded-xl flex items-center gap-2">
             <AlertCircle size={14} className="text-red-500" />
-            <p className="text-[11px] font-bold text-red-600">{err}</p>
+            <p className="text-[11px] font-semibold text-red-600">{err}</p>
           </div>
         )}
 
         <button
           onClick={handleFree}
           disabled={!selectedDate || loading || eligibleDates.length === 0}
-          className="w-full py-4 bg-[#CE2029] text-white rounded-2xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#b01b22] transition-all active:scale-[0.98]"
+          className="w-full py-3 bg-[#CE2029] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#b01b22] transition-all active:scale-[0.98]"
         >
-          <Zap size={16} />
+          <Zap size={14} />
           {loading ? 'Processing...' : 'Free This Slot'}
         </button>
       </motion.div>
@@ -174,18 +170,18 @@ function SlotCard({ slot, membership, onFreeSuccess }) {
 
   return (
     <>
-      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl group">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#CE2029]/10 flex items-center justify-center shrink-0">
-            <CalendarDays size={16} className="text-[#CE2029]" />
+      <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl group">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#CE2029]/10 flex items-center justify-center shrink-0">
+            <CalendarDays size={14} className="text-[#CE2029]" />
           </div>
           <div>
-            <p className="text-xs font-black text-[#36454F]">{timeSlot}</p>
-            <p className="text-[10px] text-slate-500 font-bold">
+            <p className="text-[11px] font-bold text-[#36454F]">{timeSlot}</p>
+            <p className="text-[9.5px] text-slate-500 font-semibold">
               {slot?.courtSlot?.dayOfWeek || '—'}s · {slot?.courtName || 'Court'}
             </p>
             {nextDate && (
-              <p className="text-[9px] text-slate-400 font-bold mt-0.5">
+              <p className="text-[8.5px] text-slate-400 font-semibold mt-0.5">
                 Next: {new Date(nextDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
               </p>
             )}
@@ -194,7 +190,7 @@ function SlotCard({ slot, membership, onFreeSuccess }) {
         <button
           onClick={() => setFreeModalOpen(true)}
           disabled={!canFree}
-          className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+          className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${
             canFree
               ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 active:scale-95'
               : 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -230,44 +226,44 @@ function MembershipCard({ membership, onFreeSuccess }) {
   return (
     <motion.div
       layout
-      className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
+      className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden"
     >
       {/* Header */}
       <div
-        className="p-5 cursor-pointer flex items-start justify-between gap-3"
+        className="p-3.5 cursor-pointer flex items-center justify-between gap-3"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#CE2029] to-[#ff6b6b] flex items-center justify-center shadow-md shadow-[#CE2029]/20 shrink-0">
-            <Star size={18} className="text-white" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#CE2029] to-[#ff6b6b] flex items-center justify-center shadow-md shadow-[#CE2029]/15 shrink-0">
+            <Star size={14} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-black text-[#36454F] leading-tight">{membership.planName || 'Slot Membership'}</p>
-            <p className="text-[10px] text-slate-500 font-bold mt-0.5">
+            <p className="text-xs font-bold text-[#36454F] leading-tight">{membership.planName || 'Slot Membership'}</p>
+            <p className="text-[9px] text-slate-500 font-semibold mt-0.5">
               {slots.length} slot{slots.length !== 1 ? 's' : ''} booked
             </p>
-            <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex items-center gap-2 mt-1">
               <StatusPill status={membership.status} />
               {membership.status === 'active' && (
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">
                   {daysLeft}d left
                 </span>
               )}
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
+        <div className="flex flex-col items-end gap-0.5 shrink-0">
           <div className="flex items-center gap-1 text-amber-500">
-            <Star size={11} className="fill-amber-400" />
-            <span className="text-xs font-black">{membership.bonusPointsEarned || 0} pts earned</span>
+            <Star size={10} className="fill-amber-400" />
+            <span className="text-[11px] font-bold">{membership.bonusPointsEarned || 0} pts earned</span>
           </div>
-          {expanded ? <ChevronUp size={16} className="text-slate-400 mt-1" /> : <ChevronDown size={16} className="text-slate-400 mt-1" />}
+          {expanded ? <ChevronUp size={14} className="text-slate-400 mt-0.5" /> : <ChevronDown size={14} className="text-slate-400 mt-0.5" />}
         </div>
       </div>
 
       {/* Dates row */}
-      <div className="px-5 pb-3 flex items-center gap-1 text-[10px] font-bold text-slate-500">
-        <Clock size={11} />
+      <div className="px-3.5 pb-2.5 flex items-center gap-1 text-[9px] font-medium text-slate-500">
+        <Clock size={10} />
         <span>{new Date(membership.startsAt).toLocaleDateString()} → {new Date(membership.expiresAt).toLocaleDateString()}</span>
       </div>
 
@@ -281,8 +277,8 @@ function MembershipCard({ membership, onFreeSuccess }) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 space-y-2 border-t border-slate-50 pt-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Your Booked Slots</p>
+            <div className="px-3.5 pb-3.5 space-y-1.5 border-t border-slate-50 pt-2.5">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-2">Your Booked Slots</p>
               {slots.map((slot, i) => (
                 <SlotCard
                   key={slot.courtSlotId || i}
@@ -292,7 +288,7 @@ function MembershipCard({ membership, onFreeSuccess }) {
                 />
               ))}
               {slots.length === 0 && (
-                <p className="text-xs text-slate-400 font-bold text-center py-4">No slots found for this membership.</p>
+                <p className="text-xs text-slate-400 font-semibold text-center py-4">No slots found for this membership.</p>
               )}
             </div>
           </motion.div>
@@ -376,9 +372,9 @@ const MySlotMemberships = () => {
           <div className="text-center py-16">
             <CalendarDays size={48} className="text-slate-200 mx-auto mb-3" />
             <p className="text-sm font-black text-slate-400">No Slot Memberships Yet</p>
-            <p className="text-[11px] text-slate-400 font-bold mt-1">Purchase a slot-based plan to get started.</p>
+            <p className="text-[11px] text-slate-400 font-bold mt-1">Reserve recurring court slots for weeks or months at once.</p>
             <button
-              onClick={() => navigate('/membership')}
+              onClick={() => navigate('/slot-membership-purchase')}
               className="mt-4 px-5 py-3 bg-[#CE2029] text-white rounded-2xl text-xs font-black uppercase tracking-widest"
             >
               Browse Plans
@@ -402,6 +398,15 @@ const MySlotMemberships = () => {
               <MembershipCard key={m.id} membership={m} onFreeSuccess={handleFreeSuccess} />
             ))}
           </div>
+        )}
+        {!loading && memberships.length > 0 && (
+          <button
+            onClick={() => navigate('/slot-membership-purchase')}
+            className="w-full py-3 border-2 border-dashed border-[#CE2029]/30 text-[#CE2029] rounded-xl text-[11px] font-bold uppercase tracking-wider hover:bg-[#CE2029]/5 transition-all flex items-center justify-center gap-2"
+          >
+            <CalendarDays size={13} />
+            Add Another Slot Membership
+          </button>
         )}
       </div>
 

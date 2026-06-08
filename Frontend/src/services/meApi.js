@@ -12,8 +12,11 @@ export function listMyMemberships() {
   return apiJson('/api/me/memberships', { method: 'GET' });
 }
 
-export function purchaseMembership(planId) {
-  return apiJson('/api/me/memberships/purchase', { method: 'POST', body: { planId } });
+export function purchaseMembership({ planId, bookedSlots, usePoints = false, startDate } = {}) {
+  return apiJson('/api/me/memberships/purchase', {
+    method: 'POST',
+    body: { planId, ...(bookedSlots ? { bookedSlots } : {}), usePoints, ...(startDate ? { startDate } : {}) },
+  });
 }
 
 export function listMyEnrollments() {
