@@ -23,7 +23,10 @@ function getUpcomingDates(membership, slot, limit = 8) {
   const cursor = new Date(start);
   while (cursor <= end && dates.length < limit) {
     if (cursor.getDay() === targetDay) {
-      dates.push(cursor.toISOString().slice(0, 10));
+      const y = cursor.getFullYear();
+      const m = String(cursor.getMonth() + 1).padStart(2, '0');
+      const d = String(cursor.getDate()).padStart(2, '0');
+      dates.push(`${y}-${m}-${d}`);
     }
     cursor.setDate(cursor.getDate() + 1);
   }
@@ -166,7 +169,8 @@ function SlotCard({ slot, membership, onFreeSuccess }) {
   const upcomingDates = getUpcomingDates(membership, slot, 3);
   const nextDate = upcomingDates[0];
   const timeSlot = slot?.courtSlot?.timeSlot || '';
-  const canFree = membership.status === 'active' && nextDate && isBeforeDeadline(nextDate, timeSlot);
+  // Can open the modal if at least one upcoming date can be freed
+  const canFree = membership.status === 'active' && upcomingDates.some((d) => isBeforeDeadline(d, timeSlot));
 
   return (
     <>
