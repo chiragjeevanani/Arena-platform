@@ -69,20 +69,20 @@ function StatusPill({ status }) {
 function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
   const upcomingDates = getUpcomingDates(membership, slot);
   const timeSlot = slot?.courtSlot?.timeSlot || '';
-  const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
 
   const eligibleDates = upcomingDates.filter((d) => isBeforeDeadline(d, timeSlot));
+  const targetDate = eligibleDates[0];
 
   const handleFree = async () => {
-    if (!selectedDate) return;
+    if (!targetDate) return;
     setLoading(true);
     setErr('');
     try {
       const res = await freeMySlot(membership.id, {
         courtSlotId: slot.courtSlotId,
-        freedDate: selectedDate,
+        freedDate: targetDate,
       });
       onSuccess(res);
     } catch (e) {
@@ -91,6 +91,9 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
       setLoading(false);
     }
   };
+
+  const d = targetDate ? new Date(targetDate + 'T12:00:00') : null;
+  const dateLabel = d ? d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
   return (
     <>
@@ -101,12 +104,12 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed bottom-0 inset-x-0 z-[210] bg-white rounded-t-3xl shadow-2xl p-6 pb-10 max-h-[80vh] overflow-y-auto"
+        className="fixed bottom-0 inset-x-0 z-[210] bg-white rounded-t-3xl shadow-2xl p-6 pb-10 max-w-lg mx-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="text-base font-bold text-[#36454F]">Free a Slot Day</h3>
+            <h3 className="text-base font-bold text-[#36454F]">Free Upcoming Slot</h3>
             <p className="text-[11px] text-slate-500 font-semibold mt-0.5">{timeSlot} · {slot?.courtName}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-50 transition-all">
@@ -117,47 +120,45 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
         <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-2">
           <Gift size={14} className="text-amber-500 shrink-0 mt-0.5" />
           <p className="text-[11px] font-semibold text-amber-700 leading-snug">
-            Free a slot you can't attend and earn bonus points! The admin can then resell it.
+            Free your next upcoming slot session that you cannot attend. You will earn bonus points, and the arena can resell the slot.
           </p>
         </div>
 
-        {eligibleDates.length === 0 ? (
+        {!targetDate ? (
           <div className="text-center py-8 text-slate-400 text-sm font-semibold">
-            No eligible upcoming dates — all are past the free-window deadline.
+            No upcoming dates eligible to be freed.
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 mb-5">
-            {eligibleDates.map((date) => {
-              const d = new Date(date + 'T12:00:00');
-              const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-              return (
-                <button
-                  key={date}
-                  onClick={() => setSelectedDate(date)}
-                  className="py-2.5 px-3 rounded-xl text-xs font-bold transition-all border-2 border-slate-100 bg-slate-50 text-slate-700 hover:border-slate-200"
-                >
-                  {label}
-                </button>
-              );
-            })}
+          <div className="text-center py-6 px-4 bg-slate-50 rounded-2xl border border-slate-100/80 mb-6">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Release Date</p>
+            <p className="text-base font-black text-[#36454F] mt-1">{dateLabel}</p>
+            <p className="text-[10px] text-[#CE2029] font-bold mt-2">Are you sure you want to release this slot day?</p>
           </div>
         )}
 
         {err && (
           <div className="mb-4 p-3 bg-red-50 rounded-xl flex items-center gap-2">
             <AlertCircle size={14} className="text-red-500" />
-            <p className="text-[11px] font-semibold text-red-600">{err}</p>
+            <p className="text-[11px] font-semibold text-[#CE2029]">{err}</p>
           </div>
         )}
 
-        <button
-          onClick={handleFree}
-          disabled={!selectedDate || loading || eligibleDates.length === 0}
-          className="w-full py-3 bg-[#CE2029] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#b01b22] transition-all active:scale-[0.98]"
-        >
-          <Zap size={14} />
-          {loading ? 'Processing...' : 'Free This Slot'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 border border-slate-200 text-slate-500 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all active:scale-[0.98]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleFree}
+            disabled={!targetDate || loading}
+            className="flex-[2] py-3 bg-[#CE2029] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#b01b22] transition-all active:scale-[0.98]"
+          >
+            <Zap size={14} />
+            {loading ? 'Processing...' : 'Yes, Free Slot'}
+          </button>
+        </div>
       </motion.div>
     </>
   );
