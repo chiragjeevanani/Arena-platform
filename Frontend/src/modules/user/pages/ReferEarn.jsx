@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gift, Copy, Check, Users, Sparkles, AlertCircle, Share2, Calendar, CheckCircle2, XCircle } from 'lucide-react';
+import { Gift, Copy, Check, Users, Sparkles, AlertCircle, Share2, Calendar, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import { getMyReferralsRequest } from '../../../services/referralsApi';
 import { useTheme } from '../context/ThemeContext';
 
 const ReferEarn = () => {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,17 +76,27 @@ const ReferEarn = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 pb-12">
-      {/* Hero Banner Card */}
-      <motion.div 
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`relative overflow-hidden rounded-2xl md:rounded-[24px] p-5 md:p-6 mb-6 border ${
-          isDark 
-            ? 'bg-slate-900/60 border-slate-800 shadow-[0_15px_40px_rgba(0,0,0,0.25)]' 
-            : 'bg-white border-slate-100 shadow-[0_15px_40px_rgba(206,32,41,0.02)]'
-        }`}
-      >
+    <div className={`min-h-screen pb-32 ${isDark ? 'bg-[#0f1115]' : 'bg-slate-50/50'}`}>
+      <div className="px-4 md:px-6 pt-4 pb-4 md:pt-6 md:pb-6 bg-[#CE2029] rounded-b-3xl md:rounded-b-[2rem] shadow-[0_10px_30px_rgba(206, 32, 41,0.15)]">
+        <div className="max-w-5xl mx-auto flex items-center gap-3 md:gap-4">
+          <button type="button" onClick={() => navigate(-1)} className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-sm active:scale-95 transition-all">
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-lg md:text-xl font-bold font-display text-white tracking-tight uppercase">Refer & Earn</h1>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 md:px-6 mt-6 md:mt-8 space-y-6">
+        {/* Hero Banner Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`relative overflow-hidden rounded-2xl md:rounded-[24px] p-5 md:p-6 border ${
+            isDark 
+              ? 'bg-slate-900/60 border-slate-800 shadow-[0_15px_40px_rgba(0,0,0,0.25)]' 
+              : 'bg-white border-slate-100 shadow-[0_15px_40px_rgba(206,32,41,0.02)]'
+          }`}
+        >
         {/* Glow effect */}
         <div className="absolute top-0 right-0 w-[240px] h-[240px] bg-gradient-to-bl from-[#CE2029]/10 to-transparent rounded-full blur-[60px] pointer-events-none" />
 
@@ -309,6 +321,7 @@ const ReferEarn = () => {
           </div>
         )}
       </motion.div>
+      </div>
     </div>
   );
 };
