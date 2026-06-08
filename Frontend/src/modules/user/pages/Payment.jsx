@@ -47,7 +47,6 @@ const Payment = () => {
       state?.paymentPurpose === 'top_up' &&
       isApiConfigured() &&
       getAuthToken() &&
-      Boolean(mockSecret) &&
       amountNum > 0;
 
     if (useMockTopUp) {

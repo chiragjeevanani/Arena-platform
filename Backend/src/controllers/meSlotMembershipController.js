@@ -438,11 +438,167 @@ async function getMyPointsTransactions(req, res) {
   });
 }
 
+// ─── Purchase Slot Membership ──────────────────────────────────────────────────────
+
+/**
+ * POST /me/slot-memberships/purchase
+ * Body: { arenaId, courtId, courtSlotIds: [], durationMonths: 1|3|6|12, startDate, usePoints }
+ */
+async function purchaseSlotMembership(req, res) {
+  const userId = req.auth.sub;
+  const { arenaId, courtId, courtSlotIds, durationMonths, startDate, usePoints = false } = req.body;
+
+  // Validate inputs
+  if (!arenaId || !mongoose.isValidObjectId(arenaId)) return res.status(400).json({ error: 'Valid arenaId is required' });
+  if (!courtId || !mongoose.isValidObjectId(courtId)) return res.status(400).json({ error: 'Valid courtId is required' });
+  if (!Array.isArray(courtSlotIds) || courtSlotIds.length === 0) return res.status(400).json({ error: 'At least one courtSlotId is required' });
+  if (![1, 3, 6, 12].includes(Number(durationMonths))) return res.status(400).json({ error: 'durationMonths must be 1, 3, 6, or 12' });
+  if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return res.status(400).json({ error: 'startDate must be YYYY-MM-DD' });
+
+  // Load arena
+  const arena = await Arena.findById(arenaId).lean();
+  if (!arena) return res.status(404).json({ error: 'Arena not found' });
+
+  // Load court
+  const court = await Court.findById(courtId).lean();
+  if (!court) return res.status(404).json({ error: 'Court not found' });
+
+  // Determine base price from arena slotPricingConfig
+  const months = Number(durationMonths);
+  const priceMap = {
+    1:  arena.slotPricingConfig?.price1Month  ?? 0,
+    3:  arena.slotPricingConfig?.price3Month  ?? 0,
+    6:  arena.slotPricingConfig?.price6Month  ?? 0,
+    12: arena.slotPricingConfig?.price12Month ?? 0,
+  };
+  const basePrice = priceMap[months];
+
+  // Compute durationDays and endDate
+  const durationDays = months === 1 ? 30 : months === 3 ? 90 : months === 6 ? 180 : 365;
+  const startDt = new Date(startDate);
+  const endDt = new Date(startDt);
+  endDt.setDate(endDt.getDate() + durationDays - 1);
+  const endDate = endDt.toISOString().slice(0, 10);
+
+  // Validate all courtSlotIds and check for conflicts
+  const courtSlotDocs = [];
+  for (const slotId of courtSlotIds) {
+    if (!mongoose.isValidObjectId(slotId)) return res.status(400).json({ error: `Invalid courtSlotId: ${slotId}` });
+    const cs = await CourtSlot.findById(slotId).lean();
+    if (!cs) return res.status(404).json({ error: `CourtSlot not found: ${slotId}` });
+    courtSlotDocs.push(cs);
+  }
+
+  // Check availability conflicts
+  for (const cs of courtSlotDocs) {
+    const conflictingMembership = await UserMembership.findOne({
+      status: 'active',
+      'bookedSlots.courtSlotId': cs._id,
+      startsAt: { $lte: new Date(endDate) },
+      expiresAt: { $gte: new Date(startDate) },
+    }).lean();
+    if (conflictingMembership) {
+      return res.status(409).json({
+        error: `Slot ${cs.dayOfWeek} ${cs.timeSlot} is already booked by another member for this period`,
+        courtSlotId: slotId,
+      });
+    }
+  }
+
+  // Calculate points discount if requested
+  let discountAmount = 0;
+  let pointsUsed = 0;
+  if (usePoints && basePrice > 0) {
+    const [pointsWallet, discountConfig] = await Promise.all([
+      getOrCreatePointsWallet(userId),
+      PointsDiscountConfig.findOne({ arenaId: null }).lean(),
+    ]);
+    if (pointsWallet && discountConfig) {
+      const discountPct = PointsDiscountConfig.computeDiscount(discountConfig, pointsWallet.points);
+      discountAmount = Math.floor((basePrice * discountPct) / 100);
+      const sorted = (discountConfig.tiers || []).sort((a, b) => b.pointsRequired - a.pointsRequired);
+      const matched = sorted.find((t) => pointsWallet.points >= t.pointsRequired);
+      pointsUsed = matched?.pointsRequired || 0;
+    }
+  }
+
+  const finalAmount = Math.max(0, basePrice - discountAmount);
+
+  // Debit wallet
+  if (finalAmount > 0) {
+    const wallet = await getOrCreateWallet(userId);
+    if (wallet.balance < finalAmount) {
+      return res.status(400).json({ error: 'Insufficient wallet balance. Please top up your wallet.' });
+    }
+    const updatedWallet = await Wallet.findByIdAndUpdate(
+      wallet._id,
+      { $inc: { balance: -finalAmount } },
+      { new: true }
+    );
+    await WalletTransaction.create({
+      walletId: wallet._id,
+      userId,
+      type: 'debit',
+      amount: finalAmount,
+      description: `Slot membership — ${court.name}, ${months} month(s)`,
+      meta: { arenaId, courtId, courtSlotIds, durationMonths: months },
+    });
+  }
+
+  // Debit points if used
+  if (usePoints && pointsUsed > 0) {
+    const pw = await getOrCreatePointsWallet(userId);
+    const updPw = await PointsWallet.findByIdAndUpdate(pw._id, { $inc: { points: -pointsUsed } }, { new: true });
+    await PointsTransaction.create({
+      userId,
+      type: 'debit',
+      points: pointsUsed,
+      reason: 'slot_membership_discount',
+      balanceAfter: updPw.points,
+      meta: { arenaId, courtId, durationMonths: months },
+    });
+  }
+
+  // Create UserMembership record
+  const membership = await UserMembership.create({
+    userId,
+    membershipPlanId: null,
+    arenaId,
+    status: 'active',
+    startsAt: new Date(startDate),
+    expiresAt: new Date(endDate + 'T23:59:59'),
+    amountPaid: finalAmount,
+    discountApplied: discountAmount,
+    bookedSlots: courtSlotDocs.map((cs) => ({
+      courtSlotId: cs._id,
+      courtId: court._id,
+      arenaId: arena._id,
+    })),
+    slotMembershipMeta: {
+      durationMonths: months,
+      basePrice,
+      pricePerSlot: 0,
+      totalSlots: courtSlotDocs.length,
+    },
+  });
+
+  await createNotification(
+    userId,
+    'Slot Membership Activated!',
+    `Your ${months}-month slot membership at ${arena.name} starts on ${startDate}.`,
+    'success',
+    { membershipId: membership._id.toString() }
+  );
+
+  return res.status(201).json({ membership: UserMembership.toPublic(membership) });
+}
+
 module.exports = {
   checkSlotAvailability,
   previewSlotMembershipPricing,
   getMySlotMemberships,
   freeMySlot,
+  purchaseSlotMembership,
   getMyPointsWallet,
   getMyPointsTransactions,
 };

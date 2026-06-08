@@ -35,6 +35,35 @@ const BookingSuccess = () => {
   const { isDark } = useTheme();
   const courtRef = useRef(null);
   const [showConfetti, setShowConfetti] = useState(true);
+  const [loadedBooking, setLoadedBooking] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const searchParams = new URLSearchParams(useLocation().search);
+  const queryBookingId = searchParams.get('bookingId');
+
+  useEffect(() => {
+    if (queryBookingId && !state) {
+      setLoading(true);
+      import('../../../services/bookingsApi').then(({ listMyBookings }) => {
+        listMyBookings()
+          .then((res) => {
+            const found = res.bookings?.find((b) => b.id === queryBookingId);
+            if (found) {
+              setLoadedBooking({
+                amount: found.price || found.amount || 0,
+                arena: { name: found.arenaName, location: found.location || 'Muscat, Oman' },
+                court: { name: found.courtName, type: 'BWF Approved' },
+                date: found.date,
+                slot: { time: found.slot },
+                booking: found,
+              });
+            }
+          })
+          .catch((err) => console.error('Fetch booking error', err))
+          .finally(() => setLoading(false));
+      });
+    }
+  }, [queryBookingId, state]);
 
   // Generate shuttle particles
   const particles = Array.from({ length: 12 }, (_, i) => ({
@@ -44,74 +73,75 @@ const BookingSuccess = () => {
     y: (Math.random() - 0.5) * 400,
   }));
 
-  const amount = state?.amount || 0;
+  const bookingData = state || loadedBooking;
+  const amount = bookingData?.amount || 0;
 
   useEffect(() => {
     // Save booking/enrollment to localStorage for persistence in Dashboard
-    if (state) {
+    if (bookingData) {
       const existingBookings = JSON.parse(storage.getItem('userBookings') || '[]');
 
       let newBooking;
-      if (state.type === 'membership') {
+      if (bookingData.type === 'membership') {
         // Membership activation
         newBooking = {
           id: `MEM-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
           arenaName: "Arena Membership",
           arenaImage: null,
           location: "Global Access",
-          courtName: state.plan?.name,
+          courtName: bookingData.plan?.name,
           date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-          slot: state.plan?.duration,
+          slot: bookingData.plan?.duration,
           status: 'Active',
           type: 'Membership',
-          price: state.amount
+          price: bookingData.amount
         };
         
         // Save membership status
         const membershipData = {
           status: 'active',
-          planId: state.plan?.id,
-          planName: state.plan?.name,
-          category: state.plan?.category,
-          discountPercent: state.plan?.discountPercent,
+          planId: bookingData.plan?.id,
+          planName: bookingData.plan?.name,
+          category: bookingData.plan?.category,
+          discountPercent: bookingData.plan?.discountPercent,
           startDate: new Date().toISOString().split('T')[0],
           expiryDate: '2027-04-02', // 1 year approx for demo
-          benefits: state.plan?.benefits
+          benefits: bookingData.plan?.benefits
         };
         storage.setItem('userMembership', JSON.stringify(membershipData));
-      } else if (state.type === 'coaching' || state.batch) {
+      } else if (bookingData.type === 'coaching' || bookingData.batch) {
         // Coaching enrollment
         newBooking = {
-          id: state.enrollment?.id ? String(state.enrollment.id) : `AC-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-          arenaName: state.batch?.arenaName || state.arena?.name || 'Arena',
-          arenaImage: state.batch?.image || state.arena?.image,
-          location: state.batch?.location || state.arena?.location || 'Arena',
-          coachName: state.batch?.coachName,
-          courtName: state.batch?.level || 'Coaching',
+          id: bookingData.enrollment?.id ? String(bookingData.enrollment.id) : `AC-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+          arenaName: bookingData.batch?.arenaName || bookingData.arena?.name || 'Arena',
+          arenaImage: bookingData.batch?.image || bookingData.arena?.image,
+          location: bookingData.batch?.location || bookingData.arena?.location || 'Arena',
+          coachName: bookingData.batch?.coachName,
+          courtName: bookingData.batch?.level || 'Coaching',
           date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-          slot: state.batch?.timing,
+          slot: bookingData.batch?.timing,
           status: 'Upcoming',
           type: 'Coaching',
-          price: state.amount,
+          price: bookingData.amount,
         };
       } else {
         // Arena booking
-        const apiId = state.booking?.id ? String(state.booking.id) : null;
+        const apiId = bookingData.booking?.id ? String(bookingData.booking.id) : null;
         newBooking = {
           id: apiId || `BK-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-          arenaName: state.arena?.name,
-          arenaImage: state.arena?.image,
-          location: state.arena?.location,
-          courtName: state.court?.name,
-          date: state.date,
-          slot: state.slot?.time,
+          arenaName: bookingData.arena?.name,
+          arenaImage: bookingData.arena?.image,
+          location: bookingData.arena?.location,
+          courtName: bookingData.court?.name,
+          date: bookingData.date,
+          slot: bookingData.slot?.time,
           status: 'Upcoming',
           type: 'Booking',
-          price: state.amount
+          price: bookingData.amount
         };
       }
 
-      const persist = shouldPersistBookingSuccessToUserBookings(state, {
+      const persist = shouldPersistBookingSuccessToUserBookings(bookingData, {
         apiConfigured: isApiConfigured(),
         hasToken: Boolean(getAuthToken()),
       });
@@ -135,7 +165,7 @@ const BookingSuccess = () => {
 
     const timer = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(timer);
-  }, [state]);
+  }, [bookingData]);
 
   return (
     <div className={`min-h-screen flex flex-col pt-8 md:pt-12 relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0f1115]' : 'bg-slate-50'}`}>
@@ -184,7 +214,7 @@ const BookingSuccess = () => {
               transition={{ delay: 0.3 }}
               className={`text-2xl md:text-3xl font-black tracking-tight font-display mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}
             >
-              {state?.type === 'membership' ? 'Welcome to the Club!' : state?.batch ? 'Ready for Training!' : 'Slot Secured!'}
+              {bookingData?.type === 'membership' ? 'Welcome to the Club!' : bookingData?.batch ? 'Ready for Training!' : 'Slot Secured!'}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -192,7 +222,7 @@ const BookingSuccess = () => {
               transition={{ delay: 0.5 }}
               className={`text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}
             >
-              {state?.type === 'membership' ? 'Your membership is now active' : state?.batch ? 'Your academic journey begins here' : 'Prepare for your match at the arena'}
+              {bookingData?.type === 'membership' ? 'Your membership is now active' : bookingData?.batch ? 'Your academic journey begins here' : 'Prepare for your match at the arena'}
             </motion.p>
           </div>
         </div>
@@ -226,12 +256,12 @@ const BookingSuccess = () => {
               {/* Arena Info */}
               <div className="space-y-1">
                 <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                  {state?.type === 'membership' ? 'Membership Active' : state?.batch ? 'Academic Program' : state?.type === 'event' ? 'Official Enrollment' : 'Arena Details'}
+                  {bookingData?.type === 'membership' ? 'Membership Active' : bookingData?.batch ? 'Academic Program' : bookingData?.type === 'event' ? 'Official Enrollment' : 'Arena Details'}
                 </p>
                 <h3 className={`text-xl md:text-2xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {state?.type === 'membership' ? state.plan?.name : state?.batch ? state.batch.coachName : state?.type === 'event' ? state.eventTitle : state?.arena?.name}
+                  {bookingData?.type === 'membership' ? bookingData.plan?.name : bookingData?.batch ? bookingData.batch.coachName : bookingData?.type === 'event' ? bookingData.eventTitle : bookingData?.arena?.name}
                   <span className={`block text-lg md:text-xl mt-0.5 ${isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'}`}>
-                    {state?.type === 'membership' ? 'Tier ' + state.plan?.category : state?.batch ? state.batch.level + ' Batch' : state?.type === 'event' ? state.eventCategory : state?.court?.name}
+                    {bookingData?.type === 'membership' ? 'Tier ' + bookingData.plan?.category : bookingData?.batch ? bookingData.batch.level + ' Batch' : bookingData?.type === 'event' ? bookingData.eventCategory : bookingData?.court?.name}
                   </span>
                 </h3>
               </div>
@@ -239,17 +269,17 @@ const BookingSuccess = () => {
               {/* Detail Grid */}
               <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100">
                 <div className="space-y-1">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{state?.type === 'membership' ? 'Activation Date' : 'Date'}</p>
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{bookingData?.type === 'membership' ? 'Activation Date' : 'Date'}</p>
                   <div className="flex items-center gap-2">
                     <CalendarDays size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.type === 'membership' ? new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : state?.date}</p>
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{bookingData?.type === 'membership' ? new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : bookingData?.date}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{state?.type === 'membership' ? 'Validity Period' : 'Timing'}</p>
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{bookingData?.type === 'membership' ? 'Validity Period' : 'Timing'}</p>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{state?.type === 'membership' ? state.plan?.duration : state?.batch ? state.batch.timing : state?.slot?.time}</p>
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{bookingData?.type === 'membership' ? bookingData.plan?.duration : bookingData?.batch ? bookingData.batch.timing : bookingData?.slot?.time}</p>
                   </div>
                 </div>
               </div>
@@ -286,7 +316,7 @@ const BookingSuccess = () => {
                   onClick={() => {
                     const shareData = {
                       title: 'Arena Booking Confirmation',
-                      text: `I just booked ${state?.court?.name || 'a session'} at ${state?.arena?.name || 'the arena'} for ${state?.date} at ${state?.slot?.time || 'requested slot'}. Join me!`,
+                      text: `I just booked ${bookingData?.court?.name || 'a session'} at ${bookingData?.arena?.name || 'the arena'} for ${bookingData?.date} at ${bookingData?.slot?.time || 'requested slot'}. Join me!`,
                       url: window.location.href,
                     };
                     if (navigator.share) {

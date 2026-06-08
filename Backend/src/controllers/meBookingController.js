@@ -37,6 +37,23 @@ async function createMyBooking(req, res) {
   }
 
   const userId = req.auth.sub;
+
+  const existingBooking = await Booking.findOne({ courtId, date, timeSlot });
+  if (existingBooking) {
+    if (existingBooking.userId.toString() === userId && existingBooking.paymentStatus === 'pending') {
+      const pricing = await computeCourtBookingPrice(userId, arena);
+      return res.status(200).json({
+        booking: Booking.toPublic(existingBooking, {
+          arenaName: arena.name,
+          courtName: court.name,
+        }),
+        pricing,
+      });
+    } else {
+      return res.status(409).json({ error: 'This time slot is already booked' });
+    }
+  }
+
   const pricing = await computeCourtBookingPrice(userId, arena);
 
   if (!amountsMatch(amount, pricing.finalAmount)) {

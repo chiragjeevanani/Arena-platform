@@ -285,9 +285,58 @@ async function listSlotMemberships(req, res) {
   });
 }
 
+// ─── Slot Pricing Config ──────────────────────────────────────────────────────
+
+async function getSlotPricingConfig(req, res) {
+  const { arenaId } = req.params;
+  if (!mongoose.isValidObjectId(arenaId)) {
+    return res.status(400).json({ error: 'Invalid arenaId' });
+  }
+  const arena = await Arena.findById(arenaId).lean();
+  if (!arena) return res.status(404).json({ error: 'Arena not found' });
+
+  return res.json({
+    arenaId,
+    price1Month:  arena.slotPricingConfig?.price1Month  ?? 0,
+    price3Month:  arena.slotPricingConfig?.price3Month  ?? 0,
+    price6Month:  arena.slotPricingConfig?.price6Month  ?? 0,
+    price12Month: arena.slotPricingConfig?.price12Month ?? 0,
+    currency: arena.slotPricingConfig?.currency ?? 'OMR',
+  });
+}
+
+async function updateSlotPricingConfig(req, res) {
+  const { arenaId } = req.params;
+  if (!mongoose.isValidObjectId(arenaId)) {
+    return res.status(400).json({ error: 'Invalid arenaId' });
+  }
+
+  const { price1Month, price3Month, price6Month, price12Month } = req.body;
+  const update = {};
+
+  if (price1Month  !== undefined) update['slotPricingConfig.price1Month']  = Math.max(0, Number(price1Month)  || 0);
+  if (price3Month  !== undefined) update['slotPricingConfig.price3Month']  = Math.max(0, Number(price3Month)  || 0);
+  if (price6Month  !== undefined) update['slotPricingConfig.price6Month']  = Math.max(0, Number(price6Month)  || 0);
+  if (price12Month !== undefined) update['slotPricingConfig.price12Month'] = Math.max(0, Number(price12Month) || 0);
+
+  const arena = await Arena.findByIdAndUpdate(arenaId, { $set: update }, { new: true }).lean();
+  if (!arena) return res.status(404).json({ error: 'Arena not found' });
+
+  return res.json({
+    arenaId,
+    price1Month:  arena.slotPricingConfig?.price1Month  ?? 0,
+    price3Month:  arena.slotPricingConfig?.price3Month  ?? 0,
+    price6Month:  arena.slotPricingConfig?.price6Month  ?? 0,
+    price12Month: arena.slotPricingConfig?.price12Month ?? 0,
+    currency: arena.slotPricingConfig?.currency ?? 'OMR',
+  });
+}
+
 module.exports = {
   getSlotFreeConfig,
   updateSlotFreeConfig,
+  getSlotPricingConfig,
+  updateSlotPricingConfig,
   getPointsDiscountConfig,
   updatePointsDiscountConfig,
   listFreedSlots,

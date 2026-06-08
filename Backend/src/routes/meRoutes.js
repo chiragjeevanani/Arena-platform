@@ -26,11 +26,16 @@ const {
   previewSlotMembershipPricing,
   getMySlotMemberships,
   freeMySlot,
+  purchaseSlotMembership,
   getMyPointsWallet,
   getMyPointsTransactions,
 } = require('../controllers/meSlotMembershipController');
+const { handleCcavenueCallback } = require('../controllers/paymentCallbackController');
 
 const router = express.Router();
+
+// Public payment callback (Exempt from authorization header/tokens)
+router.post('/payments/ccavenue/callback', asyncHandler(handleCcavenueCallback));
 
 router.use(requireAuth);
 router.use(requireRole('CUSTOMER'));
@@ -63,6 +68,7 @@ router.patch('/event-registrations/:id/cancel', asyncHandler(cancelMyEventRegist
 
 // Slot Memberships
 router.get('/slot-memberships', asyncHandler(getMySlotMemberships));
+router.post('/slot-memberships/purchase', asyncHandler(purchaseSlotMembership));
 router.post('/slot-memberships/check-availability', asyncHandler(checkSlotAvailability));
 router.post('/slot-memberships/preview-pricing', asyncHandler(previewSlotMembershipPricing));
 router.post('/slot-memberships/:id/free-slot', asyncHandler(freeMySlot));

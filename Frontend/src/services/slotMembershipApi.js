@@ -2,6 +2,7 @@ import { apiJson } from './apiClient';
 
 const BASE = '/api/admin';
 const ME = '/api/me';
+const PUBLIC = '/api/public';
 
 // ─── Admin: Slot Free Config ──────────────────────────────────────────────────
 
@@ -55,6 +56,26 @@ export function adjustAdminPointsBalance(body) {
   return apiJson(`${BASE}/points-wallets/adjust`, { method: 'POST', body });
 }
 
+// ─── Admin: Slot Pricing Config ──────────────────────────────────────────────────────
+
+export function getSlotPricingConfig(arenaId) {
+  return apiJson(`${BASE}/slot-pricing-config/${encodeURIComponent(arenaId)}`, { method: 'GET' });
+}
+
+export function updateSlotPricingConfig(arenaId, body) {
+  return apiJson(`${BASE}/slot-pricing-config/${encodeURIComponent(arenaId)}`, { method: 'PUT', body });
+}
+
+// ─── Public: Arena Slot Pricing ──────────────────────────────────────────────────────
+
+export function fetchArenaSlotPricing(arenaId) {
+  return apiJson(`${PUBLIC}/arenas/${encodeURIComponent(arenaId)}/slot-pricing`, { method: 'GET' });
+}
+
+export function fetchArenaCourts(arenaId) {
+  return apiJson(`${PUBLIC}/arenas/${encodeURIComponent(arenaId)}/courts`, { method: 'GET' });
+}
+
 // ─── Admin: Slot Memberships ──────────────────────────────────────────────────
 
 export function listAdminSlotMemberships(query = {}) {
@@ -88,7 +109,11 @@ export function freeMySlot(membershipId, body) {
   });
 }
 
-// ─── User: Points Wallet ──────────────────────────────────────────────────────
+// ─── User: Slot Membership Purchase ──────────────────────────────────────────────────────
+
+export function purchaseSlotMembership(body) {
+  return apiJson(`${ME}/slot-memberships/purchase`, { method: 'POST', body });
+}
 
 export function getMyPointsWallet() {
   return apiJson(`${ME}/points-wallet`, { method: 'GET' });

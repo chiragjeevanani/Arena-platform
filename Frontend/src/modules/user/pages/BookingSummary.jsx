@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
 import { createMyBooking } from '../../../services/bookingsApi';
-import { getMyWallet } from '../../../services/meApi';
+import { getMyWallet, createPaymentIntent } from '../../../services/meApi';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { storage } from '../../../utils/storage';
 import { useEffect } from 'react';
@@ -88,6 +88,35 @@ const BookingSummary = () => {
           amount: subtotal + tax,
           useWallet,
         });
+
+        if (finalPayable > 0) {
+          // Initiate gateway intent for the remaining payable amount
+          const intent = await createPaymentIntent({
+            purpose: 'booking',
+            amount: finalPayable,
+            bookingId: res.booking.id,
+          });
+
+          if (intent?.provider === 'ccavenue') {
+            const { redirectToCcavenue } = await import('../../../services/ccavenueRedirect');
+            redirectToCcavenue({
+              paymentUrl: intent.paymentUrl,
+              encRequest: intent.encRequest,
+              accessCode: intent.accessCode,
+            });
+            // Let the page stay in loading state as redirect happens
+            return;
+          } else if (intent?.provider === 'mock') {
+            // Mock payment flow
+            const { getMockPaymentWebhookSecret } = await import('../../../services/config');
+            const mockSecret = getMockPaymentWebhookSecret();
+            if (mockSecret) {
+              const { confirmMockPayment } = await import('../../../services/meApi');
+              await confirmMockPayment(intent.payment.id, mockSecret);
+            }
+          }
+        }
+
         navigate('/booking-success', {
           replace: true,
           state: {

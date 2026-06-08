@@ -71,4 +71,31 @@ async function getPublishedArenaById(req, res) {
   });
 }
 
-module.exports = { listPublishedArenas, getPublishedArenaById };
+async function getArenaSlotPricing(req, res) {
+  const { arenaId } = req.params;
+  if (!mongoose.isValidObjectId(arenaId)) {
+    return res.status(400).json({ error: 'Invalid arenaId' });
+  }
+  const arena = await Arena.findById(arenaId).lean();
+  if (!arena) return res.status(404).json({ error: 'Arena not found' });
+
+  return res.json({
+    arenaId,
+    price1Month:  arena.slotPricingConfig?.price1Month  ?? 0,
+    price3Month:  arena.slotPricingConfig?.price3Month  ?? 0,
+    price6Month:  arena.slotPricingConfig?.price6Month  ?? 0,
+    price12Month: arena.slotPricingConfig?.price12Month ?? 0,
+    currency: arena.slotPricingConfig?.currency ?? 'OMR',
+  });
+}
+
+async function listArenaCourts(req, res) {
+  const { arenaId } = req.params;
+  if (!mongoose.isValidObjectId(arenaId)) {
+    return res.status(400).json({ error: 'Invalid arenaId' });
+  }
+  const courts = await Court.find({ arenaId }).sort({ name: 1 }).lean();
+  return res.json({ courts: courts.map(mapCourt) });
+}
+
+module.exports = { listPublishedArenas, getPublishedArenaById, getArenaSlotPricing, listArenaCourts };

@@ -11,7 +11,8 @@ const userMembershipSchema = new mongoose.Schema(
     membershipPlanId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'MembershipPlan',
-      required: true,
+      required: false,
+      default: null,
     },
     arenaId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -34,8 +35,15 @@ const userMembershipSchema = new mongoose.Schema(
       },
     ],
     amountPaid: { type: Number, default: 0, min: 0 },
+    discountApplied: { type: Number, default: 0, min: 0 },
     pointsUsed: { type: Number, default: 0, min: 0 },
     bonusPointsEarned: { type: Number, default: 0, min: 0 },
+    slotMembershipMeta: {
+      durationMonths: { type: Number, default: null },
+      basePrice: { type: Number, default: 0 },
+      pricePerSlot: { type: Number, default: 0 },
+      totalSlots: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );
@@ -48,7 +56,7 @@ function toPublic(doc, extras = {}) {
   return {
     id: o._id.toString(),
     userId: String(o.userId),
-    membershipPlanId: String(o.membershipPlanId),
+    membershipPlanId: o.membershipPlanId ? String(o.membershipPlanId) : null,
     arenaId: o.arenaId ? String(o.arenaId) : null,
     startsAt: o.startsAt,
     expiresAt: o.expiresAt,

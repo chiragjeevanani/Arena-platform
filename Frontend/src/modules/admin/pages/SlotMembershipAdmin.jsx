@@ -10,11 +10,13 @@ import {
   getPointsDiscountConfig, updatePointsDiscountConfig,
   listAdminPointsWallets, adjustAdminPointsBalance,
   getSlotFreeConfig, updateSlotFreeConfig,
+  getSlotPricingConfig, updateSlotPricingConfig,
 } from '../../../services/slotMembershipApi';
 import { listAdminArenas } from '../../../services/adminOpsApi';
 import { normalizeListArena } from '../../../utils/arenaAdapter';
 
 const TABS = [
+  { id: 'pricing', label: 'Slot Pricing', icon: Tag },
   { id: 'freed', label: 'Freed Slots', icon: CalendarDays },
   { id: 'config', label: 'Slot Config', icon: Settings },
   { id: 'points', label: 'Points Config', icon: Star },
@@ -31,6 +33,128 @@ function StatusBadge({ status }) {
       {status === 'freed' ? <Clock size={10} /> : <CheckCircle2 size={10} />}
       {status}
     </span>
+  );
+}
+
+// ─── Tab: Slot Pricing ──────────────────────────────────────────────────────
+const DURATION_OPTIONS = [
+  { key: 'price1Month',  label: '1 Month',   months: 1,  desc: 'Book slots for 30 days',   gradient: 'from-blue-500 to-cyan-400' },
+  { key: 'price3Month',  label: '3 Months',  months: 3,  desc: 'Book slots for 90 days',   gradient: 'from-emerald-500 to-teal-400' },
+  { key: 'price6Month',  label: '6 Months',  months: 6,  desc: 'Book slots for 180 days',  gradient: 'from-amber-500 to-orange-400' },
+  { key: 'price12Month', label: '12 Months', months: 12, desc: 'Book slots for 365 days',  gradient: 'from-[#CE2029] to-rose-400' },
+];
+
+function SlotPricingTab() {
+  const [arenas, setArenas] = useState([]);
+  const [selectedArenaId, setSelectedArenaId] = useState('');
+  const [prices, setPrices] = useState({ price1Month: 0, price3Month: 0, price6Month: 0, price12Month: 0 });
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    listAdminArenas().then((d) => {
+      const list = (d.arenas || []).map(normalizeListArena);
+      setArenas(list);
+      if (list.length) setSelectedArenaId(String(list[0].id));
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!selectedArenaId) return;
+    setMsg(''); setErr('');
+    getSlotPricingConfig(selectedArenaId)
+      .then((d) => setPrices({
+        price1Month:  d.price1Month  ?? 0,
+        price3Month:  d.price3Month  ?? 0,
+        price6Month:  d.price6Month  ?? 0,
+        price12Month: d.price12Month ?? 0,
+      }))
+      .catch(() => {});
+  }, [selectedArenaId]);
+
+  const save = async () => {
+    if (!selectedArenaId) return;
+    setSaving(true); setMsg(''); setErr('');
+    try {
+      await updateSlotPricingConfig(selectedArenaId, prices);
+      setMsg('Pricing saved successfully!');
+    } catch (e) {
+      setErr(e.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Arena Selector */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-5 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-[2px] bg-[#CE2029]" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#CE2029]">Arena</span>
+        </div>
+        <select
+          value={selectedArenaId}
+          onChange={(e) => setSelectedArenaId(e.target.value)}
+          className="flex-1 max-w-xs px-4 py-2.5 bg-slate-50 rounded-xl text-sm font-bold border border-slate-200 focus:outline-none focus:border-[#CE2029]"
+        >
+          {arenas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+        </select>
+        <p className="text-[11px] text-slate-400 font-bold ml-auto">
+          Set the price a member pays per time period — regardless of how many slots they pick.
+        </p>
+      </div>
+
+      {/* Pricing Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        {DURATION_OPTIONS.map((opt) => (
+          <div key={opt.key} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            {/* Card Header */}
+            <div className={`bg-gradient-to-br ${opt.gradient} p-5 text-white`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80 mb-1">{opt.desc}</p>
+              <h3 className="text-2xl font-black tracking-tight">{opt.label}</h3>
+              <p className="text-xs font-bold opacity-70 mt-1">{opt.months} month{opt.months > 1 ? 's' : ''} membership</p>
+            </div>
+            {/* Price Input */}
+            <div className="p-5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2">Price (OMR)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">OMR</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  value={prices[opt.key]}
+                  onChange={(e) => setPrices((p) => ({ ...p, [opt.key]: parseFloat(e.target.value) || 0 }))}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl text-lg font-black text-slate-800 border border-slate-200 focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all"
+                  placeholder="0.000"
+                />
+              </div>
+              <p className="text-[10px] text-slate-400 font-bold mt-2">
+                OMR {Number(prices[opt.key]).toFixed(3)} / member / {opt.label.toLowerCase()}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Save */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+        <div className="flex-1">
+          {msg && <p className="text-sm text-emerald-600 font-bold">{msg}</p>}
+          {err && <p className="text-sm text-red-600 font-bold">{err}</p>}
+          {!msg && !err && <p className="text-xs text-slate-400 font-bold">Prices apply to all courts in this arena. Users pay once regardless of how many slots they select.</p>}
+        </div>
+        <button
+          onClick={save}
+          disabled={saving || !selectedArenaId}
+          className="flex items-center gap-2 px-6 py-3 bg-[#CE2029] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#b01b22] transition-all disabled:opacity-50"
+        >
+          <Save size={14} /> {saving ? 'Saving...' : 'Save Prices'}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -532,7 +656,7 @@ function PointsWalletsTab() {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const SlotMembershipAdmin = () => {
-  const [activeTab, setActiveTab] = useState('freed');
+  const [activeTab, setActiveTab] = useState('pricing');
 
   return (
     <div className="min-h-screen bg-[#F4F7F6] p-4 md:p-6 lg:p-8 font-sans">
@@ -547,19 +671,19 @@ const SlotMembershipAdmin = () => {
             Slot Booking <span className="text-[#CE2029]">Management</span>
           </h1>
           <p className="text-slate-500 font-bold text-[13px] mt-2 opacity-60">
-            Configure slot-free rules, bonus points tiers, and manage freed slots.
+            Set slot membership pricing, configure release rules, manage bonus points and freed slots.
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm mb-6 w-fit">
+        <div className="flex gap-1 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm mb-6 w-fit overflow-x-auto">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-[#CE2029] text-white shadow-sm'
                     : 'text-slate-500 hover:bg-slate-50'
@@ -581,6 +705,7 @@ const SlotMembershipAdmin = () => {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
           >
+            {activeTab === 'pricing' && <SlotPricingTab />}
             {activeTab === 'freed' && <FreedSlotsTab />}
             {activeTab === 'config' && <SlotConfigTab />}
             {activeTab === 'points' && <PointsConfigTab />}

@@ -27,7 +27,7 @@ const arenaSchema = new mongoose.Schema(
       weekendEnabled: { type: Boolean, default: false },
       weekendPrice: { type: Number, default: 0 },
       memberDiscountEnabled: { type: Boolean, default: false },
-      memberDiscountType: { type: String, default: 'percentage' }, // percentage | flat
+      memberDiscountType: { type: String, default: 'percentage' },
       memberDiscountPrime: { type: Number, default: 0 },
       memberDiscountNonPrime: { type: Number, default: 0 },
       holidayOverrides: [
@@ -44,6 +44,13 @@ const arenaSchema = new mongoose.Schema(
     slotFreeConfig: {
       freeWindowHours: { type: Number, default: 24, min: 1 },
       pointsPerFreeSlot: { type: Number, default: 10, min: 0 },
+    },
+    slotPricingConfig: {
+      price1Month:  { type: Number, default: 0, min: 0 },
+      price3Month:  { type: Number, default: 0, min: 0 },
+      price6Month:  { type: Number, default: 0, min: 0 },
+      price12Month: { type: Number, default: 0, min: 0 },
+      currency: { type: String, default: 'OMR' },
     },
   },
   { timestamps: true }

@@ -376,9 +376,9 @@ const MySlotMemberships = () => {
           <div className="text-center py-16">
             <CalendarDays size={48} className="text-slate-200 mx-auto mb-3" />
             <p className="text-sm font-black text-slate-400">No Slot Memberships Yet</p>
-            <p className="text-[11px] text-slate-400 font-bold mt-1">Purchase a slot-based plan to get started.</p>
+            <p className="text-[11px] text-slate-400 font-bold mt-1">Reserve recurring court slots for weeks or months at once.</p>
             <button
-              onClick={() => navigate('/membership')}
+              onClick={() => navigate('/slot-membership-purchase')}
               className="mt-4 px-5 py-3 bg-[#CE2029] text-white rounded-2xl text-xs font-black uppercase tracking-widest"
             >
               Browse Plans
@@ -402,6 +402,16 @@ const MySlotMemberships = () => {
               <MembershipCard key={m.id} membership={m} onFreeSuccess={handleFreeSuccess} />
             ))}
           </div>
+        )}
+        {/* Buy Another CTA - shown when memberships exist */}
+        {!loading && memberships.length > 0 && (
+          <button
+            onClick={() => navigate('/slot-membership-purchase')}
+            className="w-full py-4 border-2 border-dashed border-[#CE2029]/30 text-[#CE2029] rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#CE2029]/5 transition-all flex items-center justify-center gap-2"
+          >
+            <CalendarDays size={14} />
+            Add Another Slot Membership
+          </button>
         )}
       </div>
 

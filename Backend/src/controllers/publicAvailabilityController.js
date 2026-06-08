@@ -3,6 +3,7 @@ const Court = require('../models/Court');
 const CourtSlot = require('../models/CourtSlot');
 const Booking = require('../models/Booking');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
+const UserMembership = require('../models/UserMembership');
 
 const timeToMinutes = (t) => {
   if (!t) return 0;
@@ -89,4 +90,106 @@ async function getCourtAvailability(req, res) {
   });
 }
 
-module.exports = { getCourtAvailability };
+const DAY_MAP = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+function getOccurrenceDates(startDate, endDate, targetDayOfWeek) {
+  const targetDay = DAY_MAP[targetDayOfWeek];
+  if (targetDay === undefined) return [];
+
+  const dates = [];
+  const cursor = new Date(startDate);
+  cursor.setHours(0, 0, 0, 0);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
+
+  while (cursor <= end) {
+    if (cursor.getDay() === targetDay) {
+      dates.push(cursor.toISOString().slice(0, 10));
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return dates;
+}
+
+async function listCourtSlots(req, res) {
+  const { courtId } = req.params;
+  const { startDate, durationMonths } = req.query;
+
+  if (!mongoose.isValidObjectId(courtId)) {
+    return res.status(400).json({ error: 'Invalid court id' });
+  }
+
+  const court = await Court.findById(courtId).lean();
+  if (!court) {
+    return res.status(404).json({ error: 'Court not found' });
+  }
+
+  const slots = await CourtSlot.find({
+    courtId: String(courtId),
+    isActive: true,
+    status: 'Available',
+  }).sort({ dayOfWeek: 1, startTime: 1 }).lean();
+
+  let availabilityMap = {};
+  if (startDate && durationMonths) {
+    const months = Number(durationMonths) || 1;
+    const durationDays = months === 1 ? 30 : months === 3 ? 90 : months === 6 ? 180 : 365;
+    const startDt = new Date(startDate);
+    const endDt = new Date(startDt);
+    endDt.setDate(endDt.getDate() + durationDays - 1);
+    const endDate = endDt.toISOString().slice(0, 10);
+
+    const [bookings, activeMemberships] = await Promise.all([
+      Booking.find({
+        courtId: court._id,
+        date: { $gte: startDate, $lte: endDate },
+        status: { $in: ['confirmed', 'pending', 'rescheduled'] }
+      }).select('timeSlot date').lean(),
+      UserMembership.find({
+        status: 'active',
+        'bookedSlots.courtId': court._id,
+        startsAt: { $lte: new Date(endDate) },
+        expiresAt: { $gte: new Date(startDate) },
+      }).select('startsAt expiresAt bookedSlots.courtSlotId').lean()
+    ]);
+
+    for (const s of slots) {
+      const occurrences = getOccurrenceDates(startDate, endDate, s.dayOfWeek);
+
+      const isBooked = bookings.some(b => b.timeSlot === s.timeSlot && occurrences.includes(b.date));
+
+      const hasMembershipConflict = activeMemberships.some(mem => {
+        const booksThisSlot = mem.bookedSlots.some(bs => String(bs.courtSlotId) === String(s._id));
+        if (!booksThisSlot) return false;
+
+        const overlapStart = new Date(Math.max(new Date(startDate).getTime(), new Date(mem.startsAt).getTime()));
+        const overlapEnd = new Date(Math.min(new Date(endDate).getTime(), new Date(mem.expiresAt).getTime()));
+        const overlapDates = getOccurrenceDates(
+          overlapStart.toISOString().slice(0, 10),
+          overlapEnd.toISOString().slice(0, 10),
+          s.dayOfWeek
+        );
+        return overlapDates.length > 0;
+      });
+
+      availabilityMap[s._id.toString()] = !isBooked && !hasMembershipConflict;
+    }
+  }
+
+  return res.json({
+    courtId: court._id.toString(),
+    arenaId: court.arenaId.toString(),
+    slots: slots.map((s) => ({
+      id: s._id.toString(),
+      dayOfWeek: s.dayOfWeek,
+      timeSlot: s.timeSlot,
+      startTime: s.startTime || '',
+      endTime: s.endTime || '',
+      slotClass: s.slotClass || 'nonPrime',
+      price: s.price || 0,
+      available: availabilityMap[s._id.toString()] !== undefined ? availabilityMap[s._id.toString()] : true
+    })),
+  });
+}
+
+module.exports = { getCourtAvailability, listCourtSlots };
