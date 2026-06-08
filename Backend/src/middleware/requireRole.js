@@ -3,10 +3,10 @@ function requireRole(...allowedRoles) {
     if (!req.auth) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    if (!allowedRoles.includes(req.auth.role)) {
-      return res.status(403).json({ error: 'Forbidden' });
+    if (req.auth.role === 'SUPER_ADMIN' || allowedRoles.includes(req.auth.role)) {
+      return next();
     }
-    return next();
+    return res.status(403).json({ error: 'Forbidden' });
   };
 }
 

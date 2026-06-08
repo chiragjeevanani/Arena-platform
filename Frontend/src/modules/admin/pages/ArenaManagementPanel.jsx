@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useArenaPanel } from '../context/ArenaPanelContext';
+import { useAuth } from '../../user/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2, Target, Clock, DollarSign,
@@ -191,9 +194,17 @@ const SUMMARY_STATS = [
 ];
 
 const ArenaManagementPanel = () => {
-  const [activeTab, setActiveTab] = useState('details');
+  const { user } = useAuth();
+  const { arena, allArenas, selectedArenaId, setSelectedArenaId } = useArenaPanel();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabQuery = searchParams.get('tab');
+  const activeTab = tabQuery || 'details';
 
-  const active = TABS.find(t => t.id === activeTab);
+  const setActiveTab = (newTab) => {
+    setSearchParams({ tab: newTab });
+  };
+
+  const active = TABS.find(t => t.id === activeTab) || TABS[0];
 
   const renderContent = () => {
     switch (activeTab) {
@@ -244,17 +255,31 @@ const ArenaManagementPanel = () => {
 
           {/* Arena Badge */}
           <div className="flex items-center gap-3 bg-white rounded-2xl border border-slate-200 px-4 py-3 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-[#CE2029]/10 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#CE2029]/10 flex items-center justify-center shrink-0">
               <MapPin size={16} className="text-[#CE2029]" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Active Arena</p>
-              <p className="font-black text-[#36454F] text-sm">Amm Sports arena</p>
+              {user?.role === 'SUPER_ADMIN' && allArenas?.length > 0 ? (
+                <select
+                  value={selectedArenaId}
+                  onChange={(e) => setSelectedArenaId(e.target.value)}
+                  className="font-black text-[#36454F] text-sm bg-transparent border-0 outline-none p-0 pr-6 cursor-pointer focus:ring-0 focus:outline-none w-full truncate"
+                >
+                  {allArenas.map((a) => (
+                    <option key={a._id || a.id} value={a._id || a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="font-black text-[#36454F] text-sm truncate">{arena?.name || 'Amm Sports arena'}</p>
+              )}
               <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1 mt-0.5">
-                <Phone size={9} className="text-[#CE2029]" /> +91 98765 43210
+                <Phone size={9} className="text-[#CE2029]" /> {arena?.phone || '+91 98765 43210'}
               </p>
             </div>
-            <div className="w-2.5 h-2.5 rounded-full bg-green-400 ml-2" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-400 shrink-0 ml-2" />
           </div>
         </div>
 

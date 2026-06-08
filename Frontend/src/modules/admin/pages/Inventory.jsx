@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../../user/context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
+import { useArenaPanel } from '../context/ArenaPanelContext';
 import {
   listArenaAdminInventoryItems,
   createArenaAdminInventoryItem,
@@ -21,7 +22,6 @@ import {
   createAdminInventoryItem,
   updateAdminInventoryItem,
   deleteAdminInventoryItem,
-  listAdminArenas,
 } from '../../../services/adminOpsApi';
 import { resolveLiveOpsArenaScope } from '../../../utils/liveOpsScope';
 import { mapArenaInventoryItemToTableRow } from '../../../utils/arenaInventoryAdapter';
@@ -29,7 +29,7 @@ import { mapArenaInventoryItemToTableRow } from '../../../utils/arenaInventoryAd
 const Inventory = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const arenaIdFromQuery = searchParams.get('arenaId');
+  const { allArenas, selectedArenaId, setSelectedArenaId } = useArenaPanel();
   const [inventoryData, setInventoryData] = useState([]);
   const [auditLog, setAuditLog] = useState([]);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -41,10 +41,6 @@ const Inventory = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All Listings');
-
-  const [arenas, setArenas] = useState([]);
-  const [selectedArenaId, setSelectedArenaId] = useState(arenaIdFromQuery || '');
-  const [loadingArenas, setLoadingArenas] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   // Add Item form state
@@ -60,25 +56,7 @@ const Inventory = () => {
   // Adjustment form state
   const [adjustDelta, setAdjustDelta] = useState('');
 
-  // Fetch arenas for Super Admin
-  useEffect(() => {
-    if (user?.role === 'SUPER_ADMIN') {
-      (async () => {
-        setLoadingArenas(true);
-        try {
-          const res = await listAdminArenas();
-          setArenas(res.arenas || []);
-          if (!selectedArenaId && res.arenas?.length > 0) {
-            setSelectedArenaId(res.arenas[0].id);
-          }
-        } catch (e) {
-          console.error('Failed to load arenas', e);
-        } finally {
-          setLoadingArenas(false);
-        }
-      })();
-    }
-  }, [user, selectedArenaId]);
+  const isTab = window.location.pathname.includes('/admin/arena-panel') || !!searchParams.get('tab');
 
   const opsScope = useMemo(
     () =>
@@ -351,7 +329,7 @@ const Inventory = () => {
                 <p className="text-[9px] font-medium text-slate-600 uppercase tracking-widest flex items-center gap-2">
                    <span className="w-1 h-1 rounded-full bg-slate-400" /> Tracking facility assets and consumables
                 </p>
-                {user?.role === 'SUPER_ADMIN' && (
+                {user?.role === 'SUPER_ADMIN' && !isTab && (
                   <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-1.5 px-3">
                     <MapPin size={12} className="text-[#CE2029]" />
                     <select 
@@ -359,8 +337,8 @@ const Inventory = () => {
                       onChange={e => setSelectedArenaId(e.target.value)}
                       className="bg-transparent text-[10px] font-black text-[#36454F] outline-none border-none cursor-pointer uppercase tracking-widest min-w-[150px]"
                     >
-                      {loadingArenas ? <option>Loading Arenas...</option> : arenas.map(a => (
-                        <option key={a.id} value={a.id}>{a.name}</option>
+                      {allArenas.map(a => (
+                        <option key={a._id || a.id} value={a._id || a.id}>{a.name}</option>
                       ))}
                     </select>
                   </div>

@@ -56,6 +56,8 @@ function mapApiPlanToUi(p, idx) {
     color,
     bestValue: false,
     isNew: false,
+    slotBased: !!p.slotBased,
+    pricePerSlot: p.pricePerSlot || 0,
   };
 }
 
@@ -187,6 +189,8 @@ const MembershipMgmt = () => {
           applicableTransactions: editingPlan.applicableTransactions || [],
           description: desc,
           category: editingPlan.category,
+          slotBased: !!editingPlan.slotBased,
+          pricePerSlot: editingPlan.slotBased ? (Number(editingPlan.pricePerSlot) || 0) : 0,
         });
       } else {
         await patchAdminMembershipPlan(editingPlan.id, {
@@ -198,6 +202,8 @@ const MembershipMgmt = () => {
           description: desc,
           isActive,
           category: editingPlan.category,
+          slotBased: !!editingPlan.slotBased,
+          pricePerSlot: editingPlan.slotBased ? (Number(editingPlan.pricePerSlot) || 0) : 0,
         });
       }
       setEditingPlan(null);
@@ -265,6 +271,8 @@ const MembershipMgmt = () => {
                 discountPercent: 0,
                 applicableTransactions: ['booking'],
                 color: '#f59e0b',
+                slotBased: false,
+                pricePerSlot: 0,
               })
             }
             disabled={!selectedArenaId}
@@ -664,6 +672,41 @@ const MembershipMgmt = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* SECTION: SLOT-BASED PLAN */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 border-l-4 border-[#eb483f] pl-3">Slot Booking</h3>
+                    <div className="p-4 bg-[#f9fafb] rounded-[16px] flex items-center justify-between hover:bg-slate-50 transition-all">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-slate-700">Slot-Based Plan</span>
+                        <span className="text-[10px] font-bold text-slate-400">Users book specific court time slots for the full duration</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditingPlan({ ...editingPlan, slotBased: !editingPlan.slotBased })}
+                        className={`w-14 h-8 rounded-full p-1 transition-all duration-300 ${editingPlan.slotBased ? 'bg-[#CE2029] shadow-lg shadow-[#CE2029]/20' : 'bg-slate-300'}`}
+                      >
+                        <div className={`w-6 h-6 bg-white rounded-full transition-all duration-300 transform ${editingPlan.slotBased ? 'translate-x-6' : 'translate-x-0'} shadow-sm`} />
+                      </button>
+                    </div>
+                    {editingPlan.slotBased && (
+                      <div>
+                        <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block">Price per Additional Slot (OMR)</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            step="0.001"
+                            value={editingPlan.pricePerSlot || 0}
+                            onChange={(e) => setEditingPlan({ ...editingPlan, pricePerSlot: parseFloat(e.target.value) || 0 })}
+                            className="w-full pl-12 pr-5 py-3.5 bg-[#f9fafb] border-2 border-transparent rounded-[12px] text-sm font-black text-slate-700 focus:outline-none focus:border-[#eb483f]/30 focus:bg-white transition-all"
+                            placeholder="0.000"
+                          />
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">OMR</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-bold mt-1 ml-1">Total = base price + (price per slot × extra slots)</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* SECTION: DISCOUNT SCOPE */}

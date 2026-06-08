@@ -41,6 +41,10 @@ const arenaSchema = new mongoose.Schema(
         }
       ],
     },
+    slotFreeConfig: {
+      freeWindowHours: { type: Number, default: 24, min: 1 },
+      pointsPerFreeSlot: { type: Number, default: 10, min: 0 },
+    },
   },
   { timestamps: true }
 );

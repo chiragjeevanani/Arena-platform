@@ -14,6 +14,8 @@ const membershipPlanSchema = new mongoose.Schema(
     price: { type: Number, required: true, min: 0 },
     durationDays: { type: Number, required: true, min: 1 },
     discountPercent: { type: Number, required: true, min: 0, max: 100, default: 0 },
+    slotBased: { type: Boolean, default: false },
+    pricePerSlot: { type: Number, default: 0, min: 0 },
     applicableTransactions: [{
       type: String,
       enum: ['booking', 'event', 'coaching'],
@@ -41,6 +43,8 @@ function toPublic(doc) {
     price: o.price,
     durationDays: o.durationDays,
     discountPercent: o.discountPercent,
+    slotBased: !!o.slotBased,
+    pricePerSlot: o.pricePerSlot || 0,
     applicableTransactions: o.applicableTransactions || [],
     isActive: o.isActive,
     createdAt: o.createdAt,

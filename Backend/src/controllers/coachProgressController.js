@@ -6,18 +6,30 @@ const Arena = require('../models/Arena');
 const CoachStudentProgress = require('../models/CoachStudentProgress');
 const CoachRemark = require('../models/CoachRemark');
 
-async function assertCoachOwnsBatch(coachId, batchId) {
+function resolveCoachId(req) {
+  let coachId = req.auth.sub;
+  if (req.auth.role === 'SUPER_ADMIN') {
+    const headerCoachId = req.headers['x-coach-id'];
+    const queryCoachId = req.query.coachId;
+    const bodyCoachId = req.body.coachId;
+    coachId = headerCoachId || queryCoachId || bodyCoachId || coachId;
+  }
+  return coachId;
+}
+
+async function assertCoachOwnsBatch(coachId, batchId, userRole = '') {
   if (!mongoose.isValidObjectId(batchId)) return null;
   const batch = await CoachingBatch.findById(batchId).lean();
-  if (!batch || String(batch.coachId) !== String(coachId)) return null;
+  if (!batch) return null;
+  if (userRole !== 'SUPER_ADMIN' && String(batch.coachId) !== String(coachId)) return null;
   return batch;
 }
 
 async function listBatchProgress(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { batchId } = req.params;
   const oneUserId = (req.query.userId || '').trim();
-  const batch = await assertCoachOwnsBatch(coachId, batchId);
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
   if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
   if (oneUserId) {
@@ -73,9 +85,9 @@ async function listBatchProgress(req, res) {
 }
 
 async function upsertBatchProgress(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { batchId } = req.params;
-  const batch = await assertCoachOwnsBatch(coachId, batchId);
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
   if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
   const { userId, metrics, remarks } = req.body;
@@ -129,12 +141,12 @@ async function upsertBatchProgress(req, res) {
 }
 
 async function listCoachRemarks(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const batchId = (req.query.batchId || '').trim();
   if (!batchId || !mongoose.isValidObjectId(batchId)) {
     return res.status(400).json({ error: 'batchId query is required' });
   }
-  const batch = await assertCoachOwnsBatch(coachId, batchId);
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
   if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
   const rows = await CoachRemark.find({ batchId: batch._id, coachId })
@@ -158,12 +170,12 @@ async function listCoachRemarks(req, res) {
 }
 
 async function createCoachRemark(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { batchId, studentUserId, text, rating, pinned } = req.body;
   if (!batchId || !mongoose.isValidObjectId(batchId)) {
     return res.status(400).json({ error: 'batchId is required' });
   }
-  const batch = await assertCoachOwnsBatch(coachId, batchId);
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
   if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
   const t = typeof text === 'string' ? text.trim() : '';
@@ -203,7 +215,7 @@ async function createCoachRemark(req, res) {
 }
 
 async function deleteCoachRemark(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { remarkId } = req.params;
   if (!mongoose.isValidObjectId(remarkId)) {
     return res.status(400).json({ error: 'Invalid remark id' });
@@ -215,7 +227,7 @@ async function deleteCoachRemark(req, res) {
 }
 
 async function patchCoachRemark(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { remarkId } = req.params;
   if (!mongoose.isValidObjectId(remarkId)) {
     return res.status(400).json({ error: 'Invalid remark id' });
@@ -230,7 +242,7 @@ async function patchCoachRemark(req, res) {
 }
 
 async function listAllCoachProgress(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const batches = await CoachingBatch.find({ coachId }).lean();
   const batchIds = batches.map((b) => b._id);
   const titleById = new Map(batches.map((b) => [b._id.toString(), b.title]));
@@ -250,7 +262,7 @@ async function listAllCoachProgress(req, res) {
 }
 
 async function listBatchesForStudent(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { userId } = req.params;
   if (!userId || !mongoose.isValidObjectId(userId)) {
     return res.status(400).json({ error: 'Invalid user id' });

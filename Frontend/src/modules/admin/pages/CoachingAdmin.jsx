@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Settings, Award, UserCheck, TrendingUp, Activity, LayoutGrid } from 'lucide-react';
 import { 
@@ -18,8 +19,36 @@ import { listAdminUsers } from '../../../services/adminUsersApi';
 import { listAdminBookings } from '../../../services/adminBookingsApi';
 import CoachingStudentMatrix from '../components/CoachingStudentMatrix';
 import { useAuth } from '../../../modules/user/context/AuthContext';
+import { useArenaPanel } from '../context/ArenaPanelContext';
 
+function getWeekRange(weekStr) {
+  const parts = (weekStr || '').split('-W');
+  if (parts.length !== 2) return { startDate: '', endDate: '' };
+  const year = parseInt(parts[0], 10);
+  const week = parseInt(parts[1], 10);
 
+  const jan4 = new Date(year, 0, 4);
+  const day = jan4.getDay();
+  const monday = new Date(jan4);
+  monday.setDate(jan4.getDate() - (day === 0 ? 6 : day - 1));
+
+  monday.setDate(monday.getDate() + (week - 1) * 7);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const format = (d) => {
+    const yearStr = d.getFullYear();
+    const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+    const dateStr = String(d.getDate()).padStart(2, '0');
+    return `${yearStr}-${monthStr}-${dateStr}`;
+  };
+
+  return {
+    startDate: format(monday),
+    endDate: format(sunday)
+  };
+}
 
 const COACHES_DATA = [];
 const REQUESTED_COACHES = [];
@@ -52,7 +81,13 @@ const CoachingAdmin = () => {
   const { user } = useAuth();
   const isReadOnly = user?.role === 'ARENA_ADMIN';
 
-  const [view, setView] = useState('students');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewQuery = searchParams.get('view');
+  const view = viewQuery || 'students';
+
+  const setView = (newView) => {
+    setSearchParams({ view: newView });
+  };
   const [studentAttendanceMode, setStudentAttendanceMode] = useState('daily'); // daily | monthly | yearly
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [selectedBatchDays, setSelectedBatchDays] = useState([]);
@@ -80,6 +115,9 @@ const CoachingAdmin = () => {
   const [coaches, setCoaches] = useState(COACHES_DATA);
   const [requestedCoaches, setRequestedCoaches] = useState(REQUESTED_COACHES);
   const [attendance, setAttendance] = useState(ATTENDANCE_DATA);
+  const [filterType, setFilterType] = useState('all'); // 'all', 'date', 'week'
+  const [filterDate, setFilterDate] = useState('');
+  const [filterWeek, setFilterWeek] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [toast, setToast] = useState(null);
@@ -109,8 +147,11 @@ const CoachingAdmin = () => {
   const batchExperienceYearsRef = useRef();
   const batchBenefitsRef = useRef();
 
+  const { allArenas, selectedArenaId, setSelectedArenaId } = useArenaPanel();
+  const [selectedCoachId, setSelectedCoachId] = useState(() => {
+    return localStorage.getItem('selectedCoachId') || '';
+  });
   const [arenas, setArenas] = useState([]);
-  const [selectedArenaId, setSelectedArenaId] = useState('');
   const [selectedBatchImage, setSelectedBatchImage] = useState(null);
 
   const loadBatches = async (aid) => {
@@ -150,13 +191,28 @@ const CoachingAdmin = () => {
 
   const [isRefreshingAtt, setIsRefreshingAtt] = useState(false);
 
-  const fetchAttendanceLogs = async () => {
+  const fetchAttendanceLogs = async (aid) => {
     try {
       setIsRefreshingAtt(true);
-      const att = await listStaffAttendance();
+      const targetId = typeof aid === 'string' ? aid : selectedArenaId;
+      const params = {};
+      if (targetId) params.arenaId = targetId;
+
+      if (filterType === 'date' && filterDate) {
+        params.date = filterDate;
+      } else if (filterType === 'week' && filterWeek) {
+        const { startDate, endDate } = getWeekRange(filterWeek);
+        if (startDate && endDate) {
+          params.startDate = startDate;
+          params.endDate = endDate;
+        }
+      }
+
+      const att = await listStaffAttendance(params);
       const attRows = (att.attendance || []).map(a => ({
         id: a._id,
         coachName: a.staffId?.name || `${a.staffId?.firstName || ''} ${a.staffId?.lastName || ''}`.trim() || 'Unknown',
+        role: a.staffId?.role || 'COACH',
         arenaName: a.arenaId?.name || '—',
         checkIn: a.checkIn || '—',
         checkOut: a.checkOut || '—',
@@ -182,29 +238,8 @@ const CoachingAdmin = () => {
         if (cancelled) return;
         setArenas(list);
         
-        const aid = list[0]?.id;
-        if (aid) {
-          setSelectedArenaId(String(aid));
-          loadBatches(aid);
-          
-          listAdminBookings({ arenaId: String(aid) })
-            .then(bk => {
-              if (cancelled) return;
-              const rows = (bk.bookings || []).slice(0, 20).map((b) => ({
-                id: b.id,
-                date: b.date,
-                court: b.courtName || '—',
-                customer: b.userName || `User …${String(b.userId || '').slice(-6)}`,
-                phone: b.userPhone || '',
-                time: b.timeSlot || '',
-                status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Confirmed',
-                arena: b.arenaName || '—',
-                payment: b.paymentStatus === 'paid' ? 'Paid' : b.paymentStatus === 'refunded' ? 'Refunded' : 'Pending',
-                amount: Number(b.amount) || 0,
-              }));
-              if (rows.length) setBookings(rows);
-            })
-            .catch(err => console.error('Error loading bookings:', err));
+        if (!selectedArenaId && list.length > 0) {
+          setSelectedArenaId(String(list[0].id));
         }
 
         // Fetch coaches independently
@@ -225,11 +260,17 @@ const CoachingAdmin = () => {
               reviews: []
             }));
             setCoaches(fetchedCoaches);
+            if (fetchedCoaches.length > 0 && !localStorage.getItem('selectedCoachId')) {
+              localStorage.setItem('selectedCoachId', fetchedCoaches[0].id);
+              setSelectedCoachId(fetchedCoaches[0].id);
+            }
           })
           .catch(err => console.error('Error loading coaches:', err));
 
-        // Fetch staff attendance independently
-        fetchAttendanceLogs();
+        // Fetch staff attendance will be triggered by selectedArenaId changes
+        if (selectedArenaId) {
+          fetchAttendanceLogs(selectedArenaId);
+        }
 
       } catch (err) {
         console.error('Error fetching arenas:', err);
@@ -242,6 +283,41 @@ const CoachingAdmin = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedArenaId) return;
+    loadBatches(selectedArenaId);
+    
+    let cancelled = false;
+    listAdminBookings({ arenaId: selectedArenaId })
+      .then(bk => {
+        if (cancelled) return;
+        const rows = (bk.bookings || []).slice(0, 20).map((b) => ({
+          id: b.id,
+          date: b.date,
+          court: b.courtName || '—',
+          customer: b.userName || `User …${String(b.userId || '').slice(-6)}`,
+          phone: b.userPhone || '',
+          time: b.timeSlot || '',
+          status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Confirmed',
+          arena: b.arenaName || '—',
+          payment: b.paymentStatus === 'paid' ? 'Paid' : b.paymentStatus === 'refunded' ? 'Refunded' : 'Pending',
+          amount: Number(b.amount) || 0,
+        }));
+        setBookings(rows);
+      })
+      .catch(err => console.error('Error loading bookings:', err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedArenaId]);
+
+  useEffect(() => {
+    if (selectedArenaId) {
+      fetchAttendanceLogs(selectedArenaId);
+    }
+  }, [selectedArenaId, filterType, filterDate, filterWeek]);
 
 
   const handleImageChange = (e) => {
@@ -562,6 +638,45 @@ const CoachingAdmin = () => {
             <p className="text-[10px] uppercase tracking-[0.4em] font-black text-slate-400 mt-1">Unified Coaching & Student Management</p>
           </div>
           <div className="flex items-center gap-3">
+             {user?.role === 'SUPER_ADMIN' && (
+               <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+                 {/* Arena Selector */}
+                 <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm text-xs font-bold text-[#36454F]">
+                   <span className="text-slate-400">Arena:</span>
+                   <select
+                     value={selectedArenaId}
+                     onChange={(e) => setSelectedArenaId(e.target.value)}
+                     className="bg-transparent border-0 outline-none p-0 pr-6 font-black text-[#CE2029] cursor-pointer focus:ring-0 focus:outline-none"
+                   >
+                     {allArenas.map((a) => (
+                       <option key={a._id || a.id} value={a._id || a.id}>
+                         {a.name}
+                       </option>
+                     ))}
+                   </select>
+                 </div>
+
+                 {/* Coach Selector */}
+                 <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm text-xs font-bold text-[#36454F]">
+                   <span className="text-slate-400">Coach:</span>
+                   <select
+                     value={selectedCoachId}
+                     onChange={(e) => {
+                       localStorage.setItem('selectedCoachId', e.target.value);
+                       setSelectedCoachId(e.target.value);
+                     }}
+                     className="bg-transparent border-0 outline-none p-0 pr-6 font-black text-[#CE2029] cursor-pointer focus:ring-0 focus:outline-none"
+                   >
+                     {coaches.map((c) => (
+                       <option key={c.id} value={c.id}>
+                         {c.name}
+                       </option>
+                     ))}
+                   </select>
+                 </div>
+               </div>
+             )}
+
              <div className="relative hidden md:block">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                 <input 
@@ -978,53 +1093,86 @@ const CoachingAdmin = () => {
 
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
-                  <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-                     <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Attendance Matrix</h3>
-                     <button 
-                        onClick={fetchAttendanceLogs}
-                        disabled={isRefreshingAtt}
-                        className={`px-4 py-2 rounded-xl border border-slate-100 text-[10px] font-black uppercase tracking-widest transition-all ${isRefreshingAtt ? 'opacity-50 cursor-not-allowed' : 'hover:border-[#CE2029] hover:text-[#CE2029]'}`}
-                     >
-                        {isRefreshingAtt ? 'Syncing...' : 'Refresh Logs'}
-                     </button>
+                  <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                     <div>
+                        <h3 className="text-lg font-black text-[#1e293b] uppercase italic leading-none">Attendance Matrix</h3>
+                     </div>
+                     
+                     <div className="flex flex-wrap items-center gap-3">
+                        <select 
+                           value={filterType} 
+                           onChange={(e) => setFilterType(e.target.value)}
+                           className="px-3 py-2 rounded-xl border-2 border-slate-100 text-[10px] font-black uppercase tracking-wider bg-slate-50 outline-none focus:border-[#CE2029] transition-all"
+                        >
+                           <option value="all">All Logs</option>
+                           <option value="date">By Date</option>
+                           <option value="week">By Week</option>
+                        </select>
+
+                        {filterType === 'date' && (
+                           <input 
+                              type="date"
+                              value={filterDate}
+                              onChange={(e) => setFilterDate(e.target.value)}
+                              className="px-3 py-1.5 rounded-xl border-2 border-slate-100 text-[11px] font-black uppercase tracking-wider bg-slate-50 outline-none focus:border-[#CE2029] transition-all text-[#1e293b]"
+                           />
+                        )}
+
+                        {filterType === 'week' && (
+                           <input 
+                              type="week"
+                              value={filterWeek}
+                              onChange={(e) => setFilterWeek(e.target.value)}
+                              className="px-3 py-1.5 rounded-xl border-2 border-slate-100 text-[11px] font-black uppercase tracking-wider bg-slate-50 outline-none focus:border-[#CE2029] transition-all text-[#1e293b]"
+                           />
+                        )}
+
+                        <button 
+                           onClick={() => fetchAttendanceLogs(selectedArenaId)}
+                           disabled={isRefreshingAtt}
+                           className={`px-4 py-2 rounded-xl border border-slate-100 text-[10px] font-black uppercase tracking-widest transition-all ${isRefreshingAtt ? 'opacity-50 cursor-not-allowed' : 'hover:border-[#CE2029] hover:text-[#CE2029]'}`}
+                        >
+                           {isRefreshingAtt ? 'Syncing...' : 'Refresh Logs'}
+                        </button>
+                     </div>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead>
-                        <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                          <th className="px-8 py-5 text-left">Coach</th>
-                          <th className="px-8 py-5 text-left">Arena</th>
-                          <th className="px-8 py-5 text-left">Date</th>
-                          <th className="px-8 py-5 text-left">Check-In</th>
-                          <th className="px-8 py-5 text-left">Check-Out</th>
-                          <th className="px-8 py-5 text-left">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                        {attendance.map(log => (
-                          <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-8 py-5">
-                              <div className="flex flex-col">
-                                <span className="text-[11px] font-black text-[#1e293b] uppercase italic tracking-tighter">{log.coachName}</span>
-                                <span className="text-[8px] font-bold text-slate-400 uppercase">ID: {log.id.slice(-6).toUpperCase()}</span>
-                              </div>
-                            </td>
-                            <td className="px-8 py-5 text-[10px] font-black text-[#CE2029] uppercase tracking-widest">{log.arenaName}</td>
-                            <td className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">{log.date}</td>
-                            <td className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.checkIn}</td>
-                            <td className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.checkOut}</td>
-                            <td className="px-8 py-5">
-                              <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                                log.status === 'present' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                log.status === 'late' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                'bg-red-50 text-red-600 border border-red-100'
-                              }`}>
-                                {log.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
+                       <thead>
+                         <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                           <th className="px-8 py-5 text-left">Staff Member</th>
+                           <th className="px-8 py-5 text-left">Arena</th>
+                           <th className="px-8 py-5 text-left">Date</th>
+                           <th className="px-8 py-5 text-left">Check-In</th>
+                           <th className="px-8 py-5 text-left">Check-Out</th>
+                           <th className="px-8 py-5 text-left">Status</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-slate-50">
+                         {attendance.map(log => (
+                           <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                             <td className="px-8 py-5">
+                               <div className="flex flex-col">
+                                 <span className="text-[11px] font-black text-[#1e293b] uppercase italic tracking-tighter">{log.coachName}</span>
+                                 <span className="text-[8px] font-bold text-slate-400 uppercase">Role: {log.role} | ID: {log.id ? log.id.slice(-6).toUpperCase() : '—'}</span>
+                               </div>
+                             </td>
+                             <td className="px-8 py-5 text-[10px] font-black text-[#CE2029] uppercase tracking-widest">{log.arenaName}</td>
+                             <td className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">{log.date}</td>
+                             <td className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.checkIn}</td>
+                             <td className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.checkOut}</td>
+                             <td className="px-8 py-5">
+                               <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                                 log.status === 'present' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                 log.status === 'late' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                 'bg-red-50 text-red-600 border border-red-100'
+                               }`}>
+                                 {log.status}
+                               </span>
+                             </td>
+                           </tr>
+                         ))}
+                       </tbody>
                     </table>
                   </div>
                 </div>

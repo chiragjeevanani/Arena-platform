@@ -18,7 +18,7 @@ const COURT_IMAGES = [CourtImg1, CourtImg2, CourtImg3];
 const emptyForm = { name: '', type: 'Wooden', status: 'active', image: null };
 
 const CourtMgmt = () => {
-  const { courts, loading, refetch } = useArenaPanel();
+  const { courts, loading, error, refetch } = useArenaPanel();
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -129,7 +129,6 @@ const CourtMgmt = () => {
     );
   }
 
-  const { error } = useArenaPanel();
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 text-center p-6">

@@ -96,6 +96,9 @@ const ArenaListAdmin = lazy(() => import('./modules/admin/pages/ArenaListAdmin')
 const ArenaDetailsAdmin = lazy(() => import('./modules/admin/pages/ArenaDetailsAdmin'));
 const CourtSlotsAdmin = lazy(() => import('./modules/admin/pages/CourtSlotsAdmin'));
 const ReferralManagement = lazy(() => import('./modules/admin/pages/ReferralManagement'));
+const SlotMembershipAdmin = lazy(() => import('./modules/admin/pages/SlotMembershipAdmin'));
+const MySlotMemberships = lazy(() => import('./modules/user/pages/MySlotMemberships'));
+const PointsWalletPage = lazy(() => import('./modules/user/pages/PointsWalletPage'));
 
 // Arena Panel (Standalone)
 const ArenaLogin = lazy(() => import('./modules/arena/pages/ArenaLogin'));
@@ -200,6 +203,7 @@ function App() {
               <Route path="settings" element={<AccountSettings />} />
               <Route path="arena-panel" element={<ArenaManagementPanel />} />
               <Route path="referrals" element={<ReferralManagement />} />
+              <Route path="slot-memberships" element={<SlotMembershipAdmin />} />
             </Route>
 
             {/* Auth Routes */}
@@ -226,6 +230,8 @@ function App() {
               <Route path="profile/notifications" element={<Notifications />} />
               <Route path="profile/privacy" element={<Privacy />} />
               <Route path="profile/help" element={<Help />} />
+              <Route path="profile/slot-memberships" element={<MySlotMemberships />} />
+              <Route path="profile/points-wallet" element={<PointsWalletPage />} />
               <Route path="terms" element={<Terms />} />
             </Route>
 

@@ -5,8 +5,19 @@ const BatchEnrollment = require('../models/BatchEnrollment');
 const User = require('../models/User');
 const CoachingAttendance = require('../models/CoachingAttendance');
 
+function resolveCoachId(req) {
+  let coachId = req.auth.sub;
+  if (req.auth.role === 'SUPER_ADMIN') {
+    const headerCoachId = req.headers['x-coach-id'];
+    const queryCoachId = req.query.coachId;
+    const bodyCoachId = req.body.coachId;
+    coachId = headerCoachId || queryCoachId || bodyCoachId || coachId;
+  }
+  return coachId;
+}
+
 async function listCoachBatches(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const list = await CoachingBatch.find({ coachId }).sort({ startDate: 1 }).lean();
 
   const batchIds = list.map((b) => b._id);
@@ -37,17 +48,18 @@ async function listCoachBatches(req, res) {
   return res.json({ batches: out });
 }
 
-async function assertCoachOwnsBatch(coachId, batchId) {
+async function assertCoachOwnsBatch(coachId, batchId, userRole = '') {
   if (!mongoose.isValidObjectId(batchId)) return null;
   const batch = await CoachingBatch.findById(batchId).lean();
-  if (!batch || String(batch.coachId) !== String(coachId)) return null;
+  if (!batch) return null;
+  if (userRole !== 'SUPER_ADMIN' && String(batch.coachId) !== String(coachId)) return null;
   return batch;
 }
 
 async function listBatchStudents(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { batchId } = req.params;
-  const batch = await assertCoachOwnsBatch(coachId, batchId);
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
   if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
   const enrollments = await BatchEnrollment.find({
@@ -72,7 +84,7 @@ async function listBatchStudents(req, res) {
 }
 
 async function listCoachStudentsAll(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const batches = await CoachingBatch.find({ coachId }).lean();
   const batchById = new Map(batches.map((b) => [b._id.toString(), b]));
   const batchIds = batches.map((b) => b._id);
@@ -105,9 +117,9 @@ async function listCoachStudentsAll(req, res) {
 }
 
 async function listBatchAttendance(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { batchId } = req.params;
-  const batch = await assertCoachOwnsBatch(coachId, batchId);
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
   if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
   const from = (req.query.from || '').trim();
@@ -119,9 +131,9 @@ async function listBatchAttendance(req, res) {
 }
 
 async function upsertBatchAttendance(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const { batchId } = req.params;
-  const batch = await assertCoachOwnsBatch(coachId, batchId);
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
   if (!batch) return res.status(404).json({ error: 'Batch not found' });
 
   const { sessionDate, records } = req.body;
@@ -154,7 +166,7 @@ async function upsertBatchAttendance(req, res) {
 }
 
 async function listCoachAttendanceHistory(req, res) {
-  const coachId = req.auth.sub;
+  const coachId = resolveCoachId(req);
   const batches = await CoachingBatch.find({ coachId }).lean();
   const batchIds = batches.map((b) => b._id);
   const titleById = new Map(batches.map((b) => [b._id.toString(), b.title]));

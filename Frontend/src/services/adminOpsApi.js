@@ -197,6 +197,8 @@ export function listStaffAttendance(query = {}) {
   if (query.arenaId) q.set('arenaId', query.arenaId);
   if (query.date) q.set('date', query.date);
   if (query.staffId) q.set('staffId', query.staffId);
+  if (query.startDate) q.set('startDate', query.startDate);
+  if (query.endDate) q.set('endDate', query.endDate);
   const qs = q.toString();
   return apiJson(`${BASE}/staff-attendance${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }
