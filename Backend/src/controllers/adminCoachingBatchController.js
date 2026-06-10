@@ -6,6 +6,40 @@ const BatchEnrollment = require('../models/BatchEnrollment');
 const CoachStudentProgress = require('../models/CoachStudentProgress');
 const CoachingAttendance = require('../models/CoachingAttendance');
 
+/**
+ * Checks if a coach has schedule conflicts with other batches.
+ * Returns an array of conflicting batches (soft warning — does NOT block save).
+ *
+ * Conflict = same coach + overlapping date range + at least one overlapping week day.
+ */
+async function checkCoachConflict(coachId, schedule, startDate, endDate, excludeBatchId = null) {
+  const query = {
+    coachId,
+    startDate: { $lte: endDate },
+    endDate:   { $gte: startDate },
+  };
+  if (excludeBatchId) query._id = { $ne: excludeBatchId };
+
+  const candidates = await CoachingBatch.find(query).lean();
+
+  const newDays = (schedule || '').split('-').filter(Boolean);
+  if (newDays.length === 0) return []; // No schedule days set — no conflict possible
+
+  return candidates.filter((b) => {
+    const existingDays = (b.schedule || '').split('-').filter(Boolean);
+    return newDays.some((d) => existingDays.includes(d));
+  });
+}
+
+/**
+ * Build a human-readable conflict warning string from the first conflicting batch.
+ */
+function buildConflictWarning(conflicts) {
+  if (!conflicts.length) return null;
+  const c = conflicts[0];
+  return `Coach is already scheduled for "${c.title}" (${c.schedule || 'N/A'}, ${c.startDate} – ${c.endDate})`;
+}
+
 async function createCoachingBatch(req, res) {
   const {
     arenaId,
@@ -45,6 +79,15 @@ async function createCoachingBatch(req, res) {
     return res.status(400).json({ error: 'Coach user not found or not a coach' });
   }
 
+  // Soft conflict check — does not block save, but informs the admin via a warning
+  const conflicts = await checkCoachConflict(
+    coachId,
+    schedule != null ? String(schedule) : '',
+    String(startDate).trim(),
+    String(endDate).trim()
+  );
+  const conflictWarning = buildConflictWarning(conflicts);
+
   const batch = await CoachingBatch.create({
     arenaId,
     coachId,
@@ -67,7 +110,7 @@ async function createCoachingBatch(req, res) {
     benefits: Array.isArray(benefits) ? benefits : [],
   });
 
-  return res.status(201).json({ batch: CoachingBatch.toPublic(batch) });
+  return res.status(201).json({ batch: CoachingBatch.toPublic(batch), conflictWarning });
 }
 
 async function listCoachingBatches(req, res) {
@@ -157,7 +200,18 @@ async function updateCoachingBatch(req, res) {
   }
 
   await batch.save();
-  return res.json({ batch: CoachingBatch.toPublic(batch) });
+
+  // Soft conflict check — runs after save so we use the final values on the doc
+  const updateConflicts = await checkCoachConflict(
+    String(batch.coachId),
+    batch.schedule,
+    batch.startDate,
+    batch.endDate,
+    batch._id
+  );
+  const conflictWarning = buildConflictWarning(updateConflicts);
+
+  return res.json({ batch: CoachingBatch.toPublic(batch), conflictWarning });
 }
 
 async function deleteCoachingBatch(req, res) {

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Settings, Award, UserCheck, TrendingUp, Activity, LayoutGrid } from 'lucide-react';
+import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Settings, Award, UserCheck, TrendingUp, Activity, LayoutGrid, AlertTriangle } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   AreaChart, Area, Cell, PieChart, Pie
@@ -466,11 +466,19 @@ const CoachingAdmin = () => {
       };
 
       if (editingBatch) {
-        await import('../../../services/adminOpsApi').then(api => api.updateAdminCoachingBatch(editingBatch.id, payload));
-        setToast('Batch updated successfully');
+        const res = await import('../../../services/adminOpsApi').then(api => api.updateAdminCoachingBatch(editingBatch.id, payload));
+        if (res.conflictWarning) {
+          setToast({ text: `Batch updated — Warning: ${res.conflictWarning}`, type: 'warning' });
+        } else {
+          setToast({ text: 'Batch updated successfully', type: 'success' });
+        }
       } else {
-        await import('../../../services/adminOpsApi').then(api => api.createAdminCoachingBatch(payload));
-        setToast('New batch created successfully');
+        const res = await import('../../../services/adminOpsApi').then(api => api.createAdminCoachingBatch(payload));
+        if (res.conflictWarning) {
+          setToast({ text: `Batch created — Warning: ${res.conflictWarning}`, type: 'warning' });
+        } else {
+          setToast({ text: 'New batch created successfully', type: 'success' });
+        }
       }
       await loadBatches(selectedArenaId);
       setShowNewBatchModal(false);
@@ -609,21 +617,31 @@ const CoachingAdmin = () => {
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen p-4 lg:p-8 font-display relative overflow-hidden">
-      {/* Toast Notification */}
+      {/* Toast Notification — supports { text, type } objects and plain strings */}
       <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: 20, x: '-50%' }}
-            className="fixed bottom-10 left-1/2 z-[1000] px-6 py-3 rounded-2xl bg-[#1e293b] text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 border border-white/10"
-          >
-            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-               <CheckCircle2 size={14} />
-            </div>
-            {toast}
-          </motion.div>
-        )}
+        {toast && (() => {
+          const isWarning = typeof toast === 'object' && toast.type === 'warning';
+          const toastText = typeof toast === 'object' ? toast.text : toast;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 50, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, x: '-50%' }}
+              exit={{ opacity: 0, y: 20, x: '-50%' }}
+              className={`fixed bottom-10 left-1/2 z-[1000] px-6 py-3 rounded-2xl text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 border max-w-[90vw] ${
+                isWarning
+                  ? 'bg-amber-700 border-amber-500/40'
+                  : 'bg-[#1e293b] border-white/10'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                isWarning ? 'bg-amber-400' : 'bg-green-500'
+              }`}>
+                {isWarning ? <AlertTriangle size={14} className="text-amber-900" /> : <CheckCircle2 size={14} />}
+              </div>
+              <span className="leading-snug">{toastText}</span>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
       {/* Decorative background element */}
        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#CE2029]/5 rounded-full blur-[120px] pointer-events-none" />

@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
-import { Clock, Users, Star, ChevronRight } from 'lucide-react';
+import { Clock, Users, Star, ChevronRight, Archive } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 /**
  * CoachCard — Coaching batch card with progress meter and sporty styling (compacted)
+ * @prop {boolean} expired  - When true, the card is shown in a greyed-out "Batch Ended" state
  */
-const CoachCard = ({ batch, index = 0 }) => {
+const CoachCard = ({ batch, index = 0, expired = false }) => {
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const totalSeats = Math.max(1, Number(batch.capacity) || 12);
@@ -17,24 +18,32 @@ const CoachCard = ({ batch, index = 0 }) => {
       : 0;
   const seatPercent = (filledSeats / totalSeats) * 100;
 
+  const handleClick = () => {
+    // Expired batches are not clickable — block all navigation
+    if (expired) return;
+    if (batch.enrolled && batch.enrollmentId) {
+      navigate(`/bookings/${batch.enrollmentId}`);
+    } else {
+      navigate('/coaching-summary', { state: { batch } });
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-      onClick={() => {
-        if (batch.enrolled && batch.enrollmentId) {
-          navigate(`/bookings/${batch.enrollmentId}`);
-        } else {
-          navigate('/coaching-summary', { state: { batch } });
-        }
-      }}
-      className={`rounded-[20px] overflow-hidden group transition-all duration-400 border relative cursor-pointer ${
-        isDark 
-          ? 'glass-card border-white/10 bg-white/5 hover:border-[#CE2029]/40 shadow-xl shadow-black/20' 
+      onClick={handleClick}
+      className={`rounded-[20px] overflow-hidden group transition-all duration-400 border relative ${
+        expired
+          ? 'opacity-60 grayscale cursor-default'
+          : 'cursor-pointer'
+      } ${
+        isDark
+          ? 'glass-card border-white/10 bg-white/5 hover:border-[#CE2029]/40 shadow-xl shadow-black/20'
           : 'bg-white border-slate-100 shadow-md shadow-slate-200/40 hover:shadow-lg hover:shadow-[#CE2029]/10 translate-y-0 hover:-translate-y-1'
-      }`}
+      } ${expired ? 'hover:shadow-none hover:translate-y-0' : ''}`}
     >
       {/* Hero Section */}
       <div className="relative h-28 overflow-hidden">
@@ -46,11 +55,23 @@ const CoachCard = ({ batch, index = 0 }) => {
         {/* Soft Dark Gradient Overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
+        {/* Expired overlay banner */}
+        {expired && (
+          <div className="absolute inset-0 bg-slate-900/50 flex items-center justify-center">
+            <div className="flex items-center gap-2 bg-slate-800/90 backdrop-blur-sm px-4 py-1.5 rounded-full border border-slate-600/50">
+              <Archive size={12} className="text-slate-300" />
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Batch Ended</span>
+            </div>
+          </div>
+        )}
+
         {/* Pro Badge */}
-        <div className="absolute top-2 left-2 bg-white/20 backdrop-blur-md border border-white/30 px-2 py-0.5 rounded-md flex items-center gap-1.5 group-hover:bg-[#CE2029] group-hover:border-[#CE2029] transition-all duration-300">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] group-hover:bg-white animate-pulse" />
-          <span className="text-[8px] font-black text-white uppercase tracking-[0.1em]">Elite Coach</span>
-        </div>
+        {!expired && (
+          <div className="absolute top-2 left-2 bg-white/20 backdrop-blur-md border border-white/30 px-2 py-0.5 rounded-md flex items-center gap-1.5 group-hover:bg-[#CE2029] group-hover:border-[#CE2029] transition-all duration-300">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] group-hover:bg-white animate-pulse" />
+            <span className="text-[8px] font-black text-white uppercase tracking-[0.1em]">Elite Coach</span>
+          </div>
+        )}
 
         {/* Level Badge */}
         <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
@@ -118,27 +139,30 @@ const CoachCard = ({ batch, index = 0 }) => {
               <span className="text-[8px] font-bold text-slate-400 uppercase">/ Mo</span>
             </div>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              if (batch.enrolled && batch.enrollmentId) {
-                navigate(`/bookings/${batch.enrollmentId}`);
-              } else {
-                navigate('/coaching-summary', { state: { batch } });
-              }
-            }}
-            className={`flex items-center gap-1.5 text-white pl-3 pr-2 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider shadow-md transition-all group/btn ${
-              batch.enrolled 
-                ? 'bg-emerald-600 shadow-emerald-600/20' 
-                : 'bg-[#CE2029] shadow-[#CE2029]/20'
-            }`}
-          >
-            {batch.enrolled ? 'Active Program' : 'Join Class'}
-            <div className="w-5 h-5 bg-white/20 rounded-md flex items-center justify-center group-hover/btn:bg-white/40 transition-colors">
-               <ChevronRight size={12} />
+
+          {expired ? (
+            /* Expired state — no-op button showing archive icon */
+            <div className="flex items-center gap-1.5 bg-slate-200 text-slate-500 pl-3 pr-2 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-default">
+              <Archive size={11} />
+              Ended
             </div>
-          </motion.button>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleClick}
+              className={`flex items-center gap-1.5 text-white pl-3 pr-2 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider shadow-md transition-all group/btn ${
+                batch.enrolled
+                  ? 'bg-emerald-600 shadow-emerald-600/20'
+                  : 'bg-[#CE2029] shadow-[#CE2029]/20'
+              }`}
+            >
+              {batch.enrolled ? 'Active Program' : 'Join Class'}
+              <div className="w-5 h-5 bg-white/20 rounded-md flex items-center justify-center group-hover/btn:bg-white/40 transition-colors">
+                 <ChevronRight size={12} />
+              </div>
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>
