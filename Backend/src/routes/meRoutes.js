@@ -31,6 +31,11 @@ const {
   getMyPointsTransactions,
 } = require('../controllers/meSlotMembershipController');
 const { handleCcavenueCallback } = require('../controllers/paymentCallbackController');
+const {
+  listPublicCoupons,
+  validateCoupon,
+} = require('../controllers/adminCouponController');
+
 
 const router = express.Router();
 
@@ -76,5 +81,9 @@ router.post('/slot-memberships/:id/free-slot', asyncHandler(freeMySlot));
 // Bonus Points
 router.get('/points-wallet', asyncHandler(getMyPointsWallet));
 router.get('/points-transactions', asyncHandler(getMyPointsTransactions));
+
+// Coupons
+router.get('/coupons/public', asyncHandler(listPublicCoupons));
+router.post('/coupons/validate', asyncHandler(validateCoupon));
 
 module.exports = router;

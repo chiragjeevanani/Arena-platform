@@ -97,6 +97,7 @@ const ArenaDetailsAdmin = lazy(() => import('./modules/admin/pages/ArenaDetailsA
 const CourtSlotsAdmin = lazy(() => import('./modules/admin/pages/CourtSlotsAdmin'));
 const ReferralManagement = lazy(() => import('./modules/admin/pages/ReferralManagement'));
 const SlotMembershipAdmin = lazy(() => import('./modules/admin/pages/SlotMembershipAdmin'));
+const CouponManagement = lazy(() => import('./modules/admin/pages/CouponManagement'));
 const MySlotMemberships = lazy(() => import('./modules/user/pages/MySlotMemberships'));
 const PointsWalletPage = lazy(() => import('./modules/user/pages/PointsWalletPage'));
 const SlotMembershipPurchase = lazy(() => import('./modules/user/pages/SlotMembershipPurchase'));
@@ -205,6 +206,7 @@ function App() {
               <Route path="arena-panel" element={<ArenaManagementPanel />} />
               <Route path="referrals" element={<ReferralManagement />} />
               <Route path="slot-memberships" element={<SlotMembershipAdmin />} />
+              <Route path="coupons" element={<CouponManagement />} />
             </Route>
 
             {/* Auth Routes */}

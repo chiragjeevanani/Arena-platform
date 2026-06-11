@@ -18,61 +18,82 @@ const PRICING_CONFIG = {
  * PriceBreakdownCard
  *
  * Props:
- *   slot         — slot object from SLOTS array (with .type, .price)
+ *   slot         — single slot object OR null (legacy compat)
+ *   slots        — array of slot objects (multi-select mode)
  *   isMember     — boolean, toggles member discount
- *   adminOverride — number | null, if set uses this as final price
- *   showOverrideBanner — when false, final price still uses adminOverride but hides “admin override” UI (e.g. API arena rate)
+ *   adminOverride — number | null, if set uses this as the per-slot rate
+ *   showOverrideBanner — when false, hides "admin override" UI
  *   compact      — boolean, shows compact version for mobile footer
+ *   serverPricing — server-calculated pricing object
  */
 const PriceBreakdownCard = ({
   slot,
+  slots,        // NEW — preferred for multi-select
   isMember = false,
   adminOverride = null,
   showOverrideBanner = true,
   compact = false,
   serverPricing = null,
 }) => {
-  if (!slot) return null;
+  // Normalise: prefer `slots` array, fall back to single `slot` wrapped in array
+  const slotList = slots && slots.length > 0 ? slots : (slot ? [slot] : []);
+  if (slotList.length === 0) return null;
 
-  const isPrime = slot.type === 'prime';
-  const fallbackBase = isPrime ? PRICING_CONFIG.primeRate : PRICING_CONFIG.nonPrimeRate;
+  const slotCount = slotList.length;
+  // Use first slot's type for header styling; if mixed, fall back to non-prime
+  const primarySlot = slotList[0];
+  const isPrime = primarySlot.type === 'prime';
   const apiStylePricing = adminOverride !== null && !showOverrideBanner;
-  
-  const displayBase = serverPricing ? serverPricing.baseAmount : (apiStylePricing ? Number(adminOverride) : fallbackBase);
 
-  // Calculate member discount
+  // Per-slot base price
+  const getSlotBase = (s) => {
+    if (serverPricing) return serverPricing.baseAmount / slotCount; // server total ÷ slots
+    if (apiStylePricing) return Number(adminOverride);
+    return s.type === 'prime' ? PRICING_CONFIG.primeRate : PRICING_CONFIG.nonPrimeRate;
+  };
+
+  // Total base across all slots
+  const totalBase = serverPricing
+    ? serverPricing.baseAmount
+    : slotList.reduce((acc, s) => acc + getSlotBase(s), 0);
+
+  // Member discount
   let discountAmount = 0;
   let discountLabel = '';
-  
+
   if (serverPricing) {
     discountAmount = serverPricing.discountAmount || 0;
-    discountLabel = serverPricing.discountPercent ? `${serverPricing.discountPercent}% Member Discount` : 'Member Discount';
+    discountLabel = serverPricing.discountPercent
+      ? `${serverPricing.discountPercent}% Member Discount`
+      : 'Member Discount';
   } else if (isMember && PRICING_CONFIG.memberDiscountEnabled) {
     if (PRICING_CONFIG.memberDiscountType === 'percentage') {
       const pct = isPrime ? PRICING_CONFIG.memberDiscountPrime : PRICING_CONFIG.memberDiscountNonPrime;
-      discountAmount = displayBase * (pct / 100);
+      discountAmount = totalBase * (pct / 100);
       discountLabel = `${pct}% Member Discount`;
     } else {
-      discountAmount = isPrime ? PRICING_CONFIG.memberDiscountPrime : PRICING_CONFIG.memberDiscountNonPrime;
-      discountLabel = `OMR ${discountAmount.toFixed(3)} Member Discount`;
+      const perSlot = isPrime ? PRICING_CONFIG.memberDiscountPrime : PRICING_CONFIG.memberDiscountNonPrime;
+      discountAmount = perSlot * slotCount;
+      discountLabel = `OMR ${(discountAmount).toFixed(3)} Member Discount`;
     }
   }
 
-  const afterDiscount = displayBase - discountAmount;
-  const finalPrice = serverPricing ? serverPricing.finalAmount : (adminOverride !== null && !serverPricing ? Number(adminOverride) - discountAmount : afterDiscount);
+  const finalPrice = serverPricing
+    ? serverPricing.finalAmount * slotCount  // server already per slot
+    : (adminOverride !== null ? Number(adminOverride) * slotCount - discountAmount : totalBase - discountAmount);
   const isOverridden = adminOverride !== null && showOverrideBanner && !serverPricing;
 
   // ── COMPACT (mobile bottom bar) ──
   if (compact) {
     return (
       <Motion.div
-        key={`${slot?.id}-${isMember}-${adminOverride}`}
+        key={`compact-${slotList.map(s => s.id).join('-')}`}
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col"
       >
         <p className="text-[7px] font-black uppercase tracking-[0.2em] mb-0 text-[#CE2029]/40 leading-none">
-          {isOverridden ? 'Override Price' : isMember ? 'Member Price' : 'Total Amount'}
+          {slotCount > 1 ? `${slotCount} Slots` : (isOverridden ? 'Override Price' : isMember ? 'Member Price' : 'Total Amount')}
         </p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-xl font-black font-display tracking-tight text-[#CE2029] leading-none">
@@ -92,7 +113,7 @@ const PriceBreakdownCard = ({
   // ── FULL BREAKDOWN CARD ──
   return (
     <Motion.div
-      key={`${slot?.id}-${isMember}-${adminOverride}`}
+      key={slotList.map(s => s.id).join('-')}
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
@@ -108,23 +129,42 @@ const PriceBreakdownCard = ({
             ? <Star size={13} fill="#f59e0b" className="text-amber-500" />
             : <CalendarDays size={13} className="text-slate-400" />}
           <span className={`text-[9px] font-black uppercase tracking-widest ${isPrime ? 'text-amber-700' : 'text-slate-500'}`}>
-            {isPrime ? 'Prime Slot' : 'Standard Slot'}
+            {slotCount > 1 ? `${slotCount} Slots Selected` : (isPrime ? 'Prime Slot' : 'Standard Slot')}
           </span>
         </div>
         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-          {slot.time}
+          {slotCount > 1
+            ? slotList.map(s => s.time.split(' - ')[0]).join(', ')
+            : primarySlot.time}
         </span>
       </div>
 
       <div className="p-5 space-y-3">
-        {/* Row — Base Price */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${isPrime ? 'bg-amber-400' : 'bg-slate-400'}`} />
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Price</span>
+        {/* Row — Base Price (show per-slot breakdown when multiple) */}
+        {slotCount > 1 ? (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Per Slot × {slotCount}
+              </span>
+              <span className="text-sm font-black text-slate-700">OMR {totalBase.toFixed(3)}</span>
+            </div>
+            {slotList.map(s => (
+              <div key={s.id} className="flex items-center justify-between px-2 py-1 bg-slate-50 rounded-lg">
+                <span className="text-[9px] font-bold text-slate-400">{s.time.split(' - ')[0]}</span>
+                <span className="text-[10px] font-black text-slate-600">OMR {getSlotBase(s).toFixed(3)}</span>
+              </div>
+            ))}
           </div>
-          <span className="text-sm font-black text-slate-700">OMR {displayBase.toFixed(3)}</span>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full ${isPrime ? 'bg-amber-400' : 'bg-slate-400'}`} />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Base Price</span>
+            </div>
+            <span className="text-sm font-black text-slate-700">OMR {totalBase.toFixed(3)}</span>
+          </div>
+        )}
 
         {/* Row — Member Discount */}
         <AnimatePresence>
@@ -175,9 +215,11 @@ const PriceBreakdownCard = ({
         {/* Final Price Row */}
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">Final Price</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">
+              {slotCount > 1 ? `Total (${slotCount} slots)` : 'Final Price'}
+            </p>
             {isMember && !isOverridden && discountAmount > 0 && (
-              <p className="text-xs font-bold text-slate-300 line-through leading-none">OMR {displayBase.toFixed(3)}</p>
+              <p className="text-xs font-bold text-slate-300 line-through leading-none">OMR {totalBase.toFixed(3)}</p>
             )}
           </div>
           <Motion.p

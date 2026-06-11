@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, Wallet, CreditCard } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, Wallet, CreditCard, Tag, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
@@ -11,6 +11,7 @@ import { getMyWallet, createPaymentIntent } from '../../../services/meApi';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { storage } from '../../../utils/storage';
 import { useEffect } from 'react';
+import { listPublicCoupons, validateCoupon } from '../../../services/couponApi';
 
 function readStoredArenaSafe() {
   try {
@@ -32,8 +33,20 @@ const BookingSummary = () => {
   const [walletBalance, setWalletBalance] = useState(null);
   const [useWallet, setUseWallet] = useState(false);
 
+  // Coupon state
+  const [publicCoupons, setPublicCoupons] = useState([]);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null); // { coupon, discountAmount, finalAmount }
+  const [couponError, setCouponError] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [showCouponSection, setShowCouponSection] = useState(false);
+
   const storedArena = readStoredArenaSafe();
-  const { arena: stateArena, court: stateCourt, date, slot, useApiCheckout, dateYmd, serverPricing } = state || {};
+  const { arena: stateArena, court: stateCourt, date, slot, slots: stateSlots, useApiCheckout, dateYmd, serverPricing } = state || {};
+
+  // Normalise: prefer slots array, fall back to single slot wrapped in array
+  const slotsArray = (stateSlots && stateSlots.length > 0) ? stateSlots : (slot ? [slot] : []);
+  const slotCount = slotsArray.length;
 
   useEffect(() => {
     if (user?.role === 'CUSTOMER') {
@@ -42,6 +55,11 @@ const BookingSummary = () => {
       }).catch(() => {
         setWalletBalance(0);
       });
+
+      // Fetch public coupons for display
+      listPublicCoupons().then(data => {
+        setPublicCoupons(data.coupons || []);
+      }).catch(() => {});
     }
   }, [user]);
 
@@ -58,16 +76,46 @@ const BookingSummary = () => {
 
   const useLiveCheckout = Boolean(useApiCheckout && isApiConfigured());
   
-  // Use real server pricing if available, fallback to slot price.
-  const subtotal = serverPricing ? serverPricing.finalAmount : (Number(slot?.price) || 0);
-  const baseReservation = serverPricing ? serverPricing.baseAmount : subtotal;
-  const discountAmount = serverPricing ? serverPricing.discountAmount : 0;
-  
+  // Total base price = per-slot price × number of slots
+  const perSlotPrice = serverPricing ? serverPricing.finalAmount : (Number(slot?.price) || 0);
+  const rawSubtotal = perSlotPrice * slotCount;
+  const baseReservation = (serverPricing ? serverPricing.baseAmount : perSlotPrice) * slotCount;
+  const memberDiscountAmount = (serverPricing ? serverPricing.discountAmount : 0) * slotCount;
+
+  // Apply coupon discount on top
+  const couponDeduction = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const subtotal = Math.max(0, rawSubtotal - couponDeduction);
+  const discountAmount = memberDiscountAmount;
+
   const tax = useLiveCheckout ? 0 : subtotal * 0.18;
   const totalAmount = subtotal + tax;
   const walletDeduction = useWallet ? Math.min(walletBalance || 0, totalAmount) : 0;
   const finalPayable = totalAmount - walletDeduction;
   const canApiBook = useLiveCheckout && user?.role === 'CUSTOMER';
+
+  // ── Coupon helpers ───────────────────────────────────────────────────────
+  async function handleApplyCoupon(codeToApply) {
+    const code = (codeToApply || couponCode).trim().toUpperCase();
+    if (!code) return;
+    setCouponError('');
+    setCouponLoading(true);
+    try {
+      const result = await validateCoupon({ code, orderAmount: rawSubtotal });
+      setAppliedCoupon({ coupon: result.coupon, discountAmount: result.discountAmount, finalAmount: result.finalAmount });
+      setCouponCode('');
+    } catch (err) {
+      setCouponError(err.message || 'Invalid coupon code.');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+  }
 
   const handlePayOrBook = async () => {
     if (canApiBook) {
@@ -75,26 +123,31 @@ const BookingSummary = () => {
       setSubmitting(true);
       try {
         const ymd = dateYmd || toYMDFromDateString(date);
-        const timeSlot = slot?.timeSlot || slot?.time;
-        if (!ymd || !timeSlot || !court?.id) {
-          throw new Error('Missing date, slot, or court');
-        }
-        const res = await createMyBooking({
-          arenaId: String(arena.id),
-          courtId: String(court.id),
-          date: ymd,
-          timeSlot,
-          paymentMethod: finalPayable === 0 ? 'wallet' : 'online',
-          amount: subtotal + tax,
-          useWallet,
-        });
+        if (!ymd || !court?.id) throw new Error('Missing date or court');
 
-        if (finalPayable > 0) {
-          // Initiate gateway intent for the remaining payable amount
+        // Book each selected slot sequentially
+        let lastBooking = null;
+        for (const s of slotsArray) {
+          const timeSlot = s?.timeSlot || s?.time;
+          if (!timeSlot) throw new Error(`Missing time for slot ${s?.id}`);
+          const res = await createMyBooking({
+            arenaId: String(arena.id),
+            courtId: String(court.id),
+            date: ymd,
+            timeSlot,
+            paymentMethod: finalPayable === 0 ? 'wallet' : 'online',
+            amount: perSlotPrice,
+            useWallet,
+            couponCode: appliedCoupon?.coupon?.code || undefined,
+          });
+          lastBooking = res;
+        }
+
+        if (finalPayable > 0 && lastBooking) {
           const intent = await createPaymentIntent({
             purpose: 'booking',
             amount: finalPayable,
-            bookingId: res.booking.id,
+            bookingId: lastBooking.booking.id,
           });
 
           if (intent?.provider === 'ccavenue') {
@@ -104,10 +157,8 @@ const BookingSummary = () => {
               encRequest: intent.encRequest,
               accessCode: intent.accessCode,
             });
-            // Let the page stay in loading state as redirect happens
             return;
           } else if (intent?.provider === 'mock') {
-            // Mock payment flow
             const { getMockPaymentWebhookSecret } = await import('../../../services/config');
             const mockSecret = getMockPaymentWebhookSecret();
             if (mockSecret) {
@@ -123,10 +174,11 @@ const BookingSummary = () => {
             arena,
             court,
             date,
-            slot,
-            amount: res.booking.amount,
-            booking: res.booking,
-            pricing: res.pricing,
+            slot: slotsArray[0],
+            slots: slotsArray,
+            amount: lastBooking?.booking?.amount,
+            booking: lastBooking?.booking,
+            pricing: lastBooking?.pricing,
           },
         });
       } catch (e) {
@@ -135,7 +187,7 @@ const BookingSummary = () => {
         setSubmitting(false);
       }
     } else {
-      navigate('/payment', { state: { amount: subtotal + tax, arena, court, date, slot } });
+      navigate('/payment', { state: { amount: subtotal + tax, arena, court, date, slot: slotsArray[0], slots: slotsArray } });
     }
   };
 
@@ -299,21 +351,120 @@ const BookingSummary = () => {
                               <CheckCircle size={12} className="text-emerald-500" />
                            </div>
                         </div>
-                        <div className="space-y-1">
-                           <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Access Time</p>
-                           <div className="flex items-center gap-2">
-                              <Clock size={12} className="text-blue-500" />
-                              <span className="text-[13px] font-black text-slate-900">{slot?.time?.split(' - ')[0]}</span>
+                        {/* Slots */}
+                        <div className="col-span-2 space-y-1">
+                           <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">
+                             {slotCount > 1 ? `${slotCount} Time Slots` : 'Time Slot'}
+                           </p>
+                           <div className="flex flex-wrap gap-1.5">
+                             {slotsArray.map((s, i) => (
+                               <div key={i} className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-100">
+                                 <Clock size={11} className="text-blue-500" />
+                                 <span className="text-[11px] font-black text-slate-900">{s?.time?.split(' - ')[0]}</span>
+                               </div>
+                             ))}
                            </div>
                         </div>
-                        <div className="space-y-1 text-right">
+                        <div className="space-y-1">
                            <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Surface Type</p>
-                           <div className="flex items-center gap-2 justify-end">
+                           <div className="flex items-center gap-2">
                               <span className="text-[13px] font-black text-slate-900">{court?.type}</span>
                               <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                            </div>
                         </div>
                      </div>
+
+                      {/* Ticket Perforation */}
+                      <div className="relative h-px flex items-center">
+                         <div className="absolute left-0 -translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
+                         <div className="w-full border-t border-dashed border-slate-100" />
+                         <div className="absolute right-0 translate-x-10 w-6 h-6 rounded-full bg-slate-50 border border-slate-100 shadow-inner" />
+                      </div>
+
+                      {/* Coupon Apply Section */}
+                      <div>
+                        <button
+                          onClick={() => setShowCouponSection(s => !s)}
+                          className="w-full flex items-center justify-between text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${appliedCoupon ? 'bg-emerald-100 text-emerald-600' : 'bg-[#CE2029]/10 text-[#CE2029]'}`}>
+                              <Tag size={15} />
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-black uppercase tracking-wider text-slate-800">
+                                {appliedCoupon ? `Coupon Applied` : 'Apply Coupon'}
+                              </p>
+                              {appliedCoupon && (
+                                <p className="text-[9px] font-bold text-emerald-600 font-mono">{appliedCoupon.coupon.code} — −OMR {appliedCoupon.discountAmount.toFixed(3)}</p>
+                              )}
+                            </div>
+                          </div>
+                          {appliedCoupon ? (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemoveCoupon(); }}
+                              className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all"
+                            >
+                              <X size={12} />
+                            </button>
+                          ) : (
+                            showCouponSection ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />
+                          )}
+                        </button>
+
+                        {showCouponSection && !appliedCoupon && (
+                          <div className="mt-3 space-y-3">
+                            {/* Public coupons */}
+                            {publicCoupons.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Available Offers</p>
+                                {publicCoupons.map(c => (
+                                  <button
+                                    key={c.id}
+                                    onClick={() => handleApplyCoupon(c.code)}
+                                    className="w-full flex items-center justify-between p-3 rounded-xl border border-dashed border-[#CE2029]/30 bg-[#CE2029]/[0.02] hover:bg-[#CE2029]/[0.05] hover:border-[#CE2029]/60 transition-all text-left group"
+                                  >
+                                    <div>
+                                      <span className="text-[10px] font-black font-mono text-[#CE2029] tracking-wider">{c.code}</span>
+                                      <p className="text-[9px] font-semibold text-slate-500 mt-0.5">
+                                        {c.discountType === 'FLAT'
+                                          ? `OMR ${c.discountValue.toFixed(3)} off`
+                                          : `${c.discountValue}% off${c.maxDiscountCap ? ` (max OMR ${c.maxDiscountCap.toFixed(3)})` : ''}`}
+                                        {c.minOrderAmount > 0 && ` · Min OMR ${c.minOrderAmount.toFixed(3)}`}
+                                      </p>
+                                      {c.description && <p className="text-[8px] text-slate-400 font-semibold mt-0.5">{c.description}</p>}
+                                    </div>
+                                    <span className="text-[8px] font-black uppercase tracking-wider text-[#CE2029] opacity-0 group-hover:opacity-100 transition-opacity">Apply</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Manual input */}
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={couponCode}
+                                onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                                placeholder="Enter coupon code"
+                                className="flex-1 px-3 py-2 text-[11px] font-bold rounded-xl bg-slate-50 border border-slate-100 focus:border-[#CE2029] focus:outline-none text-slate-800 placeholder:text-slate-300 font-mono tracking-wider uppercase"
+                                onKeyDown={e => e.key === 'Enter' && handleApplyCoupon()}
+                              />
+                              <button
+                                onClick={() => handleApplyCoupon()}
+                                disabled={!couponCode.trim() || couponLoading}
+                                className="px-3 py-2 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-wider hover:bg-[#a91820] transition-all disabled:opacity-50 shrink-0"
+                              >
+                                {couponLoading ? '…' : 'Apply'}
+                              </button>
+                            </div>
+
+                            {couponError && (
+                              <p className="text-[10px] font-bold text-red-500">{couponError}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
 
                       {/* Ticket Perforation */}
                       <div className="relative h-px flex items-center">
@@ -384,6 +535,12 @@ const BookingSummary = () => {
                            <div className="flex justify-between items-center text-[9px] font-bold text-green-500 uppercase tracking-widest">
                               <span>Member Discount</span>
                               <span className="text-green-600 font-black">-OMR {discountAmount.toFixed(3)}</span>
+                           </div>
+                         )}
+                         {appliedCoupon && (
+                           <div className="flex justify-between items-center text-[9px] font-bold text-[#CE2029] uppercase tracking-widest">
+                             <span>Coupon ({appliedCoupon.coupon.code})</span>
+                             <span className="font-black">-OMR {appliedCoupon.discountAmount.toFixed(3)}</span>
                            </div>
                          )}
                          <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
@@ -498,6 +655,11 @@ const BookingSummary = () => {
                      <span>Member Discount</span><span className="text-green-600">-OMR {discountAmount.toFixed(3)}</span>
                   </div>
                  )}
+                 {appliedCoupon && (
+                   <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-[#CE2029]">
+                     <span>Coupon ({appliedCoupon.coupon.code})</span><span>-OMR {appliedCoupon.discountAmount.toFixed(3)}</span>
+                   </div>
+                 )}
                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
                     <span>Tax</span><span>OMR {tax.toFixed(3)}</span>
                  </div>
@@ -508,6 +670,69 @@ const BookingSummary = () => {
                  )}
                </div>
  
+               {/* Mobile Coupon Apply Section */}
+               <div className="p-4 rounded-xl border border-[#CE2029]/20 bg-[#CE2029]/[0.02] space-y-3">
+                 <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-2">
+                     <Tag size={14} className={appliedCoupon ? 'text-emerald-500' : 'text-[#CE2029]'} />
+                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-800">
+                       {appliedCoupon ? 'Coupon Applied' : 'Apply Coupon'}
+                     </span>
+                   </div>
+                   {appliedCoupon && (
+                     <button onClick={handleRemoveCoupon} className="text-[9px] font-black text-red-500 uppercase tracking-wider">
+                       Remove
+                     </button>
+                   )}
+                 </div>
+
+                 {appliedCoupon ? (
+                   <div className="flex items-center justify-between">
+                     <span className="text-[10px] font-black font-mono text-[#CE2029]">{appliedCoupon.coupon.code}</span>
+                     <span className="text-[10px] font-black text-emerald-600">−OMR {appliedCoupon.discountAmount.toFixed(3)}</span>
+                   </div>
+                 ) : (
+                   <>
+                     {publicCoupons.length > 0 && (
+                       <div className="space-y-1.5">
+                         {publicCoupons.map(c => (
+                           <button
+                             key={c.id}
+                             onClick={() => handleApplyCoupon(c.code)}
+                             className="w-full flex items-center justify-between p-2.5 rounded-lg border border-dashed border-[#CE2029]/30 text-left hover:bg-[#CE2029]/5 transition-all"
+                           >
+                             <div>
+                               <span className="text-[9px] font-black font-mono text-[#CE2029]">{c.code}</span>
+                               <p className="text-[8px] font-semibold text-slate-400">
+                                 {c.discountType === 'FLAT' ? `OMR ${c.discountValue.toFixed(3)} off` : `${c.discountValue}% off`}
+                               </p>
+                             </div>
+                             <span className="text-[8px] font-black text-[#CE2029] uppercase">Apply</span>
+                           </button>
+                         ))}
+                       </div>
+                     )}
+                     <div className="flex gap-2">
+                       <input
+                         type="text"
+                         value={couponCode}
+                         onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                         placeholder="Enter code"
+                         className="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg bg-white border border-slate-100 focus:border-[#CE2029] focus:outline-none text-slate-800 font-mono uppercase"
+                       />
+                       <button
+                         onClick={() => handleApplyCoupon()}
+                         disabled={!couponCode.trim() || couponLoading}
+                         className="px-3 py-2 rounded-lg bg-[#CE2029] text-white text-[9px] font-black uppercase disabled:opacity-50"
+                       >
+                         {couponLoading ? '…' : 'Apply'}
+                       </button>
+                     </div>
+                     {couponError && <p className="text-[9px] font-bold text-red-500">{couponError}</p>}
+                   </>
+                 )}
+               </div>
+
                {/* Mobile Wallet Balance Apply Option */}
                {walletBalance !== null && walletBalance > 0 ? (
                  <div className={`p-4 rounded-xl border transition-all ${
