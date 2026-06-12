@@ -26,6 +26,12 @@ async function createMyEnrollment(req, res) {
     return res.status(404).json({ error: 'Batch not found' });
   }
 
+  // Guard: prevent enrolling in batches whose end date has already passed
+  const today = new Date().toISOString().slice(0, 10);
+  if (batch.endDate && batch.endDate < today) {
+    return res.status(400).json({ error: 'This coaching batch has already ended and is no longer accepting enrollments' });
+  }
+
   const arena = await Arena.findById(batch.arenaId);
   if (!arena || !arena.isPublished) {
     return res.status(404).json({ error: 'Arena not found' });
@@ -33,7 +39,47 @@ async function createMyEnrollment(req, res) {
 
   const userId = req.auth.sub;
 
-  // Handle Wallet Deduction
+  // Atomic transaction: duplicate check + capacity check + enrollment creation
+  // This eliminates the race-condition window where two concurrent requests could both
+  // pass the capacity check and both succeed, overselling the batch.
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  let enrollment;
+  try {
+    const existing = await BatchEnrollment.findOne(
+      { batchId: batch._id, userId, status: { $in: ['pending', 'confirmed'] } },
+      null,
+      { session }
+    );
+    if (existing) {
+      await session.abortTransaction();
+      return res.status(409).json({ error: 'Already enrolled in this batch' });
+    }
+
+    const taken = await BatchEnrollment.countDocuments(
+      { batchId: batch._id, status: { $in: ['pending', 'confirmed'] } },
+      { session }
+    );
+    if (taken >= batch.capacity) {
+      await session.abortTransaction();
+      return res.status(400).json({ error: 'Batch is full' });
+    }
+
+    [enrollment] = await BatchEnrollment.create(
+      [{ batchId: batch._id, userId, status: 'confirmed' }],
+      { session }
+    );
+
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
+  }
+
+  // Wallet deduction runs after successful enrollment (outside transaction intentionally;
+  // wallet service handles its own errors and the enrollment is already locked in).
   if (paymentMethod === 'wallet') {
     const payAmount = Number(amount || 0);
     if (payAmount > 0) {
@@ -41,63 +87,37 @@ async function createMyEnrollment(req, res) {
     }
   }
 
-  const existing = await BatchEnrollment.findOne({
-    batchId: batch._id,
+
+  const b_price = Number(batch.price || 0);
+  const b_regFee = Number(batch.registrationFee || 0);
+  const b_tax = Number(batch.taxPercent || 18);
+  const base = b_price + b_regFee;
+  const total = base * (1 + (b_tax / 100));
+
+  await createNotification(
     userId,
-    status: { $in: ['pending', 'confirmed'] },
+    'Enrollment Successful',
+    `You have successfully enrolled in the batch: ${batch.title}.`,
+    'success',
+    { batchId: batch._id.toString() }
+  );
+
+  return res.status(201).json({
+    enrollment: BatchEnrollment.toPublic(enrollment, {
+      batchTitle: batch.title,
+      arenaId: batch.arenaId.toString(),
+      arenaName: arena?.name || 'Arena',
+      arenaImage: arena?.images?.[0] || '',
+      location: arena?.location?.address || arena?.name || 'Arena',
+      price: total,
+      basePrice: base,
+      taxPercent: b_tax,
+      date: enrollment.createdAt,
+      timing: batch.scheduleTime || 'See schedule',
+      days: batch.schedule || 'Coaching',
+      coachName: batch.title || 'Certified Coach'
+    }),
   });
-  if (existing) {
-    return res.status(409).json({ error: 'Already enrolled in this batch' });
-  }
-
-  const taken = await countActiveEnrollments(batch._id);
-  if (taken >= batch.capacity) {
-    return res.status(400).json({ error: 'Batch is full' });
-  }
-
-  try {
-    const enrollment = await BatchEnrollment.create({
-      batchId: batch._id,
-      userId,
-      status: 'confirmed',
-    });
-    const arena = await Arena.findById(batch.arenaId);
-    const b_price = Number(batch.price || 0);
-    const b_regFee = Number(batch.registrationFee || 0);
-    const b_tax = Number(batch.taxPercent || 18);
-    const base = b_price + b_regFee;
-    const total = base * (1 + (b_tax / 100));
-
-    await createNotification(
-      userId,
-      'Enrollment Successful',
-      `You have successfully enrolled in the batch: ${batch.title}.`,
-      'success',
-      { batchId: batch._id.toString() }
-    );
-
-    return res.status(201).json({
-      enrollment: BatchEnrollment.toPublic(enrollment, {
-        batchTitle: batch.title,
-        arenaId: batch.arenaId.toString(),
-        arenaName: arena?.name || 'Arena',
-        arenaImage: arena?.images?.[0] || '',
-        location: arena?.location?.address || arena?.name || 'Arena',
-        price: total,
-        basePrice: base,
-        taxPercent: b_tax,
-        date: enrollment.createdAt,
-        timing: batch.scheduleTime || 'See schedule',
-        days: batch.schedule || 'Coaching',
-        coachName: batch.title || 'Certified Coach'
-      }),
-    });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({ error: 'Already enrolled in this batch' });
-    }
-    throw err;
-  }
 }
 
 async function listMyEnrollments(req, res) {

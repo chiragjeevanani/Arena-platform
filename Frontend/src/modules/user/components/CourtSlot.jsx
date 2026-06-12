@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import gsap from 'gsap';
-import { Star, CalendarDays } from 'lucide-react';
+import { Star, Check } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 /**
- * CourtSlot — Shows time slot with Prime / Non-Prime classification badge
+ * CourtSlot — Shows time slot with Prime / Non-Prime classification badge.
+ * Supports multi-select: isSelected is a boolean, onSelect toggles slot.id in/out.
  */
 const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   const slotRef = useRef(null);
@@ -60,7 +61,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   };
 
   const selectedStyles = isSelected
-    ? `bg-[#CE2029]/15 border-[#CE2029]/60 shadow-[0_0_15px_rgba(206, 32, 41,0.3)]`
+    ? `bg-[#CE2029]/15 border-[#CE2029]/60 shadow-[0_0_15px_rgba(206,32,41,0.3)]`
     : '';
 
   return (
@@ -81,15 +82,15 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
         {slot.time.split(' - ')[0]}
       </span>
 
-
-
-      {/* Selected indicator dot */}
+      {/* Selected checkmark */}
       {isSelected && (
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-1 right-1 w-1 h-1 rounded-full bg-[#CE2029]"
-        />
+          className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-[#CE2029] flex items-center justify-center"
+        >
+          <Check size={8} strokeWidth={3} className="text-white" />
+        </motion.div>
       )}
     </motion.button>
   );

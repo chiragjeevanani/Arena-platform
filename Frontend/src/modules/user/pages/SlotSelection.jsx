@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Star, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion as Motion } from 'framer-motion';
+import { ArrowLeft, MapPin, Star, CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import CourtSlot from '../components/CourtSlot';
 import PriceBreakdownCard from '../components/PriceBreakdownCard';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
@@ -85,7 +85,8 @@ const SlotSelection = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date().toDateString());
   const [viewDate, setViewDate] = useState(new Date());
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  // Multi-select: store a Set of selected slot IDs
+  const [selectedSlotIds, setSelectedSlotIds] = useState(new Set());
   const [slotFilter, setSlotFilter] = useState('all');
   const [apiSlots, setApiSlots] = useState(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -103,7 +104,8 @@ const SlotSelection = () => {
   }, [useLiveSlots, arenaId, isCustomer]);
 
   useEffect(() => {
-    queueMicrotask(() => setSelectedSlot(null));
+    // Clear all selections when court/date/mode changes
+    queueMicrotask(() => setSelectedSlotIds(new Set()));
   }, [activeCourtId, selectedDate, useLiveSlots]);
 
   useEffect(() => {
@@ -188,12 +190,28 @@ const SlotSelection = () => {
 
   const currentCourt = arenaCourts.find((c) => String(c.id) === String(activeCourtId));
 
-  const selectedSlotObj = selectedSlot
-    ? allDaySlots.find((s) => s.id === selectedSlot)
-    : null;
+  // Derive the array of full slot objects that are selected
+  const selectedSlotObjs = allDaySlots.filter(s => selectedSlotIds.has(s.id));
+  const hasSelection = selectedSlotObjs.length > 0;
+
+  // For pricing card: use first slot as representative (mixed types use per-slot logic inside card)
+  const primarySlotObj = selectedSlotObjs[0] ?? null;
   const priceOverride =
-    useLiveSlots && selectedSlotObj ? Number(arena?.pricePerHour) || 0 : null;
-  const showApiRate = useLiveSlots && Boolean(selectedSlotObj);
+    useLiveSlots && primarySlotObj ? Number(arena?.pricePerHour) || 0 : null;
+  const showApiRate = useLiveSlots && hasSelection;
+
+  // Toggle a slot in/out of the selection set
+  const toggleSlot = (slotId) => {
+    setSelectedSlotIds(prev => {
+      const next = new Set(prev);
+      if (next.has(slotId)) {
+        next.delete(slotId);
+      } else {
+        next.add(slotId);
+      }
+      return next;
+    });
+  };
 
   const heroCardImage =
     arena?.image && typeof arena.image === 'string' && arena.image.startsWith('http')
@@ -201,15 +219,17 @@ const SlotSelection = () => {
       : ArenaProfile;
 
   const goToSummary = () => {
+    if (selectedSlotObjs.length === 0) return;
     const dateYmd = toYMDFromDateString(selectedDate);
-    const slotObj = allDaySlots.find((s) => s.id === selectedSlot);
+    // Pass all selected slots; BookingSummary handles multi-slot
     navigate('/booking-summary', {
       state: {
         arena,
         court: currentCourt,
         date: selectedDate,
         dateYmd,
-        slot: slotObj,
+        slots: selectedSlotObjs,          // array
+        slot: selectedSlotObjs[0],        // backward compat (first slot)
         useApiCheckout: useLiveSlots,
         serverPricing,
       },
@@ -450,6 +470,41 @@ const SlotSelection = () => {
                 </div>
               </div>
 
+              {/* Selected slots summary chip bar */}
+              <AnimatePresence>
+                {selectedSlotObjs.length > 0 && (
+                  <Motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-wrap gap-1.5 pt-2 pb-1">
+                      {selectedSlotObjs.map(s => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => toggleSlot(s.id)}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#CE2029]/10 border border-[#CE2029]/30 text-[9px] font-black text-[#CE2029] hover:bg-[#CE2029]/20 transition-all"
+                        >
+                          {s.time.split(' - ')[0]}
+                          <X size={9} strokeWidth={3} />
+                        </button>
+                      ))}
+                      {selectedSlotObjs.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSlotIds(new Set())}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[9px] font-black text-slate-500 hover:bg-slate-200 transition-all"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  </Motion.div>
+                )}
+              </AnimatePresence>
+
               {(() => {
                 const filteredSlots = allDaySlots.filter((slot) => {
                   if (slotFilter === 'prime') return slot.type === 'prime';
@@ -484,8 +539,8 @@ const SlotSelection = () => {
                         <CourtSlot
                           key={slot.id}
                           slot={slot}
-                          isSelected={selectedSlot === slot.id}
-                          onSelect={setSelectedSlot}
+                          isSelected={selectedSlotIds.has(slot.id)}
+                          onSelect={toggleSlot}
                         />
                       ))
                     )}
@@ -562,13 +617,14 @@ const SlotSelection = () => {
             </div>
 
             <div className="space-y-4">
-              {selectedSlot ? (
+              {hasSelection ? (
                 <PriceBreakdownCard
-                  slot={selectedSlotObj}
+                  slots={selectedSlotObjs}
+                  slot={primarySlotObj}
                   isMember={useLiveSlots ? isCustomer : true}
                   adminOverride={showApiRate ? priceOverride : null}
                   showOverrideBanner={!showApiRate}
-                  serverPricing={serverPricing}
+                  serverPricing={selectedSlotObjs.length === 1 ? serverPricing : null}
                 />
               ) : (
                 <div className="rounded-[32px] p-10 bg-white border border-slate-100 shadow-sm text-center flex flex-col items-center justify-center min-h-[220px]">
@@ -576,21 +632,28 @@ const SlotSelection = () => {
                     <Star size={32} />
                   </div>
                   <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300 max-w-[200px] leading-relaxed">
-                    Select a preferred time slot to review pricing
+                    Tap any available slot to select it
+                  </p>
+                  <p className="text-[9px] font-bold text-slate-200 uppercase tracking-wider mt-1">
+                    You can select multiple slots
                   </p>
                 </div>
               )}
               <button
                 type="button"
-                disabled={!selectedSlot}
+                disabled={!hasSelection}
                 onClick={goToSummary}
                 className={`w-full py-4 rounded-[22px] font-black uppercase tracking-widest text-xs transition-all duration-500 ${
-                  selectedSlot
+                  hasSelection
                     ? 'bg-[#CE2029] text-white shadow-xl hover:-translate-y-1 active:scale-95'
                     : 'bg-slate-100 text-slate-300 cursor-not-allowed'
                 }`}
               >
-                Confirm Booking
+                {hasSelection
+                  ? selectedSlotObjs.length > 1
+                    ? `Confirm ${selectedSlotObjs.length} Slots`
+                    : 'Confirm Booking'
+                  : 'Select a Slot'}
               </button>
             </div>
           </div>
@@ -600,24 +663,27 @@ const SlotSelection = () => {
       <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
         <div className="backdrop-blur-xl py-2 px-6 flex items-center justify-between bg-white/90 border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.04)] rounded-t-[20px]">
           <PriceBreakdownCard
-            slot={selectedSlotObj || null}
+            slots={selectedSlotObjs.length > 0 ? selectedSlotObjs : null}
+            slot={primarySlotObj}
             isMember={useLiveSlots ? isCustomer : true}
             adminOverride={showApiRate ? priceOverride : null}
             showOverrideBanner={!showApiRate}
             compact
-            serverPricing={serverPricing}
+            serverPricing={selectedSlotObjs.length === 1 ? serverPricing : null}
           />
           <button
             type="button"
-            disabled={!selectedSlot}
+            disabled={!hasSelection}
             onClick={goToSummary}
             className={`px-6 py-2.5 rounded-lg font-black uppercase tracking-[0.1em] text-[10px] transition-all ${
-              selectedSlot
+              hasSelection
                 ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
                 : 'bg-slate-100 text-slate-300'
             }`}
           >
-            Review Order
+            {hasSelection && selectedSlotObjs.length > 1
+              ? `Review (${selectedSlotObjs.length})`
+              : 'Review Order'}
           </button>
         </div>
       </div>

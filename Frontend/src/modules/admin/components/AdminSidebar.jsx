@@ -32,7 +32,8 @@ import {
   Megaphone,
   PenTool,
   ShieldCheck,
-  Store
+  Store,
+  Tag
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -101,6 +102,7 @@ const SIDEBAR_STRUCTURE = [
     items: [
       { path: '/admin/pricing', icon: DollarSign, label: 'Pricing Rules' },
       { path: '/admin/referrals', icon: Gift, label: 'Referrals & Wallets' },
+      { path: '/admin/coupons', icon: Tag, label: 'Coupon Codes' },
     ]
   },
 ];

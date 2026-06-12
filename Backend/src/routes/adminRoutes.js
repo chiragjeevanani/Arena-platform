@@ -90,6 +90,12 @@ const {
   adjustPointsBalance,
   listSlotMemberships,
 } = require('../controllers/adminSlotMembershipController');
+const {
+  createCoupon,
+  listCoupons,
+  updateCoupon,
+  deleteCoupon,
+} = require('../controllers/adminCouponController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -188,5 +194,11 @@ router.get('/freed-slots', asyncHandler(listFreedSlots));
 router.patch('/freed-slots/:id/resold', asyncHandler(markSlotResold));
 router.get('/points-wallets', asyncHandler(listPointsWallets));
 router.post('/points-wallets/adjust', asyncHandler(adjustPointsBalance));
+
+// Coupon Management
+router.post('/coupons', asyncHandler(createCoupon));
+router.get('/coupons', asyncHandler(listCoupons));
+router.patch('/coupons/:couponId', asyncHandler(updateCoupon));
+router.delete('/coupons/:couponId', asyncHandler(deleteCoupon));
 
 module.exports = router;
