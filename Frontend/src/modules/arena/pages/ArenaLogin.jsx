@@ -219,24 +219,18 @@ const ArenaLogin = () => {
                   </button>
                 </div>
 
-                <Button
-                  fullWidth
+                <motion.button
                   type="submit"
-                  variant="contained"
+                  whileTap={{ scale: 0.97 }}
                   disabled={verifying}
-                  className="bg-[#CE2029] hover:bg-[#d43b33] py-3.5 shadow-lg shadow-[#CE2029]/20 active:scale-95 transition-all"
-                  sx={{
-                    borderRadius: '18px',
-                    textTransform: 'none',
-                    fontSize: '0.9rem',
-                    fontWeight: '900',
-                    letterSpacing: '0.15em',
-                    backgroundColor: '#CE2029',
-                    paddingY: '14px'
-                  }}
+                  className="w-full py-3.5 rounded-2xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 hover:bg-[#d43b33] transition-all disabled:opacity-60 shadow-lg shadow-[#CE2029]/20"
                 >
-                  {verifying ? 'VERIFYING...' : 'VERIFY & ENTER PORTAL'}
-                </Button>
+                  {verifying ? (
+                    <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> VERIFYING...</>
+                  ) : (
+                    'VERIFY & ENTER PORTAL'
+                  )}
+                </motion.button>
               </form>
             </div>
           ) : (

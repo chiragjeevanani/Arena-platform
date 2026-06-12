@@ -86,7 +86,7 @@ async function createCoupon(req, res) {
     isPublic: !!isPublic,
     isActive: isActive !== undefined ? !!isActive : true,
     expiresAt: expiresAt ? new Date(expiresAt) : null,
-    createdBy: req.user._id,
+    createdBy: req.auth.sub,
   });
 
   return res.status(201).json({ coupon: Coupon.toPublic(coupon) });
@@ -176,7 +176,7 @@ async function validateCoupon(req, res) {
   const coupon = await Coupon.findOne({ code: code.toUpperCase().trim() });
   if (!coupon) return res.status(404).json({ error: 'Invalid coupon code.' });
 
-  const validity = checkCouponValidity(coupon, orderAmount, req.user?._id);
+  const validity = checkCouponValidity(coupon, orderAmount, req.auth?.sub);
   if (!validity.valid) {
     return res.status(400).json({ error: validity.reason });
   }
