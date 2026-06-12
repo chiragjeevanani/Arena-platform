@@ -8,6 +8,14 @@ export function loginRequest(email, password) {
   });
 }
 
+export function sendLoginOtpRequest(email) {
+  return apiJson('/api/auth/send-login-otp', {
+    method: 'POST',
+    body: { email },
+    skipAuth: true,
+  });
+}
+
 export function registerRequest({ email, password, name, referralCode }) {
   return apiJson('/api/auth/register', {
     method: 'POST',
@@ -57,6 +65,22 @@ export function resetPasswordRequest(token, newPassword) {
 export function verifyEmailRequest(token) {
   return apiJson(`/api/auth/verify-email?token=${token}`, {
     method: 'GET',
+    skipAuth: true,
+  });
+}
+
+export function verifyEmailOtpRequest(email, otp) {
+  return apiJson('/api/auth/verify-email-otp', {
+    method: 'POST',
+    body: { email, otp },
+    skipAuth: true,
+  });
+}
+
+export function resendVerificationRequest(email) {
+  return apiJson('/api/auth/resend-verification', {
+    method: 'POST',
+    body: { email },
     skipAuth: true,
   });
 }

@@ -1,20 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton, Checkbox, FormControlLabel } from '@mui/material';
-import { Person, Email, Lock, Phone, Visibility, VisibilityOff } from '@mui/icons-material';
-import { Gift } from 'lucide-react';
+import { Person, Email, Lock, Phone, Visibility, VisibilityOff, ArrowBack } from '@mui/icons-material';
+import { Gift, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
+import { useAuth } from '../context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
-import { registerRequest } from '../../../services/authApi';
+import { registerRequest, verifyEmailOtpRequest, resendVerificationRequest } from '../../../services/authApi';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 
 const Signup = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phone, setPhone] = useState('');
@@ -23,6 +22,86 @@ const Signup = () => {
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+
+  // OTP Verification States
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otpError, setOtpError] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [resendTimer, setResendTimer] = useState(60);
+
+  const { login } = useAuth();
+
+  useEffect(() => {
+    let interval = null;
+    if (isRegistered && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRegistered, resendTimer]);
+
+  const handleOtpChange = (index, value) => {
+    if (value && !/^\d+$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.substring(value.length - 1);
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`signup-otp-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`signup-otp-${index - 1}`);
+      if (prevInput) {
+        prevInput.focus();
+        // Clear previous input when jumping back
+        const newOtp = [...otp];
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+      }
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setOtpError('');
+    try {
+      await resendVerificationRequest(email.trim().toLowerCase());
+      setResendTimer(60);
+      setOtp(['', '', '', '', '', '']);
+      const firstInput = document.getElementById('signup-otp-0');
+      if (firstInput) firstInput.focus();
+    } catch (err) {
+      setOtpError(err.message || 'Failed to resend verification OTP');
+    }
+  };
+
+  const handleVerifyOtpSubmit = async (e) => {
+    e.preventDefault();
+    setOtpError('');
+    const code = otp.join('');
+    if (code.length < 6) {
+      setOtpError('Please enter the full 6-digit OTP code');
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      const data = await verifyEmailOtpRequest(email.trim().toLowerCase(), code);
+      // Auto login
+      login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+      navigate('/');
+    } catch (err) {
+      setOtpError(err.message || 'OTP verification failed');
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,19 +123,16 @@ const Signup = () => {
         setSubmitError('Full name is required');
         return;
       }
-      if (!password || password.length < 8) {
-        setSubmitError('Password must be at least 8 characters');
-        return;
-      }
       setLoading(true);
       try {
         await registerRequest({
-          email,
-          password,
+          email: email.trim().toLowerCase(),
           name: name.trim(),
           referralCode: referralCode.trim(),
         });
         setIsRegistered(true);
+        setResendTimer(60);
+        setOtp(['', '', '', '', '', '']);
       } catch (err) {
         setSubmitError(err.message || 'Sign up failed');
       } finally {
@@ -91,32 +167,99 @@ const Signup = () => {
         className="relative z-10 w-full md:max-w-[400px] bg-transparent md:bg-white md:p-8 md:rounded-3xl rounded-[40px] md:shadow-[0_20px_60px_rgba(206, 32, 41,0.08)] md:border md:border-slate-100"
       >
         {isRegistered ? (
-          <div className="text-center py-8 space-y-6">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Email className="text-green-600 text-4xl" />
+          <div className="text-center py-6 space-y-6">
+            <button 
+              onClick={() => setIsRegistered(false)}
+              className="absolute top-6 left-6 text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 text-xs font-semibold"
+            >
+              <ArrowBack sx={{ fontSize: 16 }} /> Edit Info
+            </button>
+
+            <div className="w-16 h-16 bg-[#CE2029]/10 rounded-2xl flex items-center justify-center mx-auto mb-2">
+              <Email className="text-[#CE2029] text-3xl" />
             </div>
-            <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Check Your Email</h1>
-            <p className="text-slate-600 font-medium">
-              We've sent a verification link to <span className="text-[#CE2029]">{email}</span>. 
-              Please click the link to verify your account and start your journey.
-            </p>
-            <div className="pt-4">
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => navigate('/login')}
-                sx={{
-                  borderRadius: '14px',
-                  textTransform: 'none',
-                  fontWeight: 'bold',
-                  borderColor: 'rgba(0,0,0,0.1)',
-                  color: '#0F172A',
-                  '&:hover': { borderColor: '#CE2029', color: '#CE2029', backgroundColor: 'transparent' }
-                }}
-              >
-                Back to Login
-              </Button>
+
+            <div className="space-y-2">
+              <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Verify Your Email</h1>
+              <p className="text-slate-500 text-xs font-medium px-2 leading-relaxed">
+                We've sent a 6-digit OTP code to <br />
+                <span className="text-[#0F172A] font-bold">{email}</span>. Please enter it below.
+              </p>
             </div>
+
+            <form onSubmit={handleVerifyOtpSubmit} className="space-y-6">
+              {otpError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-center text-xs font-semibold text-red-800">
+                  {otpError}
+                </div>
+              )}
+
+              <div className="flex justify-center gap-2">
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    id={`signup-otp-${index}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    autoFocus={index === 0}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    className="w-11 h-14 bg-white/70 border-2 border-slate-100 backdrop-blur-md rounded-xl text-center text-2xl font-black text-[#0F172A] shadow-inner focus:border-[#CE2029] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#CE2029]/5 transition-all outline-none"
+                  />
+                ))}
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendTimer > 0}
+                  className={`text-xs font-bold transition-all ${
+                    resendTimer > 0 ? 'text-slate-400 cursor-not-allowed' : 'text-[#CE2029] hover:underline'
+                  }`}
+                >
+                  {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend OTP code'}
+                </button>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  disabled={verifying}
+                  className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-3.5 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all"
+                  sx={{
+                    borderRadius: '14px',
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    letterSpacing: '0.02em',
+                    backgroundColor: '#CE2029',
+                  }}
+                >
+                  {verifying ? 'Verifying...' : 'Verify & Enter UI'}
+                </Button>
+                
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => navigate('/login')}
+                  sx={{
+                    borderRadius: '14px',
+                    textTransform: 'none',
+                    fontWeight: 'bold',
+                    borderColor: 'rgba(0,0,0,0.1)',
+                    color: '#0F172A',
+                    '&:hover': { borderColor: '#CE2029', color: '#CE2029', backgroundColor: 'transparent' }
+                  }}
+                >
+                  Back to Login
+                </Button>
+              </div>
+            </form>
           </div>
         ) : (
           <div className="space-y-6">
@@ -247,43 +390,7 @@ const Signup = () => {
                   }}
                 />
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  variant="outlined"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (submitError) setSubmitError('');
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword(!showPassword)} size="small">
-                          {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                    },
-                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+
 
                 <TextField
                   fullWidth

@@ -18,7 +18,8 @@ async function listPublishedArenaMembershipPlans(req, res) {
       { arenaId: arena._id },
       { isGlobal: true }
     ],
-    isActive: true
+    isActive: true,
+    slotBased: { $ne: true }
   }).sort({ price: 1 }).lean();
 
   return res.json({
@@ -30,7 +31,8 @@ async function listPublishedArenaMembershipPlans(req, res) {
 async function listGlobalMembershipPlans(req, res) {
   const plans = await MembershipPlan.find({
     isGlobal: true,
-    isActive: true
+    isActive: true,
+    slotBased: { $ne: true }
   }).sort({ price: 1 }).lean();
 
   return res.json({

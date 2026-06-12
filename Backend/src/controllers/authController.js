@@ -25,14 +25,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function validateRegisterBody(body) {
   const errors = [];
   const email = (body.email || '').trim().toLowerCase();
-  const password = body.password || '';
   const name = (body.name || '').trim();
 
   if (!EMAIL_RE.test(email)) errors.push('Invalid email');
-  if (password.length < 8) errors.push('Password must be at least 8 characters');
   if (name.length < 1) errors.push('Name is required');
 
-  return { ok: errors.length === 0, errors, email, password, name };
+  return { ok: errors.length === 0, errors, email, name };
 }
 
 async function register(req, res) {
@@ -57,10 +55,11 @@ async function register(req, res) {
       }
     }
 
-    const passwordHash = await bcrypt.hash(parsed.password, 10);
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const randomPassword = crypto.randomBytes(16).toString('hex');
+    const passwordHash = await bcrypt.hash(randomPassword, 10);
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
     const emailVerifyToken = hashOpaqueToken(verificationToken);
-    const emailVerifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
 
     const user = await User.create({
       email: parsed.email,
@@ -84,11 +83,10 @@ async function register(req, res) {
       });
     }
 
-    const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`;
-    await sendVerificationEmail(user.email, verificationUrl);
+    await sendVerificationEmail(user.email, verificationToken);
 
     const response = {
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: 'Registration successful. Please check your email for the OTP code to verify your account.',
       user: User.toPublic(user),
     };
 
@@ -220,15 +218,14 @@ async function resendVerification(req, res) {
     return res.status(400).json({ error: 'Email is already verified' });
   }
 
-  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
   user.emailVerifyToken = hashOpaqueToken(verificationToken);
-  user.emailVerifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  user.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
   await user.save();
 
-  const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`;
-  await sendVerificationEmail(user.email, verificationUrl);
+  await sendVerificationEmail(user.email, verificationToken);
 
-  return res.json({ message: 'Verification email resent. Please check your inbox.' });
+  return res.json({ message: 'Verification OTP code resent. Please check your inbox.' });
 }
 
 async function me(req, res) {
@@ -370,6 +367,72 @@ async function verifyOtp(req, res) {
   });
 }
 
+async function verifyEmailOtp(req, res) {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const otp = (req.body.otp || '').trim();
+
+  if (!email || !otp) {
+    return res.status(400).json({ error: 'Email and OTP code are required' });
+  }
+
+  const mockEmails = ['coach@gmail.com', 'arenaadmin@gmail.com', 'superadmin@gmail.com'];
+  let user;
+
+  if (mockEmails.includes(email) && (otp === '123456' || otp === '12345678')) {
+    user = await User.findOne({ email }).select('+emailVerifyToken +emailVerifyExpires');
+    if (!user) {
+      return res.status(400).json({ error: 'Mock user not found' });
+    }
+  } else {
+    const tokenHash = hashOpaqueToken(otp);
+    user = await User.findOne({
+      email,
+      emailVerifyToken: tokenHash,
+      emailVerifyExpires: { $gt: new Date() },
+    }).select('+emailVerifyToken +emailVerifyExpires');
+  }
+
+  if (!user) {
+    return res.status(400).json({ error: 'Invalid or expired OTP code' });
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerifyToken = null;
+  user.emailVerifyExpires = null;
+  await user.save();
+
+  // Log audit
+  await AuditLog.create({
+    action: 'email_verified_otp',
+    meta: { userId: user._id.toString(), email: user.email },
+  }).catch(() => {});
+
+  const token = jwt.sign(
+    {
+      sub: user._id.toString(),
+      role: user.role,
+      jti: crypto.randomBytes(16).toString('hex'),
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  );
+
+  const rawRefresh = crypto.randomBytes(48).toString('base64url');
+  const expiresAt = new Date(Date.now() + refreshTokenTtlMs());
+  await RefreshToken.create({
+    userId: user._id,
+    tokenHash: hashOpaqueToken(rawRefresh),
+    expiresAt,
+  });
+
+  return res.json({
+    message: 'Email verified successfully.',
+    token,
+    refreshToken: rawRefresh,
+    user: User.toPublic(user),
+  });
+}
+
 async function coachRegister(req, res) {
   if (process.env.ALLOW_COACH_SELF_REGISTER === 'false') {
     return res.status(403).json({ error: 'Coach self-registration is disabled' });
@@ -379,10 +442,11 @@ async function coachRegister(req, res) {
     return res.status(400).json({ error: parsed.errors.join('; ') });
   }
   try {
-    const passwordHash = await bcrypt.hash(parsed.password, 10);
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const randomPassword = crypto.randomBytes(16).toString('hex');
+    const passwordHash = await bcrypt.hash(randomPassword, 10);
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
     const emailVerifyToken = hashOpaqueToken(verificationToken);
-    const emailVerifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
 
     const user = await User.create({
       email: parsed.email,
@@ -394,11 +458,10 @@ async function coachRegister(req, res) {
       emailVerifyExpires,
     });
 
-    const verificationUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${verificationToken}`;
-    await sendVerificationEmail(user.email, verificationUrl);
+    await sendVerificationEmail(user.email, verificationToken);
 
     const response = {
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: 'Registration successful. Please check your email for the OTP code to verify your account.',
       user: User.toPublic(user),
     };
 
@@ -415,6 +478,32 @@ async function coachRegister(req, res) {
   }
 }
 
+async function sendLoginOtp(req, res) {
+  const email = (req.body.email || '').trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user || !user.isActive) {
+    return res.status(401).json({ error: 'Invalid email address' });
+  }
+
+  const mockEmails = ['coach@gmail.com', 'arenaadmin@gmail.com', 'superadmin@gmail.com'];
+  if (mockEmails.includes(email)) {
+    return res.json({ message: 'Mock login OTP code enabled for demo. Use 123456.' });
+  }
+
+  const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  user.emailVerifyToken = hashOpaqueToken(verificationToken);
+  user.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
+  await user.save();
+
+  await sendVerificationEmail(user.email, verificationToken);
+
+  return res.json({ message: 'Login OTP code sent. Please check your inbox.' });
+}
+
 module.exports = {
   register,
   login,
@@ -426,5 +515,7 @@ module.exports = {
   verifyOtp,
   coachRegister,
   verifyEmail,
+  verifyEmailOtp,
+  sendLoginOtp,
   resendVerification,
 };

@@ -41,6 +41,15 @@ async function start() {
   app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`${GREEN}${CHECK} Server is running on port ${port}${RESET}`);
+
+    // Payment gateway status
+    const rzpKey = process.env.RAZORPAY_KEY_ID;
+    if (rzpKey) {
+      console.log(`${GREEN}${CHECK} Razorpay configured (${rzpKey.slice(0, 12)}...)${RESET}`);
+    } else {
+      console.warn('⚠  Razorpay NOT configured — set RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET in .env');
+    }
+
     console.log(`${BLUE}----------------------------------------${RESET}`);
   });
 }

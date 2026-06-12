@@ -4,11 +4,13 @@ import { ArrowLeft, ArrowRight, Smartphone, CreditCard, Landmark, Banknote, Shie
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
-import { isApiConfigured, getMockPaymentWebhookSecret } from '../../../services/config';
+import { isApiConfigured, getMockPaymentWebhookSecret, isRazorpayConfigured, getRazorpayKeyId } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { completeWalletTopUpViaMockPayment } from '../../../services/mockTopUpFlow';
 import { registerForEvent } from '../../../services/eventsApi';
 import { createMyEnrollment, getMyWallet } from '../../../services/meApi';
+import { createRazorpayOrder, verifyRazorpayPayment } from '../../../services/razorpayApi';
+import { loadRazorpayScript, openRazorpayCheckout } from '../../../services/razorpayCheckout';
 import { useEffect } from 'react';
 
 const Payment = () => {
@@ -42,6 +44,77 @@ const Payment = () => {
   const handlePay = async () => {
     setPayError('');
     const amountNum = Number(amount) || 0;
+
+    // ── Branch 1: Razorpay (when configured on both frontend + backend) ────────
+    if (isRazorpayConfigured() && isApiConfigured() && getAuthToken() && amountNum > 0) {
+      setIsProcessing(true);
+      try {
+        // Determine purpose from state (top_up, membership, event, coaching, etc.)
+        const purpose = state?.paymentPurpose || state?.type || 'top_up';
+        const meta = {};
+        if (state?.plan?.id) meta.planId = state.plan.id;
+        if (state?.registrationInfo?.batchId) meta.batchId = state.registrationInfo.batchId;
+
+        // 1. Load Razorpay script
+        await loadRazorpayScript();
+
+        // 2. Create order on backend
+        const orderData = await createRazorpayOrder({ purpose, amount: amountNum, meta });
+
+        // 3. Open Razorpay Checkout modal
+        await new Promise((resolve, reject) => {
+          openRazorpayCheckout({
+            keyId: getRazorpayKeyId(),
+            orderId: orderData.orderId,
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: 'Arena Platform',
+            description: purpose === 'top_up' ? 'Wallet Top-Up' : 'Arena Payment',
+            onSuccess: async ({ razorpay_payment_id, razorpay_order_id, razorpay_signature }) => {
+              try {
+                // 4. Verify signature on backend
+                const verifyRes = await verifyRazorpayPayment({
+                  razorpay_payment_id,
+                  razorpay_order_id,
+                  razorpay_signature,
+                  paymentRecordId: orderData.paymentRecordId,
+                });
+
+                setIsProcessing(false);
+
+                // 5. Navigate to success page with correct context
+                navigate('/booking-success', {
+                  state: {
+                    ...state,
+                    type: purpose === 'top_up' ? 'wallet_top_up' : (state?.type || purpose),
+                    amount: amountNum,
+                    redirectBack: state?.redirectBack,
+                    pendingPlanId: state?.pendingPlanId,
+                    payment: verifyRes?.payment,
+                  },
+                });
+                resolve();
+              } catch (verifyErr) {
+                setIsProcessing(false);
+                setPayError(verifyErr.message || 'Payment verification failed');
+                reject(verifyErr);
+              }
+            },
+            onDismiss: () => {
+              setIsProcessing(false);
+              setPayError('Payment was cancelled. Please try again.');
+              resolve(); // Don't reject — user dismissed voluntarily
+            },
+          });
+        });
+      } catch (e) {
+        setPayError(e.message || 'Payment failed. Please try again.');
+        setIsProcessing(false);
+      }
+      return;
+    }
+
+    // ── Branch 2: Mock top-up (dev — when MOCK_PAYMENT_WEBHOOK_SECRET is set) ──
     const mockSecret = getMockPaymentWebhookSecret();
     const useMockTopUp =
       state?.paymentPurpose === 'top_up' &&
@@ -55,7 +128,13 @@ const Payment = () => {
         await completeWalletTopUpViaMockPayment(amountNum, mockSecret);
         setIsProcessing(false);
         navigate('/booking-success', {
-          state: { ...state, type: 'wallet_top_up', amount: amountNum },
+          state: {
+            ...state,
+            type: 'wallet_top_up',
+            amount: amountNum,
+            redirectBack: state?.redirectBack,
+            pendingPlanId: state?.pendingPlanId
+          },
         });
       } catch (e) {
         setPayError(e.message || 'Payment failed');

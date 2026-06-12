@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Star, CheckCircle2, Zap, Crown, Shield,
-  Users, ArrowRight, Clock, Calendar, ChevronDown, ChevronUp, Gift, ArrowLeft
+  Users, ArrowRight, Clock, Calendar, ChevronDown, ChevronUp, Gift, ArrowLeft, AlertCircle
 } from 'lucide-react';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { fetchPublicArenas } from '../../../services/arenasApi';
 import { fetchPublicMembershipPlans, fetchGlobalMembershipPlans } from '../../../services/membershipsPublicApi';
-import { listMyMemberships, purchaseMembership } from '../../../services/meApi';
+import { listMyMemberships, purchaseMembership, getMyWallet } from '../../../services/meApi';
 import { mapPublicPlanToCard } from '../../../utils/membershipPlanAdapter';
 import { storage } from '../../../utils/storage';
 
@@ -251,7 +251,7 @@ const PlanCard = ({ plan, isCurrent, onBuy, onViewDetails }) => {
 };
 
 // ── Confirm Modal ────────────────────────────────────────────────────────────
-const ConfirmModal = ({ plan, onClose, onConfirm }) => {
+const ConfirmModal = ({ plan, onClose, onConfirm, loading }) => {
   const meta = CAT[plan.category] || CAT['non-premium'];
   return (
     <motion.div
@@ -264,7 +264,7 @@ const ConfirmModal = ({ plan, onClose, onConfirm }) => {
       />
       <motion.div
         initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
-        className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100"
       >
         <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, #CE2029, ${meta.color})` }} />
         <div className="p-5 space-y-4">
@@ -288,9 +288,80 @@ const ConfirmModal = ({ plan, onClose, onConfirm }) => {
             </div>
           </div>
           <div className="flex gap-2.5">
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50">Cancel</button>
-            <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 hover:bg-[#d83f36]">
-              Confirm <ArrowRight size={12} strokeWidth={3} />
+            <button disabled={loading} onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 disabled:opacity-50">Cancel</button>
+            <button disabled={loading} onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 hover:bg-[#d83f36] disabled:opacity-50">
+              {loading ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" strokeWidth={3} />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  Confirm <ArrowRight size={12} strokeWidth={3} />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// ── Insufficient Balance Modal ────────────────────────────────────────────────
+const InsufficientBalanceModal = ({ plan, walletBalance, onClose, onTopUp }) => {
+  const needed = plan.price - walletBalance;
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-4"
+    >
+      <motion.div
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+        className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100"
+      >
+        <div className="p-6 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+            <AlertCircle size={24} className="text-[#CE2029]" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-black text-slate-900">Insufficient Wallet Balance</h3>
+            <p className="text-xs font-semibold text-slate-500 leading-relaxed px-4">
+              Your wallet balance is <span className="font-bold text-slate-900">OMR {walletBalance.toFixed(3)}</span>. 
+              You need <span className="font-bold text-slate-900">OMR {plan.price.toFixed(3)}</span> to purchase this plan.
+            </p>
+          </div>
+          <div className="bg-slate-50 rounded-xl p-3.5 space-y-1.5 text-xs">
+            <div className="flex justify-between items-center text-slate-500">
+              <span className="font-bold">Required Amount</span>
+              <span className="font-black text-slate-900">OMR {plan.price.toFixed(3)}</span>
+            </div>
+            <div className="flex justify-between items-center text-slate-500">
+              <span className="font-bold">Current Balance</span>
+              <span className="font-black text-slate-900">OMR {walletBalance.toFixed(3)}</span>
+            </div>
+            <div className="h-px bg-slate-200 my-1" />
+            <div className="flex justify-between items-center text-[#CE2029] font-black">
+              <span>Amount to Top Up</span>
+              <span>OMR {needed.toFixed(3)}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-2 pt-2">
+            <button
+              onClick={onTopUp}
+              className="w-full py-3 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#b01b22] transition-all shadow-md shadow-[#CE2029]/20"
+            >
+              Top Up & Pay OMR {needed.toFixed(3)}
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-colors"
+            >
+              Cancel
             </button>
           </div>
         </div>
@@ -347,6 +418,7 @@ const CancelModal = ({ plan, onClose, onConfirm }) => {
 // ── Page ─────────────────────────────────────────────────────────────────────
 const MembershipPlans = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [filter, setFilter] = useState('all');
   const [buying, setBuying] = useState(null);
   const [cancelling, setCancelling] = useState(null);
@@ -354,6 +426,12 @@ const MembershipPlans = () => {
   const [planList, setPlanList] = useState([]);
   const [userMembership, setUserMembership] = useState(NO_MEMBERSHIP);
   const tabsRef = useRef(null);
+
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [checkingBalance, setCheckingBalance] = useState(false);
+  const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState(false);
+  const [insufficientPlan, setInsufficientPlan] = useState(null);
+  const [showToppedUpToast, setShowToppedUpToast] = useState(false);
 
   useEffect(() => {
     const activeBtn = tabsRef.current?.querySelector('[data-active="true"]');
@@ -365,6 +443,37 @@ const MembershipPlans = () => {
       });
     }
   }, [filter]);
+
+  // Handle auto-opening of plan modal when returning from payment top-up
+  const autoOpenPlanId = location.state?.autoOpenPlanId;
+  const toppedUp = location.state?.toppedUp;
+  useEffect(() => {
+    if (planList.length > 0 && autoOpenPlanId) {
+      const planToBuy = planList.find((p) => p.id === autoOpenPlanId);
+      if (planToBuy) {
+        if (toppedUp) {
+          // Clear state first
+          navigate(location.pathname, { replace: true, state: {} });
+          // Auto-trigger purchase since wallet is now funded
+          handleConfirm(planToBuy);
+        } else {
+          setBuying(planToBuy);
+          // Clear navigation state so it doesn't open again on refresh
+          navigate(location.pathname, { replace: true, state: {} });
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planList, autoOpenPlanId, navigate, location.pathname, toppedUp]);
+
+  // Handle showing topped-up success toast
+  useEffect(() => {
+    if (location.state?.toppedUp) {
+      setShowToppedUpToast(true);
+      const timer = setTimeout(() => setShowToppedUpToast(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state?.toppedUp]);
 
   useEffect(() => {
     if (isApiConfigured() && getAuthToken()) return undefined;
@@ -484,11 +593,24 @@ const MembershipPlans = () => {
 
   const isActive = userMembership.status === 'active';
 
-  const handleConfirm = async () => {
-    if (!buying) return;
+  const handleConfirm = async (planToBuy = buying) => {
+    if (!planToBuy) return;
     if (isApiConfigured() && getAuthToken()) {
+      setCheckingBalance(true);
       try {
-        await purchaseMembership({ planId: buying.id });
+        const walletRes = await getMyWallet();
+        const currentBalance = walletRes.wallet?.balance || 0;
+        setWalletBalance(currentBalance);
+
+        if (currentBalance < planToBuy.price) {
+          setCheckingBalance(false);
+          setInsufficientPlan(planToBuy);
+          if (planToBuy === buying) setBuying(null);
+          setShowInsufficientBalanceModal(true);
+          return;
+        }
+
+        await purchaseMembership({ planId: planToBuy.id });
         const { memberships } = await listMyMemberships();
         const active = (memberships || []).find(
           (m) => m.status === 'active' && new Date(m.expiresAt) > new Date()
@@ -514,17 +636,33 @@ const MembershipPlans = () => {
         setBuying(null);
       } catch (err) {
         alert(err.message || 'Purchase failed. Ensure wallet has enough balance.');
+      } finally {
+        setCheckingBalance(false);
       }
       return;
     }
     navigate('/payment', {
       state: {
-        amount: buying.price,
-        plan: buying,
+        amount: planToBuy.price,
+        plan: planToBuy,
         type: 'membership',
       },
     });
-    setBuying(null);
+    if (planToBuy === buying) setBuying(null);
+  };
+
+  const handleTopUp = () => {
+    if (!insufficientPlan) return;
+    setShowInsufficientBalanceModal(false);
+    navigate('/payment', {
+      state: {
+        amount: insufficientPlan.price - walletBalance,
+        paymentPurpose: 'top_up',
+        redirectBack: '/membership',
+        pendingPlanId: insufficientPlan.id
+      }
+    });
+    setInsufficientPlan(null);
   };
 
   const handleCancel = () => {
@@ -541,6 +679,18 @@ const MembershipPlans = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] pb-20">
+      <AnimatePresence>
+        {showToppedUpToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -20, x: "-50%" }}
+            className="fixed top-20 left-1/2 z-[100] px-4 py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg flex items-center gap-2"
+          >
+            <CheckCircle2 size={14} /> Wallet topped up successfully!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Compact Hero */}
       <div className="bg-[#CE2029] px-4 pt-5 pb-8 relative overflow-hidden">
@@ -674,7 +824,15 @@ const MembershipPlans = () => {
           />
         )}
         {buying && (
-          <ConfirmModal plan={buying} onClose={() => setBuying(null)} onConfirm={handleConfirm} />
+          <ConfirmModal plan={buying} onClose={() => setBuying(null)} onConfirm={() => handleConfirm(buying)} loading={checkingBalance} />
+        )}
+        {showInsufficientBalanceModal && insufficientPlan && (
+          <InsufficientBalanceModal
+            plan={insufficientPlan}
+            walletBalance={walletBalance}
+            onClose={() => setShowInsufficientBalanceModal(false)}
+            onTopUp={handleTopUp}
+          />
         )}
         {cancelling && (
           <CancelModal plan={cancelling} onClose={() => setCancelling(null)} onConfirm={handleCancel} />

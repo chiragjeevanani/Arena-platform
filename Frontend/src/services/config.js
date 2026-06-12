@@ -16,3 +16,13 @@ export function getOtpMode() {
   if (m === 'dev' || m === 'disabled') return m;
   return 'disabled';
 }
+
+/** Razorpay public key ID (safe to expose on frontend). */
+export function getRazorpayKeyId() {
+  return (import.meta.env.VITE_RAZORPAY_KEY_ID || '').trim();
+}
+
+/** True when Razorpay key is configured in env. */
+export function isRazorpayConfigured() {
+  return Boolean(getRazorpayKeyId());
+}

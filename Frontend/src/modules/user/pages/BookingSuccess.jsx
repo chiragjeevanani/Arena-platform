@@ -214,7 +214,13 @@ const BookingSuccess = () => {
               transition={{ delay: 0.3 }}
               className={`text-2xl md:text-3xl font-black tracking-tight font-display mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}
             >
-              {bookingData?.type === 'membership' ? 'Welcome to the Club!' : bookingData?.batch ? 'Ready for Training!' : 'Slot Secured!'}
+              {bookingData?.type === 'membership' 
+                ? 'Welcome to the Club!' 
+                : bookingData?.type === 'wallet_top_up'
+                ? 'Top Up Successful!'
+                : bookingData?.batch 
+                ? 'Ready for Training!' 
+                : 'Slot Secured!'}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -222,7 +228,13 @@ const BookingSuccess = () => {
               transition={{ delay: 0.5 }}
               className={`text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}
             >
-              {bookingData?.type === 'membership' ? 'Your membership is now active' : bookingData?.batch ? 'Your academic journey begins here' : 'Prepare for your match at the arena'}
+              {bookingData?.type === 'membership' 
+                ? 'Your membership is now active' 
+                : bookingData?.type === 'wallet_top_up'
+                ? 'Your Arena Wallet has been credited'
+                : bookingData?.batch 
+                ? 'Your academic journey begins here' 
+                : 'Prepare for your match at the arena'}
             </motion.p>
           </div>
         </div>
@@ -245,7 +257,7 @@ const BookingSuccess = () => {
               <div className={`flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                 <div className="flex items-center gap-2">
                   <Receipt size={14} className={isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'} />
-                  <span>Verified E-Ticket</span>
+                  <span>Verified Receipt</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] animate-pulse" />
@@ -256,12 +268,30 @@ const BookingSuccess = () => {
               {/* Arena Info */}
               <div className="space-y-1">
                 <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                  {bookingData?.type === 'membership' ? 'Membership Active' : bookingData?.batch ? 'Academic Program' : bookingData?.type === 'event' ? 'Official Enrollment' : 'Arena Details'}
+                  {bookingData?.type === 'membership' 
+                    ? 'Membership Active' 
+                    : bookingData?.type === 'wallet_top_up'
+                    ? 'Arena Wallet'
+                    : bookingData?.batch 
+                    ? 'Academic Program' 
+                    : 'Arena Details'}
                 </p>
                 <h3 className={`text-xl md:text-2xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {bookingData?.type === 'membership' ? bookingData.plan?.name : bookingData?.batch ? bookingData.batch.coachName : bookingData?.type === 'event' ? bookingData.eventTitle : bookingData?.arena?.name}
+                  {bookingData?.type === 'membership' 
+                    ? bookingData.plan?.name 
+                    : bookingData?.type === 'wallet_top_up'
+                    ? 'Wallet Top Up'
+                    : bookingData?.batch 
+                    ? bookingData.batch.coachName 
+                    : bookingData?.arena?.name}
                   <span className={`block text-lg md:text-xl mt-0.5 ${isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'}`}>
-                    {bookingData?.type === 'membership' ? 'Tier ' + bookingData.plan?.category : bookingData?.batch ? bookingData.batch.level + ' Batch' : bookingData?.type === 'event' ? bookingData.eventCategory : bookingData?.court?.name}
+                    {bookingData?.type === 'membership' 
+                      ? 'Tier ' + bookingData.plan?.category 
+                      : bookingData?.type === 'wallet_top_up'
+                      ? 'Online Payment Added'
+                      : bookingData?.batch 
+                      ? bookingData.batch.level + ' Batch' 
+                      : bookingData?.court?.name}
                   </span>
                 </h3>
               </div>
@@ -269,17 +299,33 @@ const BookingSuccess = () => {
               {/* Detail Grid */}
               <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100">
                 <div className="space-y-1">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{bookingData?.type === 'membership' ? 'Activation Date' : 'Date'}</p>
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                    {bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up' ? 'Transaction Date' : 'Date'}
+                  </p>
                   <div className="flex items-center gap-2">
                     <CalendarDays size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{bookingData?.type === 'membership' ? new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : bookingData?.date}</p>
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      {bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up'
+                        ? new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) 
+                        : bookingData?.date}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{bookingData?.type === 'membership' ? 'Validity Period' : 'Timing'}</p>
+                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                    {bookingData?.type === 'wallet_top_up' ? 'Target Account' : bookingData?.type === 'membership' ? 'Validity Period' : 'Timing'}
+                  </p>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{bookingData?.type === 'membership' ? bookingData.plan?.duration : bookingData?.batch ? bookingData.batch.timing : bookingData?.slot?.time}</p>
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      {bookingData?.type === 'wallet_top_up'
+                        ? 'My Arena Wallet'
+                        : bookingData?.type === 'membership' 
+                        ? bookingData.plan?.duration 
+                        : bookingData?.batch 
+                        ? bookingData.batch.timing 
+                        : bookingData?.slot?.time}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -301,7 +347,7 @@ const BookingSuccess = () => {
                     ? 'bg-[#CE2029]/10 border-[#CE2029]/20 text-[#CE2029]'
                     : 'bg-[#CE2029] text-white border-[#CE2029] shadow-lg shadow-[#CE2029]/20'
                   }`}>
-                  Securely Paid
+                  Securely Credited
                 </div>
               </div>
             </div>
@@ -388,20 +434,32 @@ const BookingSuccess = () => {
             <div className={`p-5 rounded-[24px] border hidden lg:block ${isDark ? 'bg-gradient-to-br from-[#CE2029]/20 to-[#d43b33]/10 border-[#CE2029]/20' : 'bg-gradient-to-br from-[#CE2029] to-[#d43b33] shadow-xl shadow-[#CE2029]/30 text-white border-[#CE2029]'}`}>
               <div className="flex flex-col items-center text-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border ${isDark ? 'bg-[#CE2029]/10 border-[#CE2029]/20' : 'bg-white/10 border-white/20'}`}>
-                  <Home size={20} className={isDark ? 'text-[#CE2029]' : 'text-white'} />
+                  {bookingData?.redirectBack ? <Check size={20} className={isDark ? 'text-[#CE2029]' : 'text-white'} /> : <Home size={20} className={isDark ? 'text-[#CE2029]' : 'text-white'} />}
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className={`text-base font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-white'}`}>Ready for more?</h4>
-                  <p className={`text-[8px] font-bold opacity-70 leading-relaxed uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-white/80'}`}>Dashboard updated.</p>
+                  <h4 className={`text-base font-black font-display tracking-tight ${isDark ? 'text-white' : 'text-white'}`}>
+                    {bookingData?.redirectBack ? 'Topped Up & Funded!' : 'Ready for more?'}
+                  </h4>
+                  <p className={`text-[8px] font-bold opacity-70 leading-relaxed uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-white/80'}`}>
+                    {bookingData?.redirectBack ? 'Complete your membership purchase now.' : 'Dashboard updated.'}
+                  </p>
                 </div>
                 <ShuttleButton
                   variant="secondary"
                   size="sm"
                   fullWidth
-                  onClick={() => navigate('/home')}
+                  onClick={() => {
+                    if (bookingData?.redirectBack) {
+                      navigate(bookingData.redirectBack, {
+                        state: { autoOpenPlanId: bookingData.pendingPlanId, toppedUp: true }
+                      });
+                    } else {
+                      navigate('/home');
+                    }
+                  }}
                   className={`!rounded-[16px] py-3 transition-all shadow-lg text-[11px] ${isDark ? '!bg-[#CE2029] !text-white' : '!bg-white !text-[#CE2029] hover:scale-105'}`}
                 >
-                  Dashboard
+                  {bookingData?.redirectBack ? 'Complete Purchase' : 'Dashboard'}
                 </ShuttleButton>
               </div>
             </div>
@@ -416,11 +474,19 @@ const BookingSuccess = () => {
           variant="primary"
           size="md"
           fullWidth
-          icon={<Home size={16} />}
-          onClick={() => navigate('/home')}
+          icon={bookingData?.redirectBack ? <Check size={16} /> : <Home size={16} />}
+          onClick={() => {
+            if (bookingData?.redirectBack) {
+              navigate(bookingData.redirectBack, {
+                state: { autoOpenPlanId: bookingData.pendingPlanId, toppedUp: true }
+              });
+            } else {
+              navigate('/home');
+            }
+          }}
           className="shadow-md shadow-[#CE2029]/20 !rounded-2xl active:scale-95 transition-all py-3 text-xs"
         >
-          Back to Dashboard
+          {bookingData?.redirectBack ? 'Complete Purchase' : 'Back to Dashboard'}
         </ShuttleButton>
       </div>
     </div>
