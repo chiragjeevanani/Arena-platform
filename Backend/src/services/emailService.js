@@ -5,10 +5,24 @@ let transporter = null;
 function getTransporter() {
   if (transporter) return transporter;
 
+  let host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  let port = parseInt(process.env.SMTP_PORT || '587');
+  let secure = process.env.SMTP_SECURE === 'true';
+
+  // Overriding/Normalizing Gmail configuration for cloud hosting environments.
+  // Port 465 is frequently blocked by cloud hosts (like Render), so we force
+  // port 587 with STARTTLS (secure: false) which is widely open and supported by Gmail.
+  if (host === 'smtp.gmail.com') {
+    if (port === 465 || secure) {
+      port = 587;
+      secure = false;
+    }
+  }
+
   const mailConfig = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
+    host,
+    port,
+    secure,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
