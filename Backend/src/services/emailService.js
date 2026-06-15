@@ -6,32 +6,25 @@ function getTransporter() {
   if (transporter) return transporter;
 
   const mailConfig = {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    // Force IPv4 to prevent ENETUNREACH issues on cloud hosts (like Render) that do not support IPv6 routing
+    family: 4,
+    // Add TLS settings to prevent socket close/timeout issues on standard cloud environments
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2'
+    },
+    // Add socket timeout settings to fail faster/retry or debug better
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   };
-
-  // If using Gmail, it is highly recommended to let nodemailer use the built-in 'gmail' service configuration,
-  // which handles ports, TLS, and fallback options automatically to prevent connection timeouts on cloud hosts.
-  if (process.env.SMTP_SERVICE === 'gmail' || process.env.SMTP_HOST === 'smtp.gmail.com') {
-    mailConfig.service = 'gmail';
-  } else {
-    mailConfig.host = process.env.SMTP_HOST;
-    mailConfig.port = parseInt(process.env.SMTP_PORT || '587');
-    mailConfig.secure = process.env.SMTP_SECURE === 'true';
-  }
-
-  // Add TLS settings to prevent socket close/timeout issues on standard cloud environments
-  mailConfig.tls = {
-    rejectUnauthorized: false,
-    minVersion: 'TLSv1.2'
-  };
-
-  // Add socket timeout settings to fail faster/retry or debug better
-  mailConfig.connectionTimeout = 10000; // 10 seconds
-  mailConfig.greetingTimeout = 10000;
-  mailConfig.socketTimeout = 10000;
 
   transporter = nodemailer.createTransport(mailConfig);
   return transporter;
