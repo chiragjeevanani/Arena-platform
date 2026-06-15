@@ -1,56 +1,21 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
+const { Resend } = require('resend');
 
-let transporter = null;
+// Resend sends email via HTTPS (port 443), which is never blocked by cloud hosts.
+// This replaces the SMTP approach which Render blocks at the network level.
+let resend = null;
 
-function getTransporter() {
-  if (transporter) return transporter;
-
-  let host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  let port = parseInt(process.env.SMTP_PORT || '587');
-  let secure = process.env.SMTP_SECURE === 'true';
-
-  // Overriding/Normalizing Gmail configuration for cloud hosting environments.
-  // Port 465 is frequently blocked by cloud hosts (like Render), so we force
-  // port 587 with STARTTLS (secure: false) which is widely open and supported by Gmail.
-  if (host === 'smtp.gmail.com') {
-    if (port === 465 || secure) {
-      port = 587;
-      secure = false;
-    }
+function getResend() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
   }
-
-  const mailConfig = {
-    host,
-    port,
-    secure,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    // Force IPv4 to prevent ENETUNREACH issues on cloud hosts (like Render) that do not support IPv6 routing
-    family: 4,
-    lookup: (hostname, options, callback) => {
-      dns.lookup(hostname, { family: 4 }, callback);
-    },
-    // Add TLS settings to prevent socket close/timeout issues on standard cloud environments
-    tls: {
-      rejectUnauthorized: false,
-      minVersion: 'TLSv1.2'
-    },
-    // Add socket timeout settings to fail faster/retry or debug better
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-  };
-
-  transporter = nodemailer.createTransport(mailConfig);
-  return transporter;
+  return resend;
 }
 
+const FROM_ADDRESS = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'Arena CRM <onboarding@resend.dev>';
+
 async function sendVerificationEmail(to, otp) {
-  const mailOptions = {
-    from: process.env.SMTP_FROM,
+  const { error } = await getResend().emails.send({
+    from: FROM_ADDRESS,
     to,
     subject: 'Verify Your Email - Arena CRM',
     html: `
@@ -74,14 +39,16 @@ async function sendVerificationEmail(to, otp) {
         </p>
       </div>
     `,
-  };
+  });
 
-  return getTransporter().sendMail(mailOptions);
+  if (error) {
+    throw new Error(`Failed to send verification email: ${error.message}`);
+  }
 }
 
 async function sendPasswordResetEmail(to, resetUrl) {
-  const mailOptions = {
-    from: process.env.SMTP_FROM,
+  const { error } = await getResend().emails.send({
+    from: FROM_ADDRESS,
     to,
     subject: 'Reset Your Password - Arena CRM',
     html: `
@@ -96,9 +63,11 @@ async function sendPasswordResetEmail(to, resetUrl) {
         <p style="color: #999; font-size: 12px;">If you did not request a password reset, please ignore this email.</p>
       </div>
     `,
-  };
+  });
 
-  return getTransporter().sendMail(mailOptions);
+  if (error) {
+    throw new Error(`Failed to send password reset email: ${error.message}`);
+  }
 }
 
 module.exports = {
