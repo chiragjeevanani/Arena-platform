@@ -128,8 +128,8 @@ export function updateAdminCourt(courtId, body) {
 }
 
 export function listAdminCoachingBatches(arenaId) {
-  if (!arenaId) return Promise.reject(new Error('arenaId is required'));
-  return apiJson(`${BASE}/coaching-batches?arenaId=${encodeURIComponent(arenaId)}`, { method: 'GET' });
+  const qs = arenaId ? `?arenaId=${encodeURIComponent(arenaId)}` : '';
+  return apiJson(`${BASE}/coaching-batches${qs}`, { method: 'GET' });
 }
 
 export function createAdminCoachingBatch(body) {
@@ -147,6 +147,14 @@ export function deleteAdminCoachingBatch(batchId) {
 export function listAdminBatchStudents(batchId) {
   if (!batchId) return Promise.reject(new Error('batchId is required'));
   return apiJson(`${BASE}/coaching-batches/${encodeURIComponent(batchId)}/students`, { method: 'GET' });
+}
+
+export function enrollOfflineStudent(batchId, studentData) {
+  if (!batchId) return Promise.reject(new Error('batchId is required'));
+  return apiJson(`${BASE}/coaching-batches/${encodeURIComponent(batchId)}/enroll-offline`, {
+    method: 'POST',
+    body: studentData
+  });
 }
 
 export function listEventRegistrations(eventId) {

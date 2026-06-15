@@ -14,8 +14,56 @@ import { listMyBookings, updateMyBooking } from '../../../services/arenaStaffApi
 import { mapAdminBookingToLedgerRow } from '../../../utils/adminBookingAdapter';
 import { useArenaPanel } from '../context/ArenaPanelContext';
 import WalkInBookingModal from '../components/WalkInBookingModal';
+import { jsPDF } from 'jspdf';
 
 const mockBookings = [];
+
+// ── Invoice Generator ───────────────────────────────────────────
+const downloadInvoice = (booking) => {
+  const doc = new jsPDF();
+  
+  // Set Title
+  doc.setFontSize(22);
+  doc.setTextColor('#36454F');
+  doc.text('Booking Invoice', 105, 30, { align: 'center' });
+  
+  // Arena Name & Date
+  doc.setFontSize(12);
+  doc.setTextColor('#64748B');
+  doc.text(`Arena: ${booking.arena || 'Arena Platform'}`, 20, 50);
+  doc.text(`Date Issued: ${new Date().toLocaleDateString()}`, 140, 50);
+  
+  // Booking Info
+  doc.setFontSize(14);
+  doc.setTextColor('#36454F');
+  doc.text('Booking Details', 20, 70);
+  
+  doc.setFontSize(11);
+  doc.text(`Booking ID: ${booking.id}`, 20, 80);
+  doc.text(`Customer: ${booking.customer}`, 20, 90);
+  if(booking.customerPhone) doc.text(`Phone: ${booking.customerPhone}`, 20, 100);
+  doc.text(`Date: ${booking.date}`, 20, 110);
+  doc.text(`Time: ${booking.time}`, 20, 120);
+  doc.text(`Court: ${booking.court}`, 20, 130);
+  doc.text(`Status: ${booking.status}`, 20, 140);
+  
+  // Payment Info
+  doc.setFontSize(14);
+  doc.text('Payment Summary', 20, 160);
+  
+  doc.setFontSize(11);
+  doc.text(`Amount: OMR ${booking.amount.toFixed(3)}`, 20, 170);
+  doc.text(`Payment Status: ${booking.payment}`, 20, 180);
+  if(booking.paymentMethod) doc.text(`Payment Method: ${booking.paymentMethod}`, 20, 190);
+  
+  // Footer
+  doc.setFontSize(10);
+  doc.setTextColor('#94A3B8');
+  doc.text('Thank you for choosing Arena Platform!', 105, 280, { align: 'center' });
+  
+  // Save PDF
+  doc.save(`Invoice_${booking.id}.pdf`);
+};
 
 // ── View Details Modal ──────────────────────────────────────────
 const ViewDetailsModal = ({ booking, onClose }) => (
@@ -321,6 +369,7 @@ const ActionMenu = ({ booking, onAction }) => {
             <div className="space-y-1">
               {[
                 { id: 'view', label: 'View Details', icon: Eye, color: '#CE2029' },
+                { id: 'download_invoice', label: 'Download Invoice', icon: Download, color: '#4CAF50' },
                 { id: 'reschedule', label: 'Reschedule', icon: CalendarRange, color: '#CE2029', disabled: booking.status === 'Cancelled' || booking.status === 'Completed' },
                 { id: 'refund', label: 'Process Refund', icon: RefreshCw, color: '#E88E3E', disabled: booking.payment === 'Refunded' || booking.payment === 'Pending Refund' },
                 { id: 'cancel', label: 'Cancel Booking', icon: Trash2, color: '#FF4B4B', disabled: booking.status === 'Cancelled' },
@@ -653,6 +702,7 @@ const Bookings = () => {
                     <td className="px-6 py-4 text-center">
                       <ActionMenu booking={booking} onAction={(action) => {
                         if (action === 'view') setViewModal(booking);
+                        if (action === 'download_invoice') downloadInvoice(booking);
                         if (action === 'reschedule') setRescheduleModal(booking);
                         if (action === 'refund') setRefundModal(booking);
                         if (action === 'cancel') setCancelModal(booking);

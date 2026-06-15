@@ -1,10 +1,11 @@
 import { apiJson } from './apiClient';
 
-export function getAdminReportSummary({ arenaId, from, to } = {}) {
+export function getAdminReportSummary({ arenaId, from, to, batchId } = {}) {
   const q = new URLSearchParams();
   if (arenaId) q.set('arenaId', arenaId);
   if (from) q.set('from', from);
   if (to) q.set('to', to);
+  if (batchId) q.set('batchId', batchId);
   const qs = q.toString();
   return apiJson(`/api/admin/reports/summary${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }

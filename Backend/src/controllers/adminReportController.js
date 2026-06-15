@@ -15,10 +15,16 @@ async function adminReportSummary(req, res) {
   }
   const from = (req.query.from || '').trim();
   const to = (req.query.to || '').trim();
+  const batchId = (req.query.batchId || '').trim();
+  let bOid = null;
+  if (batchId && mongoose.isValidObjectId(batchId)) {
+    bOid = new mongoose.Types.ObjectId(batchId);
+  }
 
   const bookingMatch = {};
   if (from && to) bookingMatch.date = { $gte: from, $lte: to };
   if (aOid) bookingMatch.arenaId = aOid;
+  if (bOid) bookingMatch.batchId = bOid; // Will effectively zero out non-batch metrics
 
   // 1. Basic Stats
   const bookingAgg = await Booking.aggregate([
@@ -38,6 +44,7 @@ async function adminReportSummary(req, res) {
 
   const posMatch = {};
   if (aOid) posMatch.arenaId = aOid;
+  if (bOid) posMatch.batchId = bOid;
   if (from && to) {
     posMatch.createdAt = {
       $gte: new Date(`${from}T00:00:00.000Z`),
@@ -55,11 +62,15 @@ async function adminReportSummary(req, res) {
     const batchIds = await CoachingBatch.find({ arenaId: aOid }).distinct('_id');
     enrollMatch = { ...enrollMatch, batchId: { $in: batchIds } };
   }
+  if (bOid) {
+    enrollMatch.batchId = bOid;
+  }
   const enrollCount = await BatchEnrollment.countDocuments(enrollMatch);
 
   // Membership Stats
   const membershipRevenueMatch = {};
   if (aOid) membershipRevenueMatch.arenaId = aOid;
+  if (bOid) membershipRevenueMatch.batchId = bOid;
   if (from && to) {
     membershipRevenueMatch.createdAt = {
         $gte: new Date(`${from}T00:00:00.000Z`),
@@ -69,6 +80,7 @@ async function adminReportSummary(req, res) {
 
   const membershipActiveMatch = { status: 'active' };
   if (aOid) membershipActiveMatch.arenaId = aOid;
+  if (bOid) membershipActiveMatch.batchId = bOid;
 
   const membershipByPlan = await UserMembership.aggregate([
     { $match: membershipActiveMatch },
@@ -153,7 +165,11 @@ async function adminReportSummary(req, res) {
   const membershipRevenue = membershipTotalRevenue;
   
   // Coaching Revenue (approximate from enrollments if not explicitly in payments)
-  const coachingBatchData = await CoachingBatch.find(aOid ? { arenaId: aOid } : {});
+  let coachingBatchMatch = {};
+  if (aOid) coachingBatchMatch.arenaId = aOid;
+  if (bOid) coachingBatchMatch._id = bOid;
+  
+  const coachingBatchData = await CoachingBatch.find(coachingBatchMatch);
   const coachingRevenueAgg = await BatchEnrollment.aggregate([
     { $match: enrollMatch },
     {
@@ -165,9 +181,23 @@ async function adminReportSummary(req, res) {
       }
     },
     { $unwind: '$batch' },
-    { $group: { _id: null, total: { $sum: '$batch.price' } } }
+    { $group: { _id: '$batchId', total: { $sum: '$batch.price' } } }
   ]);
-  const coachingRevenue = coachingRevenueAgg[0]?.total || 0;
+  
+  const coachingRevenue = coachingRevenueAgg.reduce((acc, curr) => acc + curr.total, 0);
+
+  // Generate real coaching batch performance data
+  const coachingBatchPerformance = coachingBatchData.map(batch => {
+    const rev = coachingRevenueAgg.find(r => r._id.toString() === batch._id.toString())?.total || 0;
+    // We try to infer morning/evening from the batch title or schedule
+    const isMorning = (batch.title || '').toLowerCase().includes('morning') || (batch.schedule && batch.schedule.includes('AM'));
+    return {
+      name: batch.title || 'Batch',
+      morning: isMorning ? rev : 0,
+      evening: !isMorning ? rev : 0,
+      total: rev
+    };
+  });
 
   const totalRevenue = courtRevenue + retailRevenue + membershipRevenue + coachingRevenue;
   const sourceDistribution = [
@@ -219,9 +249,10 @@ async function adminReportSummary(req, res) {
     charts: {
       weeklyRevenue: weeklyRevenueData,
       sourceDistribution,
-      courtPerformance: courtPerf
+      courtPerformance: courtPerf,
+      coachingBatchPerformance
     },
-    range: { from: from || null, to: to || null, arenaId: arenaId || null },
+    range: { from: from || null, to: to || null, arenaId: arenaId || null, batchId: batchId || null },
   });
 }
 

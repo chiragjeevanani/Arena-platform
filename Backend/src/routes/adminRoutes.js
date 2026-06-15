@@ -38,6 +38,7 @@ const {
   updateCoachingBatch,
   deleteCoachingBatch,
   listBatchStudentsWithProgress,
+  enrollOfflineStudent
 } = require('../controllers/adminCoachingBatchController');
 const {
   createInventoryItem,
@@ -131,6 +132,7 @@ router.delete('/membership-plans/:planId', asyncHandler(deleteMembershipPlan));
 router.post('/coaching-batches', asyncHandler(createCoachingBatch));
 router.get('/coaching-batches', asyncHandler(listCoachingBatches));
 router.get('/coaching-batches/:batchId/students', asyncHandler(listBatchStudentsWithProgress));
+router.post('/coaching-batches/:batchId/enroll-offline', asyncHandler(enrollOfflineStudent));
 router.patch('/coaching-batches/:batchId', asyncHandler(updateCoachingBatch));
 router.delete('/coaching-batches/:batchId', asyncHandler(deleteCoachingBatch));
 

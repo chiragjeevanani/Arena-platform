@@ -280,6 +280,7 @@ async function listBatchStudentsWithProgress(req, res) {
       email: user.email,
       phone: user.phone,
       enrollmentStatus: e.status,
+      enrollmentType: e.enrollmentType,
       attendancePercentage: stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : '0.0',
       performanceScore: avgScore,
       lastProgressUpdate: progress?.updatedAt || null,
@@ -290,4 +291,74 @@ async function listBatchStudentsWithProgress(req, res) {
   return res.json({ students });
 }
 
-module.exports = { createCoachingBatch, listCoachingBatches, updateCoachingBatch, deleteCoachingBatch, listBatchStudentsWithProgress };
+async function enrollOfflineStudent(req, res) {
+  const { batchId } = req.params;
+  const { firstName, lastName, email, phone } = req.body;
+
+  if (!batchId || !mongoose.isValidObjectId(batchId)) {
+    return res.status(400).json({ error: 'Invalid batchId' });
+  }
+
+  if (!firstName || !phone) {
+    return res.status(400).json({ error: 'First name and phone number are required for offline enrollment' });
+  }
+
+  const batch = await CoachingBatch.findById(batchId);
+  if (!batch) return res.status(404).json({ error: 'Batch not found' });
+
+  // 1. Find or create user
+  // Let's try finding the user by phone first
+  let user = await User.findOne({ phone: String(phone).trim() });
+  
+  if (!user) {
+    // If not found by phone, try email if provided
+    if (email) {
+      user = await User.findOne({ email: String(email).trim().toLowerCase() });
+    }
+  }
+
+  if (!user) {
+    // Create a new "Offline" user
+    user = await User.create({
+      firstName: String(firstName).trim(),
+      lastName: lastName ? String(lastName).trim() : '',
+      phone: String(phone).trim(),
+      email: email ? String(email).trim().toLowerCase() : undefined,
+      password: await require('bcryptjs').hash(Date.now().toString() + Math.random().toString(), 10), // Random password for offline users
+      role: 'USER',
+      status: 'ACTIVE'
+    });
+  }
+
+  // 2. Check if already enrolled
+  const existing = await BatchEnrollment.findOne({ batchId, userId: user._id });
+  if (existing && ['pending', 'confirmed'].includes(existing.status)) {
+    return res.status(409).json({ error: 'User is already enrolled in this batch' });
+  }
+
+  // 3. Create Offline Enrollment
+  const enrollment = await BatchEnrollment.create({
+    batchId,
+    userId: user._id,
+    status: 'confirmed',
+    enrollmentType: 'offline'
+  });
+
+  // 4. Return new student record formatted for the frontend Matrix
+  const studentData = {
+    id: user._id.toString(),
+    name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+    email: user.email,
+    phone: user.phone,
+    enrollmentStatus: enrollment.status,
+    enrollmentType: enrollment.enrollmentType,
+    attendancePercentage: '0.0',
+    performanceScore: '0.0',
+    lastProgressUpdate: null,
+    metrics: []
+  };
+
+  return res.json({ student: studentData });
+}
+
+module.exports = { createCoachingBatch, listCoachingBatches, updateCoachingBatch, deleteCoachingBatch, listBatchStudentsWithProgress, enrollOfflineStudent };

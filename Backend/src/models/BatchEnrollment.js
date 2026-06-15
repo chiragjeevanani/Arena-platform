@@ -19,6 +19,11 @@ const batchEnrollmentSchema = new mongoose.Schema(
       enum: ['pending', 'confirmed', 'cancelled'],
       default: 'confirmed',
     },
+    enrollmentType: {
+      type: String,
+      enum: ['online', 'offline'],
+      default: 'online',
+    },
   },
   { timestamps: true }
 );
@@ -41,6 +46,7 @@ function toPublic(doc, extras = {}) {
     batchId: String(o.batchId),
     userId: String(o.userId),
     status: o.status,
+    enrollmentType: o.enrollmentType,
     createdAt: o.createdAt,
     ...extras,
   };

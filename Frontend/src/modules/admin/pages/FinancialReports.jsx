@@ -16,6 +16,7 @@ import {
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { getAdminReportSummary } from '../../../services/adminReportsApi';
+import { listAdminCoachingBatches } from '../../../services/adminOpsApi';
 
 // Revenue and ledger rows load from the API when connected.
 const monthlyRevenue = [];
@@ -49,7 +50,8 @@ const FinancialReports = () => {
   const [location, setLocation] = useState('AMM Sports Arena');
   
   const [selectedCourt, setSelectedCourt] = useState('All Courts');
-  const [selectedBatch, setSelectedBatch] = useState('All Batches');
+  const [batches, setBatches] = useState([]);
+  const [selectedBatchId, setSelectedBatchId] = useState('');
   const [apiSummary, setApiSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
@@ -67,7 +69,7 @@ const FinancialReports = () => {
     }
     setSummaryLoading(true);
     try {
-      const data = await getAdminReportSummary({ from: startDate, to: endDate });
+      const data = await getAdminReportSummary({ from: startDate, to: endDate, batchId: selectedBatchId });
       setApiSummary(data);
       
       // Map chart data
@@ -76,12 +78,12 @@ const FinancialReports = () => {
         setRevenueBySource(data.charts.sourceDistribution || []);
         setCourtUtilization(data.charts.courtPerformance || []);
         
-        // Map coaching revenue by week or batch if available
-        setCoachingRevenue([
-          { name: 'Academy A', morning: 400, evening: 600 },
-          { name: 'Academy B', morning: 300, evening: 500 },
-          { name: 'Academy C', morning: 500, evening: 400 },
-        ]);
+        // Use real coaching batch performance from backend if available
+        if (data.charts.coachingBatchPerformance) {
+           setCoachingRevenue(data.charts.coachingBatchPerformance);
+        } else {
+           setCoachingRevenue([]);
+        }
 
         setCorrelationData([
           { name: 'W1', retail: 40, events: 20 },
@@ -96,11 +98,25 @@ const FinancialReports = () => {
     } finally {
       setSummaryLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, selectedBatchId]);
 
   useEffect(() => {
     void loadSummary();
   }, [loadSummary]);
+
+  useEffect(() => {
+    async function fetchBatches() {
+      if (isApiConfigured() && getAuthToken()) {
+        try {
+          const res = await listAdminCoachingBatches();
+          setBatches(res || []);
+        } catch (e) {
+          console.error('Failed to load batches for filter', e);
+        }
+      }
+    }
+    fetchBatches();
+  }, []);
 
   const handleGenerateReport = () => {
     setIsGenerating(true);
@@ -234,6 +250,16 @@ const FinancialReports = () => {
           <MapPin size={14} className="text-slate-400" />
           <select value={location} onChange={e => setLocation(e.target.value)} className="bg-transparent text-[11px] font-semibold text-[#36454F] outline-none border-none cursor-pointer pr-2">
              <option>AMM Sports Arena</option>
+          </select>
+       </div>
+
+       <div className="flex items-center gap-2 border border-slate-200 rounded-xl p-1 px-3 bg-slate-50 h-[32px]">
+          <Layers size={14} className="text-slate-400" />
+          <select value={selectedBatchId} onChange={e => setSelectedBatchId(e.target.value)} className="bg-transparent text-[11px] font-semibold text-[#36454F] outline-none border-none cursor-pointer pr-2 max-w-[150px] truncate">
+             <option value="">All Batches</option>
+             {batches.map(b => (
+               <option key={b._id} value={b._id}>{b.title}</option>
+             ))}
           </select>
        </div>
 
@@ -462,12 +488,30 @@ const FinancialReports = () => {
                  <h3 className="text-[15px] font-bold uppercase tracking-widest mb-8 border-l-4 border-[#CE2029] pl-3">Academy Batch Performance</h3>
                  <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                       <BarChart data={coachingRevenue}>
+                       <BarChart data={coachingRevenue} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                          <defs>
+                             <linearGradient id="colorMorning" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#CE2029" stopOpacity={0.9}/>
+                                <stop offset="95%" stopColor="#CE2029" stopOpacity={0.4}/>
+                             </linearGradient>
+                             <linearGradient id="colorEvening" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#36454F" stopOpacity={0.9}/>
+                                <stop offset="95%" stopColor="#36454F" stopOpacity={0.4}/>
+                             </linearGradient>
+                          </defs>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }} />
-                          <Bar dataKey="morning" name="Morning" fill="#CE2029" stackId="a" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="evening" name="Evening" fill="#36454F" stackId="a" radius={[4, 4, 0, 0]} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#64748b' }} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#64748b' }} 
+                                 label={{ value: 'Revenue (OMR)', angle: -90, position: 'insideLeft', dx: -10, style: { textAnchor: 'middle', fill: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' } }} />
+                          <Tooltip 
+                             cursor={{fill: 'rgba(0,0,0,0.02)'}} 
+                             contentStyle={{ borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} 
+                             itemStyle={{ fontWeight: 800 }}
+                             formatter={(value, name) => value > 0 ? [`OMR ${value}`, name] : null} 
+                          />
+                          <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' }} iconType="circle" />
+                          <Bar dataKey="morning" name="Morning Batch" fill="url(#colorMorning)" stackId="a" radius={[8, 8, 0, 0]} barSize={50} />
+                          <Bar dataKey="evening" name="Evening Batch" fill="url(#colorEvening)" stackId="a" radius={[8, 8, 0, 0]} barSize={50} />
                        </BarChart>
                     </ResponsiveContainer>
                  </div>

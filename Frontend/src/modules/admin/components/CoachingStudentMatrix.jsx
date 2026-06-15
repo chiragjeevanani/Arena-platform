@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, GraduationCap, Star, Target, ChevronRight, Trophy, X, Activity } from 'lucide-react';
-import { listAdminBatchStudents } from '../../../services/adminOpsApi';
+import { Search, GraduationCap, Star, Target, ChevronRight, Trophy, X, Activity, UserPlus } from 'lucide-react';
+import { listAdminBatchStudents, enrollOfflineStudent } from '../../../services/adminOpsApi';
 import { COACH_PERFORMANCE_RUBRIC } from '../../coach/utils/performanceRubric';
 
 const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
@@ -10,6 +10,9 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [enrollmentFilter, setEnrollmentFilter] = useState('all'); // all, online, offline
+  const [showAddOfflineModal, setShowAddOfflineModal] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     if (batches.length > 0 && !selectedBatchId) {
@@ -34,10 +37,30 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
     }
   };
 
-  const filteredStudents = students.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredStudents = students.filter(s => {
+    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || (s.email && s.email.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesFilter = enrollmentFilter === 'all' ? true : s.enrollmentType === enrollmentFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const handleOfflineEnrollment = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    try {
+      const res = await enrollOfflineStudent(selectedBatchId, {
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        phone: formData.get('phone'),
+        email: formData.get('email')
+      });
+      setToast('Offline student registered successfully');
+      setStudents(prev => [res.student, ...prev]);
+      setShowAddOfflineModal(false);
+    } catch (err) {
+      setToast(err.message || 'Failed to register student');
+    }
+    setTimeout(() => setToast(null), 3000);
+  };
 
   return (
     <div className="space-y-6">
@@ -63,8 +86,24 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
                className="w-full py-2 pl-9 pr-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold"
              />
           </div>
+          <select 
+             value={enrollmentFilter}
+             onChange={(e) => setEnrollmentFilter(e.target.value)}
+             className="py-2 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-black"
+          >
+             <option value="all">All Students</option>
+             <option value="online">Online Only</option>
+             <option value="offline">Offline Only</option>
+          </select>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+           <button 
+             onClick={() => setShowAddOfflineModal(true)}
+             className="px-5 py-2.5 bg-[#CE2029] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/20 hover:-translate-y-1 transition-all flex items-center gap-2"
+           >
+             <UserPlus size={14} /> Add Offline
+           </button>
+           <div className="flex items-center gap-6">
            <div className="text-right">
               <p className="text-2xl font-black text-[#1e293b] leading-none">{students.length}</p>
               <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">Enrolled Students</p>
@@ -77,6 +116,7 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
               <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">Avg Performance</p>
            </div>
         </div>
+      </div>
       </div>
 
       {loading ? (
@@ -107,7 +147,14 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
                         <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Weighted Score</span>
                      </div>
                   </div>
-                  <h3 className="text-[15px] font-black text-[#1e293b] uppercase italic leading-none truncate group-hover:text-[#CE2029] transition-colors">{student.name}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                     <h3 className="font-black text-[#1e293b] text-[16px] leading-tight truncate uppercase tracking-tighter">
+                        {student.name}
+                     </h3>
+                     {student.enrollmentType === 'offline' && (
+                        <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-100 text-amber-600 text-[8px] font-black uppercase tracking-widest shrink-0">Offline</span>
+                     )}
+                  </div>
                   <p className="text-[10px] font-bold text-slate-400 mt-1.5 truncate">{student.email}</p>
                </div>
 
@@ -139,28 +186,28 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
       {/* Student Matrix Modal */}
       <AnimatePresence>
         {selectedStudent && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-8 pt-32 sm:pt-40 pb-10">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedStudent(null)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-2xl max-h-[90vh] rounded-[40px] bg-white shadow-2xl overflow-hidden flex flex-col"
+              className="relative w-full max-w-2xl max-h-[80vh] rounded-[32px] bg-white shadow-2xl overflow-hidden flex flex-col"
             >
               <div className="p-8 border-b border-slate-100 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-4">
-                   <div className="w-14 h-14 rounded-2xl bg-[#CE2029] text-white flex items-center justify-center text-2xl font-black">
+                   <div className="w-14 h-14 rounded-2xl bg-[#CE2029] text-white flex items-center justify-center text-2xl font-bold">
                       {selectedStudent.name.charAt(0)}
                    </div>
                    <div>
-                      <h3 className="text-xl font-black text-[#1e293b] uppercase italic leading-none">{selectedStudent.name}</h3>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-[#1e293b] capitalize leading-none">{selectedStudent.name}</h3>
+                      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-1.5 flex items-center gap-2">
                          <GraduationCap size={14} className="text-[#CE2029]" /> Performance Assessment Matrix
                       </p>
                    </div>
@@ -173,19 +220,19 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+               <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
                  <div className="grid grid-cols-3 gap-4">
                     <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100">
-                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Overall Score</p>
-                       <p className="text-3xl font-black text-[#CE2029] tracking-tighter italic">{selectedStudent.performanceScore}</p>
+                       <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Overall Score</p>
+                       <p className="text-3xl font-bold text-[#CE2029] tracking-tight">{selectedStudent.performanceScore}</p>
                     </div>
                     <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100">
-                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Attendance</p>
-                       <p className="text-3xl font-black text-[#1e293b] tracking-tighter italic">{selectedStudent.attendancePercentage}%</p>
+                       <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Attendance</p>
+                       <p className="text-3xl font-bold text-[#1e293b] tracking-tight">{selectedStudent.attendancePercentage}%</p>
                     </div>
                     <div className="p-5 rounded-3xl bg-[#1e293b] border border-white/5">
-                       <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Assessment</p>
-                       <p className="text-[11px] font-black text-emerald-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+                       <p className="text-[9px] font-semibold text-white/50 uppercase tracking-wider mb-1">Assessment</p>
+                       <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mt-2 flex items-center gap-2">
                           <Activity size={12} /> Live Sync
                        </p>
                     </div>
@@ -194,7 +241,7 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
                  <div className="space-y-8">
                     {COACH_PERFORMANCE_RUBRIC.map((group) => (
                        <div key={group.category}>
-                          <h4 className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                          <h4 className="text-[11px] font-bold text-[#CE2029] uppercase tracking-widest mb-4 flex items-center gap-2">
                              <div className="w-4 h-px bg-[#CE2029]/20" /> {group.category}
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -203,7 +250,7 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
                                 return (
                                    <div key={m.id} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-between">
                                       <div className="flex-1 pr-4">
-                                         <p className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">{m.name}</p>
+                                         <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">{m.name}</p>
                                          <div className="mt-2 h-1 bg-slate-100 rounded-full overflow-hidden flex gap-0.5">
                                             {Array.from({ length: 10 }).map((_, i) => (
                                                <div key={i} className={`flex-1 rounded-full ${i < score ? 'bg-[#CE2029]' : 'bg-slate-200/50'}`} />
@@ -211,7 +258,7 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
                                          </div>
                                       </div>
                                       <div className="text-right shrink-0">
-                                         <span className="text-[14px] font-black text-[#1e293b] tracking-tighter">{score}.0</span>
+                                         <span className="text-[14px] font-bold text-[#1e293b]">{score}.0</span>
                                       </div>
                                    </div>
                                 );
@@ -225,7 +272,7 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
               <div className="p-8 border-t border-slate-100 bg-slate-50 shrink-0">
                  <div className="flex items-center gap-3">
                     <Trophy className="text-[#CE2029]" size={20} />
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                        Assessment data is managed by the assigned Coach. Arena Admin view is read-only.
                     </p>
                  </div>
@@ -234,6 +281,69 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Add Offline Student Modal */}
+      <AnimatePresence>
+        {showAddOfflineModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddOfflineModal(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-lg rounded-[32px] border-2 border-slate-200 bg-white shadow-2xl overflow-hidden"
+            >
+              <form onSubmit={handleOfflineEnrollment}>
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="text-xl font-black flex items-center gap-2">
+                    <UserPlus className="text-[#CE2029]" size={22} /> Register Offline Walk-In
+                  </h3>
+                  <button type="button" onClick={() => setShowAddOfflineModal(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
+                </div>
+                
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">First Name</label>
+                      <input name="firstName" required className="w-full py-2.5 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                    </div>
+                    <div className="col-span-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Last Name</label>
+                      <input name="lastName" className="w-full py-2.5 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Phone Number</label>
+                    <input name="phone" required placeholder="+968" className="w-full py-2.5 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Email (Optional)</label>
+                    <input name="email" type="email" className="w-full py-2.5 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                  </div>
+                  
+                  {toast && (
+                    <div className="p-3 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold border border-blue-100">
+                      {toast}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                  <button type="button" onClick={() => setShowAddOfflineModal(false)} className="px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest text-slate-400 hover:text-[#1e293b] transition-all">Cancel</button>
+                  <button type="submit" className="px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest bg-[#CE2029] text-white hover:-translate-y-0.5 transition-all shadow-lg shadow-[#CE2029]/20">Register Walk-In</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

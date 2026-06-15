@@ -140,7 +140,7 @@ const Header = () => {
               {!isLoggedIn ? (
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-4 md:px-5 h-8 md:h-9 bg-[#CE2029] text-[#CE2029] font-bold text-[10px] md:text-[11px] uppercase tracking-wider rounded-xl hover:bg-[#1de97b] transition-all flex items-center gap-2 shadow-lg active:scale-95 ml-1"
+                  className="px-4 md:px-5 h-8 md:h-9 bg-white text-[#CE2029] font-bold text-[10px] md:text-[11px] uppercase tracking-wider rounded-xl hover:bg-slate-100 transition-all flex items-center gap-2 shadow-lg active:scale-95 ml-1"
                 >
                   <LogIn size={14} strokeWidth={3} />
                   <span className="hidden lg:inline whitespace-nowrap">Login</span>
