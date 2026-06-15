@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 
 let transporter = null;
 
@@ -29,6 +30,9 @@ function getTransporter() {
     },
     // Force IPv4 to prevent ENETUNREACH issues on cloud hosts (like Render) that do not support IPv6 routing
     family: 4,
+    lookup: (hostname, options, callback) => {
+      dns.lookup(hostname, { family: 4 }, callback);
+    },
     // Add TLS settings to prevent socket close/timeout issues on standard cloud environments
     tls: {
       rejectUnauthorized: false,
