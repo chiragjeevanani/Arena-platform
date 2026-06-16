@@ -19,6 +19,11 @@ const Signup = () => {
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [referralCode, setReferralCode] = useState(searchParams.get('ref') || '');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -123,10 +128,20 @@ const Signup = () => {
         setSubmitError('Full name is required');
         return;
       }
+      if (password.length < 8) {
+        setPasswordError('Password must be at least 8 characters');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordError('Passwords do not match');
+        return;
+      }
+      setPasswordError('');
       setLoading(true);
       try {
         await registerRequest({
           email: email.trim().toLowerCase(),
+          password,
           name: name.trim(),
           referralCode: referralCode.trim(),
         });
@@ -390,7 +405,98 @@ const Signup = () => {
                   }}
                 />
 
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Create Password"
+                  type={showPassword ? 'text' : 'password'}
+                  variant="outlined"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordError) setPasswordError('');
+                  }}
+                  error={!!passwordError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '&.Mui-error fieldset': { borderColor: '#d32f2f' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                    },
+                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
+                    '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
+                  }}
+                />
 
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Confirm Password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  variant="outlined"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (passwordError) setPasswordError('');
+                  }}
+                  error={!!passwordError}
+                  helperText={passwordError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle confirm password visibility"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '&.Mui-error fieldset': { borderColor: '#d32f2f' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                    },
+                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
+                    '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
+                  }}
+                />
 
                 <TextField
                   fullWidth

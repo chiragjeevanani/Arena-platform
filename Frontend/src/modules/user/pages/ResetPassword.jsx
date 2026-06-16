@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import { Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -8,10 +8,8 @@ import { resetPasswordRequest } from '../../../services/authApi';
 import Logo from '../../../assets/Logo (3).png';
 
 const ResetPassword = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const tokenFromUrl = useMemo(() => searchParams.get('token') || '', [searchParams]);
-  const [token, setToken] = useState(tokenFromUrl);
+  const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,12 +22,12 @@ const ResetPassword = () => {
     setSubmitError('');
 
     if (!isApiConfigured()) {
-      setSubmitError('API is not configured. Set VITE_API_BASE_URL to reset your password.');
+      setSubmitError('API is not configured.');
       return;
     }
-    const t = (searchParams.get('token') || token).trim();
-    if (!t) {
-      setSubmitError('Reset token is required (open the link from your email).');
+    const t = otp.trim();
+    if (!t || t.length !== 6) {
+      setSubmitError('Please enter the 6-digit OTP code.');
       return;
     }
     if (!password || password.length < 8) {
@@ -72,25 +70,25 @@ const ResetPassword = () => {
             <h1 className="text-2xl font-black text-[#0F172A] tracking-tight" style={{ fontFamily: "'Montserrat', 'Outfit', sans-serif" }}>
               New password
             </h1>
-            <p className="text-slate-500 mt-1 text-xs font-medium">Choose a strong password for your account</p>
+            <p className="text-slate-500 mt-1 text-xs font-medium">Enter the 6-digit code and your new password</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            {!tokenFromUrl && (
-              <TextField
-                fullWidth
-                size="small"
-                label="Reset token"
-                variant="outlined"
-                value={token}
-                onChange={(ev) => setToken(ev.target.value)}
-                helperText="Paste the token from your reset email if the link did not include it."
-                sx={{
-                  '& .MuiOutlinedInput-root': { borderRadius: '12px' },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-                }}
-              />
-            )}
+            <TextField
+              fullWidth
+              size="small"
+              label="6-Digit OTP Code"
+              variant="outlined"
+              value={otp}
+              onChange={(ev) => {
+                setOtp(ev.target.value);
+                if (submitError) setSubmitError('');
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
+              }}
+            />
 
             <TextField
               fullWidth

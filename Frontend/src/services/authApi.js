@@ -54,10 +54,10 @@ export function forgotPasswordRequest(email) {
   });
 }
 
-export function resetPasswordRequest(token, newPassword) {
+export function resetPasswordRequest(otp, newPassword) {
   return apiJson('/api/auth/reset-password', {
     method: 'POST',
-    body: { token, newPassword },
+    body: { otp, newPassword },
     skipAuth: true,
   });
 }

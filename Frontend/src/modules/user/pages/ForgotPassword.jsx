@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TextField, Button, InputAdornment } from '@mui/material';
 import { Email } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -8,6 +8,7 @@ import { forgotPasswordRequest } from '../../../services/authApi';
 import Logo from '../../../assets/Logo (3).png';
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [submitError, setSubmitError] = useState('');
@@ -39,13 +40,8 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      const data = await forgotPasswordRequest(email.trim().toLowerCase());
-      setDoneMessage(
-        'If an account exists for that email, you will receive reset instructions shortly.'
-      );
-      if (data && typeof data.resetToken === 'string' && data.resetToken) {
-        setDevToken(data.resetToken);
-      }
+      await forgotPasswordRequest(email.trim().toLowerCase());
+      navigate('/reset-password');
     } catch (err) {
       setSubmitError(err.message || 'Request failed');
     } finally {

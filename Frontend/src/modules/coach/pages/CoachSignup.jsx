@@ -17,8 +17,12 @@ const CoachSignup = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     specialty: 'Badminton',
   });
+  const [passwordError, setPasswordError] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitError, setSubmitError] = useState('');
   
   // OTP Verification States
@@ -104,11 +108,21 @@ const CoachSignup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
+    setPasswordError('');
+    if (formData.password.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
     setIsLoading(true);
     try {
       if (isApiConfigured()) {
         await coachRegisterRequest({
           email: formData.email.trim().toLowerCase(),
+          password: formData.password,
           name: formData.name.trim(),
         });
         setIsRegistered(true);
@@ -304,6 +318,93 @@ const CoachSignup = () => {
                   }}
                   sx={{ 
                     mb: 2.5, // Added margin bottom
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '16px',
+                      backgroundColor: 'rgba(248,250,252,0.8)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Create Password"
+                  type={showPassword ? 'text' : 'password'}
+                  variant="outlined"
+                  value={formData.password}
+                  onChange={(e) => {
+                    setFormData({ ...formData, password: e.target.value });
+                    if (passwordError) setPasswordError('');
+                  }}
+                  error={!!passwordError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    mb: 2.5,
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '16px',
+                      backgroundColor: 'rgba(248,250,252,0.8)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Confirm Password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  variant="outlined"
+                  value={formData.confirmPassword}
+                  onChange={(e) => {
+                    setFormData({ ...formData, confirmPassword: e.target.value });
+                    if (passwordError) setPasswordError('');
+                  }}
+                  error={!!passwordError}
+                  helperText={passwordError}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle confirm password visibility"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    mb: 2.5,
                     '& .MuiOutlinedInput-root': { 
                       borderRadius: '16px',
                       backgroundColor: 'rgba(248,250,252,0.8)',
