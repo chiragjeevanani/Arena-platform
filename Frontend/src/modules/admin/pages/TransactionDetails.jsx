@@ -57,6 +57,26 @@ const TransactionDetails = () => {
         logging: false,
         backgroundColor: '#ffffff',
         onclone: (clonedDoc) => {
+          // Prevent html2canvas crash by replacing oklch colors in style tags and inline styles
+          clonedDoc.querySelectorAll('style').forEach(style => {
+            try {
+              if (style.innerHTML && style.innerHTML.includes('oklch')) {
+                style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, '#CE2029');
+              }
+            } catch (e) {
+              console.warn('Failed to sanitize style tag:', e);
+            }
+          });
+
+          clonedDoc.querySelectorAll('[style]').forEach(el => {
+            try {
+              const styleAttr = el.getAttribute('style');
+              if (styleAttr && styleAttr.includes('oklch')) {
+                el.setAttribute('style', styleAttr.replace(/oklch\([^)]+\)/g, '#CE2029'));
+              }
+            } catch (e) {}
+          });
+
           // html2canvas crashes on oklch() colors. 
           // We must remove or replace them in the cloned document's styles.
           const style = clonedDoc.createElement('style');

@@ -152,15 +152,38 @@ const Dashboard = () => {
 
   const refetchBookings = useCallback(async () => {
     const savedBookings = JSON.parse(storage.getItem('userBookings') || '[]');
-    if (!isApiConfigured() || !getAuthToken()) {
+    if (isApiConfigured() && !getAuthToken()) {
+      navigate('/login', { state: { from: '/bookings' } });
+      return;
+    }
+    if (!isApiConfigured()) {
       setAllBookings(savedBookings);
       return;
     }
+
+    const handleAuthError = (err) => {
+      if (err.status === 401) {
+        navigate('/login', { state: { from: '/bookings' } });
+      }
+    };
+
     try {
       const [data, enData, evData] = await Promise.all([
-        listMyBookings().catch(err => { console.error('Bookings API Fail:', err); return { bookings: [] }; }),
-        listMyEnrollments().catch(err => { console.error('Enrollments API Fail:', err); return { enrollments: [] }; }),
-        listMyEventRegistrations().catch(err => { console.error('Events API Fail:', err); return { registrations: [] }; }),
+        listMyBookings().catch(err => { 
+          console.error('Bookings API Fail:', err); 
+          handleAuthError(err);
+          return { bookings: [] }; 
+        }),
+        listMyEnrollments().catch(err => { 
+          console.error('Enrollments API Fail:', err); 
+          handleAuthError(err);
+          return { enrollments: [] }; 
+        }),
+        listMyEventRegistrations().catch(err => { 
+          console.error('Events API Fail:', err); 
+          handleAuthError(err);
+          return { registrations: [] }; 
+        }),
       ]);
       console.log('RAW API DATA - Bookings:', data);
       console.log('RAW API DATA - Enrollments:', enData);
@@ -209,7 +232,7 @@ const Dashboard = () => {
       // as it might contain bookings that were deleted/cancelled on server.
       setAllBookings([]);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     refetchBookings();

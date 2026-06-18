@@ -239,7 +239,7 @@ const Signup = () => {
                 </button>
               </div>
 
-              <div className="space-y-3 pt-2">
+              <div className="flex flex-col gap-4 pt-2">
                 <Button
                   fullWidth
                   type="submit"
@@ -290,7 +290,7 @@ const Signup = () => {
               <p className="text-slate-500 mt-1 text-sm font-medium">Start your badminton journey today</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               {submitError && (
                 <p className="text-xs text-red-600 font-semibold text-center">{submitError}</p>
               )}

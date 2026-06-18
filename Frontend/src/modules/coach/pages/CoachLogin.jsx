@@ -128,6 +128,7 @@ const CoachLogin = () => {
                 ),
               }}
               sx={{ 
+                mb: 2.5,
                 '& .MuiOutlinedInput-root': { 
                   borderRadius: '16px',
                   backgroundColor: 'rgba(248,250,252,0.8)',
@@ -170,6 +171,7 @@ const CoachLogin = () => {
                 ),
               }}
               sx={{ 
+                mb: 1.5,
                 '& .MuiOutlinedInput-root': { 
                   borderRadius: '16px',
                   backgroundColor: 'rgba(248,250,252,0.8)',

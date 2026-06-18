@@ -1,8 +1,11 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, ChevronRight, Download, Map, XCircle, Trophy, Activity, UserCheck, Star } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, ChevronRight, Download, Map, XCircle, Trophy, Activity, UserCheck, Star, Eye, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { useEffect, useState } from 'react';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
@@ -11,18 +14,28 @@ import { listMyEventRegistrations, listMyEnrollments, getMyEnrollmentById } from
 import { mapMeBookingToDashboardCard, mapMeEnrollmentToDashboardCard } from '../../../utils/meBookingAdapter';
 import { mapEventRegistrationToDashboardCard } from '../../../utils/eventRegistrationAdapter';
 import { storage } from '../../../utils/storage';
+import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
+import Logo from '../../../assets/Logo (3).png';
 
 const BookingDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const { id } = useParams();
+  const { user } = useAuth();
   
   const [booking, setBooking] = useState(state?.booking || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
+    // Prevent continuous requests if we already have the booking from navigation state
+    if (booking && String(booking?.id) === String(id)) {
+      return;
+    }
+
     const fetchBookingDetails = async () => {
       try {
         setLoading(true);
@@ -99,6 +112,84 @@ const BookingDetails = () => {
     }
   }, [booking]);
 
+  const handleDownload = async (elementId = 'invoice-report-view') => {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          const btnContainer = clonedDoc.getElementById('invoice-actions');
+          if (btnContainer) btnContainer.style.display = 'none';
+
+          // Prevent html2canvas crash by replacing oklch colors in style tags and inline styles
+          clonedDoc.querySelectorAll('style').forEach(style => {
+            try {
+              if (style.innerHTML && style.innerHTML.includes('oklch')) {
+                style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, '#CE2029');
+              }
+            } catch (e) {
+              console.warn('Failed to sanitize style tag:', e);
+            }
+          });
+
+          clonedDoc.querySelectorAll('[style]').forEach(el => {
+            try {
+              const styleAttr = el.getAttribute('style');
+              if (styleAttr && styleAttr.includes('oklch')) {
+                el.setAttribute('style', styleAttr.replace(/oklch\([^)]+\)/g, '#CE2029'));
+              }
+            } catch (e) {}
+          });
+
+          const style = clonedDoc.createElement('style');
+          style.innerHTML = `
+            * { 
+              -webkit-print-color-adjust: exact; 
+              box-shadow: none !important;
+              text-shadow: none !important;
+              animation: none !important;
+            }
+            /* Fallback for oklch colors which crash html2canvas */
+            [class*="bg-"], [class*="text-"], [class*="border-"] {
+              color: inherit;
+              border-color: #e2e8f0;
+            }
+            .bg-slate-900 { background-color: #0f172a !important; color: #ffffff !important; }
+            .text-white { color: #ffffff !important; }
+            .bg-[#CE2029] { background-color: #CE2029 !important; }
+            .text-[#CE2029] { color: #CE2029 !important; }
+            .bg-white { background-color: #ffffff !important; }
+            .text-slate-900 { color: #0f172a !important; }
+            .text-slate-400 { color: #94a3b8 !important; }
+            .text-blue-500 { color: #3b82f6 !important; }
+            .text-emerald-600 { color: #059669 !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Invoice-${booking.id || 'booking'}.pdf`);
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
+      alert(`PDF generation failed: ${err.message}\nOpening Print dialog as fallback...`);
+      window.print();
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (loading) return (
     <div className={`p-20 text-center ${'text-slate-400'}`}>
       <div className="animate-spin w-8 h-8 border-4 border-[#CE2029] border-t-transparent rounded-full mx-auto mb-4" />
@@ -174,7 +265,15 @@ const BookingDetails = () => {
                className="bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-sm"
             >
                <div className="aspect-[21/7] relative">
-                  <img src={booking.arenaImage || "https://images.unsplash.com/photo-1544497422-944f21db2eec"} alt={booking.arenaName} className="w-full h-full object-cover" />
+                  <img 
+                    src={booking.arenaImage || ArenaProfile} 
+                    alt={booking.arenaName} 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => { 
+                      e.currentTarget.onerror = null; 
+                      e.currentTarget.src = ArenaProfile; 
+                    }}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 lg:p-6">
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
@@ -348,6 +447,7 @@ const BookingDetails = () => {
           {/* RIGHT COLUMN: Receipt Block */}
           <div className="lg:col-span-5 relative">
             <motion.div
+               id="invoice-content"
                initial={{ opacity: 0, scale: 0.95 }}
                animate={{ opacity: 1, scale: 1 }}
                transition={{ delay: 0.1 }}
@@ -411,14 +511,25 @@ const BookingDetails = () => {
                      </div>
                   </div>
 
-                  <div className="pt-3 space-y-2.5 flex flex-col items-center">
+                  <div id="invoice-actions" className="pt-3 space-y-2.5 flex flex-col items-center w-full">
+                     <ShuttleButton
+                        variant="primary"
+                        fullWidth
+                        onClick={() => setShowPreview(true)}
+                        className="py-3 text-[10px] font-black uppercase tracking-widest bg-[#CE2029] hover:bg-[#CE2029]/90 text-white"
+                        icon={<Eye size={14} />}
+                     >
+                        Preview Invoice
+                     </ShuttleButton>
                      <ShuttleButton
                         variant="outline"
                         fullWidth
+                        onClick={() => handleDownload('invoice-report-view')}
+                        disabled={isDownloading}
                         className="py-3 text-[10px]"
-                        icon={<Download size={14} />}
+                        icon={isDownloading ? <div className="animate-spin w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full" /> : <Download size={14} />}
                      >
-                        Download Invoice
+                        {isDownloading ? 'Generating PDF...' : 'Download Invoice'}
                      </ShuttleButton>
                      {booking.status === 'Upcoming' && (
                         <button className="flex justify-center items-center gap-1.5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors">
@@ -430,8 +541,240 @@ const BookingDetails = () => {
             </motion.div>
           </div>
 
-        </div>
+         </div>
       </div>
+
+      {/* Off-screen Print Container for html2canvas */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+         <div id="invoice-report-view" className="w-[800px] p-10 bg-white text-slate-800 font-sans border border-slate-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+            {/* Invoice Header */}
+            <div className="flex justify-between items-start border-b border-slate-200 pb-6 mb-6">
+               <div className="flex items-center gap-4">
+                  <img src={Logo} alt="Logo" className="h-12 w-auto object-contain" />
+                  <div>
+                     <h2 className="text-xl font-black uppercase tracking-wider text-slate-900">AMM Sports</h2>
+                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">AMM Sports Arena Muscat, Oman</p>
+                  </div>
+               </div>
+               <div className="text-right">
+                  <h1 className="text-2xl font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">Invoice</h1>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                     Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </p>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+                     Invoice No: INV-{booking.id || 'N/A'}
+                  </p>
+               </div>
+            </div>
+
+            {/* Bill To & Reference */}
+            <div className="grid grid-cols-2 gap-8 mb-8 text-[11px]">
+               <div>
+                  <h3 className="font-black text-slate-400 uppercase tracking-widest mb-2.5">Billed To</h3>
+                  <p className="text-sm font-black text-slate-800">{user?.name || booking?.customerName || 'Valued Customer'}</p>
+                  <p className="font-bold text-slate-500 mt-1">{user?.email || 'customer@ammsports.com'}</p>
+                  {user?.phone && <p className="font-bold text-slate-500 mt-0.5">{user.phone}</p>}
+               </div>
+               <div className="text-right">
+                  <h3 className="font-black text-slate-400 uppercase tracking-widest mb-2.5">Booking Details</h3>
+                  <p className="font-bold text-slate-600">Status: <span className="text-emerald-600 font-black uppercase">{booking.status || 'Confirmed'}</span></p>
+                  <p className="font-bold text-slate-600 mt-1">Arena: <span className="text-slate-800 font-black">{booking.arenaName}</span></p>
+                  <p className="font-bold text-slate-600 mt-0.5">Location: <span className="text-slate-800 font-bold">{booking.location}</span></p>
+               </div>
+            </div>
+
+            {/* Line Items Table */}
+            <table className="w-full text-left border-collapse text-[11px] mb-8">
+               <thead>
+                  <tr className="bg-slate-50 text-slate-400 uppercase tracking-widest font-black border-y border-slate-200/60">
+                     <th className="py-3 px-4">Description</th>
+                     <th className="py-3 px-4 text-center">Court / Section</th>
+                     <th className="py-3 px-4 text-center">Schedule / Slot</th>
+                     <th className="py-3 px-4 text-right">Amount</th>
+                  </tr>
+               </thead>
+               <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
+                  <tr>
+                     <td className="py-4 px-4">
+                        <span className="font-black text-slate-800">{booking.type === 'COACHING' ? 'Coaching Program Enrollment' : 'Court Booking'}</span>
+                        <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Reference #{booking.id}</div>
+                     </td>
+                     <td className="py-4 px-4 text-center font-black text-slate-800">{booking.courtName || 'Main Court'}</td>
+                     <td className="py-4 px-4 text-center text-slate-600">
+                        <div>{booking.date}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{booking.slot}</div>
+                     </td>
+                     <td className="py-4 px-4 text-right font-black text-slate-800">OMR {baseRate.toFixed(3)}</td>
+                  </tr>
+               </tbody>
+            </table>
+
+            {/* Total Pricing Box */}
+            <div className="flex justify-end mb-8 text-[11px]">
+               <div className="w-64 space-y-2 border-t border-slate-200 pt-4">
+                  <div className="flex justify-between font-bold text-slate-400 uppercase tracking-wider">
+                     <span>Base Rate</span>
+                     <span className="text-slate-800 font-black">OMR {baseRate.toFixed(3)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-slate-400 uppercase tracking-wider">
+                     <span>Tax Amount ({taxPct}%)</span>
+                     <span className="text-slate-800 font-black">OMR {taxAmount.toFixed(3)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-900 font-black border-t border-slate-200 pt-2 text-sm uppercase tracking-wide">
+                     <span>Total Paid</span>
+                     <span className="text-[#CE2029] text-base font-black">OMR {priceParsed.toFixed(3)}</span>
+                  </div>
+               </div>
+            </div>
+
+            {/* Note & Footer */}
+            <div className="border-t border-slate-200/80 pt-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+               <p className="text-slate-500">Thank you for choosing AMM Sports!</p>
+               <p className="mt-1 text-[8px]">This is a computer-generated document. No signature required.</p>
+            </div>
+         </div>
+      </div>
+
+      {/* Invoice Preview Modal */}
+      <AnimatePresence>
+         {showPreview && (
+            <div className="fixed inset-0 z-[999] flex items-center justify-center p-2 sm:p-4">
+               {/* Backdrop */}
+               <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowPreview(false)}
+                  className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+               />
+
+               {/* Modal Card */}
+               <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  className="relative bg-white w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden z-10 flex flex-col max-h-[85vh] sm:max-h-[90vh]"
+               >
+                  {/* Modal Header */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+                     <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-[#CE2029]/10 flex items-center justify-center text-[#CE2029]">
+                           <Eye size={16} />
+                        </div>
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">Invoice Preview</h3>
+                     </div>
+                     <button
+                        onClick={() => setShowPreview(false)}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+                     >
+                        <X size={18} />
+                     </button>
+                  </div>
+
+                  {/* Scrollable Preview Area */}
+                  <div className="p-4 sm:p-6 overflow-auto flex-1 bg-slate-100 flex justify-start md:justify-center">
+                     <div className="bg-white p-6 sm:p-8 lg:p-10 shadow-lg border border-slate-200 w-[680px] min-w-[680px] md:w-full md:max-w-[700px] md:min-w-0 rounded-lg">
+                        <div className="flex justify-between items-start border-b border-slate-200 pb-6 mb-6">
+                           <div className="flex items-center gap-4">
+                              <img src={Logo} alt="Logo" className="h-10 w-auto object-contain" />
+                              <div>
+                                 <h2 className="text-sm font-black uppercase tracking-wider text-slate-900">AMM Sports</h2>
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Muscat, Oman</p>
+                              </div>
+                           </div>
+                           <div className="text-right">
+                              <h1 className="text-lg font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">Invoice</h1>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                 Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </p>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+                                 No: INV-{booking.id || 'N/A'}
+                              </p>
+                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6 mb-8 text-[10px]">
+                           <div>
+                              <h3 className="font-black text-slate-400 uppercase tracking-widest mb-2">Billed To</h3>
+                              <p className="text-xs font-black text-slate-800">{user?.name || booking?.customerName || 'Valued Customer'}</p>
+                              <p className="font-bold text-slate-500 mt-0.5">{user?.email || 'customer@ammsports.com'}</p>
+                           </div>
+                           <div className="text-right">
+                              <h3 className="font-black text-slate-400 uppercase tracking-widest mb-2">Booking Details</h3>
+                              <p className="font-bold text-slate-600">Status: <span className="text-emerald-600 font-black uppercase">{booking.status}</span></p>
+                              <p className="font-bold text-slate-600 mt-0.5">Arena: <span className="text-slate-800 font-black">{booking.arenaName}</span></p>
+                           </div>
+                        </div>
+
+                        <table className="w-full text-left border-collapse text-[10px] mb-8">
+                           <thead>
+                              <tr className="bg-slate-50 text-slate-400 uppercase tracking-widest font-black border-y border-slate-100">
+                                 <th className="py-2 px-3">Description</th>
+                                 <th className="py-2 px-3 text-center">Court</th>
+                                 <th className="py-2 px-3 text-center">Date/Slot</th>
+                                 <th className="py-2 px-3 text-right">Amount</th>
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
+                              <tr>
+                                 <td className="py-3 px-3">
+                                    <span className="font-black text-slate-800">{booking.type === 'COACHING' ? 'Coaching Program' : 'Court Booking'}</span>
+                                 </td>
+                                 <td className="py-3 px-3 text-center font-black text-slate-800">{booking.courtName || 'Main Court'}</td>
+                                 <td className="py-3 px-3 text-center text-slate-600">
+                                    <div>{booking.date}</div>
+                                    <div className="text-[9px] text-slate-400 mt-0.5">{booking.slot}</div>
+                                 </td>
+                                 <td className="py-3 px-3 text-right font-black text-slate-800">OMR {baseRate.toFixed(3)}</td>
+                              </tr>
+                           </tbody>
+                        </table>
+
+                        <div className="flex justify-end mb-6 text-[10px]">
+                           <div className="w-56 space-y-1.5 border-t border-slate-100 pt-3">
+                              <div className="flex justify-between font-bold text-slate-400 uppercase tracking-wider">
+                                 <span>Subtotal</span>
+                                 <span className="text-slate-800 font-black">OMR {baseRate.toFixed(3)}</span>
+                              </div>
+                              <div className="flex justify-between font-bold text-slate-400 uppercase tracking-wider">
+                                 <span>Tax ({taxPct}%)</span>
+                                 <span className="text-slate-800 font-black">OMR {taxAmount.toFixed(3)}</span>
+                              </div>
+                              <div className="flex justify-between text-slate-900 font-black border-t border-slate-100 pt-2 text-xs uppercase tracking-wide">
+                                 <span>Total Paid</span>
+                                 <span className="text-[#CE2029] font-black">OMR {priceParsed.toFixed(3)}</span>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="border-t border-slate-100 pt-4 text-center text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                           <p className="text-slate-500">Thank you for booking with AMM Sports!</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Modal Footer Controls */}
+                  <div className="flex items-center justify-end gap-2 px-4 py-3 sm:px-6 sm:py-4 border-t border-slate-100 bg-slate-50 w-full">
+                     <button
+                        onClick={() => setShowPreview(false)}
+                        className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all uppercase tracking-wider text-center"
+                     >
+                        Close
+                     </button>
+                     <ShuttleButton
+                        variant="primary"
+                        onClick={() => handleDownload('invoice-report-view')}
+                        disabled={isDownloading}
+                        className="flex-1 sm:flex-none !px-6 !py-2.5 text-xs bg-[#CE2029] hover:bg-[#CE2029]/90 text-white font-black uppercase tracking-wider shadow-md justify-center"
+                        icon={isDownloading ? <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full" /> : <Download size={14} />}
+                     >
+                        {isDownloading ? 'Downloading...' : 'Download PDF'}
+                     </ShuttleButton>
+                  </div>
+               </motion.div>
+            </div>
+         )}
+      </AnimatePresence>
     </div>
   );
 };

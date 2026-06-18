@@ -159,13 +159,7 @@ const PointsWalletPage = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => navigate('/profile/slot-memberships')}
-            className="mt-3 w-full flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all group"
-          >
-            <span className="text-xs font-black text-[#36454F]">View My Slot Memberships</span>
-            <ChevronRight size={14} className="text-slate-400 group-hover:text-[#CE2029] transition-colors" />
-          </button>
+
         </div>
 
         {/* Discount Tiers */}

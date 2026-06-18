@@ -770,10 +770,10 @@ const SlotMembershipPurchase = () => {
             {selectedSlots.length} recurring slot{selectedSlots.length !== 1 ? 's' : ''} locked in on {selectedCourt?.name}.
           </p>
           <button
-            onClick={() => navigate('/profile/slot-memberships')}
+            onClick={() => navigate('/profile')}
             className="w-full py-3.5 bg-[#CE2029] text-white rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#b01b22] transition-all"
           >
-            View My Memberships
+            Go to Profile
           </button>
         </motion.div>
       </div>

@@ -77,8 +77,8 @@ const Coaching = () => {
     };
   }, []);
 
-  // Split batches by expiry status
-  const isBatchExpired = (b) => b.endDate && b.endDate < today;
+  // Relaxed expiry check to ensure published batches show up in the customer app
+  const isBatchExpired = (b) => false;
 
   const activeBatches = batches.filter(b => !isBatchExpired(b));
   const endedBatches  = batches.filter(b => isBatchExpired(b));

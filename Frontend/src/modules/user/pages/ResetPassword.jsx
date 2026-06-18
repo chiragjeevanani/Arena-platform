@@ -73,7 +73,7 @@ const ResetPassword = () => {
             <p className="text-slate-500 mt-1 text-xs font-medium">Enter the 6-digit code and your new password</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <TextField
               fullWidth
               size="small"

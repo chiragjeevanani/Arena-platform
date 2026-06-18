@@ -71,7 +71,7 @@ const ForgotPassword = () => {
             <p className="text-slate-500 mt-1 text-xs font-medium">Enter your account email</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <TextField
               fullWidth
               size="small"

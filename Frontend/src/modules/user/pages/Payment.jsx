@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Smartphone, CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Lock, Wallet } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
@@ -21,14 +22,23 @@ const Payment = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [payError, setPayError] = useState('');
   const [walletBalance, setWalletBalance] = useState(null);
+  const [orderId] = useState(() => `#PAY-${Math.floor(Math.random() * 90000) + 10000}`);
 
   useEffect(() => {
-    if (getAuthToken()) {
-      getMyWallet().then(res => {
-        setWalletBalance(res.wallet?.balance || 0);
-      }).catch(err => console.error('Wallet fetch error', err));
+    if (!getAuthToken()) {
+      navigate('/login', {
+        state: {
+          from: '/payment',
+          ...state
+        }
+      });
+      return;
     }
-  }, []);
+
+    getMyWallet().then(res => {
+      setWalletBalance(res.wallet?.balance || 0);
+    }).catch(err => console.error('Wallet fetch error', err));
+  }, [navigate, state]);
 
   // Fallback amount in case navigated without state
   const amount = state?.amount || 0;
@@ -49,8 +59,9 @@ const Payment = () => {
     if (isRazorpayConfigured() && isApiConfigured() && getAuthToken() && amountNum > 0) {
       setIsProcessing(true);
       try {
-        // Determine purpose from state (top_up, membership, event, coaching, etc.)
-        const purpose = state?.paymentPurpose || state?.type || 'top_up';
+        let purpose = state?.paymentPurpose || state?.type || 'top_up';
+        if (purpose === 'coaching') purpose = 'enrollment';
+        if (purpose === 'event') purpose = 'booking';
         const meta = {};
         if (state?.plan?.id) meta.planId = state.plan.id;
         if (state?.registrationInfo?.batchId) meta.batchId = state.registrationInfo.batchId;
@@ -80,6 +91,20 @@ const Payment = () => {
                   paymentRecordId: orderData.paymentRecordId,
                 });
 
+                // Call registration/enrollment APIs to write the records to DB
+                let enrollment = null;
+                if (state?.type === 'coaching' && state?.registrationInfo?.batchId) {
+                  const enrollRes = await createMyEnrollment(state.registrationInfo.batchId, {
+                    paymentMethod: 'online',
+                    amount: amountNum
+                  });
+                  enrollment = enrollRes.enrollment;
+                }
+
+                if (state?.type === 'event' && state?.registrationInfo) {
+                  await registerForEvent({ ...state.registrationInfo, paymentMethod: 'online' });
+                }
+
                 setIsProcessing(false);
 
                 // 5. Navigate to success page with correct context
@@ -91,6 +116,7 @@ const Payment = () => {
                     redirectBack: state?.redirectBack,
                     pendingPlanId: state?.pendingPlanId,
                     payment: verifyRes?.payment,
+                    enrollment,
                   },
                 });
                 resolve();
@@ -108,6 +134,10 @@ const Payment = () => {
           });
         });
       } catch (e) {
+        if (e.status === 401) {
+          navigate('/login', { state: { from: '/payment', ...state } });
+          return;
+        }
         setPayError(e.message || 'Payment failed. Please try again.');
         setIsProcessing(false);
       }
@@ -137,6 +167,10 @@ const Payment = () => {
           },
         });
       } catch (e) {
+        if (e.status === 401) {
+          navigate('/login', { state: { from: '/payment', ...state } });
+          return;
+        }
         setPayError(e.message || 'Payment failed');
         setIsProcessing(false);
       }
@@ -175,6 +209,10 @@ const Payment = () => {
       });
     } catch (err) {
       console.error('Payment/Registration Error:', err);
+      if (err.status === 401) {
+        navigate('/login', { state: { from: '/payment', ...state } });
+        return;
+      }
       setPayError(err.message || 'Processing failed. Please try again.');
       setIsProcessing(false);
     }
@@ -224,7 +262,7 @@ const Payment = () => {
               <div className="p-6 md:p-10 space-y-4">
                  <div className={`flex justify-between items-center py-3 border-b ${isDark ? 'border-white/5' : 'border-slate-50'}`}>
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Order ID</span>
-                    <span className={`text-xs font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-800'}`}>#PAY-{Math.floor(Math.random()*90000) + 10000}</span>
+                    <span className={`text-xs font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-800'}`}>{orderId}</span>
                  </div>
                  <div className={`flex justify-between items-center py-3 border-b ${isDark ? 'border-white/5' : 'border-slate-50'}`}>
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Status</span>

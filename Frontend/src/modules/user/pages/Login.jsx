@@ -60,7 +60,8 @@ const Login = () => {
       try {
         const data = await loginRequest(email.trim().toLowerCase(), password);
         login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
-        navigate('/');
+        const from = location.state?.from || '/';
+        navigate(from, { replace: true, state: location.state });
       } catch (err) {
         setSubmitError(err.message || 'Invalid email or password');
       } finally {
@@ -71,7 +72,8 @@ const Login = () => {
 
     // Mock mode
     login();
-    navigate('/');
+    const from = location.state?.from || '/';
+    navigate(from, { replace: true, state: location.state });
   };
 
   return (
@@ -102,7 +104,7 @@ const Login = () => {
             <p className="text-slate-500 mt-1 text-xs font-medium">Sign in to book courts</p>
           </div>
 
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
+          <form onSubmit={handleLoginSubmit} className="flex flex-col gap-3">
             <TextField
               fullWidth
               size="small"

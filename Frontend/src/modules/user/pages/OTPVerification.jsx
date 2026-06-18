@@ -133,36 +133,34 @@ const OTPVerification = () => {
             </p>
           </div>
 
-          {otpMode === 'disabled' && (
+          <div className="flex flex-row items-center gap-4 w-full">
             <Button
-              fullWidth
               onClick={() => navigate('/login')}
               variant="outlined"
               size="large"
-              className="mb-3 border-[#CE2029] text-[#CE2029]"
+              className="border-slate-200 text-slate-600 py-3.5 hover:bg-slate-50 flex-1"
               sx={{ borderRadius: '16px', textTransform: 'none', fontWeight: 'bold' }}
             >
-              Go to login
+              Back to Login
             </Button>
-          )}
-          <Button
-            fullWidth
-            onClick={handleSubmit}
-            disabled={otpMode === 'disabled' || sending}
-            variant="contained"
-            size="large"
-            className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-4 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all"
-            sx={{ 
-                borderRadius: '16px', 
-                textTransform: 'none', 
-                fontWeight: 'bold', 
-                fontSize: '1.05rem', 
-                backgroundColor: '#CE2029',
-                letterSpacing: '0.02em'
-            }}
-          >
-            {sending ? 'Verifying…' : otpMode === 'disabled' ? 'Use login instead' : 'Verify & continue to login'}
-          </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={otpMode === 'disabled' || sending}
+              variant="contained"
+              size="large"
+              className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-3.5 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all flex-1"
+              sx={{ 
+                  borderRadius: '16px', 
+                  textTransform: 'none', 
+                  fontWeight: 'bold', 
+                  fontSize: '1rem', 
+                  backgroundColor: '#CE2029',
+                  letterSpacing: '0.02em'
+              }}
+            >
+              {sending ? 'Verifying…' : otpMode === 'disabled' ? 'Use login instead' : 'Verify'}
+            </Button>
+          </div>
         </div>
       </motion.div>
     </div>

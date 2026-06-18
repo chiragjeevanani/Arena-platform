@@ -202,7 +202,7 @@ const Profile = () => {
     { icon: History, label: 'Booking History', path: '/bookings' },
     { icon: Calendar, label: 'My Attendance', path: '/profile/attendance' },
     { icon: Wallet, label: 'My Wallet Tracker', path: '/profile/wallet' },
-    { icon: CalendarDays, label: 'My Slot Memberships', path: '/profile/slot-memberships' },
+
     { icon: Star, label: 'Bonus Points Wallet', path: '/profile/points-wallet' },
     { icon: Gift, label: 'Refer & Earn Credits', path: '/profile/refer-earn' },
     { icon: Crown, label: 'My Membership Plan', path: '/membership' },
