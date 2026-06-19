@@ -44,7 +44,7 @@ const router = express.Router();
 router.post('/payments/ccavenue/callback', asyncHandler(handleCcavenueCallback));
 
 router.use(requireAuth);
-router.use(requireRole('CUSTOMER'));
+router.use(requireRole('CUSTOMER', 'COACH', 'ARENA_ADMIN'));
 
 router.post('/bookings', asyncHandler(createMyBooking));
 router.post('/bookings/pricing', asyncHandler(computeBookingPricing));

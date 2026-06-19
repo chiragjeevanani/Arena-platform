@@ -16,9 +16,13 @@ import NotificationToast, { useConflictToasts } from '../components/Notification
 import DesktopNavbar from '../components/DesktopNavbar';
 import { useTheme } from '../context/ThemeContext';
 import { storage } from '../../../utils/storage';
+import { useAuth } from '../context/AuthContext';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas-pro';
+import Logo from '../../../assets/Logo (3).png';
 
 // Full Receipt Modal
-const ReceiptModal = ({ receipt, onClose }) => (
+const ReceiptModal = ({ receipt, onClose, onDownload, isDownloading }) => (
   <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
     <motion.div initial={{ scale: 0.93, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.93, opacity: 0, y: 20 }} className="relative w-full max-w-sm bg-white rounded-[28px] shadow-2xl overflow-hidden border border-slate-100">
@@ -66,12 +70,18 @@ const ReceiptModal = ({ receipt, onClose }) => (
           </div>
         </div>
 
-        {/* Print Button */}
+        {/* Print/Download Button */}
         <button
-          onClick={() => window.print()}
-          className="w-full py-3.5 rounded-2xl bg-[#36454F] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#CE2029] transition-all active:scale-95"
+          onClick={onDownload}
+          disabled={isDownloading}
+          className="w-full py-3.5 rounded-2xl bg-[#36454F] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#CE2029] transition-all active:scale-95 disabled:opacity-75"
         >
-          <Printer size={16} strokeWidth={2.5} /> Print Receipt
+          {isDownloading ? (
+            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+          ) : (
+            <Printer size={16} strokeWidth={2.5} />
+          )}
+          {isDownloading ? 'Generating Receipt...' : 'Download Receipt'}
         </button>
       </div>
     </motion.div>
@@ -80,9 +90,88 @@ const ReceiptModal = ({ receipt, onClose }) => (
 
 const ReceiptItem = ({ receipt }) => {
   const [showModal, setShowModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { user } = useAuth();
+
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById(`receipt-report-view-${receipt.id}`);
+    if (!element) return;
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          clonedDoc.querySelectorAll('style').forEach(style => {
+            try {
+              if (style.innerHTML && (style.innerHTML.includes('oklch') || style.innerHTML.includes('oklab'))) {
+                style.innerHTML = style.innerHTML.replace(/okl(ch|ab)\([^)]+\)/g, '#CE2029');
+              }
+            } catch (e) {
+              console.warn('Failed to sanitize style tag:', e);
+            }
+          });
+
+          clonedDoc.querySelectorAll('[style]').forEach(el => {
+            try {
+              const styleAttr = el.getAttribute('style');
+              if (styleAttr && (styleAttr.includes('oklch') || styleAttr.includes('oklab'))) {
+                el.setAttribute('style', styleAttr.replace(/okl(ch|ab)\([^)]+\)/g, '#CE2029'));
+              }
+            } catch (e) {}
+          });
+
+          const style = clonedDoc.createElement('style');
+          style.innerHTML = `
+            * { 
+              -webkit-print-color-adjust: exact; 
+              box-shadow: none !important;
+              text-shadow: none !important;
+              animation: none !important;
+            }
+            .bg-slate-900 { background-color: #0f172a !important; color: #ffffff !important; }
+            .text-white { color: #ffffff !important; }
+            .bg-[#CE2029] { background-color: #CE2029 !important; }
+            .text-[#CE2029] { color: #CE2029 !important; }
+            .bg-white { background-color: #ffffff !important; }
+            .text-slate-900 { color: #0f172a !important; }
+            .text-slate-400 { color: #94a3b8 !important; }
+            .text-blue-500 { color: #3b82f6 !important; }
+            .text-emerald-600 { color: #059669 !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Receipt-${receipt.id || 'booking'}.pdf`);
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
+      alert(`PDF generation failed: ${err.message}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <>
-      <AnimatePresence>{showModal && <ReceiptModal receipt={receipt} onClose={() => setShowModal(false)} />}</AnimatePresence>
+      <AnimatePresence>
+        {showModal && (
+          <ReceiptModal 
+            receipt={receipt} 
+            onClose={() => setShowModal(false)} 
+            onDownload={handleDownloadPDF} 
+            isDownloading={isDownloading} 
+          />
+        )}
+      </AnimatePresence>
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -136,6 +225,87 @@ const ReceiptItem = ({ receipt }) => {
            </button>
         </div>
       </motion.div>
+
+      {/* Hidden PDF/A4 report structure for this receipt card */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', pointerEvents: 'none' }}>
+        <div id={`receipt-report-view-${receipt.id}`} className="w-[800px] p-10 bg-white text-slate-800 font-sans border border-slate-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+          {/* Header */}
+          <div className="flex justify-between items-start border-b border-slate-200 pb-6 mb-6">
+             <div className="flex items-center gap-4">
+                <img src={Logo} alt="Logo" className="h-12 w-auto object-contain" />
+                <div>
+                   <h2 className="text-xl font-black uppercase tracking-wider text-slate-900">AMM Sports Arena</h2>
+                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Muscat, Oman</p>
+                </div>
+             </div>
+             <div className="text-right">
+                <h1 className="text-2xl font-black uppercase tracking-[0.2em] text-[#CE2029] mb-1">Receipt</h1>
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                   Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </p>
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+                   Receipt No: REC-{receipt.id || 'N/A'}
+                </p>
+             </div>
+          </div>
+
+          {/* Bill To & Reference */}
+          <div className="grid grid-cols-2 gap-8 mb-8 text-[11px]">
+             <div>
+                <h3 className="font-black text-slate-400 uppercase tracking-widest mb-2.5">Billed To</h3>
+                <p className="text-sm font-black text-slate-800">{user?.name || 'Valued Customer'}</p>
+                <p className="font-bold text-slate-500 mt-1">{user?.email || 'customer@ammsports.com'}</p>
+             </div>
+             <div className="text-right">
+                <h3 className="font-black text-slate-400 uppercase tracking-widest mb-2.5">Payment Status</h3>
+                <p className="font-bold text-slate-600">Status: <span className="text-emerald-600 font-black uppercase">Paid</span></p>
+                <p className="font-bold text-slate-600 mt-1">Transaction Ref: <span className="text-slate-800 font-bold">#{receipt.id}</span></p>
+             </div>
+          </div>
+
+          {/* Details Table */}
+          <table className="w-full text-left border-collapse text-[11px] mb-8">
+             <thead>
+                <tr className="bg-slate-50 text-slate-400 uppercase tracking-widest font-black border-y border-slate-200/60">
+                   <th className="py-3 px-4">Description</th>
+                   <th className="py-3 px-4 text-center">Court / Batch</th>
+                   <th className="py-3 px-4 text-center">Date / Schedule</th>
+                   <th className="py-3 px-4 text-right">Amount</th>
+                </tr>
+             </thead>
+             <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
+                <tr>
+                   <td className="py-4 px-4">
+                      <span className="font-black text-slate-800">{receipt.type === 'Coaching' ? 'Academy Fee Payment' : 'Court Booking'}</span>
+                      <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{receipt.arenaName}</div>
+                   </td>
+                   <td className="py-4 px-4 text-center font-black text-slate-800">{receipt.courtName || (receipt.type === 'Coaching' ? 'Academy Batch' : 'Main Court')}</td>
+                   <td className="py-4 px-4 text-center text-slate-600">
+                      <div>{receipt.date}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{receipt.slot || 'N/A'}</div>
+                   </td>
+                   <td className="py-4 px-4 text-right font-black text-slate-800">OMR {Number(receipt.price).toFixed(3)}</td>
+                </tr>
+             </tbody>
+          </table>
+
+          {/* Pricing Box */}
+          <div className="flex justify-end mb-8 text-[11px]">
+             <div className="w-64 space-y-2 border-t border-slate-200 pt-4">
+                <div className="flex justify-between text-slate-900 font-black border-t border-slate-200 pt-2 text-sm uppercase tracking-wide">
+                   <span>Total Paid</span>
+                   <span className="text-[#CE2029] text-base font-black">OMR {Number(receipt.price).toFixed(3)}</span>
+                </div>
+             </div>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-slate-200/80 pt-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+             <p className="text-slate-500">Thank you for choosing AMM Sports!</p>
+             <p className="mt-1 text-[8px]">This is a computer-generated document. No signature required.</p>
+          </div>
+        </div>
+      </div>
     </>
   );
 };
@@ -287,7 +457,7 @@ const Dashboard = () => {
       {/* Header - Desktop Hidden Logo/Nav Row */}
       <div className="md:hidden">
         <div className={`px-4 pt-4 pb-4 bg-[#CE2029] rounded-b-3xl shadow-[0_10px_30px_rgba(206, 32, 41,0.15)] border-b border-white/10`}>
-          <div className="max-w-5xl mx-auto flex justify-between items-center mb-0">
+          <div className="max-w-6xl mx-auto flex justify-between items-center mb-0">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
@@ -303,7 +473,7 @@ const Dashboard = () => {
 
       {/* Tabs Row - Visible on both but styled for desktop consistency */}
       <div className="px-6 pt-4 pb-2 md:pt-6 md:pb-1 z-[50] transition-all overflow-x-auto no-scrollbar">
-        <div className={`min-w-fit max-w-5xl mx-auto flex gap-1.5 p-1.5 rounded-[22px] backdrop-blur-md relative overflow-hidden border transition-all ${
+        <div className={`min-w-fit max-w-6xl mx-auto flex gap-1.5 p-1.5 rounded-[22px] backdrop-blur-md relative overflow-hidden border transition-all ${
           isDark 
             ? 'bg-white/5 border-white/10' 
             : 'bg-white border-blue-100 shadow-sm'
@@ -341,7 +511,7 @@ const Dashboard = () => {
               className="space-y-6"
             >
               {allBookings.filter(b => b.status === 'Upcoming' && b.type !== 'Coaching').length > 0 ? (
-                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                   {allBookings.filter(b => b.status === 'Upcoming' && b.type !== 'Coaching').map((booking, index) => (
                     <BookingTimelineCard
                       key={booking.id}
@@ -373,7 +543,7 @@ const Dashboard = () => {
               className="space-y-6"
             >
               {allBookings.filter((b) => b.status === 'Completed' && b.type !== 'Coaching').length > 0 ? (
-                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                   {allBookings
                     .filter((b) => b.status === 'Completed' && b.type !== 'Coaching')
                     .map((booking, index) => (
@@ -402,7 +572,7 @@ const Dashboard = () => {
               className="space-y-6"
             >
               {allBookings.filter(b => b.type === 'Coaching').length > 0 ? (
-                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                   {allBookings.filter(b => b.type === 'Coaching').map((booking, index) => (
                     <BookingTimelineCard
                       key={booking.id}
@@ -438,7 +608,7 @@ const Dashboard = () => {
               className="space-y-4"
             >
               {/* Banner */}
-              <div className="max-w-5xl mx-auto rounded-2xl bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 border border-orange-200 p-4 flex items-start gap-3">
+              <div className="max-w-6xl mx-auto rounded-2xl bg-gradient-to-r from-orange-50 via-red-50 to-orange-50 border border-orange-200 p-4 flex items-start gap-3">
                 <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
                   <AlertOctagon size={18} className="text-orange-500" strokeWidth={2} />
                 </div>
@@ -452,7 +622,7 @@ const Dashboard = () => {
               </div>
 
               {resolvedConflictBookings.length > 0 ? (
-                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
                   {resolvedConflictBookings.map((booking, index) => (
                     <BookingCard key={booking.id} booking={booking} index={index} />
                   ))}
@@ -478,7 +648,7 @@ const Dashboard = () => {
               className="space-y-6"
             >
               {allBookings.filter(b => b.receiptUrl).length > 0 ? (
-                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {allBookings.filter(b => b.receiptUrl).map((receipt) => (
                     <ReceiptItem key={receipt.id} receipt={receipt} />
                   ))}

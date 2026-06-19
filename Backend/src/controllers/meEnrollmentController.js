@@ -240,13 +240,16 @@ async function getMyEnrollmentById(req, res) {
 
   // Fetch Attendance
   const sessions = await CoachingAttendance.find({ batchId: enrollment.batchId }).sort({ sessionDate: -1 }).lean();
-  const attendance = sessions.map(s => {
-    const record = (s.records || []).find(r => String(r.userId) === String(userId));
-    return {
-      date: s.sessionDate,
-      status: record?.status || 'absent'
-    };
-  });
+  const enrollYmd = new Date(enrollment.createdAt).toISOString().slice(0, 10);
+  const attendance = sessions
+    .filter(s => s.sessionDate >= enrollYmd)
+    .map(s => {
+      const record = (s.records || []).find(r => String(r.userId) === String(userId));
+      return {
+        date: s.sessionDate,
+        status: record?.status || 'absent'
+      };
+    });
 
   // Fetch Performance Matrix
   const progress = await CoachStudentProgress.findOne({ batchId: enrollment.batchId, studentUserId: userId }).lean();

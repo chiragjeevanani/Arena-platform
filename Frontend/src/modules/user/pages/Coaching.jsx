@@ -12,11 +12,15 @@ import { listMyEnrollments } from '../../../services/meApi';
 import { mapPublicBatchToCoachCard } from '../../../utils/coachingBatchAdapter';
 import { getAuthToken } from '../../../services/apiClient';
 
+const DEFAULT_COACH_IMG =
+  'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop';
+
 const Coaching = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState('Your Batches'); // 'Your Batches' or 'Live'
   const [batches, setBatches] = useState([]);
+  const [enrolledBatches, setEnrolledBatches] = useState([]);
   const [enrolledBatchIds, setEnrolledBatchIds] = useState(new Set());
   const [batchEnrollmentMap, setBatchEnrollmentMap] = useState({}); // batchId -> enrollmentId
   const [loading, setLoading] = useState(true);
@@ -30,30 +34,32 @@ const Coaching = () => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      try {
-        // 1. Fetch User Enrollments if logged in
-        let enrolledIds = new Set();
-        if (getAuthToken()) {
-          try {
-            const { enrollments } = await listMyEnrollments();
-            const activeEn = (enrollments || []).filter(e => e.status === 'confirmed' || e.status === 'pending');
-            
-            enrolledIds = new Set(activeEn.map(e => String(e.batchId)));
-            setEnrolledBatchIds(enrolledIds);
-            
-            const eMap = {};
-            activeEn.forEach(e => {
-              eMap[String(e.batchId)] = e.id;
-            });
-            setBatchEnrollmentMap(eMap);
-          } catch (e) {
-            console.error('Enrollments fetch failed', e);
-          }
+      
+      let enrolledList = [];
+      // 1. Fetch User Enrollments if logged in
+      if (getAuthToken()) {
+        try {
+          const { enrollments } = await listMyEnrollments();
+          const activeEn = (enrollments || []).filter(e => e.status === 'confirmed' || e.status === 'pending');
+          
+          const enrolledIds = new Set(activeEn.map(e => String(e.batchId)));
+          setEnrolledBatchIds(enrolledIds);
+          
+          const eMap = {};
+          activeEn.forEach(e => {
+            eMap[String(e.batchId)] = e.id;
+          });
+          setBatchEnrollmentMap(eMap);
+          enrolledList = activeEn;
+        } catch (e) {
+          console.error('Enrollments fetch failed', e);
         }
+      }
 
-        // 2. Fetch Public Batches
+      // 2. Fetch Public Batches
+      const out = [];
+      try {
         const { arenas } = await fetchPublicArenas();
-        const out = [];
         for (const a of arenas || []) {
           try {
             const data = await fetchPublicCoachingBatches(a.id);
@@ -65,11 +71,42 @@ const Coaching = () => {
             /* skip */
           }
         }
-        if (!cancelled) setBatches(out);
-      } catch {
-        if (!cancelled) setBatches([]);
-      } finally {
-        if (!cancelled) setLoading(false);
+      } catch (err) {
+        console.error('Public arenas/batches fetch failed', err);
+      }
+
+      if (!cancelled) {
+        setBatches(out);
+
+        // Construct final enrolled batches list
+        const finalEnrolled = enrolledList.map(e => {
+          const publicMatch = out.find(b => String(b.id) === String(e.batchId));
+          if (publicMatch) {
+            return {
+              ...publicMatch,
+              enrolled: true,
+              enrollmentId: e.id
+            };
+          }
+          return {
+            id: String(e.batchId),
+            coachName: e.coachName || e.batchTitle || 'Coaching program',
+            timing: e.timing || 'See schedule',
+            days: e.days || 'Coaching',
+            fees: Number(e.price) || 0,
+            level: 'Open',
+            image: e.arenaImage || DEFAULT_COACH_IMG,
+            capacity: 12,
+            spotsRemaining: 0,
+            experienceYears: '8+ Years',
+            rating: 5.0,
+            benefits: ["Assessment report", "Certified Elite Coach", "Sanitised Arena", "Tournament priority"],
+            enrolled: true,
+            enrollmentId: e.id
+          };
+        });
+        setEnrolledBatches(finalEnrolled);
+        setLoading(false);
       }
     })();
     return () => {
@@ -113,7 +150,7 @@ const Coaching = () => {
             {['Your Batches', 'Live'].map((tab) => {
               const count = tab === 'Live' 
                 ? activeBatches.filter(b => !enrolledBatchIds.has(String(b.id))).length
-                : batches.filter(b => enrolledBatchIds.has(String(b.id))).length;
+                : enrolledBatches.length;
                 
               return (
                 <button
@@ -155,25 +192,19 @@ const Coaching = () => {
                 {activeTab === 'Your Batches' ? (
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                      {batches.filter(b => enrolledBatchIds.has(String(b.id))).length === 0 ? (
+                      {enrolledBatches.length === 0 ? (
                         <div className="col-span-full flex flex-col items-center justify-center py-20 opacity-30 text-center">
                           <p className="text-[11px] font-black uppercase tracking-widest mb-2">No Active Batches</p>
                           <p className="text-[9px] font-medium max-w-[200px]">You haven't joined any coaching programs yet.</p>
                         </div>
                       ) : (
-                        batches
-                          .filter(b => enrolledBatchIds.has(String(b.id)))
-                          .map((batch, index) => (
-                            <CoachCard 
-                              key={batch.id} 
-                              batch={{ 
-                                ...batch, 
-                                enrolled: true,
-                                enrollmentId: batchEnrollmentMap[String(batch.id)]
-                              }} 
-                              index={index} 
-                            />
-                          ))
+                        enrolledBatches.map((batch, index) => (
+                          <CoachCard 
+                            key={batch.id} 
+                            batch={batch} 
+                            index={index} 
+                          />
+                        ))
                       )}
                     </div>
                   </div>

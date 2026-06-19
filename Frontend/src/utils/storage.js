@@ -4,9 +4,9 @@
  */
 export function getStoragePrefix() {
   const path = window.location.pathname;
-  if (path.startsWith('/admin')) return 'admin_';
-  if (path.startsWith('/coach')) return 'coach_';
-  if (path.startsWith('/arena')) return 'arena_';
+  if (path === '/admin' || path.startsWith('/admin/')) return 'admin_';
+  if (path === '/coach' || path.startsWith('/coach/')) return 'coach_';
+  if (path === '/arena' || path.startsWith('/arena/')) return 'arena_';
   return 'user_'; // Consistent prefix for user module as well
 }
 

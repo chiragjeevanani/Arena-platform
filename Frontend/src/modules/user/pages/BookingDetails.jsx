@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, ChevronRight, Download, Map, XCircle, Trophy, Activity, UserCheck, Star, Eye, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
@@ -130,8 +130,8 @@ const BookingDetails = () => {
           // Prevent html2canvas crash by replacing oklch colors in style tags and inline styles
           clonedDoc.querySelectorAll('style').forEach(style => {
             try {
-              if (style.innerHTML && style.innerHTML.includes('oklch')) {
-                style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, '#CE2029');
+              if (style.innerHTML && (style.innerHTML.includes('oklch') || style.innerHTML.includes('oklab'))) {
+                style.innerHTML = style.innerHTML.replace(/okl(ch|ab)\([^)]+\)/g, '#CE2029');
               }
             } catch (e) {
               console.warn('Failed to sanitize style tag:', e);
@@ -141,8 +141,8 @@ const BookingDetails = () => {
           clonedDoc.querySelectorAll('[style]').forEach(el => {
             try {
               const styleAttr = el.getAttribute('style');
-              if (styleAttr && styleAttr.includes('oklch')) {
-                el.setAttribute('style', styleAttr.replace(/oklch\([^)]+\)/g, '#CE2029'));
+              if (styleAttr && (styleAttr.includes('oklch') || styleAttr.includes('oklab'))) {
+                el.setAttribute('style', styleAttr.replace(/okl(ch|ab)\([^)]+\)/g, '#CE2029'));
               }
             } catch (e) {}
           });

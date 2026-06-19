@@ -55,6 +55,8 @@ async function listMyMemberships(req, res) {
       planName: plan?.name || '',
       discountPercent: plan?.discountPercent ?? 0,
       slotBased: plan?.slotBased || false,
+      category: plan?.category || 'non-premium',
+      description: plan?.description || '',
     });
   });
 

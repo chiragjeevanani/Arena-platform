@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X, Calendar, BarChart3, Gift, CalendarDays } from 'lucide-react';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X, Calendar, BarChart3, Gift, CalendarDays, Check } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { AnimatePresence } from 'framer-motion';
@@ -95,28 +95,52 @@ const Profile = () => {
 
         const activeMem = (memRes.memberships || []).find((m) => m.status === 'active');
         if (activeMem) {
+          const hasRealDescription = activeMem.description && !activeMem.description.includes('Plan benefits — edit in drawer');
+          const calculatedBenefits = hasRealDescription
+            ? activeMem.description.split('\n').map(s => s.trim()).filter(Boolean)
+            : [
+                `${activeMem.discountPercent}% Off All Bookings`,
+                activeMem.slotBased ? 'Reserved Fixed Slots' : 'Flexible Arena Booking Access',
+                'Priority Court Reservation',
+                'Lounge Access & Amenities',
+              ];
+          
           setMembership({
             status: 'active',
             planId: activeMem.membershipPlanId,
             planName: activeMem.planName || 'Membership',
-            category: 'standard',
+            category: activeMem.category || 'standard',
             discountPercent: activeMem.discountPercent ?? 0,
             startDate: formatShortDate(activeMem.startsAt),
             expiryDate: formatShortDate(activeMem.expiresAt),
-            benefits: [],
+            benefits: calculatedBenefits,
+            description: hasRealDescription ? activeMem.description : '',
+            amountPaid: activeMem.amountPaid || 0,
           });
         } else {
           const expired = (memRes.memberships || []).find((m) => m.status === 'expired');
           if (expired) {
+            const hasRealDescription = expired.description && !expired.description.includes('Plan benefits — edit in drawer');
+            const calculatedBenefits = hasRealDescription
+              ? expired.description.split('\n').map(s => s.trim()).filter(Boolean)
+              : [
+                  `${expired.discountPercent}% Off All Bookings`,
+                  expired.slotBased ? 'Reserved Fixed Slots' : 'Flexible Arena Booking Access',
+                  'Priority Court Reservation',
+                  'Lounge Access & Amenities',
+                ];
+            
             setMembership({
               status: 'expired',
               planId: expired.membershipPlanId,
               planName: expired.planName || 'Membership',
-              category: 'standard',
+              category: expired.category || 'standard',
               discountPercent: expired.discountPercent ?? 0,
               startDate: formatShortDate(expired.startsAt),
               expiryDate: formatShortDate(expired.expiresAt),
-              benefits: [],
+              benefits: calculatedBenefits,
+              description: hasRealDescription ? expired.description : '',
+              amountPaid: expired.amountPaid || 0,
             });
           } else {
             setMembership(NO_MEMBERSHIP);
@@ -190,6 +214,7 @@ const Profile = () => {
 
   const [performanceMode, setPerformanceMode] = useState('weekly');
   const [showReportCard, setShowReportCard] = useState(false);
+  const [showMembershipModal, setShowMembershipModal] = useState(false);
   const [performanceData, setPerformanceData] = useState({
     weekly: { overall: 0, trend: '—', categories: [] },
     monthly: { overall: 0, trend: '—', categories: [] },
@@ -426,10 +451,11 @@ const Profile = () => {
               </div>
             ) : (
               <motion.div
-                whileHover={{ y: -1 }}
-                className={`rounded-2xl border p-4 shadow-sm relative overflow-hidden transition-all ${
+                whileHover={{ y: -2 }}
+                onClick={() => setShowMembershipModal(true)}
+                className={`cursor-pointer rounded-2xl border p-4 shadow-sm hover:shadow-md relative overflow-hidden transition-all ${
                   membership.category === 'premium'
-                    ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200'
+                    ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200 shadow-amber-100/50'
                     : isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100'
                 }`}
               >
@@ -669,6 +695,14 @@ const Profile = () => {
         activeCoaching={activeCoaching}
         membership={membership}
       />
+
+      {/* MEMBERSHIP DETAIL MODAL */}
+      <MembershipDetailModal
+        isOpen={showMembershipModal}
+        onClose={() => setShowMembershipModal(false)}
+        membership={membership}
+        isDark={isDark}
+      />
     </div>
   );
 };
@@ -897,6 +931,113 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode, user, activeCoac
                </button>
             </div>
           </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+// MEMBERSHIP DETAIL MODAL COMPONENT
+const MembershipDetailModal = ({ isOpen, onClose, membership, isDark }) => {
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-4 backdrop-blur-md bg-black/70"
+      >
+        <motion.div 
+          initial={{ scale: 0.95, y: 15, opacity: 0 }} 
+          animate={{ scale: 1, y: 0, opacity: 1 }} 
+          exit={{ scale: 0.95, y: 15, opacity: 0 }}
+          className={`relative w-full max-w-md rounded-3xl border p-6 shadow-2xl overflow-hidden ${
+            isDark ? 'bg-[#0f1115] border-white/10 text-white' : 'bg-white border-slate-100 text-slate-900'
+          }`}
+        >
+          {/* Close button */}
+          <button 
+            onClick={onClose} 
+            className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+              isDark ? 'bg-white/5 text-white/40 hover:bg-white/10' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+            }`}
+          >
+            <X size={16} />
+          </button>
+
+          {/* Icon + Title */}
+          <div className="flex items-center gap-3.5 mb-5 mt-2">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+              membership.category === 'premium' ? 'bg-amber-100/80 text-amber-600' : 'bg-indigo-50 text-indigo-600'
+            }`}>
+              <Crown size={24} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-black uppercase tracking-tight">{membership.planName}</h3>
+                <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
+                  membership.status === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/25' : 'bg-red-500/10 text-red-500 border border-red-500/25'
+                }`}>{membership.status}</span>
+              </div>
+              <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${
+                membership.category === 'premium' ? 'text-amber-500' : 'text-indigo-500'
+              }`}>
+                {membership.category === 'premium' ? 'Premium Tier' : 'Standard Tier'}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Validity Grid */}
+            <div className={`grid grid-cols-2 gap-4 p-4 rounded-2xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+              <div className="space-y-0.5">
+                <span className={`text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Valid From</span>
+                <p className="text-xs font-black">{membership.startDate || '—'}</p>
+              </div>
+              <div className="space-y-0.5">
+                <span className={`text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Expires On</span>
+                <p className="text-xs font-black">{membership.expiryDate || '—'}</p>
+              </div>
+            </div>
+
+            {/* Price Paid */}
+            <div className="flex items-center justify-between px-1">
+              <span className={`text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Amount Paid</span>
+              <p className="text-base font-black text-[#CE2029]">OMR {(membership.amountPaid || 0).toFixed(3)}</p>
+            </div>
+
+            {/* Description */}
+            {membership.description && (
+              <div className="space-y-1">
+                <span className={`text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Plan Description</span>
+                <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{membership.description}</p>
+              </div>
+            )}
+
+            {/* Benefits checklist */}
+            <div className="space-y-2.5 pt-2 border-t dark:border-white/5 border-slate-100">
+              <span className={`text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Included Benefits</span>
+              <div className="space-y-2">
+                {membership.benefits.map((b, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0 mt-0.5">
+                      <Check size={10} strokeWidth={3} />
+                    </div>
+                    <span className={`text-xs font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{b}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <button 
+            onClick={onClose} 
+            className="w-full mt-6 py-3 rounded-xl bg-[#CE2029] text-white text-xs font-black uppercase tracking-widest shadow-md shadow-[#CE2029]/10 active:scale-95 transition-all hover:bg-[#d83f36]"
+          >
+            Dismiss Details
+          </button>
         </motion.div>
       </motion.div>
     </AnimatePresence>

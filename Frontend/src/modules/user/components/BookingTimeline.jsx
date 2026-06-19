@@ -189,7 +189,7 @@ const BookingTimelineCard = ({
             ? 'glass-card border-white/5 bg-white/5 hover:border-[#CE2029]/20 shadow-2xl shadow-black/40'
             : 'bg-white border-blue-50 shadow-[0_15px_35px_-12px_rgba(10,31,68,0.12)] hover:shadow-[0_25px_50px_-15px_rgba(10,31,68,0.2)] hover:border-blue-200'
         }`}>
-          <div className="flex items-stretch h-[170px]">
+          <div className="flex items-stretch min-h-[190px]">
             {/* Arena Image */}
             <div className="w-[125px] relative overflow-hidden flex-shrink-0">
               <img

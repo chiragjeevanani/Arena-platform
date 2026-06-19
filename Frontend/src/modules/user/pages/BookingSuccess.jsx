@@ -10,6 +10,7 @@ import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { shouldPersistBookingSuccessToUserBookings } from '../../../utils/bookingSuccessPersistence';
 import { storage } from '../../../utils/storage';
+import Logo from '../../../assets/Logo (3).png';
 
 // Shuttlecock particle for confetti
 const ShuttleParticle = ({ delay, x, y, isDark }) => (
@@ -250,11 +251,26 @@ const BookingSuccess = () => {
           >
             {/* Subtle court lines */}
             <div className={`absolute inset-0 court-lines ${isDark ? 'opacity-[0.03]' : 'opacity-5'} transition-opacity group-hover:opacity-10`} />
-            <div className={`absolute top-0 left-0 right-0 h-1.5 ${isDark ? 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]' : 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]'}`} />
+            <div className={`absolute top-0 left-0 right-0 h-1.5 ${isDark ? 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]' : 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]'} print:hidden`} />
 
             <div className="space-y-5 md:space-y-6 relative z-10 pt-2">
+              {/* Print-only Header */}
+              <div className="hidden print:flex items-center justify-between border-b pb-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <img src={Logo} alt="AMM Sports Arena Logo" className="h-10 w-auto object-contain" />
+                  <div>
+                    <h1 className="text-sm font-black tracking-tight text-slate-900 font-display">AMM SPORTS ARENA</h1>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Verified Invoice Receipt</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Date of Download</p>
+                  <p className="text-[10px] font-black text-slate-800">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                </div>
+              </div>
+
               {/* Ticket Header */}
-              <div className={`flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+              <div className={`flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/30' : 'text-slate-400'} print:hidden`}>
                 <div className="flex items-center gap-2">
                   <Receipt size={14} className={isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'} />
                   <span>Verified Receipt</span>
@@ -332,9 +348,9 @@ const BookingSuccess = () => {
 
               {/* Bottom Notch Separator */}
               <div className="relative h-px flex items-center pt-2">
-                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
-                <div className={`w-full border-t-[2px] border-dashed ${isDark ? 'border-white/10' : 'border-slate-200'}`} />
-                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
+                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'} print:hidden`} />
+                <div className={`w-full border-t-[2px] border-dashed ${isDark ? 'border-white/10' : 'border-slate-200'} print:border-solid print:border-t-[1px]`} />
+                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'} print:hidden`} />
               </div>
 
               {/* Total Paid Section */}
@@ -391,13 +407,13 @@ const BookingSuccess = () => {
             {/* Simple Print Styles */}
             <style dangerouslySetInnerHTML={{ __html: `
               @media print {
-                @page { margin: 0; size: auto; }
-                body { background: white !important; margin: 0 !important; padding: 0 !important; }
+                @page { margin: 15mm; size: A4 portrait; }
+                body { background: white !important; margin: 0 !important; padding: 0 !important; color: #0f172a !important; }
                 
                 /* Hide clutter */
                 nav, footer, .lg\\:hidden, .lg\\:col-span-4, 
                 .text-center.space-y-3, button, 
-                .relative.h-14, .fixed.bottom-0 { 
+                .relative.h-14, .fixed.bottom-0, .court-lines { 
                   display: none !important; 
                 }
                 
@@ -410,21 +426,21 @@ const BookingSuccess = () => {
                    max-width: none !important;
                    border: none !important;
                    box-shadow: none !important;
+                   background: transparent !important;
                 }
 
                 #print-area {
                   display: block !important;
-                  position: absolute !important;
-                  top: 50% !important;
-                  left: 50% !important;
-                  transform: translate(-50%, -50%) scale(1.1) !important;
-                  width: 500px !important;
+                  position: static !important;
+                  width: 100% !important;
+                  max-width: 100% !important;
                   margin: 0 !important;
-                  border: 1px solid #f1f5f9 !important;
+                  padding: 0 !important;
+                  border: none !important;
                   background: white !important;
                   box-shadow: none !important;
                   visibility: visible !important;
-                  z-index: 9999 !important;
+                  transform: none !important;
                 }
 
                 * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
