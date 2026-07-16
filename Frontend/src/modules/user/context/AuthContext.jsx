@@ -1,8 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken, setAuthToken, setRefreshToken, clearAuthTokens } from '../../../services/apiClient';
 import { meRequest, logoutRequest } from '../../../services/authApi';
 import { storage } from '../../../utils/storage';
+import {
+  registerServiceWorker,
+  requestNotificationPermissionAndGetToken,
+  registerFcmTokenOnServer,
+  deregisterFcmTokenOnServer,
+} from '../../../utils/fcm';
 
 const AuthContext = createContext();
 
@@ -103,12 +110,42 @@ export const AuthProvider = ({ children }) => {
   );
 
   const logout = useCallback(async () => {
+    const fcmToken = storage.getItem('fcmToken');
+    if (fcmToken) {
+      try {
+        await deregisterFcmTokenOnServer(fcmToken);
+        storage.removeItem('fcmToken');
+      } catch (err) {
+        console.error('Failed to deregister FCM token on logout:', err);
+      }
+    }
     await logoutRequest();
     setUser(null);
     storage.removeItem('user');
     storage.removeItem('isLoggedIn');
     storage.removeItem('userBookings');
   }, []);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    let active = true;
+    (async () => {
+      try {
+        const swReg = await registerServiceWorker();
+        if (!active) return;
+        const token = await requestNotificationPermissionAndGetToken(swReg);
+        if (active && token) {
+          storage.setItem('fcmToken', token);
+          await registerFcmTokenOnServer(token);
+        }
+      } catch (err) {
+        console.error('FCM setup error:', err);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   const hasPermission = useCallback(() => {
     if (user?.role === 'SUPER_ADMIN') return true;

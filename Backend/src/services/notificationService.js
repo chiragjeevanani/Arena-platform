@@ -1,4 +1,5 @@
 const Notification = require('../models/Notification');
+const { sendPushNotification } = require('./fcmService');
 
 async function createNotification(userId, title, message, type = 'info', metadata = {}) {
   try {
@@ -9,6 +10,8 @@ async function createNotification(userId, title, message, type = 'info', metadat
       type,
       metadata,
     });
+    // Send push notification in background
+    sendPushNotification(userId, title, message, { type, ...metadata });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Failed to create notification:', err);

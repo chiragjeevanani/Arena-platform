@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema(
     // Referral System fields
     referralCode: { type: String, unique: true, sparse: true, index: true },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    fcmTokens: { type: [String], default: [] },
   },
   { timestamps: true }
 );
