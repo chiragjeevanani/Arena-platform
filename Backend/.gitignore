@@ -8,3 +8,6 @@ tests/
 # Ignore all scratch scripts in the root of Backend
 /*.js
 !jest.config.js
+
+# Firebase service account
+firebase-service-account.json
