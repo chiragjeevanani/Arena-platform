@@ -27,7 +27,6 @@ function createApp() {
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   const apiRouter = express.Router();
-  app.use('/api', apiRouter);
   app.use('/', apiRouter);
 
   apiRouter.use('/', healthRoutes);
