@@ -8,9 +8,12 @@ const {
   deleteNotification,
   registerFcmToken,
   deregisterFcmToken,
+  testRoute,
 } = require('../controllers/notificationController');
 
 const  router = express.Router();
+
+router.get('/test', testRoute);
 
 router.use(requireAuth);
 

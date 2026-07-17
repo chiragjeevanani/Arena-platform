@@ -70,6 +70,10 @@ async function deregisterFcmToken(req, res) {
   return res.json({ message: 'FCM token deregistered successfully' });
 }
 
+async function testRoute(req, res) {
+  return res.json({ message: 'Notification route is working' });
+}
+
 module.exports = {
   listMyNotifications,
   markAsRead,
@@ -77,4 +81,5 @@ module.exports = {
   deleteNotification,
   registerFcmToken,
   deregisterFcmToken,
+  testRoute,
 };

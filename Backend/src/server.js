@@ -38,6 +38,7 @@ async function start() {
   }
 
   const app = createApp();
+
   app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`${GREEN}${CHECK} Server is running on port ${port}${RESET}`);
