@@ -10,7 +10,7 @@ const {
   deregisterFcmToken,
 } = require('../controllers/notificationController');
 
-const router = express.Router();
+const  router = express.Router();
 
 router.use(requireAuth);
 
