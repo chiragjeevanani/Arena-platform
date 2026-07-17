@@ -81,7 +81,7 @@ export async function registerFcmTokenOnServer(token) {
   try {
     await apiJson('/api/notifications/register-token', {
       method: 'POST',
-      body: { token },
+      body: { token, platform: 'web' },
     });
     console.log('FCM Token registered successfully on backend.');
   } catch (error) {

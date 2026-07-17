@@ -8,6 +8,15 @@ async function sendPushNotification(userId, title, body, data = {}) {
       return;
     }
 
+    // Extract token strings from the objects (supporting both string array and object array formats)
+    const tokenStrings = user.fcmTokens
+      .map((t) => (typeof t === 'string' ? t : t?.token))
+      .filter(Boolean);
+
+    if (tokenStrings.length === 0) {
+      return;
+    }
+
     if (!messaging) {
       // eslint-disable-next-line no-console
       console.log(`[MOCK PUSH] Sent to user ${userId} (${user.email}): Title: "${title}", Body: "${body}", Data:`, data);
@@ -24,7 +33,7 @@ async function sendPushNotification(userId, title, body, data = {}) {
         ...data,
         click_action: data.click_action || '/notifications',
       },
-      tokens: user.fcmTokens,
+      tokens: tokenStrings,
     };
 
     const response = await messaging.sendEachForMulticast(message);
@@ -38,14 +47,14 @@ async function sendPushNotification(userId, title, body, data = {}) {
           error.code === 'messaging/invalid-registration-token' ||
           error.code === 'messaging/registration-token-not-registered'
         ) {
-          tokensToRemove.push(user.fcmTokens[idx]);
+          tokensToRemove.push(tokenStrings[idx]);
         }
       }
     });
 
     if (tokensToRemove.length > 0) {
       await User.findByIdAndUpdate(userId, {
-        $pull: { fcmTokens: { $in: tokensToRemove } },
+        $pull: { fcmTokens: { token: { $in: tokensToRemove } } },
       });
       // eslint-disable-next-line no-console
       console.log(`Cleaned up ${tokensToRemove.length} stale FCM tokens for user ${userId}`);
