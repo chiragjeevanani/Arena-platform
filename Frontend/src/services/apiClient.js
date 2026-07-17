@@ -33,10 +33,21 @@ export function clearAuthTokens() {
   storage.removeItem(REFRESH_TOKEN_KEY);
 }
 
+function getRequestPath(path) {
+  if (path.startsWith('/api/')) {
+    return path.slice(4);
+  }
+  if (path === '/api') {
+    return '/';
+  }
+  return path;
+}
+
 function shouldAttempt401Refresh(path, skipAuth, retriedAfter401) {
   if (skipAuth || retriedAfter401) return false;
-  if (path === '/api/auth/me') return true;
-  if (path.startsWith('/api/auth/')) return false;
+  const requestPath = getRequestPath(path);
+  if (requestPath === '/auth/me') return true;
+  if (requestPath.startsWith('/auth/')) return false;
   return true;
 }
 
@@ -62,7 +73,7 @@ async function refreshAccessToken() {
         if (!API_BASE_URL) {
           throw new Error('VITE_API_URL is not set');
         }
-        const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -145,7 +156,8 @@ export async function apiJson(path, options = {}) {
       headers['X-Coach-Id'] = selectedCoachId;
     }
 
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const requestPath = getRequestPath(path);
+    const res = await fetch(`${API_BASE_URL}${requestPath}`, {
       method,
       headers,
       body: body != null ? JSON.stringify(body) : undefined,
@@ -196,7 +208,8 @@ export async function apiMultipart(path, formData, options = {}) {
   const headers = {};
   const t = getAuthToken();
   if (t) headers.Authorization = `Bearer ${t}`;
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const requestPath = getRequestPath(path);
+  const res = await fetch(`${API_BASE_URL}${requestPath}`, {
     method: options.method || 'POST',
     headers,
     body: formData,

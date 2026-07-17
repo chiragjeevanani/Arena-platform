@@ -26,15 +26,18 @@ function createApp() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-  app.use('/api', healthRoutes);
-  app.use('/api/auth', authRoutes);
-  app.use('/api/public', publicArenaRoutes);
-  app.use('/api/me', meRoutes);
-  app.use('/api/webhooks', webhookRoutes);
-  app.use('/api/coach', coachRoutes);
-  app.use('/api/notifications', notificationRoutes);
-  app.use('/api/admin', adminRoutes);
-  app.use('/api/arena-admin', arenaAdminRoutes);
+  const apiRouter = express.Router();
+  app.use('/api', apiRouter);
+
+  apiRouter.use('/', healthRoutes);
+  apiRouter.use('/auth', authRoutes);
+  apiRouter.use('/public', publicArenaRoutes);
+  apiRouter.use('/me', meRoutes);
+  apiRouter.use('/webhooks', webhookRoutes);
+  apiRouter.use('/coach', coachRoutes);
+  apiRouter.use('/notifications', notificationRoutes);
+  apiRouter.use('/admin', adminRoutes);
+  apiRouter.use('/arena-admin', arenaAdminRoutes);
 
   app.use((req, res) => {
     res.status(404).json({ error: 'Not found' });
