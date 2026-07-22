@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const PendingUser = require('../models/PendingUser');
 const RefreshToken = require('../models/RefreshToken');
 const PasswordResetToken = require('../models/PasswordResetToken');
 const AuditLog = require('../models/AuditLog');
@@ -42,6 +43,11 @@ async function register(req, res) {
   }
 
   try {
+    const existingUser = await User.findOne({ email: parsed.email });
+    if (existingUser) {
+      return res.status(409).json({ error: 'An account with this email already exists' });
+    }
+
     let referredByUser = null;
     let settings = null;
     if (req.body.referralCode) {
@@ -62,33 +68,25 @@ async function register(req, res) {
     const emailVerifyToken = hashOpaqueToken(verificationToken);
     const emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
 
-    const user = await User.create({
+    // Delete any stale pending registration for this email
+    await PendingUser.deleteOne({ email: parsed.email });
+
+    const pendingUser = await PendingUser.create({
       email: parsed.email,
       passwordHash,
       name: parsed.name,
       role: 'CUSTOMER',
-      isEmailVerified: false,
       emailVerifyToken,
       emailVerifyExpires,
       referredBy: referredByUser ? referredByUser._id : null,
+      referralCode: req.body.referralCode ? String(req.body.referralCode).trim() : null,
     });
 
-    if (referredByUser && settings) {
-      await Referral.create({
-        referrerId: referredByUser._id,
-        referredUserId: user._id,
-        referralCode: String(req.body.referralCode).trim(),
-        rewardAmountReferrer: settings.referrerReward,
-        rewardAmountReferred: settings.newuserReward,
-        expiryDate: new Date(Date.now() + settings.referralExpiryDays * 24 * 60 * 60 * 1000),
-      });
-    }
-
-    await sendVerificationEmail(user.email, verificationToken);
+    await sendVerificationEmail(pendingUser.email, verificationToken);
 
     const response = {
       message: 'Registration successful. Please check your email for the OTP code to verify your account.',
-      user: User.toPublic(user),
+      user: User.toPublic(pendingUser),
     };
 
     if (process.env.EMAIL_VERIFY_RETURN_TOKEN === 'true') {
@@ -195,19 +193,51 @@ async function verifyEmail(req, res) {
   }
 
   const tokenHash = hashOpaqueToken(token);
-  const user = await User.findOne({
+  let user = await User.findOne({
     emailVerifyToken: tokenHash,
     emailVerifyExpires: { $gt: new Date() },
   }).select('+emailVerifyToken +emailVerifyExpires');
 
-  if (!user) {
+  if (user) {
+    user.isEmailVerified = true;
+    user.emailVerifyToken = null;
+    user.emailVerifyExpires = null;
+    await user.save();
+    return res.json({ message: 'Email verified successfully. You can now log in.' });
+  }
+
+  const pendingUser = await PendingUser.findOne({
+    emailVerifyToken: tokenHash,
+    emailVerifyExpires: { $gt: new Date() },
+  });
+
+  if (!pendingUser) {
     return res.status(400).json({ error: 'Invalid or expired verification token' });
   }
 
-  user.isEmailVerified = true;
-  user.emailVerifyToken = null;
-  user.emailVerifyExpires = null;
-  await user.save();
+  user = await User.create({
+    email: pendingUser.email,
+    passwordHash: pendingUser.passwordHash,
+    name: pendingUser.name,
+    role: pendingUser.role,
+    isEmailVerified: true,
+  });
+
+  if (pendingUser.referredBy) {
+    const settings = await ReferralSettings.getSettings();
+    if (settings && settings.referralSystemEnabled) {
+      await Referral.create({
+        referrerId: pendingUser.referredBy,
+        referredUserId: user._id,
+        referralCode: pendingUser.referralCode,
+        rewardAmountReferrer: settings.referrerReward,
+        rewardAmountReferred: settings.newuserReward,
+        expiryDate: new Date(Date.now() + settings.referralExpiryDays * 24 * 60 * 60 * 1000),
+      });
+    }
+  }
+
+  await PendingUser.deleteOne({ _id: pendingUser._id });
 
   return res.json({ message: 'Email verified successfully. You can now log in.' });
 }
@@ -219,20 +249,33 @@ async function resendVerification(req, res) {
   }
 
   const user = await User.findOne({ email });
-  if (!user) {
+  if (user) {
+    if (user.isEmailVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    user.emailVerifyToken = hashOpaqueToken(verificationToken);
+    user.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
+    await user.save();
+
+    await sendVerificationEmail(user.email, verificationToken);
+
+    return res.json({ message: 'Verification OTP code resent. Please check your inbox.' });
+  }
+
+  const pendingUser = await PendingUser.findOne({ email });
+  if (!pendingUser) {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  if (user.isEmailVerified) {
-    return res.status(400).json({ error: 'Email is already verified' });
-  }
-
   const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-  user.emailVerifyToken = hashOpaqueToken(verificationToken);
-  user.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
-  await user.save();
+  pendingUser.emailVerifyToken = hashOpaqueToken(verificationToken);
+  pendingUser.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
+  pendingUser.createdAt = new Date(); // Reset creation time to extend TTL index expiration
+  await pendingUser.save();
 
-  await sendVerificationEmail(user.email, verificationToken);
+  await sendVerificationEmail(pendingUser.email, verificationToken);
 
   return res.json({ message: 'Verification OTP code resent. Please check your inbox.' });
 }
@@ -391,6 +434,10 @@ async function verifyEmailOtp(req, res) {
     if (!user) {
       return res.status(400).json({ error: 'Mock user not found' });
     }
+    user.isEmailVerified = true;
+    user.emailVerifyToken = null;
+    user.emailVerifyExpires = null;
+    await user.save();
   } else {
     const tokenHash = hashOpaqueToken(otp);
     user = await User.findOne({
@@ -398,16 +445,48 @@ async function verifyEmailOtp(req, res) {
       emailVerifyToken: tokenHash,
       emailVerifyExpires: { $gt: new Date() },
     }).select('+emailVerifyToken +emailVerifyExpires');
-  }
 
-  if (!user) {
-    return res.status(400).json({ error: 'Invalid or expired OTP code' });
-  }
+    if (user) {
+      user.isEmailVerified = true;
+      user.emailVerifyToken = null;
+      user.emailVerifyExpires = null;
+      await user.save();
+    } else {
+      const pendingUser = await PendingUser.findOne({
+        email,
+        emailVerifyToken: tokenHash,
+        emailVerifyExpires: { $gt: new Date() },
+      });
 
-  user.isEmailVerified = true;
-  user.emailVerifyToken = null;
-  user.emailVerifyExpires = null;
-  await user.save();
+      if (!pendingUser) {
+        return res.status(400).json({ error: 'Invalid or expired OTP code' });
+      }
+
+      user = await User.create({
+        email: pendingUser.email,
+        passwordHash: pendingUser.passwordHash,
+        name: pendingUser.name,
+        role: pendingUser.role,
+        isEmailVerified: true,
+      });
+
+      if (pendingUser.referredBy) {
+        const settings = await ReferralSettings.getSettings();
+        if (settings && settings.referralSystemEnabled) {
+          await Referral.create({
+            referrerId: pendingUser.referredBy,
+            referredUserId: user._id,
+            referralCode: pendingUser.referralCode,
+            rewardAmountReferrer: settings.referrerReward,
+            rewardAmountReferred: settings.newuserReward,
+            expiryDate: new Date(Date.now() + settings.referralExpiryDays * 24 * 60 * 60 * 1000),
+          });
+        }
+      }
+
+      await PendingUser.deleteOne({ _id: pendingUser._id });
+    }
+  }
 
   // Log audit
   await AuditLog.create({
@@ -450,26 +529,33 @@ async function coachRegister(req, res) {
     return res.status(400).json({ error: parsed.errors.join('; ') });
   }
   try {
+    const existingUser = await User.findOne({ email: parsed.email });
+    if (existingUser) {
+      return res.status(409).json({ error: 'An account with this email already exists' });
+    }
+
     const passwordHash = await bcrypt.hash(parsed.password, 10);
     const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
     const emailVerifyToken = hashOpaqueToken(verificationToken);
     const emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
 
-    const user = await User.create({
+    // Delete any stale pending registration for this email
+    await PendingUser.deleteOne({ email: parsed.email });
+
+    const pendingUser = await PendingUser.create({
       email: parsed.email,
       passwordHash,
       name: parsed.name,
       role: 'COACH',
-      isEmailVerified: false,
       emailVerifyToken,
       emailVerifyExpires,
     });
 
-    await sendVerificationEmail(user.email, verificationToken);
+    await sendVerificationEmail(pendingUser.email, verificationToken);
 
     const response = {
       message: 'Registration successful. Please check your email for the OTP code to verify your account.',
-      user: User.toPublic(user),
+      user: User.toPublic(pendingUser),
     };
 
     if (process.env.EMAIL_VERIFY_RETURN_TOKEN === 'true') {
