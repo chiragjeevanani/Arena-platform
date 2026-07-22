@@ -1,51 +1,52 @@
 /**
- * Submits transaction to CCAvenue / Bank Muscat payment gateway by
- * dynamically generating and submitting a POST form.
- * 
+ * Submits transaction to Bank Muscat SmartPay via browser form POST.
+ * Matches official Python kit form fields: encRequest + access_code.
+ * command=initiateTransaction is included in the gateway URL (kit default).
+ *
  * @param {object} params
- * @param {string} params.paymentUrl - Gateway URL (e.g. from process.env)
- * @param {string} params.encRequest - Encrypted transaction parameter string
- * @param {string} params.accessCode - CCAvenue Access Code
+ * @param {string} params.paymentUrl
+ * @param {string} params.encRequest
+ * @param {string} params.accessCode
  */
-export function redirectToCcavenue({ paymentUrl, encRequest, accessCode }) {
+export function redirectToBankMuscat({ paymentUrl, encRequest, accessCode }) {
   if (!paymentUrl || !encRequest || !accessCode) {
     throw new Error('Payment initialization parameters are missing');
   }
 
-  // Create form element
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = paymentUrl;
+  form.name = 'redirect';
+  form.id = 'nonseamless';
 
-  // Add encrypted request input (supporting both snake_case and camelCase for different CCAvenue regions)
-  const encInputSnake = document.createElement('input');
-  encInputSnake.type = 'hidden';
-  encInputSnake.name = 'enc_request';
-  encInputSnake.value = encRequest;
-  form.appendChild(encInputSnake);
+  const encInput = document.createElement('input');
+  encInput.type = 'hidden';
+  encInput.id = 'encRequest';
+  encInput.name = 'encRequest';
+  encInput.value = encRequest;
+  form.appendChild(encInput);
 
-  const encInputCamel = document.createElement('input');
-  encInputCamel.type = 'hidden';
-  encInputCamel.name = 'encRequest';
-  encInputCamel.value = encRequest;
-  form.appendChild(encInputCamel);
-
-  // Add access code input
   const accessInput = document.createElement('input');
   accessInput.type = 'hidden';
+  accessInput.id = 'access_code';
   accessInput.name = 'access_code';
   accessInput.value = accessCode;
   form.appendChild(accessInput);
 
-  // Add command input (required by CCAvenue transaction gateway)
-  const commandInput = document.createElement('input');
-  commandInput.type = 'hidden';
-  commandInput.name = 'command';
-  commandInput.value = 'initiateTransaction';
-  form.appendChild(commandInput);
+  // If URL does not already include command, add it as a hidden field (compat).
+  if (!/[?&]command=/.test(paymentUrl)) {
+    const commandInput = document.createElement('input');
+    commandInput.type = 'hidden';
+    commandInput.name = 'command';
+    commandInput.value = 'initiateTransaction';
+    form.appendChild(commandInput);
+  }
 
-  // Append form, submit it, and clean up
   document.body.appendChild(form);
   form.submit();
-  document.body.removeChild(form);
+}
+
+/** @deprecated Use redirectToBankMuscat */
+export function redirectToCcavenue(opts) {
+  return redirectToBankMuscat(opts);
 }

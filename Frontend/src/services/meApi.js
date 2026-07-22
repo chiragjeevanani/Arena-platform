@@ -34,8 +34,15 @@ export function cancelMyEnrollment(id) {
   return apiJson(`/api/me/enrollments/${encodeURIComponent(id)}/cancel`, { method: 'PATCH' });
 }
 
-export function createPaymentIntent({ purpose, amount }) {
-  return apiJson('/api/me/payments/intent', { method: 'POST', body: { purpose, amount } });
+export function createPaymentIntent({ purpose, amount, bookingId }) {
+  return apiJson('/api/me/payments/intent', {
+    method: 'POST',
+    body: {
+      purpose,
+      ...(amount != null ? { amount } : {}),
+      ...(bookingId ? { bookingId } : {}),
+    },
+  });
 }
 
 export function listMyPayments() {

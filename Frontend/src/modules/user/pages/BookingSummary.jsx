@@ -144,15 +144,29 @@ const BookingSummary = () => {
         }
 
         if (finalPayable > 0 && lastBooking) {
-          const intent = await createPaymentIntent({
-            purpose: 'booking',
-            amount: finalPayable,
-            bookingId: lastBooking.booking.id,
-          });
+          let intent;
+          try {
+            const { createBankMuscatPayment } = await import('../../../services/bankMuscatApi');
+            intent = await createBankMuscatPayment({
+              purpose: 'booking',
+              bookingId: lastBooking.booking.id,
+            });
+          } catch (bmErr) {
+            if (bmErr.status === 503) {
+              intent = await createPaymentIntent({
+                purpose: 'booking',
+                amount: finalPayable,
+                bookingId: lastBooking.booking.id,
+              });
+            } else {
+              throw bmErr;
+            }
+          }
 
-          if (intent?.provider === 'ccavenue') {
-            const { redirectToCcavenue } = await import('../../../services/ccavenueRedirect');
-            redirectToCcavenue({
+          const { isBankMuscatRedirectProvider } = await import('../../../services/bankMuscatApi');
+          if (isBankMuscatRedirectProvider(intent?.provider)) {
+            const { redirectToBankMuscat } = await import('../../../services/ccavenueRedirect');
+            redirectToBankMuscat({
               paymentUrl: intent.paymentUrl,
               encRequest: intent.encRequest,
               accessCode: intent.accessCode,

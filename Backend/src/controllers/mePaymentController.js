@@ -1,14 +1,43 @@
 const Payment = require('../models/Payment');
-const User = require('../models/User');
-const ccavenue = require('../utils/ccavenue');
+const {
+  createBankMuscatPayment,
+  getBankMuscatConfig,
+} = require('../providers/bankMuscat/bankMuscatService');
 
 const ALLOWED_PURPOSES = ['top_up', 'booking'];
 
+/**
+ * Legacy intent endpoint — prefers Bank Muscat SmartPay when configured, else mock.
+ * Prefer POST /api/payments/bank-muscat/create for new clients.
+ */
 async function createPaymentIntent(req, res) {
-  const { purpose, amount } = req.body;
+  const { purpose, amount, bookingId } = req.body || {};
   if (!purpose || !ALLOWED_PURPOSES.includes(purpose)) {
     return res.status(400).json({ error: `purpose must be one of: ${ALLOWED_PURPOSES.join(', ')}` });
   }
+
+  const cfg = getBankMuscatConfig();
+  if (cfg.configured) {
+    try {
+      const payload = await createBankMuscatPayment({
+        userId: req.auth.sub,
+        purpose,
+        bookingId,
+        amount,
+        req,
+      });
+      // Keep ccavenue alias so older frontend branches still redirect.
+      return res.status(201).json({
+        ...payload,
+        provider: payload.provider,
+        // dual-compat
+        providers: ['bank_muscat', 'ccavenue'],
+      });
+    } catch (err) {
+      return res.status(err.status || 500).json({ error: err.message || 'Failed to initiate payment' });
+    }
+  }
+
   if (amount === undefined || amount === null) {
     return res.status(400).json({ error: 'amount is required' });
   }
@@ -17,17 +46,9 @@ async function createPaymentIntent(req, res) {
     return res.status(400).json({ error: 'amount must be a positive number' });
   }
 
-  const merchantId = process.env.CCAVENUE_MERCHANT_ID;
-  const accessCode = process.env.CCAVENUE_ACCESS_CODE;
-  const workingKey = process.env.CCAVENUE_WORKING_KEY;
-  const gatewayUrl = process.env.CCAVENUE_GATEWAY_URL;
-
-  const isCcavenueConfigured = merchantId && accessCode && workingKey && gatewayUrl;
-  const provider = isCcavenueConfigured ? 'ccavenue' : 'mock';
-
   const meta = {};
-  if (purpose === 'booking' && req.body.bookingId) {
-    meta.bookingId = String(req.body.bookingId);
+  if (purpose === 'booking' && bookingId) {
+    meta.bookingId = String(bookingId);
   }
 
   const payment = await Payment.create({
@@ -35,44 +56,9 @@ async function createPaymentIntent(req, res) {
     amount: n,
     purpose,
     status: 'pending',
-    provider,
+    provider: 'mock',
     meta,
   });
-
-  if (isCcavenueConfigured) {
-    const user = await User.findById(req.auth.sub).lean();
-    const apiBase = process.env.API_URL || `${req.protocol}://${req.get('host')}`;
-    const redirectUrl = `${apiBase}/api/me/payments/ccavenue/callback`;
-
-    // Construct parameter string for CCAvenue
-    const params = [
-      `merchant_id=${encodeURIComponent(merchantId)}`,
-      `order_id=BM_${payment._id.toString()}`,
-      `amount=${n.toFixed(3)}`,
-      `currency=OMR`,
-      `redirect_url=${encodeURIComponent(redirectUrl)}`,
-      `cancel_url=${encodeURIComponent(redirectUrl)}`,
-      `language=EN`,
-      `billing_name=${encodeURIComponent(user?.name || '')}`,
-      `billing_email=${encodeURIComponent(user?.email || '')}`,
-      `billing_tel=${encodeURIComponent(user?.phone || '')}`,
-    ].join('&');
-
-    try {
-      const encRequest = ccavenue.encrypt(params, workingKey);
-      return res.status(201).json({
-        payment: Payment.toPublic(payment),
-        provider: 'ccavenue',
-        paymentUrl: gatewayUrl,
-        encRequest,
-        accessCode,
-      });
-    } catch (encryptErr) {
-      console.error('CCAvenue encryption error:', encryptErr);
-      // Fallback to error
-      return res.status(500).json({ error: 'Failed to initiate secure bank payment' });
-    }
-  }
 
   return res.status(201).json({
     payment: Payment.toPublic(payment),
@@ -87,4 +73,3 @@ async function listMyPayments(req, res) {
 }
 
 module.exports = { createPaymentIntent, listMyPayments };
-

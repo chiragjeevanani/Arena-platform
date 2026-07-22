@@ -1,13 +1,10 @@
+import { createBankMuscatPayment, isBankMuscatRedirectProvider } from './bankMuscatApi';
 import { createPaymentIntent, confirmMockPayment, getMyWallet } from './meApi';
-import { redirectToCcavenue } from './ccavenueRedirect';
+import { redirectToBankMuscat } from './ccavenueRedirect';
 
 /**
- * Wallet credit flow: creates a payment intent. Redirects to CCAvenue if provider is 'ccavenue',
- * otherwise confirms via mock gateway (matches backend Phase 9).
- * 
- * @param {number} amount
- * @param {string} webhookSecret - must match backend MOCK_PAYMENT_WEBHOOK_SECRET
- * @returns {Promise<{ wallet: object, transactions: unknown[] }>}
+ * Wallet credit flow via Bank Muscat SmartPay (or mock fallback).
+ * Success is never assumed on the client — redirect return page verifies via backend status API.
  */
 export async function completeWalletTopUpViaMockPayment(amount, webhookSecret) {
   const n = Number(amount);
@@ -15,15 +12,24 @@ export async function completeWalletTopUpViaMockPayment(amount, webhookSecret) {
     throw new Error('Amount must be a positive number');
   }
 
-  const intent = await createPaymentIntent({ purpose: 'top_up', amount: n });
+  let intent;
+  try {
+    intent = await createBankMuscatPayment({ purpose: 'top_up', amount: n });
+  } catch (err) {
+    // 503 = SmartPay not configured → fall back to legacy intent (mock)
+    if (err.status === 503 || err.status === 501) {
+      intent = await createPaymentIntent({ purpose: 'top_up', amount: n });
+    } else {
+      throw err;
+    }
+  }
 
-  if (intent?.provider === 'ccavenue') {
-    redirectToCcavenue({
+  if (isBankMuscatRedirectProvider(intent?.provider)) {
+    redirectToBankMuscat({
       paymentUrl: intent.paymentUrl,
       encRequest: intent.encRequest,
       accessCode: intent.accessCode,
     });
-    // Return a pending promise to keep the loading UI active during redirection
     return new Promise(() => {});
   }
 
@@ -40,4 +46,3 @@ export async function completeWalletTopUpViaMockPayment(amount, webhookSecret) {
   await confirmMockPayment(paymentId, secret);
   return getMyWallet();
 }
-

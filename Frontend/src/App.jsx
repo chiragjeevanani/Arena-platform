@@ -31,6 +31,7 @@ const ArenaDetails = lazy(() => import('./modules/user/pages/ArenaDetails'));
 const SlotSelection = lazy(() => import('./modules/user/pages/SlotSelection'));
 const BookingSummary = lazy(() => import('./modules/user/pages/BookingSummary'));
 const Payment = lazy(() => import('./modules/user/pages/Payment'));
+const BankMuscatReturn = lazy(() => import('./modules/user/pages/BankMuscatReturn'));
 const BookingSuccess = lazy(() => import('./modules/user/pages/BookingSuccess'));
 const BookingDetails = lazy(() => import('./modules/user/pages/BookingDetails'));
 const Dashboard = lazy(() => import('./modules/user/pages/Dashboard'));
@@ -245,6 +246,7 @@ function App() {
             <Route path="/coaching-summary" element={<CoachingSummary />} />
             <Route path="/membership" element={<MembershipPlans />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/payment/bank-muscat/return" element={<BankMuscatReturn />} />
             <Route path="/booking-success" element={<BookingSuccess />} />
             <Route path="/bookings/:id" element={<BookingDetails />} />
             <Route path="/slot-membership-purchase" element={<SlotMembershipPurchase />} />

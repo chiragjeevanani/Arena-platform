@@ -11,6 +11,7 @@ const meRoutes = require('./routes/meRoutes');
 const coachRoutes = require('./routes/coachRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const webhookRoutes = require('./routes/webhookRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 function createApp() {
   const app = express();
@@ -34,6 +35,7 @@ function createApp() {
   apiRouter.use('/auth', authRoutes);
   apiRouter.use('/public', publicArenaRoutes);
   apiRouter.use('/me', meRoutes);
+  apiRouter.use('/payments', paymentRoutes);
   apiRouter.use('/webhooks', webhookRoutes);
   apiRouter.use('/coach', coachRoutes);
   apiRouter.use('/notifications', notificationRoutes);

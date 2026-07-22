@@ -55,6 +55,52 @@ const Payment = () => {
     setPayError('');
     const amountNum = Number(amount) || 0;
 
+    // ── Branch 0: Bank Muscat SmartPay (Oman official) ─────────────────────────
+    const bankMuscatEligible =
+      isApiConfigured() &&
+      getAuthToken() &&
+      amountNum > 0 &&
+      (state?.paymentPurpose === 'top_up' ||
+        state?.type === 'booking' ||
+        selectedMethod === 'card' ||
+        selectedMethod === 'netbanking');
+
+    if (bankMuscatEligible && !state?.skipBankMuscat) {
+      setIsProcessing(true);
+      try {
+        const { createBankMuscatPayment, isBankMuscatRedirectProvider } = await import('../../../services/bankMuscatApi');
+        const { redirectToBankMuscat } = await import('../../../services/ccavenueRedirect');
+        let purpose = state?.paymentPurpose || state?.type || 'top_up';
+        if (purpose === 'coaching') purpose = 'enrollment';
+        if (purpose === 'event') purpose = 'booking';
+        if (!['top_up', 'booking'].includes(purpose)) {
+          // membership/enrollment: keep existing Razorpay/mock paths for now
+          throw Object.assign(new Error('skip'), { status: 503 });
+        }
+        const intent = await createBankMuscatPayment({
+          purpose,
+          amount: amountNum,
+          bookingId: state?.booking?.id || state?.bookingId,
+        });
+        if (isBankMuscatRedirectProvider(intent?.provider)) {
+          redirectToBankMuscat({
+            paymentUrl: intent.paymentUrl,
+            encRequest: intent.encRequest,
+            accessCode: intent.accessCode,
+          });
+          return;
+        }
+      } catch (e) {
+        if (e.status !== 503 && e.message !== 'skip') {
+          setPayError(e.message || 'Bank Muscat payment failed to start');
+          setIsProcessing(false);
+          return;
+        }
+        // Not configured → fall through to Razorpay/mock
+      }
+      setIsProcessing(false);
+    }
+
     // ── Branch 1: Razorpay (when configured on both frontend + backend) ────────
     if (isRazorpayConfigured() && isApiConfigured() && getAuthToken() && amountNum > 0) {
       setIsProcessing(true);
