@@ -14,9 +14,10 @@ function frontendRedirect(result) {
 }
 
 async function createPayment(req, res) {
-  const { purpose, bookingId, amount } = req.body || {};
-  if (!purpose || !['top_up', 'booking'].includes(purpose)) {
-    return res.status(400).json({ error: 'purpose must be top_up or booking' });
+  const { purpose, bookingId, amount, planId, batchId, eventId, eventName, registrantName, registrantPhone } =
+    req.body || {};
+  if (!purpose || !['top_up', 'booking', 'membership', 'enrollment'].includes(purpose)) {
+    return res.status(400).json({ error: 'purpose must be top_up, booking, membership, or enrollment' });
   }
 
   try {
@@ -25,6 +26,15 @@ async function createPayment(req, res) {
       purpose,
       bookingId,
       amount,
+      meta: {
+        planId,
+        batchId,
+        bookingId,
+        eventId,
+        eventName,
+        registrantName,
+        registrantPhone,
+      },
       req,
     });
     return res.status(201).json(payload);

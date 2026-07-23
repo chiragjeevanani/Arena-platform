@@ -17,7 +17,6 @@ const {
   getMyEnrollmentById,
 } = require('../controllers/meEnrollmentController');
 const { createPaymentIntent, listMyPayments } = require('../controllers/mePaymentController');
-const { createRazorpayOrder, verifyRazorpayPayment } = require('../controllers/meRazorpayController');
 const { patchMyProfile } = require('../controllers/meProfileController');
 const { listMyAttendance } = require('../controllers/meAttendanceController');
 const { listMyEventRegistrations, cancelMyEventRegistration } = require('../controllers/meEventController');
@@ -66,10 +65,6 @@ router.patch('/enrollments/:id/cancel', asyncHandler(cancelMyEnrollment));
 
 router.post('/payments/intent', asyncHandler(createPaymentIntent));
 router.get('/payments', asyncHandler(listMyPayments));
-
-// Razorpay
-router.post('/payments/razorpay/create-order', asyncHandler(createRazorpayOrder));
-router.post('/payments/razorpay/verify', asyncHandler(verifyRazorpayPayment));
 
 router.patch('/profile', asyncHandler(patchMyProfile));
 router.get('/attendance', asyncHandler(listMyAttendance));

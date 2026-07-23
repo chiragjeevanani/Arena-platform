@@ -2,6 +2,10 @@ const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
 const Wallet = require('../models/Wallet');
 const WalletTransaction = require('../models/WalletTransaction');
+const MembershipPlan = require('../models/MembershipPlan');
+const UserMembership = require('../models/UserMembership');
+const CoachingBatch = require('../models/CoachingBatch');
+const BatchEnrollment = require('../models/BatchEnrollment');
 const { getOrCreateWallet } = require('./walletService');
 
 const TERMINAL_SUCCESS = 'succeeded';
@@ -61,6 +65,14 @@ async function finalizeSuccessfulPayment(paymentId, extras = {}) {
     await markBookingPaidOnce(claimed);
   }
 
+  if (claimed.purpose === 'membership') {
+    await activateMembershipOnce(claimed);
+  }
+
+  if (claimed.purpose === 'enrollment') {
+    await createEnrollmentOnce(claimed);
+  }
+
   const fresh = await Payment.findById(claimed._id);
   return { payment: fresh, alreadyProcessed: false };
 }
@@ -114,6 +126,76 @@ async function markBookingPaidOnce(payment) {
 
   await Payment.findByIdAndUpdate(payment._id, {
     $set: { 'meta.bookingMarkedPaid': true },
+  });
+}
+
+async function activateMembershipOnce(payment) {
+  if (payment.meta?.membershipActivated) return;
+
+  const planId = payment.meta?.planId;
+  if (!planId) return;
+
+  const plan = await MembershipPlan.findOne({ _id: planId, isActive: true });
+  if (!plan || plan.slotBased) {
+    // Slot-based plans still need bookedSlots from the client; leave for a follow-up purchase call.
+    return;
+  }
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + Number(plan.durationDays) * 86400000);
+  await UserMembership.create({
+    userId: payment.userId,
+    membershipPlanId: plan._id,
+    arenaId: plan.isGlobal ? null : plan.arenaId,
+    startsAt: now,
+    expiresAt,
+    status: 'active',
+    amountPaid: payment.amount,
+  });
+
+  await Payment.findByIdAndUpdate(payment._id, {
+    $set: { 'meta.membershipActivated': true, 'meta.membershipPlanId': plan._id.toString() },
+  });
+}
+
+async function createEnrollmentOnce(payment) {
+  if (payment.meta?.enrollmentCreated) return;
+
+  const batchId = payment.meta?.batchId;
+  if (!batchId) return;
+
+  const existing = await BatchEnrollment.findOne({
+    batchId,
+    userId: payment.userId,
+    status: { $in: ['pending', 'confirmed'] },
+  }).lean();
+  if (existing) {
+    await Payment.findByIdAndUpdate(payment._id, {
+      $set: { 'meta.enrollmentCreated': true, 'meta.enrollmentId': existing._id.toString() },
+    });
+    return;
+  }
+
+  const batch = await CoachingBatch.findById(batchId);
+  if (!batch || !batch.isPublished) return;
+
+  const taken = await BatchEnrollment.countDocuments({
+    batchId: batch._id,
+    status: { $in: ['pending', 'confirmed'] },
+  });
+  if (taken >= batch.capacity) return;
+
+  const enrollment = await BatchEnrollment.create({
+    batchId: batch._id,
+    userId: payment.userId,
+    status: 'confirmed',
+  });
+
+  await Payment.findByIdAndUpdate(payment._id, {
+    $set: {
+      'meta.enrollmentCreated': true,
+      'meta.enrollmentId': enrollment._id.toString(),
+    },
   });
 }
 

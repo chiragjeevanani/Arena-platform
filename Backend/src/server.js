@@ -43,12 +43,14 @@ async function start() {
     // eslint-disable-next-line no-console
     console.log(`${GREEN}${CHECK} Server is running on port ${port}${RESET}`);
 
-    // Payment gateway status
-    const rzpKey = process.env.RAZORPAY_KEY_ID;
-    if (rzpKey) {
-      console.log(`${GREEN}${CHECK} Razorpay configured (${rzpKey.slice(0, 12)}...)${RESET}`);
+    // Payment gateway status (Bank Muscat SmartPay)
+    const bmMid = process.env.BANK_MUSCAT_MID || process.env.CCAVENUE_MERCHANT_ID;
+    const bmAccess = process.env.BANK_MUSCAT_ACCESS_CODE || process.env.CCAVENUE_ACCESS_CODE;
+    const bmKey = process.env.BANK_MUSCAT_WORKING_KEY || process.env.CCAVENUE_WORKING_KEY;
+    if (bmMid && bmAccess && bmKey) {
+      console.log(`${GREEN}${CHECK} Bank Muscat SmartPay configured (MID ${String(bmMid).slice(0, 8)}…)${RESET}`);
     } else {
-      console.warn('⚠  Razorpay NOT configured — set RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET in .env');
+      console.warn('⚠  Bank Muscat NOT configured — set BANK_MUSCAT_MID + ACCESS_CODE + WORKING_KEY in .env');
     }
 
     console.log(`${BLUE}----------------------------------------${RESET}`);

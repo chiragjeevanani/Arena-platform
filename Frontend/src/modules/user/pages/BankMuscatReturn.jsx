@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, XCircle, Clock3, Loader2, ArrowLeft } from 'lucide-react';
 import { getAuthToken } from '../../../services/apiClient';
 import { getBankMuscatPaymentStatus } from '../../../services/bankMuscatApi';
+import { registerForEvent } from '../../../services/eventsApi';
 import { useTheme } from '../context/ThemeContext';
 
 /**
@@ -48,7 +49,30 @@ const BankMuscatReturn = () => {
 
         if (p.status === 'succeeded') {
           setUiState('SUCCESS');
-          const type = p.purpose === 'top_up' ? 'wallet_top_up' : p.purpose;
+
+          // Event registration is completed on return (no Booking document to finalize server-side).
+          if (p.meta?.eventId && !p.meta?.eventRegistered) {
+            try {
+              await registerForEvent({
+                eventId: p.meta.eventId,
+                name: p.meta.registrantName || '',
+                phone: p.meta.registrantPhone || '',
+                paymentMethod: 'online',
+              });
+            } catch (regErr) {
+              // eslint-disable-next-line no-console
+              console.error('Event registration after payment failed:', regErr);
+            }
+          }
+
+          const type =
+            p.purpose === 'top_up'
+              ? 'wallet_top_up'
+              : p.purpose === 'enrollment'
+                ? 'coaching'
+                : p.meta?.eventId
+                  ? 'event'
+                  : p.purpose;
           setTimeout(() => {
             navigate('/booking-success', {
               replace: true,

@@ -14,6 +14,20 @@ const { finalizeSuccessfulPayment, markPaymentTerminalFailure } = require('../..
 
 const PROVIDER = 'bank_muscat';
 const OPEN_STATUSES = ['created', 'initiated', 'pending'];
+const ALLOWED_PURPOSES = ['top_up', 'booking', 'membership', 'enrollment'];
+
+function sanitizeClientMeta(meta = {}) {
+  const out = {};
+  if (!meta || typeof meta !== 'object') return out;
+  if (meta.planId) out.planId = String(meta.planId);
+  if (meta.batchId) out.batchId = String(meta.batchId);
+  if (meta.bookingId) out.bookingId = String(meta.bookingId);
+  if (meta.eventId) out.eventId = String(meta.eventId);
+  if (meta.eventName) out.eventName = String(meta.eventName).slice(0, 200);
+  if (meta.registrantName) out.registrantName = String(meta.registrantName).slice(0, 120);
+  if (meta.registrantPhone) out.registrantPhone = String(meta.registrantPhone).slice(0, 40);
+  return out;
+}
 
 function assertConfigured() {
   const cfg = getBankMuscatConfig();
@@ -31,49 +45,62 @@ function assertConfigured() {
 }
 
 /**
- * Resolve trusted amount from DB (never trust client for booking).
+ * Resolve trusted amount from DB (never trust client for court bookings).
+ * Client amount is allowed for top_up / membership / enrollment / event registration.
  */
-async function resolveTrustedAmount({ purpose, userId, bookingId, requestedAmount }) {
+async function resolveTrustedAmount({ purpose, userId, bookingId, requestedAmount, meta = {} }) {
   if (purpose === 'booking') {
-    if (!bookingId || !mongoose.isValidObjectId(bookingId)) {
-      const err = new Error('bookingId is required for booking payments');
-      err.status = 400;
-      throw err;
+    if (bookingId && mongoose.isValidObjectId(bookingId)) {
+      const booking = await Booking.findById(bookingId);
+      if (!booking) {
+        const err = new Error('Booking not found');
+        err.status = 404;
+        throw err;
+      }
+      if (String(booking.userId) !== String(userId)) {
+        const err = new Error('Booking does not belong to this user');
+        err.status = 403;
+        throw err;
+      }
+      if (booking.paymentStatus === 'paid') {
+        const err = new Error('Booking is already paid');
+        err.status = 409;
+        throw err;
+      }
+      if (booking.status === 'cancelled') {
+        const err = new Error('Cannot pay for a cancelled booking');
+        err.status = 400;
+        throw err;
+      }
+      const due = Number(booking.paidAmount > 0 ? booking.paidAmount : Math.max(0, booking.amount - (booking.walletUsed || 0)));
+      if (!Number.isFinite(due) || due <= 0) {
+        const err = new Error('No outstanding amount on this booking');
+        err.status = 400;
+        throw err;
+      }
+      return { amount: due, booking, currency: 'OMR' };
     }
-    const booking = await Booking.findById(bookingId);
-    if (!booking) {
-      const err = new Error('Booking not found');
-      err.status = 404;
-      throw err;
+
+    // Paid event registration (no Booking document) — client amount + eventId in meta
+    if (meta.eventId) {
+      const n = Number(requestedAmount);
+      if (!Number.isFinite(n) || n <= 0) {
+        const err = new Error('amount must be a positive number for event payments');
+        err.status = 400;
+        throw err;
+      }
+      return { amount: n, booking: null, currency: 'OMR' };
     }
-    if (String(booking.userId) !== String(userId)) {
-      const err = new Error('Booking does not belong to this user');
-      err.status = 403;
-      throw err;
-    }
-    if (booking.paymentStatus === 'paid') {
-      const err = new Error('Booking is already paid');
-      err.status = 409;
-      throw err;
-    }
-    if (booking.status === 'cancelled') {
-      const err = new Error('Cannot pay for a cancelled booking');
-      err.status = 400;
-      throw err;
-    }
-    const due = Number(booking.paidAmount > 0 ? booking.paidAmount : Math.max(0, booking.amount - (booking.walletUsed || 0)));
-    if (!Number.isFinite(due) || due <= 0) {
-      const err = new Error('No outstanding amount on this booking');
-      err.status = 400;
-      throw err;
-    }
-    return { amount: due, booking, currency: 'OMR' };
+
+    const err = new Error('bookingId is required for booking payments');
+    err.status = 400;
+    throw err;
   }
 
-  if (purpose === 'top_up') {
+  if (purpose === 'top_up' || purpose === 'membership' || purpose === 'enrollment') {
     const n = Number(requestedAmount);
     if (!Number.isFinite(n) || n <= 0) {
-      const err = new Error('amount must be a positive number for top_up');
+      const err = new Error(`amount must be a positive number for ${purpose}`);
       err.status = 400;
       throw err;
     }
@@ -119,13 +146,20 @@ function buildRedirectPayload(payment, cfg, encRequest) {
  * Create (or reuse) a pending Bank Muscat payment and return redirect fields.
  * Access code is returned for the browser form POST only (not the working key).
  */
-async function createBankMuscatPayment({ userId, purpose, bookingId, amount, req }) {
+async function createBankMuscatPayment({ userId, purpose, bookingId, amount, meta = {}, req }) {
+  if (!ALLOWED_PURPOSES.includes(purpose)) {
+    const err = new Error(`purpose must be one of: ${ALLOWED_PURPOSES.join(', ')}`);
+    err.status = 400;
+    throw err;
+  }
   const cfg = assertConfigured();
+  const safeMeta = sanitizeClientMeta(meta);
   const trusted = await resolveTrustedAmount({
     purpose,
     userId,
     bookingId,
     requestedAmount: amount,
+    meta: safeMeta,
   });
 
   let payment = await findReusablePendingPayment({
@@ -146,7 +180,8 @@ async function createBankMuscatPayment({ userId, purpose, bookingId, amount, req
       merchantId: cfg.merchantId,
       initiatedAt: new Date(),
       meta: {
-        bookingId: trusted.booking ? trusted.booking._id.toString() : undefined,
+        ...safeMeta,
+        bookingId: trusted.booking ? trusted.booking._id.toString() : safeMeta.bookingId,
       },
     });
     const merchantRef = `BM_${payment._id.toString()}`;

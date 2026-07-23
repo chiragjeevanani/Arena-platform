@@ -1,18 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Smartphone, CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Lock, Wallet } from 'lucide-react';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
-import { isApiConfigured, getMockPaymentWebhookSecret, isRazorpayConfigured, getRazorpayKeyId } from '../../../services/config';
+import { isApiConfigured, getMockPaymentWebhookSecret } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { completeWalletTopUpViaMockPayment } from '../../../services/mockTopUpFlow';
 import { registerForEvent } from '../../../services/eventsApi';
 import { createMyEnrollment, getMyWallet } from '../../../services/meApi';
-import { createRazorpayOrder, verifyRazorpayPayment } from '../../../services/razorpayApi';
-import { loadRazorpayScript, openRazorpayCheckout } from '../../../services/razorpayCheckout';
-import { useEffect } from 'react';
 
 const Payment = () => {
   const { state } = useLocation();
@@ -51,36 +48,44 @@ const Payment = () => {
     { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-400/10', desc: 'On-Site Payment' },
   ];
 
+  const resolvePurpose = () => {
+    let purpose = state?.paymentPurpose || state?.type || 'top_up';
+    if (purpose === 'coaching') purpose = 'enrollment';
+    if (purpose === 'event') purpose = 'booking';
+    return purpose;
+  };
+
   const handlePay = async () => {
     setPayError('');
     const amountNum = Number(amount) || 0;
 
-    // ── Branch 0: Bank Muscat SmartPay (Oman official) ─────────────────────────
+    // ── Offline methods: wallet / pay-at-arena (no gateway) ───────────────────
+    const isOfflineMethod = selectedMethod === 'wallet' || selectedMethod === 'cash';
+
+    // ── Branch 0: Bank Muscat SmartPay (sole online gateway) ──────────────────
     const bankMuscatEligible =
+      !isOfflineMethod &&
       isApiConfigured() &&
       getAuthToken() &&
       amountNum > 0 &&
-      (state?.paymentPurpose === 'top_up' ||
-        state?.type === 'booking' ||
-        selectedMethod === 'card' ||
-        selectedMethod === 'netbanking');
+      !state?.skipBankMuscat;
 
-    if (bankMuscatEligible && !state?.skipBankMuscat) {
+    if (bankMuscatEligible) {
       setIsProcessing(true);
       try {
         const { createBankMuscatPayment, isBankMuscatRedirectProvider } = await import('../../../services/bankMuscatApi');
         const { redirectToBankMuscat } = await import('../../../services/ccavenueRedirect');
-        let purpose = state?.paymentPurpose || state?.type || 'top_up';
-        if (purpose === 'coaching') purpose = 'enrollment';
-        if (purpose === 'event') purpose = 'booking';
-        if (!['top_up', 'booking'].includes(purpose)) {
-          // membership/enrollment: keep existing Razorpay/mock paths for now
-          throw Object.assign(new Error('skip'), { status: 503 });
-        }
+        const purpose = resolvePurpose();
         const intent = await createBankMuscatPayment({
           purpose,
           amount: amountNum,
           bookingId: state?.booking?.id || state?.bookingId,
+          planId: state?.plan?.id,
+          batchId: state?.registrationInfo?.batchId || state?.batch?.id,
+          eventId: state?.registrationInfo?.eventId,
+          eventName: state?.eventTitle,
+          registrantName: state?.registrationInfo?.name,
+          registrantPhone: state?.registrationInfo?.phone,
         });
         if (isBankMuscatRedirectProvider(intent?.provider)) {
           redirectToBankMuscat({
@@ -90,107 +95,26 @@ const Payment = () => {
           });
           return;
         }
-      } catch (e) {
-        if (e.status !== 503 && e.message !== 'skip') {
-          setPayError(e.message || 'Bank Muscat payment failed to start');
-          setIsProcessing(false);
-          return;
-        }
-        // Not configured → fall through to Razorpay/mock
-      }
-      setIsProcessing(false);
-    }
-
-    // ── Branch 1: Razorpay (when configured on both frontend + backend) ────────
-    if (isRazorpayConfigured() && isApiConfigured() && getAuthToken() && amountNum > 0) {
-      setIsProcessing(true);
-      try {
-        let purpose = state?.paymentPurpose || state?.type || 'top_up';
-        if (purpose === 'coaching') purpose = 'enrollment';
-        if (purpose === 'event') purpose = 'booking';
-        const meta = {};
-        if (state?.plan?.id) meta.planId = state.plan.id;
-        if (state?.registrationInfo?.batchId) meta.batchId = state.registrationInfo.batchId;
-
-        // 1. Load Razorpay script
-        await loadRazorpayScript();
-
-        // 2. Create order on backend
-        const orderData = await createRazorpayOrder({ purpose, amount: amountNum, meta });
-
-        // 3. Open Razorpay Checkout modal
-        await new Promise((resolve, reject) => {
-          openRazorpayCheckout({
-            keyId: getRazorpayKeyId(),
-            orderId: orderData.orderId,
-            amount: orderData.amount,
-            currency: orderData.currency,
-            name: 'Arena Platform',
-            description: purpose === 'top_up' ? 'Wallet Top-Up' : 'Arena Payment',
-            onSuccess: async ({ razorpay_payment_id, razorpay_order_id, razorpay_signature }) => {
-              try {
-                // 4. Verify signature on backend
-                const verifyRes = await verifyRazorpayPayment({
-                  razorpay_payment_id,
-                  razorpay_order_id,
-                  razorpay_signature,
-                  paymentRecordId: orderData.paymentRecordId,
-                });
-
-                // Call registration/enrollment APIs to write the records to DB
-                let enrollment = null;
-                if (state?.type === 'coaching' && state?.registrationInfo?.batchId) {
-                  const enrollRes = await createMyEnrollment(state.registrationInfo.batchId, {
-                    paymentMethod: 'online',
-                    amount: amountNum
-                  });
-                  enrollment = enrollRes.enrollment;
-                }
-
-                if (state?.type === 'event' && state?.registrationInfo) {
-                  await registerForEvent({ ...state.registrationInfo, paymentMethod: 'online' });
-                }
-
-                setIsProcessing(false);
-
-                // 5. Navigate to success page with correct context
-                navigate('/booking-success', {
-                  state: {
-                    ...state,
-                    type: purpose === 'top_up' ? 'wallet_top_up' : (state?.type || purpose),
-                    amount: amountNum,
-                    redirectBack: state?.redirectBack,
-                    pendingPlanId: state?.pendingPlanId,
-                    payment: verifyRes?.payment,
-                    enrollment,
-                  },
-                });
-                resolve();
-              } catch (verifyErr) {
-                setIsProcessing(false);
-                setPayError(verifyErr.message || 'Payment verification failed');
-                reject(verifyErr);
-              }
-            },
-            onDismiss: () => {
-              setIsProcessing(false);
-              setPayError('Payment was cancelled. Please try again.');
-              resolve(); // Don't reject — user dismissed voluntarily
-            },
-          });
-        });
+        setPayError('Payment gateway did not return a redirect. Please try again.');
+        setIsProcessing(false);
+        return;
       } catch (e) {
         if (e.status === 401) {
           navigate('/login', { state: { from: '/payment', ...state } });
           return;
         }
-        setPayError(e.message || 'Payment failed. Please try again.');
-        setIsProcessing(false);
+        // Dev fallback: mock top-up only when Bank Muscat is not configured
+        if (e.status === 503 && state?.paymentPurpose === 'top_up') {
+          setIsProcessing(false);
+        } else {
+          setPayError(e.message || 'Bank Muscat payment failed to start');
+          setIsProcessing(false);
+          return;
+        }
       }
-      return;
     }
 
-    // ── Branch 2: Mock top-up (dev — when MOCK_PAYMENT_WEBHOOK_SECRET is set) ──
+    // ── Branch 1: Mock top-up (dev — when MOCK_PAYMENT_WEBHOOK_SECRET is set) ──
     const mockSecret = getMockPaymentWebhookSecret();
     const useMockTopUp =
       state?.paymentPurpose === 'top_up' &&
@@ -198,7 +122,7 @@ const Payment = () => {
       getAuthToken() &&
       amountNum > 0;
 
-    if (useMockTopUp) {
+    if (useMockTopUp && mockSecret) {
       setIsProcessing(true);
       try {
         await completeWalletTopUpViaMockPayment(amountNum, mockSecret);
