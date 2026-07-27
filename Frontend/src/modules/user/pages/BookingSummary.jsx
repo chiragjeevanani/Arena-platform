@@ -165,7 +165,19 @@ const BookingSummary = () => {
 
           const { isBankMuscatRedirectProvider } = await import('../../../services/bankMuscatApi');
           if (isBankMuscatRedirectProvider(intent?.provider)) {
+            const { saveBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');
             const { redirectToBankMuscat } = await import('../../../services/ccavenueRedirect');
+            saveBankMuscatCheckoutContext({
+              type: 'booking',
+              amount: lastBooking?.booking?.amount ?? finalPayable,
+              arena,
+              court,
+              date,
+              slot: slotsArray[0],
+              slots: slotsArray,
+              booking: lastBooking?.booking,
+              pricing: lastBooking?.pricing,
+            });
             redirectToBankMuscat({
               paymentUrl: intent.paymentUrl,
               encRequest: intent.encRequest,

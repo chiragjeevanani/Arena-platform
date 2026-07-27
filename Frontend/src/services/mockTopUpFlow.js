@@ -25,6 +25,12 @@ export async function completeWalletTopUpViaMockPayment(amount, webhookSecret) {
   }
 
   if (isBankMuscatRedirectProvider(intent?.provider)) {
+    const { saveBankMuscatCheckoutContext } = await import('./bankMuscatCheckoutContext');
+    saveBankMuscatCheckoutContext({
+      type: 'wallet_top_up',
+      paymentPurpose: 'top_up',
+      amount: n,
+    });
     redirectToBankMuscat({
       paymentUrl: intent.paymentUrl,
       encRequest: intent.encRequest,

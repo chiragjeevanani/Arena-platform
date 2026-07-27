@@ -88,6 +88,13 @@ const Payment = () => {
           registrantPhone: state?.registrationInfo?.phone,
         });
         if (isBankMuscatRedirectProvider(intent?.provider)) {
+          const { saveBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');
+          saveBankMuscatCheckoutContext({
+            ...state,
+            amount: amountNum,
+            paymentPurpose: purpose,
+            type: state?.type || purpose,
+          });
           redirectToBankMuscat({
             paymentUrl: intent.paymentUrl,
             encRequest: intent.encRequest,

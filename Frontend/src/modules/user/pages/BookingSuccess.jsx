@@ -75,7 +75,67 @@ const BookingSuccess = () => {
   }));
 
   const bookingData = state || loadedBooking;
-  const amount = bookingData?.amount || 0;
+  const amount = Number(bookingData?.amount) || 0;
+
+  const formatReceiptDate = (value) => {
+    if (!value) {
+      return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return value.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    const raw = String(value).trim();
+    // YYYY-MM-DD — avoid UTC timezone shift
+    const ymd = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (ymd) {
+      const d = new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3]));
+      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    return raw;
+  };
+
+  const formatReceiptTime = (value) => {
+    const d = value ? new Date(value) : new Date();
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
+  const receiptStamp =
+    bookingData?.transactionAt ||
+    bookingData?.payment?.completedAt ||
+    bookingData?.payment?.verifiedAt ||
+    bookingData?.payment?.updatedAt ||
+    null;
+
+  const displayDate =
+    bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up'
+      ? formatReceiptDate(receiptStamp)
+      : formatReceiptDate(bookingData?.date || receiptStamp);
+
+  const displayTiming =
+    bookingData?.type === 'wallet_top_up'
+      ? formatReceiptTime(receiptStamp)
+      : bookingData?.type === 'membership'
+        ? (bookingData.plan?.duration || '—')
+        : bookingData?.batch
+          ? (bookingData.batch.timing || '—')
+          : (bookingData?.slot?.time || bookingData?.slots?.[0]?.time || '—');
+
+  const timingLabel =
+    bookingData?.type === 'wallet_top_up'
+      ? 'Transaction Time'
+      : bookingData?.type === 'membership'
+        ? 'Validity Period'
+        : 'Timing';
+
+  const dateLabel =
+    bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up'
+      ? 'Transaction Date'
+      : 'Date';
 
   useEffect(() => {
     // Save booking/enrollment to localStorage for persistence in Dashboard
@@ -313,44 +373,46 @@ const BookingSuccess = () => {
               </div>
 
               {/* Detail Grid */}
-              <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100">
-                <div className="space-y-1">
+              <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100 print:bg-slate-50 print:border-slate-200">
+                <div className="space-y-1 min-w-0">
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                    {bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up' ? 'Transaction Date' : 'Date'}
+                    {dateLabel}
                   </p>
-                  <div className="flex items-center gap-2">
-                    <CalendarDays size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                      {bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up'
-                        ? new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) 
-                        : bookingData?.date}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CalendarDays size={14} className={`shrink-0 ${isDark ? 'text-white/50' : 'text-slate-400'}`} />
+                    <p className={`text-xs md:text-sm font-black truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      {displayDate || '—'}
                     </p>
                   </div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                    {bookingData?.type === 'wallet_top_up' ? 'Target Account' : bookingData?.type === 'membership' ? 'Validity Period' : 'Timing'}
+                    {timingLabel}
                   </p>
-                  <div className="flex items-center gap-2">
-                    <Clock size={14} className={isDark ? 'text-white/50' : 'text-slate-400'} />
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                      {bookingData?.type === 'wallet_top_up'
-                        ? 'My Arena Wallet'
-                        : bookingData?.type === 'membership' 
-                        ? bookingData.plan?.duration 
-                        : bookingData?.batch 
-                        ? bookingData.batch.timing 
-                        : bookingData?.slot?.time}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Clock size={14} className={`shrink-0 ${isDark ? 'text-white/50' : 'text-slate-400'}`} />
+                    <p className={`text-xs md:text-sm font-black truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      {displayTiming || '—'}
                     </p>
                   </div>
                 </div>
+                {bookingData?.type === 'wallet_top_up' ? (
+                  <div className="col-span-2 space-y-1 pt-1 border-t border-slate-100 dark:border-white/5 print:border-slate-200">
+                    <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                      Target Account
+                    </p>
+                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                      My Arena Wallet
+                    </p>
+                  </div>
+                ) : null}
               </div>
 
               {/* Bottom Notch Separator */}
               <div className="relative h-px flex items-center pt-2">
-                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'} print:hidden`} />
+                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border print:hidden ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
                 <div className={`w-full border-t-[2px] border-dashed ${isDark ? 'border-white/10' : 'border-slate-200'} print:border-solid print:border-t-[1px]`} />
-                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'} print:hidden`} />
+                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border print:hidden ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
               </div>
 
               {/* Total Paid Section */}
@@ -407,43 +469,61 @@ const BookingSuccess = () => {
             {/* Simple Print Styles */}
             <style dangerouslySetInnerHTML={{ __html: `
               @media print {
-                @page { margin: 15mm; size: A4 portrait; }
-                body { background: white !important; margin: 0 !important; padding: 0 !important; color: #0f172a !important; }
-                
-                /* Hide clutter */
-                nav, footer, .lg\\:hidden, .lg\\:col-span-4, 
-                .text-center.space-y-3, button, 
-                .relative.h-14, .fixed.bottom-0, .court-lines { 
-                  display: none !important; 
-                }
-                
-                /* Reset containers to avoid layout shifts in print */
-                .min-h-screen, .max-w-3xl, .grid, .lg\\:grid-cols-12 {
-                   display: block !important;
-                   position: static !important;
-                   margin: 0 !important;
-                   padding: 0 !important;
-                   max-width: none !important;
-                   border: none !important;
-                   box-shadow: none !important;
-                   background: transparent !important;
+                @page { margin: 12mm; size: A4 portrait; }
+                html, body {
+                  background: white !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  color: #0f172a !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
                 }
 
+                /* Hide everything except the receipt card */
+                body * { visibility: hidden !important; }
+                #print-area, #print-area * { visibility: visible !important; }
+
                 #print-area {
-                  display: block !important;
-                  position: static !important;
+                  position: absolute !important;
+                  left: 0 !important;
+                  top: 0 !important;
                   width: 100% !important;
                   max-width: 100% !important;
                   margin: 0 !important;
-                  padding: 0 !important;
-                  border: none !important;
+                  padding: 18px 20px !important;
+                  border: 1px solid #e2e8f0 !important;
+                  border-radius: 12px !important;
                   background: white !important;
                   box-shadow: none !important;
-                  visibility: visible !important;
+                  overflow: visible !important;
                   transform: none !important;
+                  color: #0f172a !important;
                 }
 
-                * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                #print-area .print\\:hidden,
+                .print\\:hidden {
+                  display: none !important;
+                }
+
+                /* Ticket side notches clip in print — hide them */
+                #print-area .absolute.left-0.-translate-x-9,
+                #print-area .absolute.right-0.translate-x-9,
+                #print-area .absolute.left-0.md\\:-translate-x-10,
+                #print-area .absolute.right-0.md\\:translate-x-10 {
+                  display: none !important;
+                }
+
+                #print-area h1,
+                #print-area h3,
+                #print-area p,
+                #print-area span {
+                  color: inherit !important;
+                }
+
+                #print-area .text-\\[\\#CE2029\\],
+                #print-area .text-\\[\\#CE2029\\]\\/80 {
+                  color: #CE2029 !important;
+                }
               }
             `}} />
 

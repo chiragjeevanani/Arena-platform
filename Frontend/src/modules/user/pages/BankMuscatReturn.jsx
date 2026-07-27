@@ -72,15 +72,24 @@ const BankMuscatReturn = () => {
                 ? 'coaching'
                 : p.meta?.eventId
                   ? 'event'
-                  : p.purpose;
+                  : p.purpose === 'booking'
+                    ? 'booking'
+                    : p.purpose;
+
+          const { consumeBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');
+          const saved = consumeBankMuscatCheckoutContext() || {};
+
           setTimeout(() => {
             navigate('/booking-success', {
               replace: true,
               state: {
-                type,
-                amount: p.amount,
+                ...saved,
+                type: saved.type || type,
+                amount: p.amount ?? saved.amount,
                 payment: p,
                 fromBankMuscat: true,
+                // Ensure wallet top-up always has a displayable stamp
+                transactionAt: p.completedAt || p.verifiedAt || p.updatedAt || new Date().toISOString(),
               },
             });
           }, 900);
