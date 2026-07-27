@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const { asyncHandler } = require('../utils/asyncHandler');
+const { getBankMuscatConfig } = require('../providers/bankMuscat/bankMuscatConfig');
 
 const router = express.Router();
 
@@ -29,6 +30,32 @@ router.get(
       return res.json(payload);
     }
     return res.status(503).json(payload);
+  })
+);
+
+/** Public — no secrets. Use to verify live Bank Muscat env after deploy. */
+router.get(
+  '/health/bank-muscat',
+  asyncHandler(async (_req, res) => {
+    const cfg = getBankMuscatConfig();
+    const hostOf = (u) => {
+      try {
+        return new URL(u).host;
+      } catch {
+        return null;
+      }
+    };
+    return res.json({
+      configured: cfg.configured,
+      env: cfg.env,
+      crypto: cfg.crypto,
+      mid: cfg.merchantId || null,
+      accessCodeLength: (cfg.accessCode || '').length,
+      workingKeyLength: (cfg.workingKey || '').length,
+      gatewayHost: hostOf(cfg.gatewayUrl),
+      callbackHost: hostOf(cfg.callbackUrl),
+      returnHost: hostOf(cfg.returnUrl),
+    });
   })
 );
 

@@ -65,8 +65,44 @@ async function getStatus(req, res) {
   }
 }
 
+/** Non-secret diagnostics so you can verify live server env/crypto without exposing keys. */
+async function getGatewayDiagnostics(_req, res) {
+  const cfg = getBankMuscatConfig();
+  let gatewayHost = '';
+  try {
+    gatewayHost = new URL(cfg.gatewayUrl).host;
+  } catch {
+    gatewayHost = '';
+  }
+  return res.json({
+    configured: cfg.configured,
+    env: cfg.env,
+    crypto: cfg.crypto,
+    mid: cfg.merchantId || null,
+    accessCodeLength: (cfg.accessCode || '').length,
+    workingKeyLength: (cfg.workingKey || '').length,
+    gatewayHost,
+    callbackHost: (() => {
+      try {
+        return new URL(cfg.callbackUrl).host;
+      } catch {
+        return null;
+      }
+    })(),
+    returnHost: (() => {
+      try {
+        return new URL(cfg.returnUrl).host;
+      } catch {
+        return null;
+      }
+    })(),
+    note: 'Error 10002 is Bank Muscat merchant auth (access_code / URL whitelist / encrypt mismatch). Console CSP errors on transaction.do are Bank Muscat page bugs — ignore them.',
+  });
+}
+
 module.exports = {
   createPayment,
   handleCallback,
   getStatus,
+  getGatewayDiagnostics,
 };
