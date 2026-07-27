@@ -138,7 +138,8 @@ function buildRedirectPayload(payment, cfg, encRequest) {
     encRequest,
     accessCode: cfg.accessCode,
     merchantId: cfg.merchantId,
-    orderId: payment.merchantTransactionReference || `BM_${payment._id.toString()}`,
+    // Bank Muscat rejects '_' in order_id (Error 21000) — use alphanumeric only
+    orderId: payment.merchantTransactionReference || payment._id.toString(),
   };
 }
 
@@ -184,10 +185,20 @@ async function createBankMuscatPayment({ userId, purpose, bookingId, amount, met
         bookingId: trusted.booking ? trusted.booking._id.toString() : safeMeta.bookingId,
       },
     });
-    const merchantRef = `BM_${payment._id.toString()}`;
+    const merchantRef = payment._id.toString(); // alphanumeric only — Bank Muscat Error 21000 rejects '_'
     payment.merchantTransactionReference = merchantRef;
     payment.internalTransactionId = merchantRef;
     payment.status = 'initiated';
+    await payment.save();
+  }
+
+  // Reused pending payments may still have legacy BM_ refs — normalize before gateway submit
+  if (
+    payment.merchantTransactionReference &&
+    /[^A-Za-z0-9\-/]/.test(String(payment.merchantTransactionReference))
+  ) {
+    payment.merchantTransactionReference = payment._id.toString();
+    payment.internalTransactionId = payment.merchantTransactionReference;
     await payment.save();
   }
 
@@ -297,8 +308,9 @@ async function handleBankMuscatCallback(req) {
     const orderOk =
       !params.order_id ||
       String(params.order_id) === String(payment.merchantTransactionReference) ||
+      String(params.order_id) === payment._id.toString() ||
       String(params.order_id) === `BM_${payment._id.toString()}` ||
-      String(params.order_id) === payment._id.toString();
+      String(params.order_id) === `BM${payment._id.toString()}`;
 
     if (!currencyOk || !orderOk || !amountsEqualOmr(params.amount, payment.amount)) {
       await markPaymentTerminalFailure(payment._id, {

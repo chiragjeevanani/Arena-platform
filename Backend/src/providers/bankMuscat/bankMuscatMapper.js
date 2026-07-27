@@ -22,7 +22,9 @@ function mapGatewayOrderStatus(orderStatus) {
 function parsePaymentIdFromOrderId(orderId) {
   if (!orderId) return null;
   const raw = String(orderId).trim();
+  // Legacy prefixes used before Bank Muscat rejected '_' in order_id
   if (raw.startsWith('BM_')) return raw.slice(3);
+  if (raw.startsWith('BM')) return raw.slice(2);
   return raw;
 }
 
