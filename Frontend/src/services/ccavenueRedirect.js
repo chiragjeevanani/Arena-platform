@@ -13,11 +13,22 @@ export function redirectToBankMuscat({ paymentUrl, encRequest, accessCode }) {
     throw new Error('Payment initialization parameters are missing');
   }
 
+  // Ensure Bank Muscat receives Origin/Referer for URL whitelist (Error 10002).
+  try {
+    const meta = document.createElement('meta');
+    meta.name = 'referrer';
+    meta.content = 'origin';
+    document.head.appendChild(meta);
+  } catch {
+    /* ignore */
+  }
+
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = paymentUrl;
   form.name = 'redirect';
   form.id = 'nonseamless';
+  form.setAttribute('referrerpolicy', 'origin');
 
   const encInput = document.createElement('input');
   encInput.type = 'hidden';

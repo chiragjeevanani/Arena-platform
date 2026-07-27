@@ -62,6 +62,7 @@ function getBankMuscatConfig() {
   );
 
   const configured = Boolean(merchantId && accessCode && workingKey && gatewayUrl);
+  const cryptoMode = pick(process.env.BANK_MUSCAT_CRYPTO, 'aes-128-cbc').toLowerCase();
 
   return {
     env,
@@ -78,7 +79,7 @@ function getBankMuscatConfig() {
     apiBase,
     currency: 'OMR',
     configured,
-    crypto: 'aes-256-gcm',
+    crypto: cryptoMode.includes('gcm') || cryptoMode === '256' ? 'aes-256-gcm' : 'aes-128-cbc',
     statusApiUrl: pick(process.env.BANK_MUSCAT_STATUS_API_URL),
     refundApiUrl: pick(process.env.BANK_MUSCAT_REFUND_API_URL),
   };

@@ -48,7 +48,11 @@ async function start() {
     const bmAccess = process.env.BANK_MUSCAT_ACCESS_CODE || process.env.CCAVENUE_ACCESS_CODE;
     const bmKey = process.env.BANK_MUSCAT_WORKING_KEY || process.env.CCAVENUE_WORKING_KEY;
     if (bmMid && bmAccess && bmKey) {
-      console.log(`${GREEN}${CHECK} Bank Muscat SmartPay configured (MID ${String(bmMid).slice(0, 8)}…)${RESET}`);
+      const cryptoMode = (process.env.BANK_MUSCAT_CRYPTO || 'aes-128-cbc').trim();
+      const envMode = (process.env.BANK_MUSCAT_ENV || 'test').trim();
+      console.log(
+        `${GREEN}${CHECK} Bank Muscat SmartPay configured (MID ${String(bmMid).slice(0, 8)}…, env=${envMode}, crypto=${cryptoMode})${RESET}`
+      );
     } else {
       console.warn('⚠  Bank Muscat NOT configured — set BANK_MUSCAT_MID + ACCESS_CODE + WORKING_KEY in .env');
     }
