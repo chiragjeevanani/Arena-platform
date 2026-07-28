@@ -71,10 +71,21 @@ async function register(req, res) {
     // Delete any stale pending registration for this email
     await PendingUser.deleteOne({ email: parsed.email });
 
+    const phone = req.body.phone ? String(req.body.phone).trim().slice(0, 32) : '';
+    const address = req.body.address ? String(req.body.address).trim().slice(0, 200) : '';
+    const country = req.body.country ? String(req.body.country).trim().slice(0, 100) : '';
+    const location = req.body.location ? String(req.body.location).trim().slice(0, 100) : (address && country ? `${address}, ${country}` : address || country || '');
+    const profilePicture = req.body.profilePicture ? String(req.body.profilePicture).trim() : (req.body.avatarUrl ? String(req.body.avatarUrl).trim() : '');
+
     const pendingUser = await PendingUser.create({
       email: parsed.email,
       passwordHash,
       name: parsed.name,
+      phone,
+      address,
+      country,
+      location,
+      profilePicture,
       role: 'CUSTOMER',
       emailVerifyToken,
       emailVerifyExpires,
@@ -219,6 +230,11 @@ async function verifyEmail(req, res) {
     email: pendingUser.email,
     passwordHash: pendingUser.passwordHash,
     name: pendingUser.name,
+    phone: pendingUser.phone || '',
+    address: pendingUser.address || '',
+    country: pendingUser.country || '',
+    location: pendingUser.location || '',
+    profilePicture: pendingUser.profilePicture || pendingUser.avatarUrl || '',
     role: pendingUser.role,
     isEmailVerified: true,
   });
@@ -466,6 +482,11 @@ async function verifyEmailOtp(req, res) {
         email: pendingUser.email,
         passwordHash: pendingUser.passwordHash,
         name: pendingUser.name,
+        phone: pendingUser.phone || '',
+        address: pendingUser.address || '',
+        country: pendingUser.country || '',
+        location: pendingUser.location || '',
+        profilePicture: pendingUser.profilePicture || pendingUser.avatarUrl || '',
         role: pendingUser.role,
         isEmailVerified: true,
       });

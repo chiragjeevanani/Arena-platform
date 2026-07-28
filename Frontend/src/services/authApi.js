@@ -16,10 +16,10 @@ export function sendLoginOtpRequest(email) {
   });
 }
 
-export function registerRequest({ email, password, name, referralCode }) {
+export function registerRequest({ email, password, name, phone, address, country, location, profilePicture, avatarUrl, referralCode }) {
   return apiJson('/api/auth/register', {
     method: 'POST',
-    body: { email, password, name, referralCode },
+    body: { email, password, name, phone, address, country, location, profilePicture: profilePicture || avatarUrl, referralCode },
     skipAuth: true,
   });
 }

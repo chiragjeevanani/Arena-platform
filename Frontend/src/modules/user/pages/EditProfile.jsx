@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Camera, User, Mail, Phone, MapPin } from 'lucide-react';
+import { ArrowLeft, Camera, User, Mail, Phone, MapPin, Home, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
@@ -20,11 +20,12 @@ const EditProfile = () => {
   const { user, setUser } = useAuth();
 
   const fileInputRef = useRef(null);
-  const [profileImage, setProfileImage] = useState(
-    storage.getItem('userProfileImage') || DEFAULT_AVATAR
-  );
+  const [profileImage, setProfileImage] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [country, setCountry] = useState('');
+  const [location, setLocation] = useState('');
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -32,7 +33,10 @@ const EditProfile = () => {
     if (!user) return;
     setName(user.name || '');
     setPhone(user.phone || '');
-    if (user.avatar) setProfileImage(user.avatar);
+    setAddress(user.address || '');
+    setCountry(user.country || '');
+    setLocation(user.location || '');
+    if (user.profilePicture || user.avatar) setProfileImage(user.profilePicture || user.avatar);
   }, [user]);
 
   const handleImageChange = (e) => {
@@ -55,7 +59,10 @@ const EditProfile = () => {
         await patchMyProfile({
           name: name.trim(),
           phone: phone.trim(),
-          avatarUrl: profileImage,
+          address: address.trim(),
+          country: country.trim(),
+          location: location.trim(),
+          profilePicture: profileImage,
         });
         const me = await meRequest();
         const u = me.user;
@@ -65,8 +72,12 @@ const EditProfile = () => {
           name: u.name,
           role: u.role,
           phone: u.phone || '',
+          address: u.address || '',
+          country: u.country || '',
+          location: u.location || '',
           assignedArena: u.assignedArenaId || 'all',
-          avatar: u.avatarUrl || profileImage || DEFAULT_AVATAR,
+          profilePicture: u.profilePicture || u.avatarUrl || profileImage || '',
+          avatar: u.profilePicture || u.avatarUrl || profileImage || '',
         };
         setUser(mapped);
         storage.setItem('user', JSON.stringify(mapped));
@@ -122,14 +133,18 @@ const EditProfile = () => {
             {/* Avatar Upload */}
             <div className="flex flex-col items-center">
               <div className="relative group">
-                <div className={`w-24 h-24 md:rounded-none rounded-xl overflow-hidden border-4 p-0.5 shadow-xl transition-all duration-500 ${
+                <div className={`w-24 h-24 md:rounded-none rounded-xl overflow-hidden border-4 p-0.5 shadow-xl transition-all duration-500 flex items-center justify-center bg-slate-100 text-slate-700 font-black text-3xl ${
                   'border-white bg-white hover:border-blue-100 hover:scale-105'
                 }`}>
-                  <img
-                    src={profileImage}
-                    alt="User"
-                    className="w-full h-full object-cover md:rounded-none rounded-lg transition-all duration-500 group-hover:scale-110"
-                  />
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="User"
+                      className="w-full h-full object-cover md:rounded-none rounded-lg transition-all duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <span>{((name || user?.name || 'U')[0] || 'U').toUpperCase()}</span>
+                  )}
                   {!isDark && <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />}
                 </div>
                 <button 
@@ -226,13 +241,39 @@ const EditProfile = () => {
                     <div className={`w-10 h-10 md:rounded-none rounded-lg flex items-center justify-center transition-all duration-300 ${
                       'bg-purple-50 text-purple-600 group-hover:scale-110'
                     }`}>
-                      <MapPin size={16} />
+                      <Home size={16} />
                     </div>
                     <div className="flex-1">
-                      <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Location</p>
+                      <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Full Address</p>
                       <input 
                         type="text" 
-                        defaultValue="Dubai, UAE"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="e.g. Street 12, Al Khuwair, Muscat"
+                        className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`p-3 md:rounded-none rounded-xl border transition-all duration-500 relative overflow-hidden group ${
+                  isDark 
+                    ? 'bg-white/5 border-white/10 hover:border-[#CE2029]/40' 
+                    : 'bg-white border-slate-200 shadow-[0_4px_8px_-2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_16px_-4px_rgba(15,23,42,0.06)]'
+                }`}>
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className={`w-10 h-10 md:rounded-none rounded-lg flex items-center justify-center transition-all duration-300 ${
+                      'bg-red-50 text-[#CE2029] group-hover:scale-110'
+                    }`}>
+                      <Globe size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-[8px] font-black uppercase tracking-wider ${'text-slate-400'}`}>Country</p>
+                      <input 
+                        type="text" 
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        placeholder="e.g. Oman or UAE"
                         className={`w-full bg-transparent font-bold text-[13px] outline-none mt-1 ${'text-[#0F172A]'}`}
                       />
                     </div>

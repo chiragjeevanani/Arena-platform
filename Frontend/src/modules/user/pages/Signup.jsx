@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton, Checkbox, FormControlLabel, Select, MenuItem } from '@mui/material';
-import { Person, Email, Lock, Phone, Visibility, VisibilityOff, ArrowBack } from '@mui/icons-material';
+import { Person, Email, Lock, Phone, Visibility, VisibilityOff, ArrowBack, LocationOn, Home, Public } from '@mui/icons-material';
 import { Gift, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
@@ -28,6 +28,9 @@ const Signup = () => {
   const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [address, setAddress] = useState('');
+  const [country, setCountry] = useState('');
+  const [location, setLocation] = useState('');
   const [referralCode, setReferralCode] = useState(searchParams.get('ref') || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -149,10 +152,15 @@ const Signup = () => {
       setPasswordError('');
       setLoading(true);
       try {
+        const formattedPhone = phone.trim() ? `${selectedCountry.code}${phone.trim()}` : '';
         await registerRequest({
           email: email.trim().toLowerCase(),
           password,
           name: name.trim(),
+          phone: formattedPhone,
+          address: address.trim(),
+          country: country.trim(),
+          location: location.trim(),
           referralCode: referralCode.trim(),
         });
         setIsRegistered(true);
@@ -415,6 +423,61 @@ const Signup = () => {
                     '& .MuiOutlinedInput-input': { paddingY: '8px' },
                     '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
                     '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Full Address"
+                  variant="outlined"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="e.g. Street 12, Al Khuwair, Muscat"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Home className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                    },
+                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Country"
+                  variant="outlined"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder="e.g. Oman or UAE"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Public className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                    },
+                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
                   }}
                 />
 
