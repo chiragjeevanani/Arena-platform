@@ -98,6 +98,48 @@ const BankMuscatReturn = () => {
 
         if (p.status === 'pending' || p.status === 'initiated' || p.status === 'created') {
           setUiState('PENDING');
+          // Second-leg: ask SmartPay Status API once after a couple of local polls
+          if (attempts === 2) {
+            try {
+              const { inquireBankMuscatPayment } = await import('../../../services/bankMuscatApi');
+              const inquired = await inquireBankMuscatPayment(paymentId);
+              if (cancelled) return;
+              if (inquired?.payment?.status === 'succeeded') {
+                setPayment(inquired.payment);
+                setUiState('SUCCESS');
+                // fall through by reusing success path via reload of status
+                attempts = 99;
+                const type =
+                  inquired.payment.purpose === 'top_up'
+                    ? 'wallet_top_up'
+                    : inquired.payment.purpose === 'enrollment'
+                      ? 'coaching'
+                      : inquired.payment.purpose;
+                const { consumeBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');
+                const saved = consumeBankMuscatCheckoutContext() || {};
+                setTimeout(() => {
+                  navigate('/booking-success', {
+                    replace: true,
+                    state: {
+                      ...saved,
+                      type: saved.type || type,
+                      amount: inquired.payment.amount ?? saved.amount,
+                      payment: inquired.payment,
+                      fromBankMuscat: true,
+                      transactionAt:
+                        inquired.payment.completedAt ||
+                        inquired.payment.verifiedAt ||
+                        new Date().toISOString(),
+                    },
+                  });
+                }, 600);
+                return;
+              }
+            } catch (inqErr) {
+              // eslint-disable-next-line no-console
+              console.warn('Status inquiry failed:', inqErr.message);
+            }
+          }
           if (attempts < 5) {
             attempts += 1;
             setTimeout(verify, 2000);

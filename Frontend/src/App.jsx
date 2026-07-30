@@ -46,6 +46,11 @@ const EventDetail = lazy(() => import('./modules/user/pages/EventDetail'));
 const Privacy = lazy(() => import('./modules/user/pages/Privacy'));
 const Help = lazy(() => import('./modules/user/pages/Help'));
 const Terms = lazy(() => import('./modules/user/pages/Terms'));
+const PublicPrivacy = lazy(() => import('./modules/user/pages/legal/PublicPrivacy'));
+const DeliveryPolicy = lazy(() => import('./modules/user/pages/legal/DeliveryPolicy'));
+const RefundPolicy = lazy(() => import('./modules/user/pages/legal/RefundPolicy'));
+const Disclaimer = lazy(() => import('./modules/user/pages/legal/Disclaimer'));
+const ContactFaq = lazy(() => import('./modules/user/pages/legal/ContactFaq'));
 const CoachingSummary = lazy(() => import('./modules/user/pages/CoachingSummary'));
 const MembershipPlans = lazy(() => import('./modules/user/pages/MembershipPlans'));
 const MyAttendance = lazy(() => import('./modules/user/pages/MyAttendance'));
@@ -237,6 +242,12 @@ function App() {
 
               <Route path="profile/points-wallet" element={<PointsWalletPage />} />
               <Route path="terms" element={<Terms />} />
+              <Route path="privacy" element={<PublicPrivacy />} />
+              <Route path="delivery-policy" element={<DeliveryPolicy />} />
+              <Route path="refund-policy" element={<RefundPolicy />} />
+              <Route path="disclaimer" element={<Disclaimer />} />
+              <Route path="contact" element={<ContactFaq />} />
+              <Route path="faq" element={<ContactFaq />} />
             </Route>
 
             {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}

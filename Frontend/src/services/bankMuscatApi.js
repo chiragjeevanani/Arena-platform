@@ -38,6 +38,13 @@ export function getBankMuscatPaymentStatus(paymentId) {
   });
 }
 
+/** Second-leg Status/Inquiry API (orderStatusTracker) — syncs pending payments. */
+export function inquireBankMuscatPayment(paymentId) {
+  return apiJson(`/api/payments/bank-muscat/inquire/${encodeURIComponent(paymentId)}`, {
+    method: 'POST',
+  });
+}
+
 export function isBankMuscatRedirectProvider(provider) {
   return provider === 'bank_muscat' || provider === 'ccavenue';
 }

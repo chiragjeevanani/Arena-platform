@@ -66,6 +66,13 @@ function getBankMuscatConfig() {
   const cryptoMode =
     cryptoRaw.includes('cbc') || cryptoRaw === '128' ? 'aes-128-cbc' : 'aes-256-gcm';
 
+  const defaultStatusApiUrl = isProduction
+    ? 'https://smartpayapi.bankmuscat.com/apis/servlet/DoWebTrans'
+    : 'https://spayuatapi.bmtest.om/apis/servlet/DoWebTrans';
+
+  const statusApiUrl = pick(process.env.BANK_MUSCAT_STATUS_API_URL, defaultStatusApiUrl).replace(/\?$/, '');
+  const refundApiUrl = pick(process.env.BANK_MUSCAT_REFUND_API_URL).replace(/\?$/, '');
+
   return {
     env,
     isProduction,
@@ -82,8 +89,8 @@ function getBankMuscatConfig() {
     currency: 'OMR',
     configured,
     crypto: cryptoMode,
-    statusApiUrl: pick(process.env.BANK_MUSCAT_STATUS_API_URL),
-    refundApiUrl: pick(process.env.BANK_MUSCAT_REFUND_API_URL),
+    statusApiUrl,
+    refundApiUrl,
   };
 }
 

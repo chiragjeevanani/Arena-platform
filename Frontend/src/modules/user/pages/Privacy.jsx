@@ -88,7 +88,9 @@ const Privacy = () => {
             {/* Quick Action Item Links */}
             <div className="space-y-2 md:space-y-3">
               {[
-                { icon: FileText, title: 'Terms & Conditions', color: 'text-blue-500', path: '/terms' }
+                { icon: FileText, title: 'Terms & Conditions', color: 'text-blue-500', path: '/terms' },
+                { icon: FileText, title: 'Refund Policy', color: 'text-emerald-500', path: '/refund-policy' },
+                { icon: FileText, title: 'Contact & FAQ', color: 'text-purple-500', path: '/contact' },
               ].map((item, i) => (
                 <button 
                   key={i}

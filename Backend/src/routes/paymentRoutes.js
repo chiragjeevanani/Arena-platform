@@ -6,6 +6,7 @@ const {
   createPayment,
   handleCallback,
   getStatus,
+  inquireStatus,
   getGatewayDiagnostics,
 } = require('../controllers/bankMuscatPaymentController');
 
@@ -21,5 +22,6 @@ router.use(requireRole('CUSTOMER', 'COACH', 'ARENA_ADMIN'));
 
 router.post('/bank-muscat/create', asyncHandler(createPayment));
 router.get('/bank-muscat/status/:paymentId', asyncHandler(getStatus));
+router.post('/bank-muscat/inquire/:paymentId', asyncHandler(inquireStatus));
 
 module.exports = router;

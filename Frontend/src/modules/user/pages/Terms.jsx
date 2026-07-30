@@ -18,16 +18,23 @@ const Terms = () => {
     {
       icon: CheckCircle,
       title: '2. Booking & Cancellation Policy',
-      content: 'Bookings must be made in advance. Cancellations are permitted up to 4 hours prior to the booked slot for a full refund. Late cancellations will strictly incur a 100% cancellation fee.',
+      content: 'Bookings must be made in advance. Cancellations are permitted up to 4 hours prior to the booked slot for a full refund. Late cancellations will strictly incur a 100% cancellation fee. See also https://www.ammarena.com/refund-policy for full refund rules.',
       color: 'text-emerald-500',
       bg: 'bg-emerald-500/10'
     },
     {
       icon: ShieldAlert,
       title: '3. User Conduct & Liability',
-      content: 'Users are expected to maintain sportsmanship and discipline inside the arenas. The management is not liable for any personal injuries sustained during play or loss of personal belongings.',
+      content: 'Users are expected to maintain sportsmanship and discipline inside the arenas. The management is not liable for any personal injuries sustained during play or loss of personal belongings. See https://www.ammarena.com/disclaimer.',
       color: 'text-[#CE2029]',
       bg: 'bg-[#CE2029]/10'
+    },
+    {
+      icon: FileText,
+      title: '4. Related policies',
+      content: 'Additional public policies: Privacy (https://www.ammarena.com/privacy), Delivery (https://www.ammarena.com/delivery-policy), Refunds (https://www.ammarena.com/refund-policy), Contact/FAQ (https://www.ammarena.com/contact).',
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10'
     }
   ];
 

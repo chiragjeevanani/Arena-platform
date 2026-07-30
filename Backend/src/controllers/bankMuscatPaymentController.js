@@ -65,15 +65,31 @@ async function getStatus(req, res) {
   }
 }
 
+/**
+ * Second-leg security: call SmartPay Status/Inquiry API and sync local payment.
+ * Mandatory per Bank Muscat go-live checklist when real-time response is unclear.
+ */
+async function inquireStatus(req, res) {
+  try {
+    // Ensure the payment belongs to the caller first
+    await bankMuscat.getPaymentStatusForUser(req.params.paymentId, req.auth.sub);
+    const result = await bankMuscat.queryRemotePaymentStatus(req.params.paymentId);
+    return res.json(result);
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message || 'Status inquiry failed' });
+  }
+}
+
 /** Non-secret diagnostics so you can verify live server env/crypto without exposing keys. */
 async function getGatewayDiagnostics(_req, res) {
   const cfg = getBankMuscatConfig();
-  let gatewayHost = '';
-  try {
-    gatewayHost = new URL(cfg.gatewayUrl).host;
-  } catch {
-    gatewayHost = '';
-  }
+  const hostOf = (u) => {
+    try {
+      return new URL(u).host;
+    } catch {
+      return null;
+    }
+  };
   return res.json({
     configured: cfg.configured,
     env: cfg.env,
@@ -81,21 +97,11 @@ async function getGatewayDiagnostics(_req, res) {
     mid: cfg.merchantId || null,
     accessCodeLength: (cfg.accessCode || '').length,
     workingKeyLength: (cfg.workingKey || '').length,
-    gatewayHost,
-    callbackHost: (() => {
-      try {
-        return new URL(cfg.callbackUrl).host;
-      } catch {
-        return null;
-      }
-    })(),
-    returnHost: (() => {
-      try {
-        return new URL(cfg.returnUrl).host;
-      } catch {
-        return null;
-      }
-    })(),
+    gatewayHost: hostOf(cfg.gatewayUrl),
+    callbackHost: hostOf(cfg.callbackUrl),
+    returnHost: hostOf(cfg.returnUrl),
+    statusApiHost: hostOf(cfg.statusApiUrl),
+    inquiryApiImplemented: Boolean(cfg.statusApiUrl),
     note: 'Error 10002 is Bank Muscat merchant auth (access_code / URL whitelist / encrypt mismatch). Console CSP errors on transaction.do are Bank Muscat page bugs — ignore them.',
   });
 }
@@ -104,5 +110,6 @@ module.exports = {
   createPayment,
   handleCallback,
   getStatus,
+  inquireStatus,
   getGatewayDiagnostics,
 };

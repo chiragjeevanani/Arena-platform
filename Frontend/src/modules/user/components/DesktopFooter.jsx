@@ -96,10 +96,12 @@ const DesktopFooter = () => {
             <h4 className={`text-[11px] font-black uppercase tracking-widest text-white`}>Support</h4>
             <ul className="space-y-2.5">
               {[
-                { label: 'Help Center', path: '#' },
-                { label: 'Terms of Service', path: '#' },
+                { label: 'Help & FAQ', path: '/contact' },
+                { label: 'Terms of Service', path: '/terms' },
                 { label: 'Privacy Policy', path: '/privacy' },
-                { label: 'Cancellation Policy', path: '#' }
+                { label: 'Delivery Policy', path: '/delivery-policy' },
+                { label: 'Refund Policy', path: '/refund-policy' },
+                { label: 'Disclaimer', path: '/disclaimer' },
               ].map((link, idx) => (
                 <li key={idx}>
                   <Link to={link.path} className={`text-[11px] font-medium transition-colors ${isDark ? 'text-white/60 hover:text-[#CE2029]' : 'text-white/70 hover:text-white'}`}>
@@ -119,20 +121,22 @@ const DesktopFooter = () => {
                   <MapPin size={14} />
                 </div>
                 <div>
-                  <h5 className={`text-[11px] font-bold mb-0.5 text-white`}>Headquarters</h5>
-                  <p className={`text-[10px] leading-relaxed ${isDark ? 'text-white/50' : 'text-white/70'}`}>123 Sports Avenue, Athletic District<br/>Metropolis, NY 10001</p>
+                  <h5 className={`text-[11px] font-bold mb-0.5 text-white`}>AMM Sports Arena</h5>
+                  <p className={`text-[10px] leading-relaxed ${isDark ? 'text-white/50' : 'text-white/70'}`}>
+                    Online bookings via ammarena.com<br />Muscat, Sultanate of Oman
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className={`flex items-center gap-2 p-2.5 rounded-xl border ${isDark ? 'bg-white/5 border-white/5 hover:border-white/20' : 'bg-white/10 border-white/20 hover:bg-white/20'} transition-colors cursor-pointer`}>
+                <a href="tel:+96893301292" className={`flex items-center gap-2 p-2.5 rounded-xl border ${isDark ? 'bg-white/5 border-white/5 hover:border-white/20' : 'bg-white/10 border-white/20 hover:bg-white/20'} transition-colors`}>
                   <Phone size={14} className={isDark ? 'text-[#CE2029]' : 'text-white'} />
-                  <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-white'}`}>+1 (800) 123-4567</span>
-                </div>
-                <div className={`flex items-center gap-2 p-2.5 rounded-xl border ${isDark ? 'bg-white/5 border-white/5 hover:border-white/20' : 'bg-white/10 border-white/20 hover:bg-white/20'} transition-colors cursor-pointer`}>
+                  <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-white'}`}>+968 93301292</span>
+                </a>
+                <a href="mailto:online@ammtc.com" className={`flex items-center gap-2 p-2.5 rounded-xl border ${isDark ? 'bg-white/5 border-white/5 hover:border-white/20' : 'bg-white/10 border-white/20 hover:bg-white/20'} transition-colors`}>
                   <Mail size={14} className={isDark ? 'text-[#CE2029]' : 'text-white'} />
-                  <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-white'}`}>hello@arena.co</span>
-                </div>
+                  <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-white'}`}>online@ammtc.com</span>
+                </a>
               </div>
             </div>
           </div>
@@ -142,7 +146,7 @@ const DesktopFooter = () => {
         {/* Bottom Bar */}
         <div className={`mt-8 pt-4 border-t flex items-center justify-between ${isDark ? 'border-white/10' : 'border-white/20'}`}>
           <p className={`text-[10px] font-medium ${isDark ? 'text-white/40' : 'text-white/60'}`}>
-            &copy; {new Date().getFullYear()} Arena Platform. All rights reserved.
+            &copy; {new Date().getFullYear()} AMM Sports Arena. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${isDark ? 'bg-white/5 border-white/10 text-white/50' : 'bg-white/10 border-white/20 text-white/80'}`}>

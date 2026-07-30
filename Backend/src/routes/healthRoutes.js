@@ -55,6 +55,8 @@ router.get(
       gatewayHost: hostOf(cfg.gatewayUrl),
       callbackHost: hostOf(cfg.callbackUrl),
       returnHost: hostOf(cfg.returnUrl),
+      statusApiHost: hostOf(cfg.statusApiUrl),
+      inquiryApiImplemented: Boolean(cfg.statusApiUrl),
     });
   })
 );
