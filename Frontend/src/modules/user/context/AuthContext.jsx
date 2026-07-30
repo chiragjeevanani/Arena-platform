@@ -13,9 +13,6 @@ import {
 
 const AuthContext = createContext();
 
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop';
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');
@@ -30,8 +27,12 @@ function mapApiUser(u) {
     name: u.name,
     role: u.role,
     phone: u.phone || '',
+    address: u.address || '',
+    country: u.country || '',
+    location: u.location || '',
     assignedArena: u.assignedArenaId || 'all',
-    avatar: u.avatarUrl || DEFAULT_AVATAR,
+    profilePicture: u.profilePicture || u.avatarUrl || '',
+    avatar: u.profilePicture || u.avatarUrl || '',
   };
 }
 

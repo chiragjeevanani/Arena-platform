@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { TextField, Button, InputAdornment, IconButton, Checkbox, FormControlLabel } from '@mui/material';
-import { Person, Email, Lock, Phone, Visibility, VisibilityOff, ArrowBack } from '@mui/icons-material';
+import { TextField, Button, InputAdornment, IconButton, Checkbox, FormControlLabel, Select, MenuItem } from '@mui/material';
+import { Person, Email, Lock, Phone, Visibility, VisibilityOff, ArrowBack, LocationOn, Home, Public } from '@mui/icons-material';
 import { Gift, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
@@ -10,14 +10,27 @@ import { isApiConfigured } from '../../../services/config';
 import { registerRequest, verifyEmailOtpRequest, resendVerificationRequest } from '../../../services/authApi';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 
+const COUNTRIES = [
+  { code: '+968', flag: '🇴🇲', name: 'Oman', digits: 8 },
+  { code: '+91', flag: '🇮🇳', name: 'India', digits: 10 },
+  { code: '+971', flag: '🇦🇪', name: 'UAE', digits: 9 },
+  { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia', digits: 9 },
+  { code: '+974', flag: '🇶🇦', name: 'Qatar', digits: 8 },
+  { code: '+965', flag: '🇰🇼', name: 'Kuwait', digits: 8 },
+];
+
 const Signup = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [address, setAddress] = useState('');
+  const [country, setCountry] = useState('');
+  const [location, setLocation] = useState('');
   const [referralCode, setReferralCode] = useState(searchParams.get('ref') || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -139,10 +152,15 @@ const Signup = () => {
       setPasswordError('');
       setLoading(true);
       try {
+        const formattedPhone = phone.trim() ? `${selectedCountry.code}${phone.trim()}` : '';
         await registerRequest({
           email: email.trim().toLowerCase(),
           password,
           name: name.trim(),
+          phone: formattedPhone,
+          address: address.trim(),
+          country: country.trim(),
+          location: location.trim(),
           referralCode: referralCode.trim(),
         });
         setIsRegistered(true);
@@ -160,8 +178,8 @@ const Signup = () => {
       setPhoneError('Phone number is required');
       return;
     }
-    if (phone.length !== 10) {
-      setPhoneError('Phone number must be exactly 10 digits');
+    if (phone.length !== selectedCountry.digits) {
+      setPhoneError(`Phone number must be exactly ${selectedCountry.digits} digits for ${selectedCountry.name}`);
       return;
     }
 
@@ -332,21 +350,64 @@ const Signup = () => {
                   variant="outlined"
                   value={phone}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    const value = e.target.value.replace(/\D/g, '').slice(0, selectedCountry.digits);
                     setPhone(value);
                     if (phoneError) setPhoneError('');
                   }}
                   onBlur={() => {
-                    if (phone && phone.length !== 10) {
-                      setPhoneError('Phone number must be exactly 10 digits');
+                    if (phone && phone.length !== selectedCountry.digits) {
+                      setPhoneError(`Must be exactly ${selectedCountry.digits} digits for ${selectedCountry.name}`);
                     }
                   }}
                   error={!!phoneError}
                   helperText={phoneError}
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment position="start">
-                        <Phone className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      <InputAdornment position="start" sx={{ marginRight: '6px' }}>
+                        <Phone className="text-[#CE2029] mr-1.5" fontSize="small" />
+                        <Select
+                          value={selectedCountry.code}
+                          onChange={(e) => {
+                            const country = COUNTRIES.find((c) => c.code === e.target.value);
+                            setSelectedCountry(country);
+                            setPhone((prev) => prev.slice(0, country.digits));
+                            if (phoneError) setPhoneError('');
+                          }}
+                          variant="standard"
+                          disableUnderline
+                          renderValue={(value) => (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>{selectedCountry.flag}</span>
+                              <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#CE2029' }}>{value}</span>
+                            </div>
+                          )}
+                          sx={{
+                            fontSize: '0.85rem',
+                            fontWeight: 800,
+                            color: '#CE2029',
+                            '& .MuiSelect-select': {
+                              paddingRight: '20px !important',
+                              paddingLeft: '0 !important',
+                              display: 'flex',
+                              alignItems: 'center',
+                            },
+                            '& .MuiSelect-icon': {
+                              right: '0px',
+                              color: '#CE2029',
+                            }
+                          }}
+                        >
+                          {COUNTRIES.map((country) => (
+                            <MenuItem key={country.code} value={country.code} sx={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, py: 1 }}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">{country.flag}</span>
+                                <span className="font-bold text-[#0F172A]">{country.name}</span>
+                              </div>
+                              <span className="text-xs font-bold text-[#CE2029] bg-[#CE2029]/10 px-2 py-0.5 rounded-full">{country.code}</span>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <div className="h-5 w-[1px] bg-slate-200 ml-1.5 mr-0.5" />
                       </InputAdornment>
                     ),
                   }}
@@ -362,6 +423,61 @@ const Signup = () => {
                     '& .MuiOutlinedInput-input': { paddingY: '8px' },
                     '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
                     '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Full Address"
+                  variant="outlined"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="e.g. Street 12, Al Khuwair, Muscat"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Home className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                    },
+                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Country"
+                  variant="outlined"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder="e.g. Oman or UAE"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Public className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      backdropFilter: 'blur(10px)',
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                    },
+                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
                   }}
                 />
 

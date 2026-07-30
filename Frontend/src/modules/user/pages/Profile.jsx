@@ -235,6 +235,8 @@ const Profile = () => {
     { icon: HelpCircle, label: 'Help & Support', path: '/profile/help' },
   ];
 
+  const userAvatar = user?.profilePicture || user?.avatar || '';
+
   return (
     <div className={`min-h-screen pb-24 relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0a0a0c]' : 'bg-[#fafafa]'}`}>
       <div id="profile-page-content">
@@ -254,12 +256,16 @@ const Profile = () => {
               </button>
               <div className="flex items-center gap-3">
                 <div className="relative group cursor-pointer" onClick={() => navigate('/profile/edit')}>
-                  <div className="w-11 h-11 rounded-full overflow-hidden border-2 p-0.5 shadow-md border-white/20">
-                    <img
-                      src={profileImage}
-                      alt="User"
-                      className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
-                    />
+                  <div className="w-11 h-11 rounded-full overflow-hidden border-2 p-0.5 shadow-md border-white/20 flex items-center justify-center bg-white/20 text-white font-black text-lg">
+                    {userAvatar ? (
+                      <img
+                        src={userAvatar}
+                        alt="User"
+                        className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <span>{(displayName[0] || 'U').toUpperCase()}</span>
+                    )}
                   </div>
                 </div>
                 <div>
