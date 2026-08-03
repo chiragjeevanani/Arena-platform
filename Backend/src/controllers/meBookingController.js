@@ -11,11 +11,61 @@ const { getOrCreateWallet } = require('../services/walletService');
 const { computeCourtBookingPrice, amountsMatch } = require('../services/pricing');
 const { createNotification } = require('../services/notificationService');
 
+function parseBackendSlotStartDateTime(dateInput, timeSlot) {
+  if (!dateInput || !timeSlot || typeof timeSlot !== 'string') return null;
+  const d = new Date(dateInput);
+  if (Number.isNaN(d.getTime())) return null;
+  const str = timeSlot.trim();
+  let hour = null;
+  let minute = 0;
+  const m12 = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (m12) {
+    let h = parseInt(m12[1], 10);
+    minute = parseInt(m12[2], 10);
+    const ap = m12[3].toUpperCase();
+    if (ap === 'PM' && h !== 12) h += 12;
+    if (ap === 'AM' && h === 12) h = 0;
+    hour = h;
+  } else {
+    const m24 = str.match(/^(\d{1,2}):(\d{2})/);
+    if (m24) {
+      hour = parseInt(m24[1], 10);
+      minute = parseInt(m24[2], 10);
+    }
+  }
+  if (hour === null) return null;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hour, minute, 0, 0);
+}
+
+function isBackendBookingInPast(dateInput, timeSlot) {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const bookingDate = new Date(dateInput);
+  if (Number.isNaN(bookingDate.getTime())) return true;
+  const bookingDayStart = new Date(bookingDate.getFullYear(), bookingDate.getMonth(), bookingDate.getDate()).getTime();
+
+  if (bookingDayStart < todayStart) {
+    return true; // Past date
+  }
+
+  if (bookingDayStart === todayStart) {
+    const slotStart = parseBackendSlotStartDateTime(dateInput, timeSlot);
+    if (slotStart && slotStart.getTime() <= now.getTime()) {
+      return true; // Past time slot on today
+    }
+  }
+  return false;
+}
+
 async function createMyBooking(req, res) {
   const { arenaId, courtId, date, timeSlot, amount, paymentMethod } = req.body;
 
   if (!arenaId || !courtId || !date || !timeSlot) {
     return res.status(400).json({ error: 'arenaId, courtId, date, and timeSlot are required' });
+  }
+
+  if (isBackendBookingInPast(date, timeSlot)) {
+    return res.status(400).json({ error: 'Cannot book past dates or expired time slots' });
   }
 
   if (!mongoose.isValidObjectId(arenaId) || !mongoose.isValidObjectId(courtId)) {

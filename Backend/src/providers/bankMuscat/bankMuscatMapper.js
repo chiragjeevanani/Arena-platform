@@ -43,14 +43,11 @@ function phpUrlEncode(value) {
 }
 
 function buildMerchantParamString(fields) {
-  // Official PHP NON_SEAMLESS kit always appends trailing '&' after each pair:
-  // foreach ($_POST as $key => $value) { $merchant_data .= $key.'='.urlencode($value).'&'; }
-  let out = '';
-  for (const [k, v] of Object.entries(fields)) {
-    if (v === undefined || v === null) continue;
-    out += `${k}=${phpUrlEncode(v)}&`;
-  }
-  return out;
+  if (!fields || typeof fields !== 'object') return '';
+  return Object.entries(fields)
+    .filter(([, v]) => v !== undefined && v !== null)
+    .map(([k, v]) => `${k}=${phpUrlEncode(v)}`)
+    .join('&');
 }
 
 module.exports = {

@@ -10,7 +10,7 @@ import { fetchPublicArenaById } from '../../../services/arenasApi';
 import { fetchCourtAvailability, fetchBookingPricing } from '../../../services/bookingsApi';
 import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
-import { isPrimeTimeSlot } from '../../../utils/slotTime';
+import { isPrimeTimeSlot, isSlotTimePassed } from '../../../utils/slotTime';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../../../utils/storage';
 
@@ -126,15 +126,19 @@ const SlotSelection = () => {
     fetchCourtAvailability(activeCourtId, ymd)
       .then((data) => {
         if (cancelled) return;
+        const now = new Date();
         const pph = Number(arena?.pricePerHour) || 0;
-        const mapped = (data.slots || []).map((s) => ({
-          id: s.timeSlot,
-          time: s.timeSlot,
-          timeSlot: s.timeSlot,
-          status: s.available ? 'Available' : 'Booked',
-          price: pph,
-          type: isPrimeTimeSlot(s.timeSlot) ? 'prime' : 'nonPrime',
-        }));
+        const mapped = (data.slots || []).map((s) => {
+          const isExpired = isSlotTimePassed(selectedDate, s.timeSlot, now);
+          return {
+            id: s.timeSlot,
+            time: s.timeSlot,
+            timeSlot: s.timeSlot,
+            status: isExpired ? 'Expired' : (s.available ? 'Available' : 'Booked'),
+            price: pph,
+            type: isPrimeTimeSlot(s.timeSlot) ? 'prime' : 'nonPrime',
+          };
+        });
         setApiSlots(mapped);
       })
       .catch((e) => {
@@ -249,19 +253,26 @@ const SlotSelection = () => {
         {calendarDays.map((cell, i) => {
           const isSelected = selectedDate === cell.fullDate.toDateString();
           const isCurrentMonth = cell.monthOffset === 0;
-          const isToday = cell.fullDate.toDateString() === new Date().toDateString();
+          const now = new Date();
+          const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+          const cellTime = new Date(cell.fullDate.getFullYear(), cell.fullDate.getMonth(), cell.fullDate.getDate()).getTime();
+          const isPastDate = cellTime < todayStart;
+          const isToday = cellTime === todayStart;
 
           return (
             <div key={i} className="flex justify-center">
               <button
                 type="button"
-                onClick={() => setSelectedDate(cell.fullDate.toDateString())}
+                disabled={isPastDate}
+                onClick={() => !isPastDate && setSelectedDate(cell.fullDate.toDateString())}
                 className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center text-xs font-black transition-all relative ${
-                  isSelected
-                    ? 'bg-[#CE2029] text-white shadow-lg scale-110 z-10'
-                    : isCurrentMonth
-                      ? 'text-slate-700 hover:bg-[#CE2029]/5'
-                      : 'text-slate-200'
+                  isPastDate
+                    ? 'opacity-30 text-slate-300 cursor-not-allowed pointer-events-none'
+                    : isSelected
+                      ? 'bg-[#CE2029] text-white shadow-lg scale-110 z-10'
+                      : isCurrentMonth
+                        ? 'text-slate-700 hover:bg-[#CE2029]/5'
+                        : 'text-slate-200'
                 }`}
               >
                 {cell.date}
@@ -526,6 +537,12 @@ const SlotSelection = () => {
                       <div className="col-span-full text-center py-10 text-slate-400">
                         <p className="text-[10px] font-black uppercase tracking-widest">
                           No slots available for this day
+                        </p>
+                      </div>
+                    ) : allDaySlots.length > 0 && allDaySlots.every(s => s.status !== 'Available') && new Date(selectedDate).toDateString() === new Date().toDateString() ? (
+                      <div className="col-span-full text-center py-10 text-[#CE2029]">
+                        <p className="text-[11px] font-black uppercase tracking-widest">
+                          No slots are available for the remainder of today.
                         </p>
                       </div>
                     ) : filteredSlots.length === 0 ? (

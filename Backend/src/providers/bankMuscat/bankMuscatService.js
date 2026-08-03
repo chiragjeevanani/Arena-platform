@@ -219,7 +219,6 @@ async function createBankMuscatPayment({ userId, purpose, bookingId, amount, met
   const callbackUrl = cfg.callbackUrl;
 
   const paramString = buildMerchantParamString({
-    tid: String(Date.now()),
     merchant_id: cfg.merchantId,
     order_id: payment.merchantTransactionReference,
     amount: Number(trusted.amount).toFixed(3),
@@ -241,7 +240,18 @@ async function createBankMuscatPayment({ userId, purpose, bookingId, amount, met
     gatewayEnv: cfg.env,
     lastInitiatedAt: new Date().toISOString(),
   };
-  await payment.save();
+  console.log('========== BANK MUSCAT REQUEST ==========');
+  console.log({
+    merchantId: cfg.merchantId,
+    accessCode: cfg.accessCode ? `${cfg.accessCode.substring(0, 4)}********` : null,
+    gateway: cfg.gatewayUrl,
+    crypto: cfg.crypto,
+    callback: callbackUrl,
+    orderId: payment.merchantTransactionReference,
+    amount: trusted.amount,
+    encRequestLength: encRequest.length,
+  });
+  console.log('=========================================');
 
   return buildRedirectPayload(payment, cfg, encRequest);
 }

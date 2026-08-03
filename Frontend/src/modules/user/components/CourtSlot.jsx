@@ -45,6 +45,12 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
       text: 'text-slate-700',
       label: 'Blocked',
     },
+    Expired: {
+      bg: 'bg-slate-100/90',
+      border: 'border-slate-200',
+      text: 'text-slate-400',
+      label: 'Expired',
+    },
   };
 
   const config = statusConfig[slot.status] || statusConfig.Blocked;

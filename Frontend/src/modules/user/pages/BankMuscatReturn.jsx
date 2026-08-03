@@ -5,6 +5,7 @@ import { getAuthToken } from '../../../services/apiClient';
 import { getBankMuscatPaymentStatus } from '../../../services/bankMuscatApi';
 import { registerForEvent } from '../../../services/eventsApi';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Bank Muscat return page.
@@ -14,6 +15,7 @@ const BankMuscatReturn = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { isLoading: isAuthLoading, isLoggedIn } = useAuth();
   const paymentId = params.get('paymentId');
   const hintStatus = params.get('status');
 
@@ -22,11 +24,13 @@ const BankMuscatReturn = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (isAuthLoading) return undefined;
+
     let cancelled = false;
     let attempts = 0;
 
     async function verify() {
-      if (!getAuthToken()) {
+      if (!isLoggedIn) {
         navigate('/login', {
           replace: true,
           state: { from: `/payment/bank-muscat/return?${params.toString()}` },
@@ -150,7 +154,7 @@ const BankMuscatReturn = () => {
     return () => {
       cancelled = true;
     };
-  }, [paymentId, navigate, params, hintStatus]);
+  }, [paymentId, navigate, params, hintStatus, isAuthLoading, isLoggedIn]);
 
   const card = `${isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-100 text-slate-900'} border rounded-3xl p-8 shadow-sm max-w-md w-full text-center`;
 

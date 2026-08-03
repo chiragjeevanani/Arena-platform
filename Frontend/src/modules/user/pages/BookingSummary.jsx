@@ -523,19 +523,6 @@ const BookingSummary = () => {
                               </div>
                            </div>
 
-                           <div className="lg:hidden pt-4">
-                              <ShuttleButton
-                                 variant="primary"
-                                 size="lg"
-                                 fullWidth
-                                 className="!rounded-2xl py-4 shadow-xl active:scale-95 font-black uppercase tracking-widest text-[12px]"
-                                 icon={<ArrowRight size={18} />}
-                                 disabled={submitting}
-                                 onClick={handlePayOrBook}
-                              >
-                                 {canApiBook ? (submitting ? 'Booking…' : 'Confirm booking') : 'Confirm Booking'}
-                              </ShuttleButton>
-                           </div>
 
                            <p className="text-center text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-6 flex items-center justify-center gap-1.5">
                               <CheckCircle size={10} className="text-emerald-500" />

@@ -55,6 +55,10 @@ function readInitialUser() {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(readInitialUser);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (!isApiConfigured()) return false;
+    return Boolean(getAuthToken());
+  });
 
   const clearSession = useCallback(() => {
     setUser(null);
@@ -64,10 +68,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (!isApiConfigured()) return undefined;
+    if (!isApiConfigured()) {
+      setIsLoading(false);
+      return undefined;
+    }
     const token = getAuthToken();
     if (!token) {
-      queueMicrotask(() => setUser(null));
+      queueMicrotask(() => {
+        setUser(null);
+        setIsLoading(false);
+      });
       return undefined;
     }
     let cancelled = false;
@@ -81,6 +91,8 @@ export const AuthProvider = ({ children }) => {
         storage.setItem('isLoggedIn', 'true');
       } catch {
         if (!cancelled) clearSession();
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     })();
     return () => {
@@ -103,9 +115,11 @@ export const AuthProvider = ({ children }) => {
         setUser(mapped);
         storage.setItem('user', JSON.stringify(mapped));
         storage.setItem('isLoggedIn', 'true');
+        setIsLoading(false);
         return;
       }
       setRefreshToken(null);
+      setIsLoading(false);
     },
     []
   );
@@ -125,6 +139,7 @@ export const AuthProvider = ({ children }) => {
     storage.removeItem('user');
     storage.removeItem('isLoggedIn');
     storage.removeItem('userBookings');
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -155,7 +170,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, isLoggedIn, login, logout, hasPermission }}
+      value={{ user, setUser, isLoggedIn, isLoading, login, logout, hasPermission }}
     >
       {children}
     </AuthContext.Provider>

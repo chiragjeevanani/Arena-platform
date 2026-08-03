@@ -139,7 +139,7 @@ const UserManagement = () => {
               </div>
               Identity Registry
             </h2>
-            <p className="text-xs md:text-sm mt-1 font-bold text-slate-500 uppercase tracking-widest opacity-60">Manage center-wide operational credentials & access</p>
+            <p className="text-xs md:text-sm mt-1 font-bold text-slate-500 uppercase tracking-widest opacity-60">Manage all registered platform users including Customers, Arena Admins, Coaches, Receptionists, and Super Admins.</p>
           </div>
           <button 
             onClick={() => setShowNewUserModal(true)}

@@ -13,7 +13,10 @@ const ArenaLayout = lazy(() => import('./layouts/ArenaLayout'));
 
 // Route Guards
 const UserAuthGuard = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading } = useAuth();
+  if (isLoading) {
+    return <PageLoader />;
+  }
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
@@ -21,7 +24,10 @@ const UserAuthGuard = () => {
 };
 
 const ProtectedUserRoute = ({ children }) => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading } = useAuth();
+  if (isLoading) {
+    return <PageLoader />;
+  }
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
@@ -29,7 +35,10 @@ const ProtectedUserRoute = ({ children }) => {
 };
 
 const PublicOnlyRoute = ({ children }) => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading } = useAuth();
+  if (isLoading) {
+    return <PageLoader />;
+  }
   if (isLoggedIn) {
     return <Navigate to="/" replace />;
   }
