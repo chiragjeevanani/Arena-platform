@@ -6,6 +6,7 @@ const MembershipPlan = require('../models/MembershipPlan');
 const UserMembership = require('../models/UserMembership');
 const CoachingBatch = require('../models/CoachingBatch');
 const BatchEnrollment = require('../models/BatchEnrollment');
+const EventRegistration = require('../models/EventRegistration');
 const { getOrCreateWallet } = require('./walletService');
 
 const TERMINAL_SUCCESS = 'succeeded';
@@ -71,6 +72,10 @@ async function finalizeSuccessfulPayment(paymentId, extras = {}) {
 
   if (claimed.purpose === 'enrollment') {
     await createEnrollmentOnce(claimed);
+  }
+
+  if (claimed.meta?.eventId) {
+    await finalizeEventRegistrationOnce(claimed);
   }
 
   const fresh = await Payment.findById(claimed._id);
@@ -199,6 +204,76 @@ async function createEnrollmentOnce(payment) {
   });
 }
 
+async function finalizeEventRegistrationOnce(payment) {
+  if (payment.meta?.eventRegistrationFinalized) return;
+
+  const eventId = payment.meta?.eventId;
+  const registrantPhone = payment.meta?.registrantPhone;
+  const registrantName = payment.meta?.registrantName;
+  const registrationId = payment.meta?.registrationId;
+
+  if (!eventId) return;
+
+  let registration = null;
+  if (registrationId) {
+    registration = await EventRegistration.findById(registrationId);
+  }
+  if (!registration && registrantPhone) {
+    registration = await EventRegistration.findOne({
+      eventId,
+      phone: String(registrantPhone).trim(),
+    });
+  }
+
+  if (registration) {
+    registration.status = 'Approved';
+    registration.paymentId = payment._id;
+    if (payment.userId) registration.userId = payment.userId;
+    if (registrantName) registration.name = String(registrantName).trim();
+    await registration.save();
+  } else {
+    registration = await EventRegistration.create({
+      eventId,
+      name: registrantName || 'Participant',
+      phone: registrantPhone || '',
+      userId: payment.userId || null,
+      status: 'Approved',
+      paymentId: payment._id,
+    });
+  }
+
+  await Payment.findByIdAndUpdate(payment._id, {
+    $set: {
+      'meta.eventRegistrationFinalized': true,
+      'meta.eventRegistrationId': registration._id.toString(),
+    },
+  });
+}
+
+async function handleEventRegistrationPaymentFailure(payment) {
+  const eventId = payment.meta?.eventId;
+  const registrantPhone = payment.meta?.registrantPhone;
+  const registrationId = payment.meta?.registrationId;
+
+  if (!eventId) return;
+
+  let registration = null;
+  if (registrationId) {
+    registration = await EventRegistration.findById(registrationId);
+  }
+  if (!registration && registrantPhone) {
+    registration = await EventRegistration.findOne({
+      eventId,
+      phone: String(registrantPhone).trim(),
+    });
+  }
+
+  if (registration && (registration.status === 'PAYMENT_PENDING' || registration.status === 'Pending')) {
+    registration.status = 'FAILED_PAYMENT';
+    await registration.save();
+  }
+}
+
 async function markPaymentTerminalFailure(paymentId, opts = {}) {
   const allowed = new Set(['failed', 'cancelled', 'expired']);
   const next = allowed.has(opts.status) ? opts.status : 'failed';
@@ -224,9 +299,18 @@ async function markPaymentTerminalFailure(paymentId, opts = {}) {
     { new: true }
   );
 
+  if (updated && updated.meta?.eventId) {
+    await handleEventRegistrationPaymentFailure(updated);
+  }
+
   if (updated) return updated;
   return Payment.findById(paymentId);
 }
+
+module.exports = {
+  finalizeSuccessfulPayment,
+  markPaymentTerminalFailure,
+};
 
 module.exports = {
   finalizeSuccessfulPayment,

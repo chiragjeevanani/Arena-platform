@@ -86,6 +86,7 @@ const Payment = () => {
           eventName: state?.eventTitle,
           registrantName: state?.registrationInfo?.name,
           registrantPhone: state?.registrationInfo?.phone,
+          registrationId: state?.registrationInfo?.registrationId,
         });
         if (isBankMuscatRedirectProvider(intent?.provider)) {
           const { saveBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');

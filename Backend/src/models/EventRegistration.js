@@ -18,8 +18,8 @@ const eventRegistrationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Approved', 'Rejected', 'Cancelled'],
-      default: 'Pending',
+      enum: ['Pending', 'PAYMENT_PENDING', 'Approved', 'APPROVED', 'Rejected', 'FAILED_PAYMENT', 'Cancelled', 'REFUNDED', 'EXPIRED'],
+      default: 'PAYMENT_PENDING',
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -34,7 +34,7 @@ const eventRegistrationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-eventRegistrationSchema.index({ eventId: 1, phone: 1 }, { unique: true });
+eventRegistrationSchema.index({ eventId: 1, phone: 1 });
 
 function toPublic(doc, extras = {}) {
   if (!doc) return null;

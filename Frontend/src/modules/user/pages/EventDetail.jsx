@@ -99,10 +99,14 @@ const EventDetail = () => {
         });
         setRegStep('success');
       } else {
-        // For paid events, we could either register-then-pay or pay-then-register.
-        // Usually, it's better to register as "Pending" and then confirm after payment.
-        // But the current flow goes to /payment.
-        // I'll stick to the current flow but prepare the registration.
+        // Create/reuse EventRegistration with PAYMENT_PENDING status
+        const regRes = await registerForEvent({
+          eventId: id,
+          name: regForm.name,
+          phone: regForm.phone,
+          paymentMethod: 'gateway'
+        });
+
         const amount = parseFloat(event.price.replace(/[^0-9.]/g, '')) || 0;
         navigate('/payment', { 
             state: { 
@@ -112,8 +116,12 @@ const EventDetail = () => {
                 date: event.date,
                 slot: { time: event.time },
                 type: 'event',
-                // Pass registration info to payment page if needed to finalize on success
-                registrationInfo: { eventId: id, name: regForm.name, phone: regForm.phone }
+                registrationInfo: { 
+                  eventId: id, 
+                  name: regForm.name, 
+                  phone: regForm.phone,
+                  registrationId: regRes?.registration?.id
+                }
             } 
         });
       }

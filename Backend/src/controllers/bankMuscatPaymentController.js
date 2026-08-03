@@ -14,7 +14,7 @@ function frontendRedirect(result) {
 }
 
 async function createPayment(req, res) {
-  const { purpose, bookingId, amount, planId, batchId, eventId, eventName, registrantName, registrantPhone } =
+  const { purpose, bookingId, amount, planId, batchId, eventId, eventName, registrantName, registrantPhone, registrationId } =
     req.body || {};
   if (!purpose || !['top_up', 'booking', 'membership', 'enrollment'].includes(purpose)) {
     return res.status(400).json({ error: 'purpose must be top_up, booking, membership, or enrollment' });
@@ -34,6 +34,7 @@ async function createPayment(req, res) {
         eventName,
         registrantName,
         registrantPhone,
+        registrationId,
       },
       req,
     });

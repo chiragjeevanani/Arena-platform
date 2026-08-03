@@ -17,6 +17,7 @@ pnpm-lock.yaml
 .env.*.local
 
 # Scratch / Debug files (Root)
+scratch/
 debug_db.js
 seed_courts.js
 sync_registry.js

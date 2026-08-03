@@ -26,6 +26,7 @@ function sanitizeClientMeta(meta = {}) {
   if (meta.eventName) out.eventName = String(meta.eventName).slice(0, 200);
   if (meta.registrantName) out.registrantName = String(meta.registrantName).slice(0, 120);
   if (meta.registrantPhone) out.registrantPhone = String(meta.registrantPhone).slice(0, 40);
+  if (meta.registrationId) out.registrationId = String(meta.registrationId);
   return out;
 }
 
@@ -112,7 +113,11 @@ async function resolveTrustedAmount({ purpose, userId, bookingId, requestedAmoun
   throw err;
 }
 
-async function findReusablePendingPayment({ userId, purpose, bookingId, amount }) {
+async function findReusablePendingPayment({ userId, purpose, bookingId, amount, meta = {} }) {
+  // Never reuse pending payments for event registrations or payments without explicit bookingId
+  if (meta.eventId || !bookingId) {
+    return null;
+  }
   const query = {
     userId,
     purpose,
@@ -168,9 +173,11 @@ async function createBankMuscatPayment({ userId, purpose, bookingId, amount, met
     purpose,
     bookingId: trusted.booking?._id?.toString() || bookingId,
     amount: trusted.amount,
+    meta: safeMeta,
   });
 
   if (!payment) {
+    const isEvent = Boolean(safeMeta.eventId);
     payment = await Payment.create({
       userId,
       amount: trusted.amount,
@@ -185,7 +192,13 @@ async function createBankMuscatPayment({ userId, purpose, bookingId, amount, met
         bookingId: trusted.booking ? trusted.booking._id.toString() : safeMeta.bookingId,
       },
     });
-    const merchantRef = payment._id.toString(); // alphanumeric only — Bank Muscat Error 21000 rejects '_'
+    
+    // Generate unique order_id per attempt to avoid Bank Muscat Duplicate Order Number error
+    const suffix = Date.now().toString(36).slice(-4).toUpperCase();
+    const merchantRef = isEvent
+      ? `EVT${payment._id.toString().slice(-8)}${suffix}`
+      : payment._id.toString();
+
     payment.merchantTransactionReference = merchantRef;
     payment.internalTransactionId = merchantRef;
     payment.status = 'initiated';
@@ -264,16 +277,17 @@ async function handleBankMuscatCallback(req) {
   const failureMessage = params.failure_message || params.status_message || '';
   const responseCode = params.response_code || params.status_code || '';
 
+  let payment = null;
   const paymentIdStr = parsePaymentIdFromOrderId(orderId);
-  if (!paymentIdStr || !mongoose.isValidObjectId(paymentIdStr)) {
-    const err = new Error('Invalid order_id in gateway response');
-    err.status = 400;
-    throw err;
+  if (paymentIdStr && mongoose.isValidObjectId(paymentIdStr)) {
+    payment = await Payment.findById(paymentIdStr);
+  }
+  if (!payment && orderId) {
+    payment = await Payment.findOne({ merchantTransactionReference: String(orderId) });
   }
 
-  const payment = await Payment.findById(paymentIdStr);
   if (!payment) {
-    const err = new Error('Payment record not found');
+    const err = new Error('Payment record not found for order_id: ' + orderId);
     err.status = 404;
     throw err;
   }
