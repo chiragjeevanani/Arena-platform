@@ -95,9 +95,6 @@ const MatchBanner = ({ promos = [] }) => {
               <div className="absolute top-4 right-4 animate-float opacity-80 z-20">
                 <ShuttlecockIcon size={40} className="text-[#fffdd0] drop-shadow-[0_0_15px_rgba(206, 32, 41,0.5)]" />
               </div>
-              <button className="mt-3 bg-[#fffdd0] text-[#CE2029] px-5 py-2 rounded-xl font-black text-xs w-fit shadow-[0_0_20px_rgba(206, 32, 41,0.2)]">
-                {promo.buttonText || 'Join Match'}
-              </button>
             </div>
           </motion.div>
         ))}
@@ -152,12 +149,9 @@ const MatchBanner = ({ promos = [] }) => {
                         <span className="text-[#fffdd0] text-[8px] font-black uppercase tracking-[0.3em] mb-1.5 block">
                           {promo.subtitle}
                         </span>
-                        <h2 className="text-white text-base font-black leading-tight font-display line-clamp-2 mb-4">
+                        <h2 className="text-white text-base font-black leading-tight font-display line-clamp-2">
                           {promo.title}
                         </h2>
-                        <div className="bg-[#fffdd0] text-[#CE2029] px-4 py-1.5 rounded-lg font-black text-[10px] w-fit uppercase tracking-wider">
-                          {promo.buttonText}
-                        </div>
                       </div>
                     </motion.div>
                   </div>

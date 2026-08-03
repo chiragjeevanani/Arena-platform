@@ -3,11 +3,38 @@ import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/st
 import { lazy, Suspense } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 
+import { useAuth } from './modules/user/context/AuthContext';
+
 // Layouts - Lazy loaded to prevent loading admin/coach code on user app
 const UserLayout = lazy(() => import('./layouts/UserLayout'));
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
 const CoachLayout = lazy(() => import('./layouts/CoachLayout'));
 const ArenaLayout = lazy(() => import('./layouts/ArenaLayout'));
+
+// Route Guards
+const UserAuthGuard = () => {
+  const { isLoggedIn } = useAuth();
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+  return <UserLayout />;
+};
+
+const ProtectedUserRoute = ({ children }) => {
+  const { isLoggedIn } = useAuth();
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+const PublicOnlyRoute = ({ children }) => {
+  const { isLoggedIn } = useAuth();
+  if (isLoggedIn) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
 
 // Loading Fallback
 const PageLoader = () => (
@@ -216,7 +243,7 @@ function App() {
             </Route>
 
             {/* Auth Routes */}
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/otp-verify" element={<OTPVerification />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -224,7 +251,7 @@ function App() {
             <Route path="/auth/verify-email" element={<EmailVerifiedPage />} />
 
             {/* User App Routes (Mobile-first) - Primary Entry */}
-            <Route path="/" element={<UserLayout />}>
+            <Route path="/" element={<UserAuthGuard />}>
               <Route index element={<UserHome />} />
               <Route path="arenas" element={<ArenaListing />} />
               <Route path="events" element={<Events />} />
@@ -251,16 +278,16 @@ function App() {
             </Route>
 
             {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
-            <Route path="/arenas/:id" element={<ArenaDetails />} />
-            <Route path="/book/:arenaId/:courtId" element={<SlotSelection />} />
-            <Route path="/booking-summary" element={<BookingSummary />} />
-            <Route path="/coaching-summary" element={<CoachingSummary />} />
-            <Route path="/membership" element={<MembershipPlans />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/payment/bank-muscat/return" element={<BankMuscatReturn />} />
-            <Route path="/booking-success" element={<BookingSuccess />} />
-            <Route path="/bookings/:id" element={<BookingDetails />} />
-            <Route path="/slot-membership-purchase" element={<SlotMembershipPurchase />} />
+            <Route path="/arenas/:id" element={<ProtectedUserRoute><ArenaDetails /></ProtectedUserRoute>} />
+            <Route path="/book/:arenaId/:courtId" element={<ProtectedUserRoute><SlotSelection /></ProtectedUserRoute>} />
+            <Route path="/booking-summary" element={<ProtectedUserRoute><BookingSummary /></ProtectedUserRoute>} />
+            <Route path="/coaching-summary" element={<ProtectedUserRoute><CoachingSummary /></ProtectedUserRoute>} />
+            <Route path="/membership" element={<ProtectedUserRoute><MembershipPlans /></ProtectedUserRoute>} />
+            <Route path="/payment" element={<ProtectedUserRoute><Payment /></ProtectedUserRoute>} />
+            <Route path="/payment/bank-muscat/return" element={<ProtectedUserRoute><BankMuscatReturn /></ProtectedUserRoute>} />
+            <Route path="/booking-success" element={<ProtectedUserRoute><BookingSuccess /></ProtectedUserRoute>} />
+            <Route path="/bookings/:id" element={<ProtectedUserRoute><BookingDetails /></ProtectedUserRoute>} />
+            <Route path="/slot-membership-purchase" element={<ProtectedUserRoute><SlotMembershipPurchase /></ProtectedUserRoute>} />
 
             {/* Coach Routes */}
             <Route path="/coach" element={<CoachLayout />}>
