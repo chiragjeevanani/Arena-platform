@@ -167,12 +167,23 @@ async function purchaseMembership(req, res) {
 
     const occurrences = getOccurrenceDates(startStr, endStr, courtSlot.dayOfWeek);
 
+    const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+    const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
     // Check regular bookings
     const bookedConflict = await Booking.findOne({
       courtId: courtSlot.courtId,
       timeSlot: courtSlot.timeSlot,
       date: { $in: occurrences },
-      status: { $in: ['confirmed', 'pending', 'rescheduled'] },
+      $or: [
+        { status: 'confirmed' },
+        { status: 'rescheduled' },
+        {
+          status: 'pending',
+          paymentStatus: 'pending',
+          createdAt: { $gte: holdCutoff },
+        },
+      ],
     }).lean();
 
     if (bookedConflict) {

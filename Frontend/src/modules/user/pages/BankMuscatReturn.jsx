@@ -158,6 +158,34 @@ const BankMuscatReturn = () => {
 
   const card = `${isDark ? 'bg-[#1a1d24] border-white/10 text-white' : 'bg-white border-slate-100 text-slate-900'} border rounded-3xl p-8 shadow-sm max-w-md w-full text-center`;
 
+  const handleReturnBack = async () => {
+    try {
+      const { peekBankMuscatCheckoutContext, consumeBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');
+      const saved = peekBankMuscatCheckoutContext() || {};
+      const purpose = payment?.purpose || params.get('purpose') || saved.type || saved.paymentPurpose;
+
+      if ((purpose === 'booking' || purpose === 'event') && (saved.arena || saved.court)) {
+        // Return directly to Booking Summary with restored state so user can retry payment immediately
+        navigate('/booking-summary', { state: saved, replace: true });
+        return;
+      }
+
+      // Consume context if navigating away to clean up
+      consumeBankMuscatCheckoutContext();
+
+      let targetRoute = '/arenas';
+      if (purpose === 'top_up' || purpose === 'wallet_top_up') {
+        targetRoute = '/profile/wallet';
+      } else if (purpose === 'coaching' || purpose === 'enrollment') {
+        targetRoute = '/coaching';
+      }
+
+      navigate(targetRoute, { replace: true });
+    } catch {
+      navigate('/arenas', { replace: true });
+    }
+  };
+
   return (
     <div className={`min-h-screen flex items-center justify-center px-6 ${isDark ? 'bg-[#0f1115]' : 'bg-slate-50'}`}>
       <div className={card}>
@@ -186,7 +214,7 @@ const BankMuscatReturn = () => {
             </p>
             <button
               type="button"
-              onClick={() => navigate('/profile/wallet')}
+              onClick={() => navigate('/profile/wallet', { replace: true })}
               className="px-5 py-3 rounded-xl bg-[#CE2029] text-white text-xs font-black uppercase tracking-widest"
             >
               Go to wallet
@@ -206,10 +234,10 @@ const BankMuscatReturn = () => {
             )}
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={handleReturnBack}
               className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest ${isDark ? 'bg-white/10' : 'bg-slate-900 text-white'}`}
             >
-              <ArrowLeft size={14} /> Back
+              <ArrowLeft size={14} /> Back to App
             </button>
           </>
         )}

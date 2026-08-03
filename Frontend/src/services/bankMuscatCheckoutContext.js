@@ -16,6 +16,23 @@ export function saveBankMuscatCheckoutContext(context = {}) {
   }
 }
 
+export function peekBankMuscatCheckoutContext() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    if (parsed.savedAt && Date.now() - Number(parsed.savedAt) > 2 * 60 * 60 * 1000) {
+      return null;
+    }
+    const copy = { ...parsed };
+    delete copy.savedAt;
+    return copy;
+  } catch {
+    return null;
+  }
+}
+
 export function consumeBankMuscatCheckoutContext() {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);

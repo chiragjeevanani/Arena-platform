@@ -123,6 +123,7 @@ async function markBookingPaidOnce(payment) {
     { _id: bookingId, paymentStatus: { $ne: 'paid' } },
     {
       $set: {
+        status: 'confirmed',
         paymentStatus: 'paid',
         paymentMethod: 'online',
       },
@@ -301,6 +302,19 @@ async function markPaymentTerminalFailure(paymentId, opts = {}) {
 
   if (updated && updated.meta?.eventId) {
     await handleEventRegistrationPaymentFailure(updated);
+  }
+
+  if (updated && updated.meta?.bookingId) {
+    const nextPayStatus = next === 'cancelled' ? 'cancelled' : 'failed';
+    await Booking.findOneAndUpdate(
+      { _id: updated.meta.bookingId, status: { $ne: 'confirmed' } },
+      {
+        $set: {
+          status: 'cancelled',
+          paymentStatus: nextPayStatus,
+        },
+      }
+    );
   }
 
   if (updated) return updated;

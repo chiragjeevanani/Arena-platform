@@ -58,6 +58,13 @@ async function start() {
     }
 
     console.log(`${BLUE}----------------------------------------${RESET}`);
+
+    // Startup migration for legacy orphaned bookings & periodic stale hold cleanup
+    const { migrateOrphanedLegacyBookings, cleanupStalePendingBookings } = require('./services/bookingCleanupService');
+    migrateOrphanedLegacyBookings().catch((err) => {
+      console.warn('Legacy booking migration warning:', err.message);
+    });
+    setInterval(cleanupStalePendingBookings, 3 * 60 * 1000);
   });
 }
 

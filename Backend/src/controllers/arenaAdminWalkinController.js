@@ -83,10 +83,21 @@ async function getWalkinSlots(req, res) {
   }
 
   // Get booked slots
+  const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+  const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
   const bookings = await Booking.find({
     courtId,
     date,
-    status: { $in: ['pending', 'confirmed'] },
+    $or: [
+      { status: 'confirmed' },
+      { status: 'rescheduled' },
+      {
+        status: 'pending',
+        paymentStatus: 'pending',
+        createdAt: { $gte: holdCutoff },
+      },
+    ],
   }).select('timeSlot').lean();
 
   const bookedSet = new Set(bookings.map((b) => b.timeSlot));
@@ -212,11 +223,22 @@ async function createWalkinBooking(req, res) {
   if (!court) return res.status(404).json({ error: 'Court not found in your arena' });
 
   // Check for conflict
+  const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+  const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
   const conflict = await Booking.findOne({
     courtId,
     date,
     timeSlot,
-    status: { $in: ['pending', 'confirmed'] },
+    $or: [
+      { status: 'confirmed' },
+      { status: 'rescheduled' },
+      {
+        status: 'pending',
+        paymentStatus: 'pending',
+        createdAt: { $gte: holdCutoff },
+      },
+    ],
   });
   if (conflict) {
     return res.status(409).json({ error: 'This slot is already booked' });

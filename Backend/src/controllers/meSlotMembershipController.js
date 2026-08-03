@@ -112,12 +112,23 @@ async function checkSlotAvailability(req, res) {
 
     const occurrences = getOccurrenceDates(startDate, endDate, courtSlot.dayOfWeek);
 
+    const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+    const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
     // 1. Check regular bookings
     const bookedDates = await Booking.find({
       courtId: courtSlot.courtId,
       timeSlot: courtSlot.timeSlot,
       date: { $in: occurrences },
-      status: { $in: ['confirmed', 'pending', 'rescheduled'] },
+      $or: [
+        { status: 'confirmed' },
+        { status: 'rescheduled' },
+        {
+          status: 'pending',
+          paymentStatus: 'pending',
+          createdAt: { $gte: holdCutoff },
+        },
+      ],
     })
       .select('date')
       .lean();

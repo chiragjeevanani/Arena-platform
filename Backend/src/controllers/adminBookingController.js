@@ -65,12 +65,23 @@ async function updateAdminBooking(req, res) {
 
     // Check for conflict if moving to a new slot
     if (finalDate !== booking.date || finalSlot !== booking.timeSlot) {
+      const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+      const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
       const conflict = await Booking.findOne({
         _id: { $ne: bookingId },
         courtId: booking.courtId,
         date: finalDate,
         timeSlot: finalSlot,
-        status: { $in: ['pending', 'confirmed'] },
+        $or: [
+          { status: 'confirmed' },
+          { status: 'rescheduled' },
+          {
+            status: 'pending',
+            paymentStatus: 'pending',
+            createdAt: { $gte: holdCutoff },
+          },
+        ],
       });
       if (conflict) {
         return res.status(409).json({ error: 'This target slot is already booked' });

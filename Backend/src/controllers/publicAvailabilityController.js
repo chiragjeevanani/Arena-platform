@@ -64,11 +64,22 @@ async function getCourtAvailability(req, res) {
   const baseSlots = configuredSlots.map(s => ({ timeSlot: s.timeSlot }));
 
   // 3. Fetch Bookings and AvailabilityBlocks
+  const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+  const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
   const [booked, blocks] = await Promise.all([
     Booking.find({
       courtId: court._id,
       date: dateStr,
-      status: { $in: ['pending', 'confirmed'] },
+      $or: [
+        { status: 'confirmed' },
+        { status: 'rescheduled' },
+        {
+          status: 'pending',
+          paymentStatus: 'pending',
+          createdAt: { $gte: holdCutoff },
+        },
+      ],
     }).select('timeSlot').lean(),
     AvailabilityBlock.find({
       courtId: court._id,
@@ -192,11 +203,22 @@ async function listCourtSlots(req, res) {
       }
     }
 
+    const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+    const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
     const [bookings, activeMemberships] = await Promise.all([
       Booking.find({
         courtId: court._id,
         date: { $gte: startDate, $lte: maxEndDate },
-        status: { $in: ['confirmed', 'pending', 'rescheduled'] }
+        $or: [
+          { status: 'confirmed' },
+          { status: 'rescheduled' },
+          {
+            status: 'pending',
+            paymentStatus: 'pending',
+            createdAt: { $gte: holdCutoff },
+          },
+        ],
       }).select('timeSlot date').lean(),
       UserMembership.find({
         status: 'active',

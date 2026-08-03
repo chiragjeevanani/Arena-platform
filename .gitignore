@@ -28,6 +28,7 @@ FRONTEND_API_COVERAGE.md
 *.log
 
 # Tests (Global)
+tests/
 **/tests/
 **/*.test.js
 **/*.test.jsx

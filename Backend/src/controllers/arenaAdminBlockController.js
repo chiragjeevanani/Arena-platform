@@ -35,13 +35,21 @@ async function createMyBlock(req, res) {
   }
 
   // Optional: Check for booking conflicts before blocking
+  const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
+  const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
+
   const conflict = await Booking.findOne({
     courtId,
     date,
-    status: { $in: ['pending', 'confirmed'] },
-    // Simplified conflict check: if any booking exists for that day, we might want to be careful
-    // or precisely check the time slots. For now, we allow the block but warn in UI?
-    // Let's do a basic existence check if the user wants to block the whole day or specific time.
+    $or: [
+      { status: 'confirmed' },
+      { status: 'rescheduled' },
+      {
+        status: 'pending',
+        paymentStatus: 'pending',
+        createdAt: { $gte: holdCutoff },
+      },
+    ],
   });
 
   const block = await AvailabilityBlock.create({

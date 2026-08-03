@@ -156,7 +156,7 @@ async function createMyBooking(req, res) {
       amount: finalAmount,
       paymentMethod: method,
       paymentStatus: payStatus,
-      status: 'confirmed',
+      status: payStatus === 'paid' ? 'confirmed' : 'pending',
       walletUsed: walletDebitAmount,
       paidAmount: finalAmount - walletDebitAmount,
     });
