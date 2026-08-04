@@ -59,7 +59,8 @@ async function handleCallback(req, res) {
 
 async function getStatus(req, res) {
   try {
-    const payment = await bankMuscat.getPaymentStatusForUser(req.params.paymentId, req.auth.sub);
+    const hintStatus = req.query.status || req.query.hintStatus;
+    const payment = await bankMuscat.getPaymentStatusForUser(req.params.paymentId, req.auth.sub, { hintStatus });
     return res.json({ payment });
   } catch (err) {
     return res.status(err.status || 500).json({ error: err.message || 'Failed to load payment status' });

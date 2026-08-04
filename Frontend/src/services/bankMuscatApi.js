@@ -32,8 +32,9 @@ export function createBankMuscatPayment({
 }
 
 /** Backend-verified payment status only. */
-export function getBankMuscatPaymentStatus(paymentId) {
-  return apiJson(`/api/payments/bank-muscat/status/${encodeURIComponent(paymentId)}`, {
+export function getBankMuscatPaymentStatus(paymentId, hintStatus) {
+  const q = hintStatus ? `?hintStatus=${encodeURIComponent(hintStatus)}` : '';
+  return apiJson(`/api/payments/bank-muscat/status/${encodeURIComponent(paymentId)}${q}`, {
     method: 'GET',
   });
 }

@@ -10,6 +10,7 @@ const ReferralSettings = require('../models/ReferralSettings');
 const { getOrCreateWallet } = require('../services/walletService');
 const { computeCourtBookingPrice, amountsMatch } = require('../services/pricing');
 const { createNotification } = require('../services/notificationService');
+const { markPaymentTerminalFailure } = require('../services/paymentFinalizationService');
 const { buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
 
 function parseBackendSlotStartDateTime(dateInput, timeSlot) {
@@ -336,14 +337,26 @@ async function cancelMyBooking(req, res) {
     return res.status(400).json({ error: 'Booking is already cancelled' });
   }
 
-  const refundAmount =
-    booking.paymentMethod === 'wallet' && booking.amount > 0 ? booking.amount : 0;
+  const isWalletPaid = booking.paymentMethod === 'wallet' && booking.paymentStatus === 'paid';
+  const isPartialWallet = booking.walletUsed > 0;
+  const refundAmount = isWalletPaid ? booking.amount : (isPartialWallet ? booking.walletUsed : 0);
 
   booking.status = 'cancelled';
-  if (refundAmount > 0) {
-    booking.paymentStatus = 'refunded';
-  }
+  booking.paymentStatus = isWalletPaid ? 'refunded' : 'cancelled';
   await booking.save();
+
+  // Cancel associated open payment if any
+  const Payment = require('../models/Payment');
+  const openPayment = await Payment.findOne({
+    'meta.bookingId': booking._id.toString(),
+    status: { $in: ['created', 'initiated', 'pending'] },
+  });
+  if (openPayment) {
+    await markPaymentTerminalFailure(openPayment._id, {
+      status: 'cancelled',
+      failureReason: 'Booking cancelled by user',
+    });
+  }
 
   if (refundAmount > 0) {
     const wallet = await getOrCreateWallet(req.auth.sub);

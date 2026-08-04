@@ -406,13 +406,13 @@ async function handleBankMuscatCallback(req) {
   };
 }
 
-async function getPaymentStatusForUser(paymentId, userId) {
+async function getPaymentStatusForUser(paymentId, userId, opts = {}) {
   if (!mongoose.isValidObjectId(paymentId)) {
     const err = new Error('Invalid paymentId');
     err.status = 400;
     throw err;
   }
-  const payment = await Payment.findById(paymentId).lean();
+  let payment = await Payment.findById(paymentId);
   if (!payment) {
     const err = new Error('Payment not found');
     err.status = 404;
@@ -423,6 +423,19 @@ async function getPaymentStatusForUser(paymentId, userId) {
     err.status = 403;
     throw err;
   }
+
+  const hint = opts.hintStatus || opts.status;
+  if (
+    hint &&
+    ['cancelled', 'failed'].includes(hint) &&
+    ['created', 'initiated', 'pending'].includes(payment.status)
+  ) {
+    payment = await markPaymentTerminalFailure(payment._id, {
+      status: hint,
+      failureReason: `Payment ${hint} on gateway return`,
+    });
+  }
+
   return Payment.toPublic(payment);
 }
 

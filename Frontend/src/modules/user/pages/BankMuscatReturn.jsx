@@ -46,7 +46,7 @@ const BankMuscatReturn = () => {
 
       setUiState('VERIFYING');
       try {
-        const res = await getBankMuscatPaymentStatus(paymentId);
+        const res = await getBankMuscatPaymentStatus(paymentId, hintStatus);
         if (cancelled) return;
         const p = res.payment;
         setPayment(p);

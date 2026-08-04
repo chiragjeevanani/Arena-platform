@@ -41,7 +41,7 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
   };
 
   return (
-    <header className="h-20 bg-[#E8EDF2] border-b border-[#D9E2EC] flex items-center justify-between px-6 sticky top-0 z-40">
+    <header className="h-20 bg-[#E8EDF2] border-b border-[#D9E2EC] flex items-center justify-between px-6 sticky top-0 z-[90]">
       <div className="flex items-center gap-3 flex-1">
         {/* Mobile Hamburger */}
         <button
@@ -169,7 +169,7 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
                 initial={{ opacity: 0, scale: 0.95, y: 10, x: 0 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="absolute right-0 mt-3 w-64 rounded-[1.5rem] border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden py-2 bg-white text-[#36454F]"
+                className="absolute right-0 mt-3 w-64 rounded-[1.5rem] border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden py-2 bg-white text-[#36454F] z-[100]"
               >
                 <div className="px-5 py-3 border-b border-slate-100 mb-2">
                   <p className="text-xs font-black uppercase tracking-widest">{user?.name}</p>
@@ -190,7 +190,13 @@ const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
                     Account Settings
                   </button>
                   
-                  <button className="w-full text-left px-4 py-2 text-xs font-bold text-slate-600 hover:text-[#CE2029] hover:bg-slate-50 flex items-center gap-3 transition-colors rounded-xl">
+                  <button 
+                    onClick={() => {
+                      setShowNotificationsMenu(true);
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-xs font-bold text-slate-600 hover:text-[#CE2029] hover:bg-slate-50 flex items-center gap-3 transition-colors rounded-xl"
+                  >
                     <div className="w-7 h-7 rounded-lg bg-[#CE2029]/10 flex items-center justify-center text-[#CE2029]">
                       <Bell size={14} />
                     </div>

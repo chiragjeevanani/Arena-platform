@@ -230,10 +230,7 @@ const FinancialReports = () => {
   if (reportPreview) return <ReportPreviewDocument />;
 
   const IntelligenceFilterBar = () => (
-    <motion.div 
-      initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 p-2 px-4 shadow-sm flex flex-wrap items-center gap-3 mb-2"
-    >
+    <div className="bg-white p-3 px-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-3">
        <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
           <div className="p-1.5 rounded-lg bg-[#CE2029]/10 text-[#CE2029]"><Filter size={14} /></div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#36454F]">Filters</span>
@@ -270,13 +267,11 @@ const FinancialReports = () => {
           </div>
           <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest pl-2">Last Sync: Just Now</div>
        </div>
-    </motion.div>
+    </div>
   );
 
   return (
     <div className="bg-[#F4F7F6] min-h-full font-sans print:bg-white overflow-hidden">
-      <IntelligenceFilterBar />
-
       <div className="max-w-[1600px] mx-auto p-4 lg:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -292,6 +287,8 @@ const FinancialReports = () => {
             <Download size={16} strokeWidth={2.5} /> Export Audit
           </button>
         </div>
+
+        <IntelligenceFilterBar />
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {TABS.map(tab => (
