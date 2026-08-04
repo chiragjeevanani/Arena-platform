@@ -15,7 +15,7 @@ const Payment = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const [selectedMethod, setSelectedMethod] = useState('upi');
+  const [selectedMethod, setSelectedMethod] = useState('bank_muscat');
   const [isProcessing, setIsProcessing] = useState(false);
   const [payError, setPayError] = useState('');
   const [walletBalance, setWalletBalance] = useState(null);
@@ -41,11 +41,9 @@ const Payment = () => {
   const amount = state?.amount || 0;
 
   const paymentMethods = [
-    { id: 'upi', name: 'UPI (GPay/PhonePe)', icon: Smartphone, color: 'text-[#CE2029]', bg: 'bg-[#CE2029]/10', desc: 'Instant & Secure' },
+    { id: 'bank_muscat', name: 'Bank Muscat SmartPay (Card / OmanNet)', icon: CreditCard, color: 'text-[#CE2029]', bg: 'bg-[#CE2029]/10', desc: 'Debit / Credit Card, OmanNet & Apple Pay' },
     { id: 'wallet', name: 'Arena Wallet', icon: Wallet, color: 'text-emerald-500', bg: 'bg-emerald-500/10', desc: walletBalance !== null ? `Balance: OMR ${walletBalance.toFixed(3)}` : 'Pay from Credits' },
-    { id: 'card', name: 'Credit / Debit Card', icon: CreditCard, color: 'text-blue-400', bg: 'bg-blue-400/10', desc: 'Full Security' },
-    { id: 'netbanking', name: 'Net Banking', icon: Landmark, color: 'text-amber-400', bg: 'bg-amber-400/10', desc: 'All Major Banks' },
-    { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-400/10', desc: 'On-Site Payment' },
+    { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-400/10', desc: 'On-Site Cash Payment' },
   ];
 
   const resolvePurpose = () => {

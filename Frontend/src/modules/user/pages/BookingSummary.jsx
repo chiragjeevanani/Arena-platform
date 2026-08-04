@@ -91,7 +91,7 @@ const BookingSummary = () => {
   const totalAmount = subtotal + tax;
   const walletDeduction = useWallet ? Math.min(walletBalance || 0, totalAmount) : 0;
   const finalPayable = totalAmount - walletDeduction;
-  const canApiBook = useLiveCheckout && user?.role === 'CUSTOMER';
+  const canApiBook = isApiConfigured() && user?.role === 'CUSTOMER';
 
   // ── Coupon helpers ───────────────────────────────────────────────────────
   async function handleApplyCoupon(codeToApply) {
