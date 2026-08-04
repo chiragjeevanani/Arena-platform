@@ -104,6 +104,7 @@ async function listCoachStudentsAll(req, res) {
     return {
       id: String(e.userId),
       enrollmentId: e._id.toString(),
+      studentId: String(e.userId),
       userId: String(e.userId),
       name: u?.name || '',
       email: u?.email || '',
@@ -194,6 +195,132 @@ async function listCoachAttendanceHistory(req, res) {
   return res.json({ sessions });
 }
 
+async function getStudentAttendance(req, res) {
+  const { studentId } = req.params;
+  if (!mongoose.isValidObjectId(studentId)) {
+    return res.status(400).json({ error: 'Invalid student ID' });
+  }
+
+  const user = await User.findById(studentId).lean();
+  const enrollments = await BatchEnrollment.find({
+    userId: studentId,
+    status: { $in: ['confirmed', 'pending'] },
+  }).lean();
+  const batchIds = enrollments.map((e) => e.batchId);
+
+  const batches = await CoachingBatch.find({ _id: { $in: batchIds } }).lean();
+  const batchById = new Map(batches.map((b) => [b._id.toString(), b]));
+
+  const coachIds = batches.map((b) => b.coachId).filter(Boolean);
+  const coaches = await User.find({ _id: { $in: coachIds } }).lean();
+  const coachById = new Map(coaches.map((c) => [c._id.toString(), c.name || 'Head Coach']));
+
+  const primaryBatch = batches[0];
+  const studentMeta = {
+    id: String(studentId),
+    name: user?.name || 'Student',
+    email: user?.email || '',
+    batch: primaryBatch?.title || '—',
+    status: enrollments[0]?.status === 'pending' ? 'Pending' : 'Active',
+  };
+
+  if (!batchIds.length) {
+    return res.json({
+      student: studentMeta,
+      summary: { total: 0, present: 0, absent: 0, late: 0, percentage: 0, streak: 0 },
+      sessions: [],
+    });
+  }
+
+  const attendanceRows = await CoachingAttendance.find({
+    batchId: { $in: batchIds },
+  }).sort({ sessionDate: -1 }).lean();
+
+  const sessions = [];
+  let present = 0;
+  let absent = 0;
+  let late = 0;
+
+  for (const row of attendanceRows) {
+    const rec = (row.records || []).find((r) => String(r.userId) === String(studentId));
+    if (rec) {
+      if (rec.status === 'present') present++;
+      else if (rec.status === 'absent') absent++;
+      else if (rec.status === 'late') late++;
+
+      const b = batchById.get(String(row.batchId));
+      const coachName = b ? (coachById.get(String(b.coachId)) || 'Head Coach') : 'Head Coach';
+
+      sessions.push({
+        sessionId: row._id.toString(),
+        date: row.sessionDate,
+        startTime: b?.startTime || '07:30 AM',
+        endTime: b?.endTime || '08:30 AM',
+        batchName: b?.title || '—',
+        coachName: coachName,
+        status: rec.status,
+      });
+    }
+  }
+
+  const total = present + absent + late;
+  const percentage = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
+
+  let streak = 0;
+  for (const s of sessions) {
+    if (s.status === 'present' || s.status === 'late') streak++;
+    else break;
+  }
+
+  return res.json({
+    student: studentMeta,
+    summary: { total, present, absent, late, percentage, streak },
+    sessions,
+  });
+}
+
+async function removeStudentFromBatch(req, res) {
+  const coachId = resolveCoachId(req);
+  const { batchId, studentId } = req.params;
+
+  const batch = await assertCoachOwnsBatch(coachId, batchId, req.auth?.role);
+  if (!batch) {
+    return res.status(404).json({ error: 'Batch not found or permission denied' });
+  }
+
+  const enrollment = await BatchEnrollment.findOne({
+    batchId: batch._id,
+    userId: studentId,
+    status: { $in: ['confirmed', 'pending'] },
+  });
+
+  if (!enrollment) {
+    return res.status(404).json({ error: 'Active enrollment not found for student in this batch' });
+  }
+
+  const { reason, notes } = req.body || {};
+  if (!reason || !String(reason).trim()) {
+    return res.status(400).json({ error: 'Removal reason is required' });
+  }
+
+  enrollment.status = 'removed';
+  enrollment.removedBy = coachId;
+  enrollment.removedAt = new Date();
+  enrollment.removalReason = String(reason).trim();
+  enrollment.removalNotes = String(notes || '').trim();
+  await enrollment.save();
+
+  if (batch.enrolledCount > 0) {
+    await CoachingBatch.findByIdAndUpdate(batch._id, { $inc: { enrolledCount: -1 } });
+  }
+
+  return res.json({
+    success: true,
+    message: 'Student successfully removed from batch',
+    enrollment: BatchEnrollment.toPublic(enrollment),
+  });
+}
+
 module.exports = {
   listCoachBatches,
   listBatchStudents,
@@ -201,4 +328,8 @@ module.exports = {
   listBatchAttendance,
   upsertBatchAttendance,
   listCoachAttendanceHistory,
+  getStudentAttendance,
+  removeStudentFromBatch,
 };
+
+

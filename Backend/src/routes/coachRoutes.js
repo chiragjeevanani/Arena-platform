@@ -9,6 +9,8 @@ const {
   listBatchAttendance,
   upsertBatchAttendance,
   listCoachAttendanceHistory,
+  getStudentAttendance,
+  removeStudentFromBatch,
 } = require('../controllers/coachBatchController');
 const {
   listBatchProgress,
@@ -34,11 +36,13 @@ router.use(requireRole('COACH'));
 
 router.get('/batches', asyncHandler(listCoachBatches));
 router.get('/students', asyncHandler(listCoachStudentsAll));
+router.get('/students/:studentId/attendance', asyncHandler(getStudentAttendance));
 router.get('/students/:userId/batches', asyncHandler(listBatchesForStudent));
 router.get('/attendance-history', asyncHandler(listCoachAttendanceHistory));
 router.get('/batches/:batchId/students', asyncHandler(listBatchStudents));
 router.get('/batches/:batchId/attendance', asyncHandler(listBatchAttendance));
 router.put('/batches/:batchId/attendance', asyncHandler(upsertBatchAttendance));
+router.patch('/batches/:batchId/students/:studentId/remove', asyncHandler(removeStudentFromBatch));
 
 router.get('/progress-summary', asyncHandler(listAllCoachProgress));
 router.get('/batches/:batchId/progress', asyncHandler(listBatchProgress));

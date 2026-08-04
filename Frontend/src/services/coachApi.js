@@ -85,3 +85,16 @@ export function deleteCoachLeave(leaveId) {
 export function listCoachWorkAttendance() {
   return apiJson('/api/coach/work-attendance', { method: 'GET' });
 }
+
+export function getStudentAttendance(studentId) {
+  return apiJson(`/api/coach/students/${encodeURIComponent(studentId)}/attendance`, { method: 'GET' });
+}
+
+export function removeStudentFromBatch(batchId, studentId, body) {
+  return apiJson(`/api/coach/batches/${encodeURIComponent(batchId)}/students/${encodeURIComponent(studentId)}/remove`, {
+    method: 'PATCH',
+    body,
+  });
+}
+
+

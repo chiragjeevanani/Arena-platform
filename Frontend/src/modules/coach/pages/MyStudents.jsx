@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Users, Search, Filter, MoreHorizontal, MessageSquare, 
   Star, GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck, Target,
-  Calendar, TrendingUp, BarChart3, ChevronLeft, ChevronRight
+  Calendar, TrendingUp, BarChart3, ChevronLeft, ChevronRight, AlertCircle
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { listCoachStudentsAll } from '../../../services/coachApi';
+import { listCoachStudentsAll, getStudentAttendance, removeStudentFromBatch } from '../../../services/coachApi';
 
 const INITIAL_STUDENTS = [];
 
@@ -21,6 +21,12 @@ const MyStudents = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [toast, setToast] = useState(null);
   const [attendanceTab, setAttendanceTab] = useState('daily'); // 'daily' | 'monthly' | 'yearly'
+
+  // Remove / Unenroll Student Modal State
+  const [unenrollStudentTarget, setUnenrollStudentTarget] = useState(null);
+  const [unenrollReason, setUnenrollReason] = useState('Student Requested Withdrawal');
+  const [unenrollNotes, setUnenrollNotes] = useState('');
+  const [isRemoving, setIsRemoving] = useState(false);
   
   // Filter States
   const [showFilters, setShowFilters] = useState(false);
@@ -40,7 +46,9 @@ const MyStudents = () => {
         const rows = data.students || [];
         setStudents(
           rows.map((s) => ({
+            enrollmentId: s.enrollmentId || `${s.batchId}_${s.userId || s.id}`,
             id: s.userId || s.id,
+            studentId: s.userId || s.id,
             name: s.name || 'Student',
             batch: s.batch || '—',
             level: s.level || '—',
@@ -63,14 +71,33 @@ const MyStudents = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const deleteStudent = (id) => {
-    if (isApiConfigured() && getAuthToken()) {
-      showToast('Enrollments are managed in the admin or customer app.');
-      return;
+  const handleConfirmRemoveStudent = async () => {
+    if (!unenrollStudentTarget || !unenrollReason) return;
+    setIsRemoving(true);
+    try {
+      if (isApiConfigured() && getAuthToken() && unenrollStudentTarget.batchId) {
+        await removeStudentFromBatch(unenrollStudentTarget.batchId, unenrollStudentTarget.id, {
+          reason: unenrollReason,
+          notes: unenrollNotes,
+        });
+      }
+      setStudents((prev) =>
+        prev.filter(
+          (s) =>
+            s.enrollmentId !== unenrollStudentTarget.enrollmentId &&
+            !(s.batchId === unenrollStudentTarget.batchId && s.id === unenrollStudentTarget.id)
+        )
+      );
+      showToast(`${unenrollStudentTarget.name} removed from ${unenrollStudentTarget.batch}`);
+      setUnenrollStudentTarget(null);
+      setUnenrollReason('Student Requested Withdrawal');
+      setUnenrollNotes('');
+    } catch (err) {
+      console.error('Failed to remove student from batch:', err);
+      showToast(err?.message || 'Failed to remove student from batch');
+    } finally {
+      setIsRemoving(false);
     }
-    const student = students.find((s) => s.id === id);
-    setStudents((prev) => prev.filter((s) => s.id !== id));
-    showToast(`Student ${student?.name || ''} removed from roster`);
   };
 
   const filteredStudents = students.filter(s => {
@@ -305,8 +332,12 @@ const MyStudents = () => {
 
               <div className="grid grid-cols-1 gap-2 mt-8">
                 <button 
-                  onClick={() => deleteStudent(selectedStudent.id) || setSelectedStudent(null)}
-                  className={`w-full py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all`}
+                  onClick={() => {
+                    const target = selectedStudent;
+                    setSelectedStudent(null);
+                    setUnenrollStudentTarget(target);
+                  }}
+                  className={`w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-widest border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all`}
                 >
                    Remove from Batch
                 </button>
@@ -447,7 +478,7 @@ const MyStudents = () => {
         {filteredStudents.length > 0 ? (
           filteredStudents.map((student, idx) => (
             <motion.div
-              key={student.id}
+              key={student.enrollmentId || `${student.batchId}_${student.id}`}
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.03 }}
@@ -467,8 +498,9 @@ const MyStudents = () => {
                       </div>
                    </div>
                    <button 
-                    onClick={() => deleteStudent(student.id)}
-                    className={`p-1 rounded-md transition-colors ${isDark ? 'text-white/20 hover:text-red-500 hover:bg-white/5' : 'text-slate-400 hover:text-red-500 hover:bg-slate-50'}`}
+                    onClick={() => setUnenrollStudentTarget(student)}
+                    title="Remove student from this batch"
+                    className={`p-1.5 rounded-lg transition-colors ${isDark ? 'text-slate-400 hover:text-red-500 hover:bg-white/5' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}
                    >
                       <Trash2 size={16} />
                    </button>
@@ -535,6 +567,110 @@ const MyStudents = () => {
           </div>
         )}
       </div>
+
+      {/* Remove Student from Batch Confirmation Modal */}
+      <AnimatePresence>
+        {unenrollStudentTarget && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setUnenrollStudentTarget(null)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-md z-[130]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[140] p-6 sm:p-7 rounded-[28px] border shadow-2xl ${
+                isDark ? 'bg-[#161922] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-100 dark:border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center font-bold">
+                    <AlertCircle size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black tracking-tight">Remove Student from Batch</h3>
+                    <p className="text-[10px] font-semibold text-slate-400">Unenroll student while preserving historical logs</p>
+                  </div>
+                </div>
+                <button onClick={() => setUnenrollStudentTarget(null)} className="text-slate-400 hover:text-white">
+                  <XCircle size={18} />
+                </button>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 mb-4 space-y-1">
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-slate-400">Student:</span>
+                  <span className="text-slate-800 dark:text-white font-black">{unenrollStudentTarget.name}</span>
+                </div>
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-slate-400">Current Batch:</span>
+                  <span className="text-[#CE2029] font-black">{unenrollStudentTarget.batch}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-wider">
+                    Reason for Removal *
+                  </label>
+                  <select
+                    value={unenrollReason}
+                    onChange={(e) => setUnenrollReason(e.target.value)}
+                    className={`w-full p-3 rounded-xl border text-xs font-bold transition-all ${
+                      isDark ? 'bg-[#12151c] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'
+                    }`}
+                  >
+                    <option value="Student Requested Withdrawal">Student Requested Withdrawal</option>
+                    <option value="Shifted to Another Batch">Shifted to Another Batch</option>
+                    <option value="Long-term Absence">Long-term Absence</option>
+                    <option value="Disciplinary Action">Disciplinary Action</option>
+                    <option value="Payment Issue">Payment Issue</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 tracking-wider">
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={unenrollNotes}
+                    onChange={(e) => setUnenrollNotes(e.target.value)}
+                    placeholder="Provide additional details regarding this unenrollment..."
+                    className={`w-full p-3 rounded-xl border text-xs font-medium transition-all ${
+                      isDark ? 'bg-[#12151c] border-white/10 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setUnenrollStudentTarget(null)}
+                  disabled={isRemoving}
+                  className="flex-1 py-3.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmRemoveStudent}
+                  disabled={isRemoving}
+                  style={{ color: '#ffffff', backgroundColor: '#CE2029' }}
+                  className="flex-1 py-3.5 rounded-xl text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-red-600/40 hover:bg-[#b01b22] transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                >
+                  {isRemoving ? 'Removing...' : 'Remove from Batch'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

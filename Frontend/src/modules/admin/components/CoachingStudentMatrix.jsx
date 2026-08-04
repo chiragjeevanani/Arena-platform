@@ -128,7 +128,7 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredStudents.map((student) => (
             <motion.div
-              key={student.id}
+              key={student.enrollmentId || student.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="group p-5 rounded-[28px] bg-white border border-slate-100 shadow-sm hover:border-[#CE2029] hover:shadow-xl transition-all flex flex-col justify-between cursor-pointer"

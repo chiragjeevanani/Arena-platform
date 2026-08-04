@@ -176,7 +176,7 @@ const BatchStudents = () => {
       <motion.div variants={CONTAINER_VARIANTS} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
         {filtered.map((s, sidx) => (
           <motion.div
-            key={s.userId || sidx}
+            key={s.enrollmentId || `${batchRouteId}_${s.userId}` || sidx}
             variants={CARD_VARIANTS}
             whileHover={{ y: -2 }}
             className={`group relative p-3.5 rounded-xl border overflow-hidden transition-all duration-300 ${

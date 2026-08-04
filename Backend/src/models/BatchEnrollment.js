@@ -16,13 +16,28 @@ const batchEnrollmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'cancelled'],
+      enum: ['pending', 'confirmed', 'cancelled', 'removed'],
       default: 'confirmed',
     },
     enrollmentType: {
       type: String,
       enum: ['online', 'offline'],
       default: 'online',
+    },
+    removedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    removedAt: {
+      type: Date,
+    },
+    removalReason: {
+      type: String,
+      trim: true,
+    },
+    removalNotes: {
+      type: String,
+      trim: true,
     },
   },
   { timestamps: true }
@@ -47,6 +62,10 @@ function toPublic(doc, extras = {}) {
     userId: String(o.userId),
     status: o.status,
     enrollmentType: o.enrollmentType,
+    removedBy: o.removedBy ? String(o.removedBy) : null,
+    removedAt: o.removedAt || null,
+    removalReason: o.removalReason || '',
+    removalNotes: o.removalNotes || '',
     createdAt: o.createdAt,
     ...extras,
   };
