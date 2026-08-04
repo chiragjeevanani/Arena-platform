@@ -7,7 +7,6 @@ const pointsDiscountConfigSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Arena',
       default: null,
-      index: true,
     },
     tiers: [
       {

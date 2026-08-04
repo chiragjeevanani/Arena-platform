@@ -152,6 +152,7 @@ const BookingTimelineCard = ({
   };
 
   const isCancelled = booking.status === 'Cancelled';
+  const isCoaching = booking.type === 'Coaching' || booking.type === 'COACHING' || booking.isCoaching || Boolean(booking.batchId) || Boolean(booking.enrollmentId);
 
   // Detect if this booking's slot is a Prime slot (5 PM onwards)
   const isPrimeSlot = (() => {
@@ -276,30 +277,41 @@ const BookingTimelineCard = ({
             )}
             {/* Buttons row — always full width */}
             <div className="flex items-center gap-2 w-full">
-              {booking.status === 'Upcoming' && !isCancelled && (
+              {isCoaching ? (
+                <button
+                  onClick={() => navigate(`/bookings/${booking.id || new Date().getTime()}`, { state: { booking } })}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider bg-[#0F172A] text-white transition-all active:scale-95 hover:bg-[#CE2029]"
+                >
+                  View Program Details <ChevronRight size={11} strokeWidth={4} />
+                </button>
+              ) : (
                 <>
+                  {booking.status === 'Upcoming' && !isCancelled && (
+                    <>
+                      <button
+                        onClick={() => setShowRescheduleModal(true)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-slate-200 bg-white text-slate-500 hover:border-[#CE2029]/30 hover:text-[#CE2029] transition-all active:scale-95"
+                      >
+                        <RefreshCw size={10} strokeWidth={3} /> Reschedule
+                      </button>
+                      <button
+                        onClick={() => setShowCancelModal(true)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-red-100 bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"
+                      >
+                        <X size={10} strokeWidth={3} /> Cancel
+                      </button>
+                    </>
+                  )}
                   <button
-                    onClick={() => setShowRescheduleModal(true)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-slate-200 bg-white text-slate-500 hover:border-[#CE2029]/30 hover:text-[#CE2029] transition-all active:scale-95"
+                    onClick={() => navigate(`/bookings/${booking.id || new Date().getTime()}`, { state: { booking } })}
+                    className={`flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider bg-[#0F172A] text-white transition-all active:scale-95 hover:bg-[#CE2029] ${
+                      booking.status === 'Upcoming' && !isCancelled ? 'px-4' : 'flex-1 px-4'
+                    }`}
                   >
-                    <RefreshCw size={10} strokeWidth={3} /> Reschedule
-                  </button>
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-red-100 bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"
-                  >
-                    <X size={10} strokeWidth={3} /> Cancel
+                    Details <ChevronRight size={11} strokeWidth={4} />
                   </button>
                 </>
               )}
-              <button
-                onClick={() => navigate(`/bookings/${booking.id || new Date().getTime()}`, { state: { booking } })}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider bg-[#0F172A] text-white transition-all active:scale-95 hover:bg-[#CE2029] ${
-                  booking.status === 'Upcoming' && !isCancelled ? 'px-4' : 'flex-1 px-4'
-                }`}
-              >
-                Details <ChevronRight size={11} strokeWidth={4} />
-              </button>
             </div>
           </div>
         </div>

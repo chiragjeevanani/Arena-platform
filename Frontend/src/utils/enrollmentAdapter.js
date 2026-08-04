@@ -28,7 +28,7 @@ export function mapEnrollmentToDashboardCard(e) {
     arenaName: title,
     arenaImage: PLACEHOLDER,
     location: e.arenaId ? `Arena #${String(e.arenaId).slice(-6)}` : 'Coaching',
-    courtName: 'Batch enrollment',
+    courtName: 'Coaching Enrollment',
     coachName: undefined,
     date: formatEnrolledDate(e.createdAt),
     slot: 'See schedule in Coaching',
