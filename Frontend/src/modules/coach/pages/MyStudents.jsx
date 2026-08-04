@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Users, Search, Filter, MoreHorizontal, MessageSquare, 
   Star, GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck, Target,
-  Calendar, TrendingUp, BarChart3, ChevronLeft, ChevronRight, AlertCircle
+  Calendar, TrendingUp, BarChart3, ChevronLeft, ChevronRight, AlertCircle, Clock
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
@@ -27,6 +27,39 @@ const MyStudents = () => {
   const [unenrollReason, setUnenrollReason] = useState('Student Requested Withdrawal');
   const [unenrollNotes, setUnenrollNotes] = useState('');
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // Real Attendance Logs & Summary State for selected student
+  const [studentLogs, setStudentLogs] = useState([]);
+  const [studentSummary, setStudentSummary] = useState({ total: 0, present: 0, absent: 0, late: 0, percentage: 0, streak: 0 });
+  const [loadingLogs, setLoadingLogs] = useState(false);
+
+  useEffect(() => {
+    if (!selectedStudent) {
+      setStudentLogs([]);
+      setStudentSummary({ total: 0, present: 0, absent: 0, late: 0, percentage: 0, streak: 0 });
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoadingLogs(true);
+      try {
+        if (isApiConfigured() && getAuthToken()) {
+          const res = await getStudentAttendance(selectedStudent.id);
+          if (!cancelled) {
+            setStudentLogs(res.sessions || []);
+            setStudentSummary(res.summary || { total: 0, present: 0, absent: 0, late: 0, percentage: 0, streak: 0 });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load student attendance:', err);
+      } finally {
+        if (!cancelled) setLoadingLogs(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedStudent]);
   
   // Filter States
   const [showFilters, setShowFilters] = useState(false);
@@ -131,7 +164,7 @@ const MyStudents = () => {
         )}
       </AnimatePresence>
 
-      {/* Profile Modal */}
+      {/* Enterprise Attendance Analytics Dashboard Modal */}
       <AnimatePresence>
         {selectedStudent && (
           <>
@@ -140,194 +173,138 @@ const MyStudents = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedStudent(null)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]" 
+              className="fixed inset-0 bg-black/70 backdrop-blur-md z-[110]" 
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-[120] p-6 rounded-2xl border shadow-2xl overflow-y-auto max-h-[85vh] ${
-                isDark ? 'bg-[#1a1d24] border-white/10' : 'bg-white border-slate-200'
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-[120] p-6 sm:p-7 rounded-[28px] border shadow-2xl overflow-y-auto max-h-[90vh] ${
+                isDark ? 'bg-[#161922] border-white/10 text-white' : 'bg-white border-slate-200 text-[#36454F]'
               }`}
             >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#36454F]'}`}>Student Profile</h3>
-                <button onClick={() => setSelectedStudent(null)} className="p-2 hover:bg-slate-100 rounded-lg">
-                  <XCircle size={20} className="text-slate-400" />
+              {/* Modal Header */}
+              <div className="flex justify-between items-center mb-5 pb-4 border-b border-slate-100 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#CE2029]/20 to-red-500/10 border border-[#CE2029]/30 flex items-center justify-center text-[#CE2029] font-black text-xl shadow-sm">
+                    {selectedStudent.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-black tracking-tight">{selectedStudent.name}</h3>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        {selectedStudent.status || 'Active'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">
+                      ID: <span className="text-[#CE2029]">{selectedStudent.id}</span> · {selectedStudent.batch}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedStudent(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-400 transition-colors">
+                  <XCircle size={20} />
                 </button>
               </div>
-              
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-[#CE2029]/10 border-2 border-[#CE2029]/20 flex items-center justify-center text-[#CE2029] font-bold text-2xl flex-shrink-0">
-                  {selectedStudent.name.charAt(0)}
+
+              {/* Overall Attendance Rate Header Box */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 mb-5 space-y-2.5">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Overall Attendance Rate</span>
+                    <h4 className="text-3xl font-black tracking-tight text-[#CE2029] mt-0.5">
+                      {loadingLogs ? '...' : `${studentSummary.percentage}%`}
+                    </h4>
+                  </div>
+                  <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border ${
+                    studentSummary.percentage >= 80 
+                      ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                      : studentSummary.percentage >= 60 
+                        ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                        : 'bg-red-500/10 text-red-500 border-red-500/20'
+                  }`}>
+                    {studentSummary.percentage >= 80 ? 'High Engagement' : studentSummary.percentage >= 60 ? 'Moderate' : 'Low Engagement'}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{selectedStudent.name}</h4>
-                  <p className="text-[10px] font-bold text-[#CE2029] uppercase tracking-widest">{selectedStudent.id}</p>
+
+                <div className="w-full h-2.5 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden p-0.5">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${studentSummary.percentage}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    className={`h-full rounded-full ${
+                      studentSummary.percentage >= 80 ? 'bg-emerald-500' : studentSummary.percentage >= 60 ? 'bg-amber-500' : 'bg-red-500'
+                    }`}
+                  />
                 </div>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/5">
-                <div className="flex justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Batch</span>
-                  <span className={`text-[11px] font-bold ${isDark ? 'text-white/60' : 'text-[#36454F]'}`}>{selectedStudent.batch}</span>
+              {/* Quick Statistics Grid */}
+              <div className="grid grid-cols-4 gap-2 mb-6">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-center">
+                  <span className="text-[8px] font-black uppercase text-slate-400 block tracking-wider">Total</span>
+                  <span className="text-lg font-black text-slate-800 dark:text-white mt-0.5 block">{studentSummary.total}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Skill Level</span>
-                  <span className="text-[11px] font-bold text-blue-500">{selectedStudent.level}</span>
+                <div className="p-3 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 text-center">
+                  <span className="text-[8px] font-black uppercase text-emerald-600 dark:text-emerald-400 block tracking-wider">Present</span>
+                  <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5 block">{studentSummary.present}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Attendance</span>
-                  <span className="text-[11px] font-bold text-green-500">{selectedStudent.attendance}</span>
+                <div className="p-3 rounded-xl bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 text-center">
+                  <span className="text-[8px] font-black uppercase text-red-600 dark:text-red-400 block tracking-wider">Absent</span>
+                  <span className="text-lg font-black text-red-600 dark:text-red-400 mt-0.5 block">{studentSummary.absent}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-center">
+                  <span className="text-[8px] font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wider">Streak</span>
+                  <span className="text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5 block">{studentSummary.streak}🔥</span>
                 </div>
               </div>
 
-              {/* Attendance Reporting Section */}
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
-                <h4 className={`text-sm font-bold mb-3 flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
-                  <Calendar size={16} className="text-[#CE2029]" /> Attendance Reports
-                </h4>
-                
-                {/* Report Type Tabs */}
-                <div className="flex gap-2 mb-4">
-                  {[
-                    { id: 'daily', label: 'Daily', icon: Calendar },
-                    { id: 'monthly', label: 'Monthly', icon: BarChart3 },
-                    { id: 'yearly', label: 'Yearly', icon: TrendingUp }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setAttendanceTab(tab.id)}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                        attendanceTab === tab.id
-                          ? 'bg-[#CE2029] text-white shadow-md'
-                          : isDark
-                            ? 'bg-white/5 text-white/60 hover:bg-white/10'
-                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                      }`}
-                    >
-                      <tab.icon size={12} />
-                      {tab.label}
-                    </button>
-                  ))}
+              {/* Real Session Attendance Timeline */}
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-black uppercase tracking-wider flex items-center gap-2 text-slate-400">
+                    <Calendar size={14} className="text-[#CE2029]" /> Session Attendance History
+                  </h4>
+                  <span className="text-[10px] font-bold text-slate-400">{studentLogs.length} Sessions Logged</span>
                 </div>
 
-                {/* Report Content */}
-                <div className={`p-4 rounded-xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
-                  {attendanceTab === 'daily' && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">This Week</h5>
-                        <div className="flex gap-1">
-                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
-                            <ChevronLeft size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
-                          </button>
-                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
-                            <ChevronRight size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
-                          </button>
-                        </div>
-                      </div>
-                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
-                        <div key={day} className="flex items-center justify-between">
-                          <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{day}</span>
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                            [0, 2, 3, 4, 6].includes(idx) 
-                              ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400' 
-                              : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'
-                          }`}>
-                            {[0, 2, 3, 4, 6].includes(idx) ? 'Present' : 'Absent'}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Weekly Rate</span>
-                        <span className="text-[11px] font-bold text-[#CE2029]">71.4%</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {attendanceTab === 'monthly' && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">April 2026</h5>
-                        <div className="flex gap-1">
-                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
-                            <ChevronLeft size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
-                          </button>
-                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
-                            <ChevronRight size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        {[
-                          { week: 'Week 1', present: 5, total: 6 },
-                          { week: 'Week 2', present: 6, total: 6 },
-                          { week: 'Week 3', present: 4, total: 6 },
-                          { week: 'Week 4', present: 5, total: 6 },
-                        ].map((week) => (
-                          <div key={week.week} className="flex items-center justify-between">
-                            <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{week.week}</span>
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-[#CE2029] rounded-full transition-all"
-                                  style={{ width: `${(week.present / week.total) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-[10px] font-bold text-[#CE2029]">{week.present}/{week.total}</span>
-                            </div>
+                {loadingLogs ? (
+                  <div className="py-8 text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-slate-300 border-t-[#CE2029] rounded-full animate-spin" /> Loading attendance...
+                  </div>
+                ) : studentLogs.length > 0 ? (
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                    {studentLogs.map((session, idx) => (
+                      <div 
+                        key={session.sessionId || idx}
+                        className="p-3 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between transition-all hover:border-[#CE2029]/30"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-slate-800 dark:text-white">{session.date}</span>
+                            <span className="text-[10px] font-semibold text-slate-400">({session.startTime} - {session.endTime})</span>
                           </div>
-                        ))}
-                      </div>
-                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Monthly Rate</span>
-                        <span className="text-[11px] font-bold text-[#CE2029]">83.3%</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {attendanceTab === 'yearly' && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">2026</h5>
-                        <div className="flex gap-1">
-                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
-                            <ChevronLeft size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
-                          </button>
-                          <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10">
-                            <ChevronRight size={14} className={isDark ? 'text-white/60' : 'text-slate-400'} />
-                          </button>
+                          <p className="text-[9px] font-bold text-slate-400">{session.batchName} · {session.coachName}</p>
                         </div>
+
+                        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border ${
+                          session.status === 'present'
+                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                            : session.status === 'late'
+                              ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                              : 'bg-red-500/10 text-red-500 border-red-500/20'
+                        }`}>
+                          {session.status}
+                        </span>
                       </div>
-                      <div className="space-y-2">
-                        {[
-                          { month: 'Jan', rate: 92 },
-                          { month: 'Feb', rate: 88 },
-                          { month: 'Mar', rate: 95 },
-                          { month: 'Apr', rate: 83 },
-                        ].map((month) => (
-                          <div key={month.month} className="flex items-center justify-between">
-                            <span className={`text-[10px] font-bold ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{month.month}</span>
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-[#CE2029] rounded-full transition-all"
-                                  style={{ width: `${month.rate}%` }}
-                                />
-                              </div>
-                              <span className="text-[10px] font-bold text-[#CE2029]">{month.rate}%</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Yearly Average</span>
-                        <span className="text-[11px] font-bold text-[#CE2029]">89.5%</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-2xl bg-slate-50/50 dark:bg-white/[0.01]">
+                    <Clock size={24} className="mx-auto text-slate-300 mb-2" />
+                    <p className="text-xs font-bold text-slate-400">No attendance sessions recorded yet</p>
+                    <p className="text-[9px] font-medium text-slate-400 mt-0.5">Attendance logs will appear as the coach submits session records.</p>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 gap-2 mt-8">
