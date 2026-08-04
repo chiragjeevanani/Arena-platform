@@ -15,7 +15,7 @@ const CourtSlotsAdmin = () => {
   const [selectedDay, setSelectedDay] = useState('Mon');
   const [editingSlot, setEditingSlot] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ startTime: '06:00', endTime: '07:00', price: '3.000', type: 'Normal', slotClass: 'nonPrime', status: 'Available' });
+  const [addForm, setAddForm] = useState({ startTime: '06:00', endTime: '07:00', price: '3.000', type: 'Public', slotClass: 'nonPrime', status: 'Available' });
   const [timeSlots, setTimeSlots] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -58,7 +58,7 @@ const CourtSlotsAdmin = () => {
   };
 
   const openAddModal = () => {
-    setAddForm({ startTime: '06:00', endTime: '07:00', price: '3.000', type: 'Normal', slotClass: 'nonPrime', status: 'Available' });
+    setAddForm({ startTime: '06:00', endTime: '07:00', price: '3.000', type: 'Public', slotClass: 'nonPrime', status: 'Available' });
     setShowAddModal(true);
   };
 
@@ -369,11 +369,10 @@ const CourtSlotsAdmin = () => {
                         onChange={e => setEditingSlot({...editingSlot, type: e.target.value})}
                         className="w-full bg-slate-50 border border-slate-100 py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white appearance-none"
                       >
-                        <option>Normal</option>
-                        <option>Peak</option>
-                        <option>Academy</option>
-                        <option>Customer</option>
-                        <option>Maintenance</option>
+                        <option value="Public">Public</option>
+                        <option value="Academy">Academy</option>
+                        <option value="Reserved">Reserved</option>
+                        <option value="Maintenance">Maintenance</option>
                       </select>
                     </div>
                   </div>

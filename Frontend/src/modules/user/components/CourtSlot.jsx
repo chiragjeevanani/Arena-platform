@@ -1,24 +1,29 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import gsap from 'gsap';
-import { Star, Check } from 'lucide-react';
+import { Star, Check, Zap } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 /**
- * CourtSlot — Shows time slot with Prime / Non-Prime classification badge.
+ * CourtSlot — Shows time slot with Prime / Non-Prime / Peak classification badge.
  * Supports multi-select: isSelected is a boolean, onSelect toggles slot.id in/out.
  */
 const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   const slotRef = useRef(null);
   const { isDark } = useTheme();
 
+  const isPeak = slot.pricing?.type === 'peak' || slot.type === 'peak' || slot.isPeak;
   const isPrime = slot.type === 'prime';
 
   const statusConfig = {
     Available: {
-      bg: isPrime ? 'bg-amber-100/80' : 'bg-emerald-100/80',
-      border: isPrime ? 'border-amber-300' : 'border-emerald-300',
-      text: isPrime ? 'text-amber-900' : 'text-emerald-900',
+      bg: isPeak
+        ? 'bg-red-50 border-red-200 text-red-900'
+        : isPrime
+          ? 'bg-amber-100/80 border-amber-300 text-amber-900'
+          : 'bg-emerald-100/80 border-emerald-300 text-emerald-900',
+      border: isPeak ? 'border-red-300' : isPrime ? 'border-amber-300' : 'border-emerald-300',
+      text: isPeak ? 'text-red-900' : isPrime ? 'text-amber-900' : 'text-emerald-900',
       label: null,
     },
     Booked: {
@@ -78,11 +83,18 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
       onClick={handleSelect}
       className={`
         relative py-1.5 px-1 rounded-sm text-center font-black border
-        transition-all duration-300 overflow-hidden min-h-[44px] flex flex-col items-center justify-center
+        transition-all duration-300 overflow-hidden min-h-[46px] flex flex-col items-center justify-center
         ${isSelected ? selectedStyles : `${config.bg} ${config.border}`}
         ${slot.status !== 'Available' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-[#CE2029]/30'}
       `}
     >
+      {/* Peak Badge */}
+      {isPeak && (
+        <span className="absolute top-0.5 left-0.5 text-[7px] font-black uppercase text-red-600 flex items-center gap-0.5">
+          <Zap size={8} fill="currentColor" /> PEAK
+        </span>
+      )}
+
       {/* Time */}
       <span className={`text-[11px] font-black block leading-tight ${isSelected ? 'text-[#CE2029]' : config.text}`}>
         {slot.time.split(' - ')[0]}

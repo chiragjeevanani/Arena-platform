@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Court = require('../models/Court');
+const CourtSlot = require('../models/CourtSlot');
 const Arena = require('../models/Arena');
 const Wallet = require('../models/Wallet');
 const WalletTransaction = require('../models/WalletTransaction');
@@ -8,10 +9,11 @@ const User = require('../models/User');
 const Referral = require('../models/Referral');
 const ReferralSettings = require('../models/ReferralSettings');
 const { getOrCreateWallet } = require('../services/walletService');
-const { computeCourtBookingPrice, amountsMatch } = require('../services/pricing');
+const { computeDiscount, amountsMatch } = require('../services/pricing');
 const { createNotification } = require('../services/notificationService');
 const { markPaymentTerminalFailure } = require('../services/paymentFinalizationService');
 const { buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
+const { evaluatePricing } = require('../services/pricingEngine');
 
 function parseBackendSlotStartDateTime(dateInput, timeSlot) {
   if (!dateInput || !timeSlot || typeof timeSlot !== 'string') return null;
@@ -93,29 +95,71 @@ async function createMyBooking(req, res) {
   const existingBooking = await Booking.findOne(buildCourtSlotConflictQuery({ courtId, date, timeSlot }));
   if (existingBooking) {
     if (existingBooking.userId.toString() === userId && existingBooking.paymentStatus === 'pending') {
-      const pricing = await computeCourtBookingPrice(userId, arena);
+      // Look up CourtSlot for correct pricing on re-use
+      const existingCourtSlot = await CourtSlot.findOne({
+        courtId: String(courtId),
+        arenaId: String(arenaId),
+        timeSlot: String(timeSlot).trim(),
+      }).lean();
+      const engineResExisting = evaluatePricing({ arena, court, date, timeSlot, slot: existingCourtSlot });
+      const pricingExisting = await computeDiscount(userId, arenaId, engineResExisting.price, 'booking');
       return res.status(200).json({
         booking: Booking.toPublic(existingBooking, {
           arenaName: arena.name,
           courtName: court.name,
         }),
-        pricing,
+        pricing: {
+          baseAmount: engineResExisting.pricing.basePrice,
+          discountPercent: pricingExisting.discountPercent,
+          discountAmount: pricingExisting.discountAmount,
+          finalAmount: pricingExisting.finalAmount,
+          pricingType: engineResExisting.pricing.type,
+          peakSurcharge: engineResExisting.pricing.peakSurcharge,
+          normalPrice: engineResExisting.pricing.basePrice,
+          finalPrice: engineResExisting.pricing.finalPrice,
+          membershipPlanIds: pricingExisting.membershipPlanIds || [],
+        },
       });
     } else {
       return res.status(409).json({ error: 'This time slot is already booked' });
     }
   }
 
-  const pricing = await computeCourtBookingPrice(userId, arena);
+  // Fetch the CourtSlot document for this specific time slot to get accurate startTime for pricing engine
+  const courtSlot = await CourtSlot.findOne({
+    courtId: String(courtId),
+    arenaId: String(arenaId),
+    timeSlot: String(timeSlot).trim(),
+  }).lean();
 
-  if (!amountsMatch(amount, pricing.finalAmount)) {
+  // Use pricingEngine as the authoritative price source (respects peak hours, weekends, etc.)
+  const engineRes = evaluatePricing({ arena, court, date, timeSlot, slot: courtSlot });
+
+  // Apply member discount (if any) on top of engine-computed price
+  const memberPricing = await computeDiscount(userId, arenaId, engineRes.price, 'booking');
+
+  const serverFinalAmount = memberPricing.finalAmount;
+
+  const pricing = {
+    baseAmount: engineRes.pricing.basePrice,
+    discountPercent: memberPricing.discountPercent,
+    discountAmount: memberPricing.discountAmount,
+    finalAmount: serverFinalAmount,
+    pricingType: engineRes.pricing.type,
+    peakSurcharge: engineRes.pricing.peakSurcharge,
+    normalPrice: engineRes.pricing.basePrice,
+    finalPrice: engineRes.pricing.finalPrice,
+    membershipPlanIds: memberPricing.membershipPlanIds || [],
+  };
+
+  if (!amountsMatch(amount, serverFinalAmount)) {
     return res.status(400).json({
       error: 'Amount does not match server pricing',
       pricing,
     });
   }
 
-  const finalAmount = pricing.finalAmount;
+  const finalAmount = serverFinalAmount;
   const useWallet = req.body.useWallet === true || paymentMethod === 'wallet';
 
   let walletDebit = null;
@@ -161,6 +205,17 @@ async function createMyBooking(req, res) {
       status: payStatus === 'paid' ? 'confirmed' : 'pending',
       walletUsed: walletDebitAmount,
       paidAmount: finalAmount - walletDebitAmount,
+
+      // Audit pricing snapshot — always matches what customer saw
+      normalPrice: engineRes.pricing.basePrice,
+      basePrice: engineRes.pricing.basePrice,
+      peakPrice: engineRes.pricing.type === 'peak' ? engineRes.pricing.finalPrice : 0,
+      peakSurcharge: engineRes.pricing.peakSurcharge,
+      finalPrice: engineRes.pricing.finalPrice,
+      pricingType: engineRes.pricing.type,
+      pricingRuleId: engineRes.pricing.ruleId,
+      pricingRuleName: engineRes.pricing.ruleName,
+      priceCalculatedAt: new Date(),
     });
 
     if (walletDebit) {
@@ -399,13 +454,36 @@ async function cancelMyBooking(req, res) {
 }
 
 async function computeBookingPricing(req, res) {
-  const { arenaId } = req.body;
+  const { arenaId, courtId, date, timeSlot } = req.body;
   if (!arenaId || !mongoose.isValidObjectId(arenaId)) {
     return res.status(400).json({ error: 'Invalid arenaId' });
   }
   const arena = await Arena.findById(arenaId);
   if (!arena) return res.status(404).json({ error: 'Arena not found' });
 
+  // Use pricingEngine if slot details provided, otherwise fall back to base rate
+  if (courtId && date && timeSlot) {
+    const court = await Court.findById(courtId).lean();
+    const courtSlot = court ? await CourtSlot.findOne({ courtId: String(courtId), arenaId: String(arenaId), timeSlot: String(timeSlot).trim() }).lean() : null;
+    const engineRes = evaluatePricing({ arena, court, date, timeSlot, slot: courtSlot });
+    const memberPricing = await computeDiscount(req.auth.sub, arenaId, engineRes.price, 'booking');
+    return res.json({
+      pricing: {
+        baseAmount: engineRes.pricing.basePrice,
+        discountPercent: memberPricing.discountPercent,
+        discountAmount: memberPricing.discountAmount,
+        finalAmount: memberPricing.finalAmount,
+        pricingType: engineRes.pricing.type,
+        peakSurcharge: engineRes.pricing.peakSurcharge,
+        normalPrice: engineRes.pricing.basePrice,
+        finalPrice: engineRes.pricing.finalPrice,
+        membershipPlanIds: memberPricing.membershipPlanIds || [],
+      }
+    });
+  }
+
+  // Fallback: base rate + member discount only
+  const { computeCourtBookingPrice } = require('../services/pricing');
   const pricing = await computeCourtBookingPrice(req.auth.sub, arena, 'booking');
   return res.json({ pricing });
 }

@@ -201,10 +201,20 @@ const BookingTimelineCard = ({
               />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent" />
               {/* Prime badge on image corner */}
-              {isPrimeSlot && !isCancelled && (
-                <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-amber-500/90 backdrop-blur-sm z-10">
-                  <Star size={8} fill="white" className="text-white" />
-                  <span className="text-[7px] font-black uppercase tracking-widest text-white">Prime</span>
+              {(isPrimeSlot || booking.pricingType === 'peak' || booking.peakSurcharge > 0) && !isCancelled && (
+                <div className={`absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-lg backdrop-blur-sm z-10 ${
+                  booking.pricingType === 'peak' || booking.peakSurcharge > 0
+                    ? 'bg-[#CE2029] text-white shadow-md'
+                    : 'bg-amber-500/90 text-white'
+                }`}>
+                  {booking.pricingType === 'peak' || booking.peakSurcharge > 0 ? (
+                    <Zap size={8} fill="white" className="text-white" />
+                  ) : (
+                    <Star size={8} fill="white" className="text-white" />
+                  )}
+                  <span className="text-[7px] font-black uppercase tracking-widest text-white">
+                    {booking.pricingType === 'peak' || booking.peakSurcharge > 0 ? 'Peak' : 'Prime'}
+                  </span>
                 </div>
               )}
             </div>

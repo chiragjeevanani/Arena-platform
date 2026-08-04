@@ -14,7 +14,11 @@ const courtSlotSchema = new mongoose.Schema(
     endTime: { type: String },
     price: { type: Number, default: 0 },
     slotClass: { type: String, enum: ['prime', 'nonPrime'], default: 'nonPrime' },
-    type: { type: String, default: 'Normal' },
+    type: { 
+      type: String, 
+      enum: ['Public', 'Academy', 'Reserved', 'Maintenance'], 
+      default: 'Public' 
+    },
     status: { type: String, default: 'Available' },
     isActive: { type: Boolean, default: true },
   },

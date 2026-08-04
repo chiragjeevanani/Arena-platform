@@ -2,9 +2,11 @@ const mongoose = require('mongoose');
 const Court = require('../models/Court');
 const CourtSlot = require('../models/CourtSlot');
 const Booking = require('../models/Booking');
+const Arena = require('../models/Arena');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const UserMembership = require('../models/UserMembership');
 const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
+const { evaluatePricing } = require('../services/pricingEngine');
 
 const timeToMinutes = (t) => {
   if (!t) return 0;
@@ -49,22 +51,24 @@ async function getCourtAvailability(req, res) {
     return res.status(404).json({ error: 'Court not found' });
   }
 
-  const dateStr = date.trim();
-  const dayOfWeek = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short' });
+  const arena = await Arena.findById(court.arenaId).lean();
 
-  // 1. Fetch configured slots for this court and day
+  const dateStr = date.trim();
+  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dateObj = new Date(dateStr + 'T12:00:00Z'); // noon UTC to avoid TZ boundary issues
+  const dayOfWeek = DAY_NAMES[dateObj.getUTCDay()];
+
+  // 1. Fetch public configured slots for this court and day (Exclude Academy, Reserved, Maintenance)
   let configuredSlots = await CourtSlot.find({
     arenaId: court.arenaId,
     courtId: String(courtId),
     dayOfWeek,
     isActive: true,
-    status: 'Available'
+    status: 'Available',
+    type: { $in: ['Public', 'Normal', 'Peak', null] },
   }).sort({ startTime: 1 }).lean();
 
-  // 2. Map configured slots
-  const baseSlots = configuredSlots.map(s => ({ timeSlot: s.timeSlot }));
-
-  // 3. Fetch Bookings and AvailabilityBlocks
+  // 2. Fetch Bookings and AvailabilityBlocks
   const [booked, blocks] = await Promise.all([
     Booking.find(buildCourtAvailabilityQuery({ courtId: court._id, date: dateStr }))
       .select('timeSlot')
@@ -76,10 +80,18 @@ async function getCourtAvailability(req, res) {
   ]);
 
   const bookedSet = new Set(booked.map((b) => b.timeSlot));
-  const slots = baseSlots.map((s) => ({
-    timeSlot: s.timeSlot,
-    available: !bookedSet.has(s.timeSlot) && !isSlotBlocked(s.timeSlot, blocks),
-  }));
+
+  // 3. Map slots enriched with backend pricing engine calculation
+  const slots = configuredSlots.map((s) => {
+    const isAvail = !bookedSet.has(s.timeSlot) && !isSlotBlocked(s.timeSlot, blocks);
+    const pricingRes = evaluatePricing({ arena, court, date: dateStr, timeSlot: s.timeSlot, slot: s });
+    return {
+      timeSlot: s.timeSlot,
+      available: isAvail,
+      price: pricingRes.price,
+      pricing: pricingRes.pricing,
+    };
+  });
 
   return res.json({
     courtId: court._id.toString(),

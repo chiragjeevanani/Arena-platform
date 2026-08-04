@@ -127,15 +127,19 @@ const SlotSelection = () => {
       .then((data) => {
         if (cancelled) return;
         const now = new Date();
-        const pph = Number(arena?.pricePerHour) || 0;
         const mapped = (data.slots || []).map((s) => {
           const isExpired = isSlotTimePassed(selectedDate, s.timeSlot, now);
+          // Use server-computed price (respects peak hours, weekends, etc.)
+          const serverPrice = Number(s.price) || Number(arena?.pricePerHour) || 0;
+          const isPeak = s.pricing?.type === 'peak';
           return {
             id: s.timeSlot,
             time: s.timeSlot,
             timeSlot: s.timeSlot,
             status: isExpired ? 'Expired' : (s.available ? 'Available' : 'Booked'),
-            price: pph,
+            price: serverPrice,
+            pricing: s.pricing || null,   // full pricing object from backend
+            isPeak,
             type: isPrimeTimeSlot(s.timeSlot) ? 'prime' : 'nonPrime',
           };
         });
@@ -200,8 +204,9 @@ const SlotSelection = () => {
 
   // For pricing card: use first slot as representative (mixed types use per-slot logic inside card)
   const primarySlotObj = selectedSlotObjs[0] ?? null;
+  // Use the server-computed price from the availability API (already accounts for peak/weekend/normal)
   const priceOverride =
-    useLiveSlots && primarySlotObj ? Number(arena?.pricePerHour) || 0 : null;
+    useLiveSlots && primarySlotObj ? Number(primarySlotObj.price) || Number(arena?.pricePerHour) || 0 : null;
   const showApiRate = useLiveSlots && hasSelection;
 
   // Toggle a slot in/out of the selection set
@@ -225,6 +230,23 @@ const SlotSelection = () => {
   const goToSummary = () => {
     if (selectedSlotObjs.length === 0) return;
     const dateYmd = toYMDFromDateString(selectedDate);
+
+    // Build a serverPricing object from the first selected slot's backend pricing.
+    // This drives BookingSummary totals so the customer always sees the peak-aware price.
+    const firstSlotPricing = selectedSlotObjs[0]?.pricing;
+    const slotServerPricing = firstSlotPricing
+      ? {
+          baseAmount: firstSlotPricing.basePrice,
+          finalAmount: firstSlotPricing.finalPrice,
+          discountAmount: 0,
+          discountPercent: 0,
+          pricingType: firstSlotPricing.type,
+          peakSurcharge: firstSlotPricing.peakSurcharge,
+          normalPrice: firstSlotPricing.basePrice,
+          finalPrice: firstSlotPricing.finalPrice,
+        }
+      : serverPricing;
+
     // Pass all selected slots; BookingSummary handles multi-slot
     navigate('/booking-summary', {
       state: {
@@ -232,10 +254,10 @@ const SlotSelection = () => {
         court: currentCourt,
         date: selectedDate,
         dateYmd,
-        slots: selectedSlotObjs,          // array
+        slots: selectedSlotObjs,          // array (each has .pricing from server)
         slot: selectedSlotObjs[0],        // backward compat (first slot)
         useApiCheckout: useLiveSlots,
-        serverPricing,
+        serverPricing: slotServerPricing,
       },
     });
   };

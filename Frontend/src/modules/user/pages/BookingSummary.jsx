@@ -76,11 +76,25 @@ const BookingSummary = () => {
 
   const useLiveCheckout = Boolean(useApiCheckout && isApiConfigured());
   
-  // Total base price = per-slot price × number of slots
-  const perSlotPrice = serverPricing ? serverPricing.finalAmount : (Number(slot?.price) || 0);
-  const rawSubtotal = perSlotPrice * slotCount;
-  const baseReservation = (serverPricing ? serverPricing.baseAmount : perSlotPrice) * slotCount;
+  // Per-slot price: prefer slot.price from availability API (already peak-aware) over flat serverPricing
+  const perSlotPrice = slotsArray.length > 0 && slotsArray[0].price != null
+    ? Number(slotsArray[0].price)
+    : serverPricing
+      ? serverPricing.finalAmount
+      : (Number(slot?.price) || 0);
+  const rawSubtotal = slotsArray.reduce((acc, s) => acc + (Number(s.price) || perSlotPrice), 0);
+  const baseReservation = slotsArray.reduce(
+    (acc, s) => acc + (s.pricing?.basePrice ?? serverPricing?.baseAmount ?? perSlotPrice),
+    0
+  );
   const memberDiscountAmount = (serverPricing ? serverPricing.discountAmount : 0) * slotCount;
+
+  // Peak Surcharge Breakdown Calculation — use per-slot pricing from availability API
+  const calculatedBasePrice = slotsArray.reduce(
+    (acc, s) => acc + (s.pricing?.basePrice ?? Number(arena?.pricePerHour) ?? perSlotPrice),
+    0
+  );
+  const totalPeakSurcharge = slotsArray.reduce((acc, s) => acc + (s.pricing?.peakSurcharge ?? 0), 0);
 
   // Apply coupon discount on top
   const couponDeduction = appliedCoupon ? appliedCoupon.discountAmount : 0;
@@ -464,9 +478,15 @@ const BookingSummary = () => {
                       {/* Financial Breakdown */}
                       <div className="space-y-3">
                          <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                            <span>Base Reservation</span>
-                            <span className="text-slate-900 font-black">OMR {baseReservation.toFixed(3)}</span>
+                            <span>Court Base Price</span>
+                            <span className="text-slate-900 font-black">OMR {calculatedBasePrice.toFixed(3)}</span>
                          </div>
+                         {totalPeakSurcharge > 0 && (
+                           <div className="flex justify-between items-center text-[9px] font-bold text-[#CE2029] uppercase tracking-widest">
+                              <span>⚡ Peak Hour Surcharge</span>
+                              <span className="text-[#CE2029] font-black">+OMR {totalPeakSurcharge.toFixed(3)}</span>
+                           </div>
+                         )}
                          {discountAmount > 0 && (
                            <div className="flex justify-between items-center text-[9px] font-bold text-green-500 uppercase tracking-widest">
                               <span>Member Discount</span>

@@ -15,10 +15,14 @@ export function fetchCourtSlots(courtId) {
   });
 }
 
-export function fetchBookingPricing(arenaId) {
+export function fetchBookingPricing(arenaId, { courtId, date, timeSlot } = {}) {
+  const body = { arenaId };
+  if (courtId) body.courtId = courtId;
+  if (date) body.date = date;
+  if (timeSlot) body.timeSlot = timeSlot;
   return apiJson('/api/me/bookings/pricing', {
     method: 'POST',
-    body: { arenaId }
+    body,
   });
 }
 

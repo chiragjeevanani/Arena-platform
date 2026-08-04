@@ -244,22 +244,67 @@ const PricingRules = () => {
                     </div>
                     {pricing.peakEnabled && (
                       <div className="space-y-3">
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs">OMR</span>
-                          <input type="number" step="0.001" value={pricing.peakPrice}
-                            onChange={e => setPricing(p => ({ ...p, peakPrice: Number(e.target.value) }))}
-                            className={`${inputCls} pl-12 text-lg font-black`} />
-                        </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1.5">
+                            <label className="text-[8.5px] font-black uppercase tracking-widest text-slate-600">Peak Surcharge (OMR)</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs">+OMR</span>
+                              <input type="number" step="0.001" value={pricing.peakSurcharge || 0}
+                                onChange={e => setPricing(p => ({ ...p, peakSurcharge: Number(e.target.value) }))}
+                                className={`${inputCls} pl-14 text-sm font-black`} />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[8.5px] font-black uppercase tracking-widest text-slate-600">Fixed Peak Price (OMR)</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs">OMR</span>
+                              <input type="number" step="0.001" value={pricing.peakPrice || 0}
+                                onChange={e => setPricing(p => ({ ...p, peakPrice: Number(e.target.value) }))}
+                                className={`${inputCls} pl-12 text-sm font-black`} />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Applicable Peak Days Checkboxes */}
+                        <div className="space-y-1.5 pt-1">
+                          <label className="text-[8.5px] font-black uppercase tracking-widest text-slate-600 block">Applicable Peak Days</label>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => {
+                              const activeDays = Array.isArray(pricing.peakDays) ? pricing.peakDays : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                              const isChecked = activeDays.includes(day);
+                              return (
+                                <button
+                                  type="button"
+                                  key={day}
+                                  onClick={() => {
+                                    const nextDays = isChecked
+                                      ? activeDays.filter(d => d !== day)
+                                      : [...activeDays, day];
+                                    setPricing(p => ({ ...p, peakDays: nextDays }));
+                                  }}
+                                  className={`px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase border transition-all ${
+                                    isChecked
+                                      ? 'bg-[#CE2029] text-white border-[#CE2029] shadow-sm'
+                                      : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <div className="space-y-1.5">
                             <label className="text-[8.5px] font-black uppercase tracking-widest text-slate-600">Peak Start</label>
-                            <input type="time" value={pricing.peakStart}
+                            <input type="time" value={pricing.peakStart || '17:00'}
                               onChange={e => setPricing(p => ({ ...p, peakStart: e.target.value }))}
                               className="w-full h-10 px-3 rounded-xl border border-slate-200 text-[12px] font-bold outline-none" />
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-[8.5px] font-black uppercase tracking-widest text-slate-600">Peak End</label>
-                            <input type="time" value={pricing.peakEnd}
+                            <input type="time" value={pricing.peakEnd || '22:00'}
                               onChange={e => setPricing(p => ({ ...p, peakEnd: e.target.value }))}
                               className="w-full h-10 px-3 rounded-xl border border-slate-200 text-[12px] font-bold outline-none" />
                           </div>

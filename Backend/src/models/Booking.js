@@ -41,6 +41,17 @@ const bookingSchema = new mongoose.Schema(
     type: { type: String, default: 'court' },
     walletUsed: { type: Number, default: 0 },
     paidAmount: { type: Number, default: 0 },
+
+    // Audit Pricing Snapshot Fields
+    normalPrice: { type: Number, default: 0 },
+    basePrice: { type: Number, default: 0 },
+    peakPrice: { type: Number, default: 0 },
+    peakSurcharge: { type: Number, default: 0 },
+    finalPrice: { type: Number, default: 0 },
+    pricingType: { type: String, enum: ['normal', 'peak', 'weekend', 'holiday', 'custom'], default: 'normal' },
+    pricingRuleId: { type: String, default: '' },
+    pricingRuleName: { type: String, default: 'Standard Base' },
+    priceCalculatedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
@@ -58,6 +69,7 @@ bookingSchema.index(
 function toPublicBooking(doc, extras = {}) {
   if (!doc) return null;
   const o = doc.toObject ? doc.toObject() : doc;
+  const normalVal = o.normalPrice ?? o.basePrice ?? o.amount ?? 0;
   return {
     id: o._id.toString(),
     userId: o.userId?._id ? o.userId._id.toString() : String(o.userId),
@@ -72,6 +84,15 @@ function toPublicBooking(doc, extras = {}) {
     type: o.type,
     walletUsed: o.walletUsed || 0,
     paidAmount: o.paidAmount || 0,
+    normalPrice: normalVal,
+    basePrice: normalVal,
+    peakPrice: o.peakPrice ?? (o.pricingType === 'peak' ? o.amount : 0),
+    peakSurcharge: o.peakSurcharge ?? 0,
+    finalPrice: o.finalPrice ?? o.amount ?? 0,
+    pricingType: o.pricingType || 'normal',
+    pricingRuleId: o.pricingRuleId || '',
+    pricingRuleName: o.pricingRuleName || 'Standard Base',
+    priceCalculatedAt: o.priceCalculatedAt || o.createdAt,
     createdAt: o.createdAt,
     ...extras,
   };
