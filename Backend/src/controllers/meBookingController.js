@@ -10,6 +10,7 @@ const ReferralSettings = require('../models/ReferralSettings');
 const { getOrCreateWallet } = require('../services/walletService');
 const { computeCourtBookingPrice, amountsMatch } = require('../services/pricing');
 const { createNotification } = require('../services/notificationService');
+const { buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
 
 function parseBackendSlotStartDateTime(dateInput, timeSlot) {
   if (!dateInput || !timeSlot || typeof timeSlot !== 'string') return null;
@@ -88,7 +89,7 @@ async function createMyBooking(req, res) {
 
   const userId = req.auth.sub;
 
-  const existingBooking = await Booking.findOne({ courtId, date, timeSlot });
+  const existingBooking = await Booking.findOne(buildCourtSlotConflictQuery({ courtId, date, timeSlot }));
   if (existingBooking) {
     if (existingBooking.userId.toString() === userId && existingBooking.paymentStatus === 'pending') {
       const pricing = await computeCourtBookingPrice(userId, arena);

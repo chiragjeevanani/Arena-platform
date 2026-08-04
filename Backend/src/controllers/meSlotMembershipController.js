@@ -13,6 +13,7 @@ const Wallet = require('../models/Wallet');
 const WalletTransaction = require('../models/WalletTransaction');
 const { getOrCreateWallet } = require('../services/walletService');
 const { createNotification } = require('../services/notificationService');
+const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -112,24 +113,12 @@ async function checkSlotAvailability(req, res) {
 
     const occurrences = getOccurrenceDates(startDate, endDate, courtSlot.dayOfWeek);
 
-    const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
-    const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
-
     // 1. Check regular bookings
-    const bookedDates = await Booking.find({
+    const bookedDates = await Booking.find(buildCourtAvailabilityQuery({
       courtId: courtSlot.courtId,
       timeSlot: courtSlot.timeSlot,
       date: { $in: occurrences },
-      $or: [
-        { status: 'confirmed' },
-        { status: 'rescheduled' },
-        {
-          status: 'pending',
-          paymentStatus: 'pending',
-          createdAt: { $gte: holdCutoff },
-        },
-      ],
-    })
+    }))
       .select('date')
       .lean();
 

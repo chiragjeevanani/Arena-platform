@@ -2,8 +2,6 @@ node_modules/
 .env
 coverage/
 *.log
-tests/
-*.test.js
 
 # Ignore all scratch scripts in the root of Backend
 /*.js
@@ -11,3 +9,4 @@ tests/
 
 # Firebase service account
 firebase-service-account.json
+

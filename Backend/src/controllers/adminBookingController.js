@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Arena = require('../models/Arena');
 const Court = require('../models/Court');
+const { buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
 
 const ADMIN_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed', 'rescheduled'];
 
@@ -65,24 +66,12 @@ async function updateAdminBooking(req, res) {
 
     // Check for conflict if moving to a new slot
     if (finalDate !== booking.date || finalSlot !== booking.timeSlot) {
-      const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
-      const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
-
-      const conflict = await Booking.findOne({
-        _id: { $ne: bookingId },
+      const conflict = await Booking.findOne(buildCourtSlotConflictQuery({
+        excludeBookingId: bookingId,
         courtId: booking.courtId,
         date: finalDate,
         timeSlot: finalSlot,
-        $or: [
-          { status: 'confirmed' },
-          { status: 'rescheduled' },
-          {
-            status: 'pending',
-            paymentStatus: 'pending',
-            createdAt: { $gte: holdCutoff },
-          },
-        ],
-      });
+      }));
       if (conflict) {
         return res.status(409).json({ error: 'This target slot is already booked' });
       }

@@ -1,6 +1,7 @@
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const Booking = require('../models/Booking');
 const mongoose = require('mongoose');
+const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
 
 function mapBlock(doc) {
   return {
@@ -35,22 +36,7 @@ async function createMyBlock(req, res) {
   }
 
   // Optional: Check for booking conflicts before blocking
-  const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
-  const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
-
-  const conflict = await Booking.findOne({
-    courtId,
-    date,
-    $or: [
-      { status: 'confirmed' },
-      { status: 'rescheduled' },
-      {
-        status: 'pending',
-        paymentStatus: 'pending',
-        createdAt: { $gte: holdCutoff },
-      },
-    ],
-  });
+  const conflict = await Booking.findOne(buildCourtAvailabilityQuery({ courtId, date }));
 
   const block = await AvailabilityBlock.create({
     arenaId: req.arenaScopeId,

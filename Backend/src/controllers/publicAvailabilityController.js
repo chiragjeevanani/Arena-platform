@@ -4,6 +4,7 @@ const CourtSlot = require('../models/CourtSlot');
 const Booking = require('../models/Booking');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const UserMembership = require('../models/UserMembership');
+const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
 
 const timeToMinutes = (t) => {
   if (!t) return 0;
@@ -64,23 +65,10 @@ async function getCourtAvailability(req, res) {
   const baseSlots = configuredSlots.map(s => ({ timeSlot: s.timeSlot }));
 
   // 3. Fetch Bookings and AvailabilityBlocks
-  const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
-  const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
-
   const [booked, blocks] = await Promise.all([
-    Booking.find({
-      courtId: court._id,
-      date: dateStr,
-      $or: [
-        { status: 'confirmed' },
-        { status: 'rescheduled' },
-        {
-          status: 'pending',
-          paymentStatus: 'pending',
-          createdAt: { $gte: holdCutoff },
-        },
-      ],
-    }).select('timeSlot').lean(),
+    Booking.find(buildCourtAvailabilityQuery({ courtId: court._id, date: dateStr }))
+      .select('timeSlot')
+      .lean(),
     AvailabilityBlock.find({
       courtId: court._id,
       date: dateStr,
@@ -203,23 +191,11 @@ async function listCourtSlots(req, res) {
       }
     }
 
-    const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
-    const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
-
     const [bookings, activeMemberships] = await Promise.all([
-      Booking.find({
+      Booking.find(buildCourtAvailabilityQuery({
         courtId: court._id,
         date: { $gte: startDate, $lte: maxEndDate },
-        $or: [
-          { status: 'confirmed' },
-          { status: 'rescheduled' },
-          {
-            status: 'pending',
-            paymentStatus: 'pending',
-            createdAt: { $gte: holdCutoff },
-          },
-        ],
-      }).select('timeSlot date').lean(),
+      })).select('timeSlot date').lean(),
       UserMembership.find({
         status: 'active',
         'bookedSlots.courtId': court._id,

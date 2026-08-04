@@ -10,6 +10,7 @@ const PointsWallet = require('../models/PointsWallet');
 const PointsTransaction = require('../models/PointsTransaction');
 const PointsDiscountConfig = require('../models/PointsDiscountConfig');
 const { getOrCreateWallet } = require('../services/walletService');
+const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -167,24 +168,12 @@ async function purchaseMembership(req, res) {
 
     const occurrences = getOccurrenceDates(startStr, endStr, courtSlot.dayOfWeek);
 
-    const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
-    const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
-
     // Check regular bookings
-    const bookedConflict = await Booking.findOne({
+    const bookedConflict = await Booking.findOne(buildCourtAvailabilityQuery({
       courtId: courtSlot.courtId,
       timeSlot: courtSlot.timeSlot,
       date: { $in: occurrences },
-      $or: [
-        { status: 'confirmed' },
-        { status: 'rescheduled' },
-        {
-          status: 'pending',
-          paymentStatus: 'pending',
-          createdAt: { $gte: holdCutoff },
-        },
-      ],
-    }).lean();
+    })).lean();
 
     if (bookedConflict) {
       return res.status(409).json({
