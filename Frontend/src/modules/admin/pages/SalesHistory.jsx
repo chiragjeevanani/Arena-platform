@@ -308,7 +308,7 @@ const SalesHistory = () => {
                          <p className="text-sm font-black text-[#CE2029]">OMR {Number(sale.totalAmount).toFixed(2)}</p>
                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-[0.2em] mt-1">Settled</p>
                       </td>
-                      <td className="px-6 py-5 text-right pr-10">
+                      <td className="px-6 py-5 text-right pr-10 relative z-20">
                          <div className="flex items-center justify-end gap-2">
                            <button className="p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-[#CE2029] hover:border-[#CE2029]/40 transition-all shadow-sm">
                              <Receipt size={16} />

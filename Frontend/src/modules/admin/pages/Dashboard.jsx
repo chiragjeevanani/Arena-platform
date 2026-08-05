@@ -152,11 +152,16 @@ const AdminDashboard = () => {
 
   const weekDates = getWeekDates(currentDate);
 
-  const displayTimeSlots = [...new Set(arenaSlots.map(s => s.timeSlot))].sort((a, b) => {
-    const aTime = a.split('-')[0].trim();
-    const bTime = b.split('-')[0].trim();
-    return new Date(`1970/01/01 ${aTime}`) - new Date(`1970/01/01 ${bTime}`);
-  });
+  // Dynamically derive time slots from both configured slots and existing bookings
+  const displayTimeSlots = useMemo(() => {
+    const slotTimes = arenaSlots.map(s => s.timeSlot).filter(Boolean);
+    const bookingTimes = rawBookings.map(b => b.timeSlot).filter(Boolean);
+    return [...new Set([...slotTimes, ...bookingTimes])].sort((a, b) => {
+      const aTime = a.split('-')[0].trim();
+      const bTime = b.split('-')[0].trim();
+      return new Date(`1970/01/01 ${aTime}`) - new Date(`1970/01/01 ${bTime}`);
+    });
+  }, [arenaSlots, rawBookings]);
 
   // Formatter for slot labels (e.g., 15:00-16:00 -> 03:00 PM - 04:00 PM)
   const formatSlotLabel = (slotStr) => {
@@ -689,7 +694,7 @@ const AdminDashboard = () => {
                         <p className="font-bold text-[#36454F] leading-tight">{pay.player}</p>
                         {pay.phone && <p className="text-[9px] text-slate-500 font-medium tracking-wide mt-0.5">{pay.phone}</p>}
                       </td>
-                      <td className="px-4 py-3.5 font-bold text-[#CE2029]">OMR {pay.amount}</td>
+                      <td className="px-4 py-3.5 font-bold text-[#CE2029]">OMR {Number(pay.amount || 0).toFixed(2)}</td>
                       <td className="px-4 py-3.5 text-slate-600 uppercase text-[10px] font-bold tracking-wider">{pay.method}</td>
                       <td className="px-4 py-3.5">
                         <span className="px-2 py-0.5 text-[11px] font-semibold rounded" style={{ backgroundColor: pay.statusBg, color: pay.statusText }}>

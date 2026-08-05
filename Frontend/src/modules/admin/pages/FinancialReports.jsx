@@ -738,7 +738,9 @@ const FinancialReports = () => {
                 <div className="space-y-4 mb-8">
                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Fiscal Period</span>
-                      <span className="text-[11px] font-bold text-[#36454F] uppercase">Mar 2026</span>
+                      <span className="text-[11px] font-bold text-[#36454F] uppercase">
+                        {startDate ? new Date(startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Current Period'}
+                      </span>
                    </div>
                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Integrity Mode</span>

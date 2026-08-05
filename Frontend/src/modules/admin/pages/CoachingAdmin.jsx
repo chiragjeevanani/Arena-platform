@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Settings, Award, UserCheck, TrendingUp, Activity, LayoutGrid, AlertTriangle } from 'lucide-react';
+import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Award, UserCheck, TrendingUp, Activity, LayoutGrid, AlertTriangle } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   AreaChart, Area, Cell, PieChart, Pie
@@ -57,11 +57,6 @@ const COACHING_TYPES = [];
 const PRICING_SLABS = [];
 const BATCHES_DATA = [];
 const STUDENT_DIRECTORY = [];
-const OFFICIAL_PROGRAMS = {
-  Weekdays: [],
-  Weekends: [],
-  Special: [],
-};
 const STUDENT_ATTENDANCE_STATS = {
   daily: [],
   monthly: [],
@@ -83,7 +78,8 @@ const CoachingAdmin = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const viewQuery = searchParams.get('view');
-  const view = viewQuery || 'students';
+  const validViews = ['students', 'batches', 'coaches', 'bookings', 'student-attendance', 'attendance'];
+  const view = (viewQuery && validViews.includes(viewQuery)) ? viewQuery : 'students';
 
   const setView = (newView) => {
     setSearchParams({ view: newView });
@@ -717,8 +713,7 @@ const CoachingAdmin = () => {
               { id: 'coaches', label: 'Coaching Staff', icon: Award },
               { id: 'bookings', label: 'Booking Registry', icon: Calendar },
               { id: 'student-attendance', label: 'Academy Attendance', icon: UserCheck },
-              { id: 'attendance', label: 'Staff Logs', icon: Fingerprint },
-              { id: 'programs', label: 'Master Catalog', icon: Settings }
+              { id: 'attendance', label: 'Staff Logs', icon: Fingerprint }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -1273,53 +1268,7 @@ const CoachingAdmin = () => {
             </motion.div>
           )}
 
-          {view === 'programs' && (
-            <div className="space-y-6">
-               <div className="p-8 bg-white border-2 border-[#CE2029]/10 rounded-[40px] relative overflow-hidden shadow-xl shadow-slate-200/50">
-                  {/* Decorative background glow */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#CE2029]/5 rounded-full blur-[100px] pointer-events-none" />
-                  
-                  <div className="relative z-10">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                       <div>
-                         <h2 className="text-3xl font-black text-[#1e293b] italic tracking-tighter uppercase leading-none">Master Academy <span className="text-[#CE2029]">Catalog</span></h2>
-                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mt-3">Official Tuition & Program Tiers 2026</p>
-                       </div>
-                       <button className="px-8 py-4 bg-[#CE2029] text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#CE2029]/20 hover:-translate-y-1 transition-all">Add New Program</button>
-                    </div>
-                  </div>
-               </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {['Weekdays', 'Weekends', 'Special'].map((cat) => (
-                    <div key={cat} className="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
-                       <div className="p-6 border-b border-slate-50 bg-slate-50/30">
-                          <h4 className="text-[14px] font-black text-[#1e293b] uppercase italic tracking-tighter">
-                             {cat} <span className="text-[#CE2029]">Spectrum</span>
-                          </h4>
-                       </div>
-                       <div className="p-4 space-y-2 flex-1">
-                          {OFFICIAL_PROGRAMS[cat].map(prog => (
-                             <div key={prog.id} className="p-4 rounded-2xl bg-slate-50 border border-transparent hover:border-[#CE2029]/20 hover:bg-white transition-all group flex items-center justify-between">
-                                <div>
-                                   <div className="flex items-center gap-2 mb-1">
-                                      <span className="w-5 h-5 rounded bg-[#1e293b] flex items-center justify-center text-[7px] font-black text-white">G{prog.id}</span>
-                                      <span className="text-[10px] font-black text-[#1e293b] uppercase leading-none">{prog.title}</span>
-                                   </div>
-                                   <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest block">Base Subscription Plan</span>
-                                </div>
-                                <div className="text-right">
-                                   <span className="text-[12px] font-black text-[#CE2029] tracking-tighter leading-none block">OMR {(prog.fee || 0).toFixed(2)}</span>
-                                   <span className="text-[7px] font-black text-slate-300 uppercase mt-0.5 block">Per Month</span>
-                                </div>
-                             </div>
-                          ))}
-                       </div>
-                    </div>
-                 ))}
-               </div>
-            </div>
-          )}
         </div>
       </div>
 

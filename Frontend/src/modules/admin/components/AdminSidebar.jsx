@@ -10,7 +10,6 @@ import {
   CalendarClock, 
   Receipt, 
   Trophy,
-  Settings, 
   Package, 
   CreditCard, 
   PieChart,
@@ -84,7 +83,6 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/coaching?view=bookings', icon: CalendarClock, label: 'Booking Registry', isCoachControl: true },
       { path: '/admin/coaching?view=student-attendance', icon: Users, label: 'Academy Attendance', isCoachControl: true },
       { path: '/admin/coaching?view=attendance', icon: Clock, label: 'Staff Logs', isCoachControl: true },
-      { path: '/admin/coaching?view=programs', icon: Settings, label: 'Master Catalog', isCoachControl: true },
 
       { path: '/admin/user/events', icon: Trophy, label: 'Event Management' },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },

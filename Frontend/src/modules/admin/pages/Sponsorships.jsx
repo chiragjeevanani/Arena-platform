@@ -465,7 +465,7 @@ const Sponsorships = () => {
                    <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-bl-full -mr-12 -mt-12 opacity-20" />
                    <div>
                       <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-1">Portfolio Valuation</p>
-                      <h3 className="text-3xl font-bold tracking-tighter">29,500 OMR</h3>
+                      <h3 className="text-3xl font-bold tracking-tighter">{totalEquity.toLocaleString()} OMR</h3>
                    </div>
                    <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold bg-emerald-400/5 w-fit px-2 py-1 rounded-md border border-emerald-400/10 uppercase tracking-tighter">
                       <TrendingUp size={12} /> +4,500 OMR GROWTH M/M
