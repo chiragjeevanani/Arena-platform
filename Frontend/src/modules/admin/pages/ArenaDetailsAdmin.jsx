@@ -7,13 +7,14 @@ import {
   Plus, Minus, Trash2, Edit3, Star, BadgeDollarSign,
   Trophy, Navigation, Upload, Cloud, ArrowLeft,
   Wifi, Coffee, ShowerHead, ParkingCircle, Footprints, UploadCloud, Loader2,
-  Clock, Wrench, Activity
+  Clock, Wrench, Activity, BarChart3
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fetchPublicArenaById } from '../../../services/arenasApi';
 import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
+import DailyCourtBookingReport from './DailyCourtBookingReport';
 import { 
   createAdminArena, 
   patchAdminArena, 
@@ -528,16 +529,17 @@ const ArenaDetailsAdmin = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-1 border-b border-slate-100 mb-6 py-2">
+      <div className="flex items-center gap-1 border-b border-slate-100 mb-6 py-2 overflow-x-auto scrollbar-hide">
         {[
           { id: 'general', label: 'General Info', icon: Building2 },
           { id: 'courts', label: 'Physical Units', icon: Trophy },
           { id: 'availability', label: 'Availability Pulse', icon: Activity },
+          ...(id !== 'new' ? [{ id: 'report', label: 'Daily Booking Report', icon: BarChart3 }] : []),
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all relative ${
+            className={`flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${
               activeTab === tab.id ? 'text-[#CE2029]' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
@@ -870,10 +872,36 @@ const ArenaDetailsAdmin = () => {
                   <Save size={16} /> {id === 'new' ? 'Initialize New Facility' : 'Publish Changes'}
                 </button>
              </div>
-          </motion.div>
+           </motion.div>
+        )}
+
+        {activeTab === 'report' && id !== 'new' && (
+          <ReportTabPanel arenaId={id} arenaName={form.name} />
         )}
       </div>
     </div>
+  );
+};
+
+/* --- Daily Booking Report Tab Panel --- */
+const ReportTabPanel = ({ arenaId, arenaName }) => {
+  // Set the arena context so DailyCourtBookingReport's API calls target this arena
+  useEffect(() => {
+    if (arenaId && arenaId !== 'new') {
+      localStorage.setItem('selectedArenaId', arenaId);
+    }
+  }, [arenaId]);
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+        <Building2 size={12} className="text-[#CE2029]" />
+        <span className="text-[#CE2029]">{arenaName || 'This Arena'}</span>
+        <span>›</span>
+        <span>Daily Booking Report</span>
+      </div>
+      <DailyCourtBookingReport overrideArenaId={arenaId} />
+    </motion.div>
   );
 };
 

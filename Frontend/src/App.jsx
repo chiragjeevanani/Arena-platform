@@ -107,6 +107,7 @@ const RetailPOS = lazy(() => import('./modules/admin/pages/RetailPOS'));
 const SalesHistory = lazy(() => import('./modules/admin/pages/SalesHistory'));
 const TransactionDetails = lazy(() => import('./modules/admin/pages/TransactionDetails'));
 const FinancialReports = lazy(() => import('./modules/admin/pages/FinancialReports'));
+const DailyCourtBookingReport = lazy(() => import('./modules/admin/pages/DailyCourtBookingReport'));
 const AccountSettings = lazy(() => import('./modules/admin/pages/AccountSettings'));
 const AdminLogin = lazy(() => import('./modules/admin/pages/AdminLogin'));
 const MembershipMgmt = lazy(() => import('./modules/admin/pages/MembershipMgmt'));
@@ -214,6 +215,7 @@ function App() {
               <Route path="events" element={<EventsAdminPage />} />
               <Route path="retail" element={<RetailPOSPage />} />
               <Route path="ledger" element={<Bookings />} />
+              <Route path="daily-report" element={<DailyCourtBookingReport />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="account-settings" element={<AccountSettingsPage />} />
             </Route>
@@ -235,6 +237,7 @@ function App() {
               <Route path="sales" element={<SalesHistory />} />
               <Route path="sales/:saleId" element={<TransactionDetails />} />
               <Route path="reports" element={<FinancialReports />} />
+              <Route path="reports/daily" element={<DailyCourtBookingReport />} />
               <Route path="pricing" element={<PricingManagement />} />
               <Route path="membership" element={<MembershipMgmt />} />
               <Route path="membership/active" element={<ActiveMemberships />} />

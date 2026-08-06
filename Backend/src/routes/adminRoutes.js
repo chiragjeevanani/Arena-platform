@@ -59,6 +59,7 @@ const {
   createAdminUser 
 } = require('../controllers/adminUserController');
 const { adminReportSummary } = require('../controllers/adminReportController');
+const { getDailyCourtReport } = require('../controllers/adminDailyReportController');
 const {
   listSponsors,
   createSponsor,
@@ -113,6 +114,7 @@ router.post('/users', asyncHandler(createAdminUser));
 router.patch('/users/:id', asyncHandler(patchAdminUser));
 
 router.get('/reports/summary', asyncHandler(adminReportSummary));
+router.get('/reports/daily', asyncHandler(getDailyCourtReport));
 
 router.get('/sponsors', asyncHandler(listSponsors));
 router.post('/sponsors', asyncHandler(createSponsor));

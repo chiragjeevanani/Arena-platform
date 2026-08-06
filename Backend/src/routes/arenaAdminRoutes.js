@@ -71,6 +71,7 @@ const {
 } = require('../controllers/arenaAdminWalkinController');
 
 const { markStaffAttendance, listStaffAttendance } = require('../controllers/adminStaffAttendanceController');
+const { getDailyCourtReport } = require('../controllers/adminDailyReportController');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -178,5 +179,8 @@ router.post('/walkin/book', asyncHandler(createWalkinBooking));
 // Staff Attendance
 router.post('/staff-attendance', requireBodyArenaIdMatchesScope, asyncHandler(markStaffAttendance));
 router.get('/staff-attendance', requireQueryArenaMatchesScope, asyncHandler(listStaffAttendance));
+
+// Daily Court Booking Report (Arena Admin — scoped to own arena)
+router.get('/reports/daily', asyncHandler(getDailyCourtReport));
 
 module.exports = router;

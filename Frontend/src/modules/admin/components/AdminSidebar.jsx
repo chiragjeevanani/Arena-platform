@@ -44,7 +44,8 @@ const SIDEBAR_STRUCTURE = [
     roles: ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST'],
     items: [
       { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-      { path: '/admin/reports', icon: PieChart, label: 'Reports' },
+      { path: '/admin/reports', icon: PieChart, label: 'Financial Reports' },
+      { path: '/admin/reports/daily', icon: BarChart3, label: 'Daily Court Report' },
       { path: '/admin/sales', icon: History, label: 'Sales History' },
     ]
   },
