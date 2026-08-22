@@ -464,7 +464,7 @@ const BookingSummary = () => {
                       ) : (
                         <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 text-center">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">No wallet credits available</p>
-                          <span className="text-[8px] font-bold text-[#CE2029] uppercase tracking-wider mt-0.5 inline-block">Earn ₹150 by referring friends!</span>
+                          <span className="text-[8px] font-bold text-[#CE2029] uppercase tracking-wider mt-0.5 inline-block">Earn rewards by referring friends!</span>
                         </div>
                       )}
 

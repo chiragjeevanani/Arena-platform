@@ -1,6 +1,7 @@
 const Referral = require('../models/Referral');
 const User = require('../models/User');
 const Wallet = require('../models/Wallet');
+const ReferralSettings = require('../models/ReferralSettings');
 const { getOrCreateWallet } = require('../services/walletService');
 
 async function getMyReferrals(req, res) {
@@ -31,6 +32,7 @@ async function getMyReferrals(req, res) {
 
   // Get user's wallet
   const wallet = await getOrCreateWallet(userId);
+  const settings = await ReferralSettings.getSettings();
 
   // Find all referrals where this user is the referrer
   const referrals = await Referral.find({ referrerId: userId })
@@ -82,6 +84,7 @@ async function getMyReferrals(req, res) {
     referralCode: user.referralCode,
     referralLink,
     walletBalance: wallet.balance,
+    settings: ReferralSettings.toPublic(settings),
     stats: {
       totalReferrals: referrals.length,
       pendingCount,

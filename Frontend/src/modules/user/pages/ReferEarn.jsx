@@ -36,9 +36,20 @@ const ReferEarn = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const { stats, referrals, referralCode, referralLink, settings } = data || {
+    stats: { totalReferrals: 0, pendingCount: 0, completedCount: 0, expiredCount: 0, totalEarned: 0 },
+    referrals: [],
+    referralCode: '',
+    referralLink: '',
+    settings: { referrerReward: 150, newuserReward: 100 }
+  };
+
+  const referrerReward = settings?.referrerReward ?? 150;
+  const newuserReward = settings?.newuserReward ?? 100;
+
   const handleShareWhatsApp = () => {
     if (!data?.referralLink) return;
-    const text = `Hey! Join me on Arena Management Platform. Book high-quality courts, register for exciting events, and get a welcome wallet credit of ₹100 using my referral code: ${data.referralCode}. Sign up here: ${data.referralLink}`;
+    const text = `Hey! Join me on Arena Management Platform. Book high-quality courts, register for exciting events, and get a welcome wallet credit of OMR ${newuserReward} using my referral code: ${data.referralCode}. Sign up here: ${data.referralLink}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -67,13 +78,6 @@ const ReferEarn = () => {
       </div>
     );
   }
-
-  const { stats, referrals, referralCode, referralLink } = data || {
-    stats: { totalReferrals: 0, pendingCount: 0, completedCount: 0, expiredCount: 0, totalEarned: 0 },
-    referrals: [],
-    referralCode: '',
-    referralLink: ''
-  };
 
   return (
     <div className={`min-h-screen pb-32 ${isDark ? 'bg-[#0f1115]' : 'bg-slate-50/50'}`}>
@@ -109,11 +113,11 @@ const ReferEarn = () => {
             <h1 className={`text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
               Invite Your Friends & <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#CE2029] to-[#ff4d55]">
-                Earn ₹150 Wallet Credit!
+                Earn OMR {referrerReward} Wallet Credit!
               </span>
             </h1>
             <p className={`text-xs md:text-sm font-semibold max-w-xl leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Share the love of play. Your friend gets <span className="font-bold text-[#CE2029]">₹100</span> welcome credit on signing up, and you receive <span className="font-bold text-[#CE2029]">₹150</span> credit as soon as they complete their first booking!
+              Share the love of play. Your friend gets <span className="font-bold text-[#CE2029]">OMR {newuserReward}</span> welcome credit on signing up, and you receive <span className="font-bold text-[#CE2029]">OMR {referrerReward}</span> credit as soon as they complete their first booking!
             </p>
           </div>
 
@@ -194,7 +198,7 @@ const ReferEarn = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {[
           { label: 'Total Referrals', value: stats.totalReferrals, color: 'text-blue-500', bg: 'bg-blue-500/10', icon: Users },
-          { label: 'Rewards Earned', value: `₹${stats.totalEarned}`, color: 'text-green-500', bg: 'bg-green-500/10', icon: Gift },
+          { label: 'Rewards Earned', value: `OMR ${Number(stats.totalEarned || 0).toFixed(3)}`, color: 'text-green-500', bg: 'bg-green-500/10', icon: Gift },
           { label: 'Pending Bookings', value: stats.pendingCount, color: 'text-yellow-500', bg: 'bg-yellow-500/10', icon: Calendar },
           { label: 'Expired Links', value: stats.expiredCount, color: 'text-red-500', bg: 'bg-red-500/10', icon: XCircle }
         ].map((item, idx) => (
@@ -291,7 +295,7 @@ const ReferEarn = () => {
                     </td>
                     <td className="py-3 px-4">
                       <span className="text-xs font-black text-[#CE2029]">
-                        ₹{r.rewardAmount}
+                        OMR {Number(r.rewardAmount || 0).toFixed(3)}
                       </span>
                     </td>
                     <td className="py-3 px-4">

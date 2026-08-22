@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { lazy, Suspense } from 'react';

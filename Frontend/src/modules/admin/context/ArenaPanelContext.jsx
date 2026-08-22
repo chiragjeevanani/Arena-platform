@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../user/context/AuthContext';
 import { getMyArena } from '../../../services/arenaStaffApi';
 import { listAdminArenas } from '../../../services/adminOpsApi';

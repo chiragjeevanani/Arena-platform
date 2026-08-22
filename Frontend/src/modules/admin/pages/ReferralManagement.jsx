@@ -308,12 +308,12 @@ const ReferralManagement = () => {
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Referrer Reward Amount (OMR)</label>
                       <div className="relative">
-                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs">OMR</span>
                         <input 
                           type="number"
                           value={settings.referrerReward || ''}
                           onChange={(e) => setSettings({ ...settings, referrerReward: Number(e.target.value) })}
-                          className="w-full pl-10 pr-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-[#eb483f]/5 focus:bg-white focus:border-[#eb483f]/20 transition-all"
+                          className="w-full pl-14 pr-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-[#eb483f]/5 focus:bg-white focus:border-[#eb483f]/20 transition-all"
                           placeholder="150"
                         />
                       </div>
@@ -322,12 +322,12 @@ const ReferralManagement = () => {
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Referee Welcome Reward (OMR)</label>
                       <div className="relative">
-                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs">OMR</span>
                         <input 
                           type="number"
                           value={settings.newuserReward || ''}
                           onChange={(e) => setSettings({ ...settings, newuserReward: Number(e.target.value) })}
-                          className="w-full pl-10 pr-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-[#eb483f]/5 focus:bg-white focus:border-[#eb483f]/20 transition-all"
+                          className="w-full pl-14 pr-6 py-4 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-[#eb483f]/5 focus:bg-white focus:border-[#eb483f]/20 transition-all"
                           placeholder="100"
                         />
                       </div>

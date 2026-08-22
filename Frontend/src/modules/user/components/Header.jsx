@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Sun, Moon, LogIn } from 'lucide-react';

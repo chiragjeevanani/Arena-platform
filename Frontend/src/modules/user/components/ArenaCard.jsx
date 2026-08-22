@@ -67,7 +67,7 @@ const ArenaCard = ({ arena, index = 0 }) => {
             </div>
             <div className={`flex justify-between items-center pt-1.5 mt-1.5 border-t ${'border-[#CE2029]/5'}`}>
               <div>
-                <span className="text-[#CE2029] font-bold text-base font-display">₹{arena.pricePerHour}</span>
+                <span className="text-[#CE2029] font-bold text-base font-display">OMR {arena.pricePerHour}</span>
                 <span className={`text-[9px] ml-1 ${'text-[#CE2029]/30'}`}>/ hour</span>
               </div>
               <div className="bg-[#CE2029]/10 text-[#CE2029] px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-[#CE2029]/20 group-hover:bg-[#CE2029] group-hover:text-[#CE2029] transition-all duration-300">
