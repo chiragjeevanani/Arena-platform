@@ -98,7 +98,7 @@ const BookingSummary = () => {
 
   // Apply coupon discount on top
   const couponDeduction = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const subtotal = Math.max(0, rawSubtotal - couponDeduction);
+  const subtotal = Math.max(0, rawSubtotal - couponDeduction - memberDiscountAmount);
   const discountAmount = memberDiscountAmount;
 
   const tax = useLiveCheckout ? 0 : subtotal * 0.18;
@@ -150,7 +150,6 @@ const BookingSummary = () => {
             date: ymd,
             timeSlot,
             paymentMethod: finalPayable === 0 ? 'wallet' : 'online',
-            amount: perSlotPrice,
             useWallet,
             couponCode: appliedCoupon?.coupon?.code || undefined,
           });
@@ -169,7 +168,7 @@ const BookingSummary = () => {
             if (bmErr.status === 503) {
               intent = await createPaymentIntent({
                 purpose: 'booking',
-                amount: finalPayable,
+                amount: lastBooking?.booking?.amount ?? finalPayable,
                 bookingId: lastBooking.booking.id,
               });
             } else {

@@ -231,15 +231,19 @@ const SlotSelection = () => {
     if (selectedSlotObjs.length === 0) return;
     const dateYmd = toYMDFromDateString(selectedDate);
 
-    // Build a serverPricing object from the first selected slot's backend pricing.
-    // This drives BookingSummary totals so the customer always sees the peak-aware price.
+    // Build a serverPricing object from the first selected slot's backend pricing,
+    // carrying over the member discount % from the arena-level pricing fetch
+    // (the availability API's per-slot pricing doesn't know about the logged-in
+    // user's membership, so it can't compute this itself).
     const firstSlotPricing = selectedSlotObjs[0]?.pricing;
+    const discountPercent = serverPricing?.discountPercent || 0;
+    const discountAmount = Math.round(firstSlotPricing?.finalPrice * discountPercent) / 100;
     const slotServerPricing = firstSlotPricing
       ? {
           baseAmount: firstSlotPricing.basePrice,
-          finalAmount: firstSlotPricing.finalPrice,
-          discountAmount: 0,
-          discountPercent: 0,
+          finalAmount: Math.round((firstSlotPricing.finalPrice - discountAmount) * 100) / 100,
+          discountAmount,
+          discountPercent,
           pricingType: firstSlotPricing.type,
           peakSurcharge: firstSlotPricing.peakSurcharge,
           normalPrice: firstSlotPricing.basePrice,
