@@ -18,7 +18,7 @@ export function normalizeListArena(a) {
     reviews: typeof a.reviewsCount === 'number' ? a.reviewsCount : (typeof a.reviews === 'number' ? a.reviews : 0),
     pricePerHour: Number(a.pricePerHour) || 0,
     courtsCount: typeof a.courtsCount === 'number' ? a.courtsCount : 0,
-    image: a.image && String(a.image).trim() ? a.image : CourtImage,
+    image: a.image && String(a.image).trim().startsWith('http') ? a.image : CourtImage,
     category: a.category || 'Badminton',
     amenities,
     description: a.description || '',
@@ -34,7 +34,7 @@ export function normalizeDetailArena(payload) {
     arenaId: a.id,
     name: c.name,
     type: c.type || 'Court',
-    image: c.imageUrl && String(c.imageUrl).trim() ? c.imageUrl : CourtImage,
+    image: c.imageUrl && String(c.imageUrl).trim().startsWith('http') ? c.imageUrl : CourtImage,
   }));
   return {
     ...normalizeListArena({
