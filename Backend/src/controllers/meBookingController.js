@@ -15,6 +15,12 @@ const { markPaymentTerminalFailure } = require('../services/paymentFinalizationS
 const { buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
 const { evaluatePricing } = require('../services/pricingEngine');
 
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function getDayOfWeek(dateStr) {
+  const dateObj = new Date(String(dateStr).trim() + 'T12:00:00Z'); // noon UTC to avoid TZ boundary issues
+  return DAY_NAMES[dateObj.getUTCDay()];
+}
+
 function parseBackendSlotStartDateTime(dateInput, timeSlot) {
   if (!dateInput || !timeSlot || typeof timeSlot !== 'string') return null;
   const d = new Date(dateInput);
@@ -99,6 +105,7 @@ async function createMyBooking(req, res) {
       const existingCourtSlot = await CourtSlot.findOne({
         courtId: String(courtId),
         arenaId: String(arenaId),
+        dayOfWeek: getDayOfWeek(date),
         timeSlot: String(timeSlot).trim(),
       }).lean();
       const engineResExisting = evaluatePricing({ arena, court, date, timeSlot, slot: existingCourtSlot });
@@ -129,6 +136,7 @@ async function createMyBooking(req, res) {
   const courtSlot = await CourtSlot.findOne({
     courtId: String(courtId),
     arenaId: String(arenaId),
+    dayOfWeek: getDayOfWeek(date),
     timeSlot: String(timeSlot).trim(),
   }).lean();
 
@@ -464,7 +472,7 @@ async function computeBookingPricing(req, res) {
   // Use pricingEngine if slot details provided, otherwise fall back to base rate
   if (courtId && date && timeSlot) {
     const court = await Court.findById(courtId).lean();
-    const courtSlot = court ? await CourtSlot.findOne({ courtId: String(courtId), arenaId: String(arenaId), timeSlot: String(timeSlot).trim() }).lean() : null;
+    const courtSlot = court ? await CourtSlot.findOne({ courtId: String(courtId), arenaId: String(arenaId), dayOfWeek: getDayOfWeek(date), timeSlot: String(timeSlot).trim() }).lean() : null;
     const engineRes = evaluatePricing({ arena, court, date, timeSlot, slot: courtSlot });
     const memberPricing = await computeDiscount(req.auth.sub, arenaId, engineRes.price, 'booking');
     return res.json({
