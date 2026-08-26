@@ -1,23 +1,16 @@
 /**
  * Shared booking query utilities to enforce a single consistent definition
  * of an "active booking" across all backend controllers.
+ *
+ * A slot only counts as taken once payment has actually succeeded
+ * ('confirmed'/'rescheduled'). A 'pending' booking (payment not yet
+ * completed) never blocks other users — see markBookingPaidOnce in
+ * paymentFinalizationService.js for the DB-level race-guard that still
+ * prevents two payments from both confirming the same slot.
  */
 
-function getHoldCutoff(minutes) {
-  const holdMinutes = minutes || Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
-  return new Date(Date.now() - holdMinutes * 60 * 1000);
-}
-
-function getActiveBookingFilter(holdCutoff = getHoldCutoff()) {
-  return [
-    { status: 'confirmed' },
-    { status: 'rescheduled' },
-    {
-      status: 'pending',
-      paymentStatus: 'pending',
-      createdAt: { $gte: holdCutoff },
-    },
-  ];
+function getActiveBookingFilter() {
+  return [{ status: 'confirmed' }, { status: 'rescheduled' }];
 }
 
 /**
@@ -28,14 +21,13 @@ function getActiveBookingFilter(holdCutoff = getHoldCutoff()) {
  *  - date: string (YYYY-MM-DD)
  *  - timeSlot: string
  *  - excludeBookingId: ObjectId | string (optional)
- *  - holdCutoff: Date (optional)
  */
-function buildCourtSlotConflictQuery({ courtId, date, timeSlot, excludeBookingId, holdCutoff }) {
+function buildCourtSlotConflictQuery({ courtId, date, timeSlot, excludeBookingId }) {
   const query = {
     courtId,
     date,
     timeSlot,
-    $or: getActiveBookingFilter(holdCutoff),
+    $or: getActiveBookingFilter(),
   };
 
   if (excludeBookingId) {
@@ -52,11 +44,10 @@ function buildCourtSlotConflictQuery({ courtId, date, timeSlot, excludeBookingId
  *  - courtId: ObjectId | string (optional)
  *  - arenaId: ObjectId | string (optional)
  *  - date: string | { $gte: string, $lte: string } (optional)
- *  - holdCutoff: Date (optional)
  */
-function buildCourtAvailabilityQuery({ courtId, arenaId, date, timeSlot, holdCutoff } = {}) {
+function buildCourtAvailabilityQuery({ courtId, arenaId, date, timeSlot } = {}) {
   const query = {
-    $or: getActiveBookingFilter(holdCutoff),
+    $or: getActiveBookingFilter(),
   };
 
   if (courtId) query.courtId = courtId;
@@ -67,9 +58,25 @@ function buildCourtAvailabilityQuery({ courtId, arenaId, date, timeSlot, holdCut
   return query;
 }
 
+/**
+ * Finds a user's own not-yet-paid booking for this slot so a retried/resumed
+ * checkout reuses the same Booking + can reuse the payment flow, without that
+ * pending row blocking anyone else (see getActiveBookingFilter above).
+ */
+function findOwnResumableBooking({ userId, courtId, date, timeSlot }) {
+  return {
+    userId,
+    courtId,
+    date,
+    timeSlot,
+    status: 'pending',
+    paymentStatus: 'pending',
+  };
+}
+
 module.exports = {
-  getHoldCutoff,
   getActiveBookingFilter,
   buildCourtSlotConflictQuery,
   buildCourtAvailabilityQuery,
+  findOwnResumableBooking,
 };

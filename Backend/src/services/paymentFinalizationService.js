@@ -119,16 +119,42 @@ async function markBookingPaidOnce(payment) {
   const bookingId = payment.meta?.bookingId;
   if (!bookingId) return;
 
-  await Booking.findOneAndUpdate(
-    { _id: bookingId, paymentStatus: { $ne: 'paid' } },
-    {
-      $set: {
-        status: 'confirmed',
-        paymentStatus: 'paid',
-        paymentMethod: 'online',
-      },
+  // Since a 'pending' booking no longer holds the slot, another user's booking
+  // for the same court/date/timeSlot may have been confirmed in the meantime.
+  // The DB's partial unique index (status in confirmed/rescheduled) is the
+  // real guard here: this update is rejected with E11000 if that happened.
+  try {
+    await Booking.findOneAndUpdate(
+      { _id: bookingId, paymentStatus: { $ne: 'paid' } },
+      {
+        $set: {
+          status: 'confirmed',
+          paymentStatus: 'paid',
+          paymentMethod: 'online',
+        },
+      }
+    );
+  } catch (err) {
+    if (err.code === 11000) {
+      // Money was captured by the gateway but the slot was taken by someone
+      // else's payment first — flag for manual refund, do not confirm this one.
+      console.error(
+        `[BookingConflict] Payment ${payment._id} succeeded but booking ${bookingId} lost the slot race — needs manual refund.`
+      );
+      await Booking.findByIdAndUpdate(bookingId, {
+        $set: { status: 'cancelled', paymentStatus: 'paid' },
+      });
+      await Payment.findByIdAndUpdate(payment._id, {
+        $set: {
+          'meta.bookingMarkedPaid': false,
+          'meta.slotConflict': true,
+          'meta.needsManualRefund': true,
+        },
+      });
+      return;
     }
-  );
+    throw err;
+  }
 
   await Payment.findByIdAndUpdate(payment._id, {
     $set: { 'meta.bookingMarkedPaid': true },
