@@ -56,12 +56,16 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Only a CONFIRMED (paid) booking reserves a slot. 'pending' (payment not yet
+// completed) is deliberately excluded so an in-progress checkout never blocks
+// other users from booking the same slot; see paymentFinalizationService's
+// markBookingPaidOnce for the race-guard this relies on at confirm time.
 bookingSchema.index(
   { courtId: 1, date: 1, timeSlot: 1 },
   {
     unique: true,
     partialFilterExpression: {
-      status: { $in: ['pending', 'confirmed', 'rescheduled'] },
+      status: { $in: ['confirmed', 'rescheduled'] },
     },
   }
 );

@@ -12,7 +12,7 @@ const { getOrCreateWallet } = require('../services/walletService');
 const { computeDiscount, amountsMatch } = require('../services/pricing');
 const { createNotification } = require('../services/notificationService');
 const { markPaymentTerminalFailure } = require('../services/paymentFinalizationService');
-const { buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
+const { buildCourtSlotConflictQuery, findOwnResumableBooking } = require('../utils/bookingQuery');
 const { evaluatePricing } = require('../services/pricingEngine');
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -98,38 +98,42 @@ async function createMyBooking(req, res) {
 
   const userId = req.auth.sub;
 
+  // A real conflict only exists once someone's payment has actually succeeded
+  // ('confirmed'/'rescheduled') — an unpaid 'pending' checkout never blocks others.
   const existingBooking = await Booking.findOne(buildCourtSlotConflictQuery({ courtId, date, timeSlot }));
   if (existingBooking) {
-    if (existingBooking.userId.toString() === userId && existingBooking.paymentStatus === 'pending') {
-      // Look up CourtSlot for correct pricing on re-use
-      const existingCourtSlot = await CourtSlot.findOne({
-        courtId: String(courtId),
-        arenaId: String(arenaId),
-        dayOfWeek: getDayOfWeek(date),
-        timeSlot: String(timeSlot).trim(),
-      }).lean();
-      const engineResExisting = evaluatePricing({ arena, court, date, timeSlot, slot: existingCourtSlot });
-      const pricingExisting = await computeDiscount(userId, arenaId, engineResExisting.price, 'booking');
-      return res.status(200).json({
-        booking: Booking.toPublic(existingBooking, {
-          arenaName: arena.name,
-          courtName: court.name,
-        }),
-        pricing: {
-          baseAmount: engineResExisting.pricing.basePrice,
-          discountPercent: pricingExisting.discountPercent,
-          discountAmount: pricingExisting.discountAmount,
-          finalAmount: pricingExisting.finalAmount,
-          pricingType: engineResExisting.pricing.type,
-          peakSurcharge: engineResExisting.pricing.peakSurcharge,
-          normalPrice: engineResExisting.pricing.basePrice,
-          finalPrice: engineResExisting.pricing.finalPrice,
-          membershipPlanIds: pricingExisting.membershipPlanIds || [],
-        },
-      });
-    } else {
-      return res.status(409).json({ error: 'This time slot is already booked' });
-    }
+    return res.status(409).json({ error: 'This time slot is already booked' });
+  }
+
+  // Resume the user's own unfinished checkout for this slot instead of creating a duplicate.
+  const ownPendingBooking = await Booking.findOne(findOwnResumableBooking({ userId, courtId, date, timeSlot }));
+  if (ownPendingBooking) {
+    // Look up CourtSlot for correct pricing on re-use
+    const existingCourtSlot = await CourtSlot.findOne({
+      courtId: String(courtId),
+      arenaId: String(arenaId),
+      dayOfWeek: getDayOfWeek(date),
+      timeSlot: String(timeSlot).trim(),
+    }).lean();
+    const engineResExisting = evaluatePricing({ arena, court, date, timeSlot, slot: existingCourtSlot });
+    const pricingExisting = await computeDiscount(userId, arenaId, engineResExisting.price, 'booking');
+    return res.status(200).json({
+      booking: Booking.toPublic(ownPendingBooking, {
+        arenaName: arena.name,
+        courtName: court.name,
+      }),
+      pricing: {
+        baseAmount: engineResExisting.pricing.basePrice,
+        discountPercent: pricingExisting.discountPercent,
+        discountAmount: pricingExisting.discountAmount,
+        finalAmount: pricingExisting.finalAmount,
+        pricingType: engineResExisting.pricing.type,
+        peakSurcharge: engineResExisting.pricing.peakSurcharge,
+        normalPrice: engineResExisting.pricing.basePrice,
+        finalPrice: engineResExisting.pricing.finalPrice,
+        membershipPlanIds: pricingExisting.membershipPlanIds || [],
+      },
+    });
   }
 
   // Fetch the CourtSlot document for this specific time slot to get accurate startTime for pricing engine
