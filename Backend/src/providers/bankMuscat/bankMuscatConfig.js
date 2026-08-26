@@ -38,11 +38,13 @@ function getBankMuscatConfig() {
   // Production URL must come from Bank Muscat live credentials / kit — do not invent.
   const productionUrl = pick(process.env.BANK_MUSCAT_PRODUCTION_URL);
 
-  const gatewayUrl = pick(
-    process.env.BANK_MUSCAT_GATEWAY_URL,
-    isProduction ? productionUrl : testUrl,
-    testUrl
-  );
+  // In production mode, never fall back to the UAT gateway (spayuattrns.bmtest.om).
+  // Doing so silently sends production-labeled credentials to Bank Muscat's UAT
+  // servers, which reject them with "Merchant Authentication failed" (Error 10002)
+  // instead of a clear config error.
+  const gatewayUrl = isProduction
+    ? pick(process.env.BANK_MUSCAT_GATEWAY_URL, productionUrl)
+    : pick(process.env.BANK_MUSCAT_GATEWAY_URL, testUrl);
 
   const apiBase = pick(process.env.API_URL);
   const frontendUrl = pick(process.env.FRONTEND_URL, 'http://localhost:5173');
