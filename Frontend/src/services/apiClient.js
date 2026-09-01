@@ -173,6 +173,12 @@ export async function apiJson(path, options = {}) {
           return apiJson(path, { ...options, _retriedAfter401: true });
         } catch {
           clearAuthTokens();
+          // AuthContext owns the React `user`/isLoggedIn state and has no way to
+          // observe a token clear that happens here, outside React. Without this,
+          // the tokens are gone but the app still thinks it's logged in until the
+          // next full reload — so every subsequent authenticated call 401s again,
+          // bouncing the user back to /login repeatedly ("logged out again and again").
+          window.dispatchEvent(new Event('auth:sessionExpired'));
         }
       }
     }

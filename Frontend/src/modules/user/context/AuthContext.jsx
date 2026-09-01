@@ -104,6 +104,16 @@ export const AuthProvider = ({ children }) => {
     };
   }, [clearSession]);
 
+  // apiClient clears tokens itself when a 401 survives a refresh attempt (it has
+  // no access to this React state) — listen for that so `user`/isLoggedIn stay in
+  // sync instead of the app still believing it's logged in with no valid token,
+  // which otherwise 401s on every next call and repeatedly bounces to /login.
+  useEffect(() => {
+    const onSessionExpired = () => clearSession();
+    window.addEventListener('auth:sessionExpired', onSessionExpired);
+    return () => window.removeEventListener('auth:sessionExpired', onSessionExpired);
+  }, [clearSession]);
+
   const isLoggedIn = !!user;
 
   const login = useCallback(
