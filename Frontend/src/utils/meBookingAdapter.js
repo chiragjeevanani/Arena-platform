@@ -1,3 +1,5 @@
+import { isSlotTimePassed } from './slotTime';
+
 const PLACEHOLDER =
   'https://images.unsplash.com/photo-1626224583764-f87db24d4d83?w=800&q=80';
 
@@ -5,9 +7,15 @@ function statusLabel(b) {
   const s = String(b.status || '').toLowerCase();
   if (s === 'cancelled') return 'Cancelled';
   if (s === 'completed') return 'Completed';
-  if (s === 'confirmed' && b.date) {
-    const d = new Date(`${b.date}T12:00:00`);
-    if (!Number.isNaN(d.getTime()) && d < new Date()) return 'Completed';
+  // 'confirmed' (paid) and 'pending' (payment still finalizing) both read as
+  // Upcoming until their actual slot time has passed — using the slot's own
+  // start time (not a fixed noon cutoff) so a same-day booking moves into
+  // history as soon as it has actually happened, not just after midday.
+  // A 'pending' booking is included here too so it isn't stuck as "Upcoming"
+  // forever if payment finalization never completes; once its time passes it
+  // correctly surfaces in history instead of vanishing from both tabs.
+  if ((s === 'confirmed' || s === 'pending') && b.date) {
+    if (isSlotTimePassed(b.date, b.timeSlot)) return 'Completed';
     return 'Upcoming';
   }
   return 'Upcoming';

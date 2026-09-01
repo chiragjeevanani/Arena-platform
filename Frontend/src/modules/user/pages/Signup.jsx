@@ -326,12 +326,12 @@ const Signup = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Person className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        <Person fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
                       borderRadius: '12px',
                       backgroundColor: 'rgba(255,255,255,0.7)',
                       backdropFilter: 'blur(10px)',
@@ -364,7 +364,7 @@ const Signup = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ marginRight: '6px' }}>
-                        <Phone className="text-[#CE2029] mr-1.5" fontSize="small" />
+                        <Phone fontSize="small" className="text-slate-400 mr-1.5" />
                         <Select
                           value={selectedCountry.code}
                           onChange={(e) => {
@@ -388,6 +388,8 @@ const Signup = () => {
                             '& .MuiSelect-select': {
                               paddingRight: '20px !important',
                               paddingLeft: '0 !important',
+                              paddingTop: '0 !important',
+                              paddingBottom: '0 !important',
                               display: 'flex',
                               alignItems: 'center',
                             },
@@ -436,7 +438,7 @@ const Signup = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Home className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        <Home fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                       </InputAdornment>
                     ),
                   }}
@@ -464,7 +466,7 @@ const Signup = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Public className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        <Public fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                       </InputAdornment>
                     ),
                   }}
@@ -502,7 +504,7 @@ const Signup = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Email className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        <Email fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                       </InputAdornment>
                     ),
                   }}
@@ -536,7 +538,7 @@ const Signup = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        <Lock fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -583,7 +585,7 @@ const Signup = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        <Lock fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
                       </InputAdornment>
                     ),
                     endAdornment: (

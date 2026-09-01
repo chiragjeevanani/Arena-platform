@@ -70,8 +70,19 @@ const SlotConfig = () => {
     setSaving(true);
     try {
       const dayNums = currentTabGroups[activeTab].days;
-      const timeSlot = `${form.startTime}-${form.endTime}`;
-      
+      // Must match the "HH:MM AM/PM - HH:MM AM/PM" format used by CourtSlotsAdmin.jsx —
+      // both admin panels write to the same CourtSlot collection keyed on this string,
+      // so a mismatched format creates a duplicate/orphaned slot instead of updating
+      // the existing one, which can leave a court's day with no visible slots.
+      const formatTime = (t) => {
+        const [h, m] = t.split(':');
+        const hour = parseInt(h, 10);
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+        return `${String(displayHour).padStart(2, '0')}:${m} ${period}`;
+      };
+      const timeSlot = `${formatTime(form.startTime)} - ${formatTime(form.endTime)}`;
+
       // We apply to ALL days in the group for better UX
       await Promise.all(dayNums.map(dayNum => 
         createMyCourtSlot(selectedCourtId, {

@@ -91,6 +91,7 @@ const SlotSelection = () => {
   const [apiSlots, setApiSlots] = useState(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState('');
+  const [availabilityRetryTick, setAvailabilityRetryTick] = useState(0);
 
   const useLiveSlots = isApiConfigured() && Boolean(activeCourtId);
   const [serverPricing, setServerPricing] = useState(null);
@@ -157,7 +158,7 @@ const SlotSelection = () => {
     return () => {
       cancelled = true;
     };
-  }, [useLiveSlots, activeCourtId, selectedDate, arena?.pricePerHour]);
+  }, [useLiveSlots, activeCourtId, selectedDate, arena?.pricePerHour, availabilityRetryTick]);
 
   const allDaySlots = useLiveSlots && apiSlots != null ? apiSlots : [];
 
@@ -475,10 +476,6 @@ const SlotSelection = () => {
                   </div>
                 </div>
 
-                {useLiveSlots && availabilityError && (
-                  <p className="text-[10px] font-bold text-[#CE2029]">{availabilityError}</p>
-                )}
-
                 <div className="flex gap-2">
                   {[
                     { key: 'all', label: 'All Slots', icon: null },
@@ -558,6 +555,19 @@ const SlotSelection = () => {
                     {availabilityLoading && useLiveSlots ? (
                       <div className="col-span-full text-center py-10 text-slate-400">
                         <p className="text-[10px] font-black uppercase tracking-widest">Loading availability…</p>
+                      </div>
+                    ) : useLiveSlots && availabilityError && allDaySlots.length === 0 ? (
+                      <div className="col-span-full text-center py-10">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] mb-3">
+                          Couldn't load slots — {availabilityError}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setAvailabilityRetryTick((t) => t + 1)}
+                          className="px-4 py-2 rounded-xl bg-[#CE2029] text-white text-[9px] font-black uppercase tracking-widest"
+                        >
+                          Retry
+                        </button>
                       </div>
                     ) : allDaySlots.length === 0 ? (
                       <div className="col-span-full text-center py-10 text-slate-400">

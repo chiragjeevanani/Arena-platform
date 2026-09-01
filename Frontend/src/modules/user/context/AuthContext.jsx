@@ -89,8 +89,12 @@ export const AuthProvider = ({ children }) => {
         setUser(mapped);
         storage.setItem('user', JSON.stringify(mapped));
         storage.setItem('isLoggedIn', 'true');
-      } catch {
-        if (!cancelled) clearSession();
+      } catch (err) {
+        // Only a genuine auth rejection (401/403) means the session is actually invalid.
+        // A network blip, timeout, or backend error must not log the user out —
+        // this previously bounced users straight to /login when returning from a
+        // payment gateway redirect after a slow/flaky network round-trip.
+        if (!cancelled && (err?.status === 401 || err?.status === 403)) clearSession();
       } finally {
         if (!cancelled) setIsLoading(false);
       }
