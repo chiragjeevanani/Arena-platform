@@ -115,7 +115,7 @@ async function createMyCourtSlot(req, res) {
       endTime,
       price: Number(price) || 0,
       slotClass: slotClass || 'nonPrime',
-      type: type || 'Normal',
+      type: type || 'Public',
       status: status || 'Available',
       isActive: true,
     },
