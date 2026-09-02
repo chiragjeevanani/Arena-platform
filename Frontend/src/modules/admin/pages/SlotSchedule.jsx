@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarClock, ChevronLeft, ChevronRight, Clock, MapPin, Plus, AlertTriangle, X, MoreVertical } from 'lucide-react';
 import { format, addDays, startOfToday } from 'date-fns';
 import { fetchPublicArenas, fetchPublicArenaById } from '../../../services/arenasApi';
+import { fetchCourtAvailability } from '../../../services/bookingsApi';
 import { normalizeListArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
 
@@ -61,19 +62,67 @@ const SlotSchedule = () => {
       cancelled = true;
     };
   }, [selectedArenaId]);
-  
+
+  // Real per-court, per-date occupancy — keyed by courtId, then by the slot's
+  // start time (e.g. "06:00"). Replaces what used to be a hardcoded
+  // "always Available" stub that could make staff double-book an occupied court.
+  const [slotStatusByCourt, setSlotStatusByCourt] = useState({});
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isApiConfigured() || arenaCourts.length === 0) {
+      setSlotStatusByCourt({});
+      return undefined;
+    }
+    let cancelled = false;
+    const ymd = format(selectedDate, 'yyyy-MM-dd');
+    setSlotsLoading(true);
+    (async () => {
+      try {
+        const results = await Promise.all(
+          arenaCourts.map((court) =>
+            fetchCourtAvailability(court.id, ymd)
+              .then((data) => [court.id, data.slots || []])
+              .catch(() => [court.id, []])
+          )
+        );
+        if (cancelled) return;
+        const byCourtId = {};
+        for (const [courtId, slots] of results) {
+          const byStartTime = {};
+          for (const s of slots) {
+            const startTime = s.timeSlot.split(' - ')[0].trim();
+            byStartTime[startTime] = { available: s.available, price: s.price };
+          }
+          byCourtId[courtId] = byStartTime;
+        }
+        setSlotStatusByCourt(byCourtId);
+      } finally {
+        if (!cancelled) setSlotsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [arenaCourts, selectedDate]);
+
   const timeSlots = [
-    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", 
+    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
     "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"
   ];
 
-  const getSlotStatus = () => ({ status: 'Available', data: null });
+  const getSlotStatus = (courtId, time) => {
+    const entry = slotStatusByCourt[courtId]?.[time];
+    if (!entry) return { status: 'Unavailable', data: null };
+    return { status: entry.available ? 'Available' : 'Booked', data: entry.available ? null : { reason: 'Reserved' } };
+  };
 
   const getStatusStyle = (status) => {
     switch (status) {
       case 'Booked': return 'bg-slate-50 border-slate-200 text-[#36454F] hover:bg-slate-100';
       case 'Maintenance': return 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100/50';
       case 'Alert': return 'bg-red-50 border-[#CE2029]/30 text-[#CE2029] animate-pulse';
+      case 'Unavailable': return 'bg-slate-50/50 border-slate-100 text-slate-300 cursor-not-allowed';
       default: return 'bg-white border-dashed border-slate-200 text-slate-300 hover:border-[#CE2029]/40 hover:bg-slate-50/50';
     }
   };
@@ -124,7 +173,7 @@ const SlotSchedule = () => {
               </button>
               <div className="text-center group cursor-pointer">
                 <p className="text-sm font-black text-[#36454F] tracking-tight">{format(selectedDate, 'MMMM dd, yyyy')}</p>
-                <p className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.2em] leading-none mt-1 group-hover:tracking-[0.3em] transition-all">Live Sync</p>
+                <p className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.2em] leading-none mt-1 group-hover:tracking-[0.3em] transition-all">{slotsLoading ? 'Syncing…' : 'Live Sync'}</p>
               </div>
               <button onClick={() => setSelectedDate(addDays(selectedDate, 1))} className="p-2 rounded-xl hover:bg-slate-50 text-slate-400 transition-all border border-transparent hover:border-slate-100">
                 <ChevronRight size={20} strokeWidth={2.5} />
@@ -180,7 +229,7 @@ const SlotSchedule = () => {
                     {/* Court Slots Column */}
                     <div className="flex-1 flex divide-x divide-slate-50 p-3 gap-3">
                       {arenaCourts.map(court => {
-                        const { status, data } = getSlotStatus();
+                        const { status, data } = getSlotStatus(court.id, time);
                         return (
                           <motion.div
                             key={court.id}
@@ -192,21 +241,23 @@ const SlotSchedule = () => {
                               {status === 'Alert' && <AlertTriangle size={14} className="text-[#CE2029]" strokeWidth={2.5} />}
                             </div>
 
-                            {status !== 'Available' ? (
+                            {status === 'Booked' ? (
                               <div className="space-y-1">
                                 <p className="text-xs font-black truncate text-[#36454F]">
-                                  {status === 'Booked' ? data.customerName : data.reason}
+                                  {data.reason}
                                 </p>
                                 <div className="flex items-center gap-1.5 opacity-40">
                                    <div className="w-1 h-1 rounded-full bg-[#36454F]" />
                                    <p className="text-[9px] font-black uppercase tracking-tighter">Verified Entry</p>
                                 </div>
                               </div>
-                            ) : (
+                            ) : status === 'Available' ? (
                                <div className="flex flex-col items-center justify-center h-full opacity-0 group-hover/slot:opacity-100 transition-all">
                                   <Plus size={16} className="text-[#CE2029]" strokeWidth={3} />
                                   <span className="text-[8px] font-black text-[#CE2029] uppercase tracking-widest mt-1">Reserve</span>
                                </div>
+                            ) : (
+                               <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Not offered</p>
                             )}
 
                             <div className="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 group-hover/slot:opacity-20 transition-all">

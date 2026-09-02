@@ -273,172 +273,176 @@ const CoachSignup = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-1">
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Full Name"
-                  variant="outlined"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person className="text-slate-400" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    mb: 2.5, // Added margin bottom
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '16px',
-                      backgroundColor: 'rgba(248,250,252,0.8)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+                <div className="mb-2.5">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Full Name</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    required
+                    placeholder="Enter your full name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person className="text-slate-400" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '16px',
+                        backgroundColor: 'rgba(248,250,252,0.8)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                      },
+                    }}
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Professional Email"
-                  variant="outlined"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email className="text-slate-400" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    mb: 2.5, // Added margin bottom
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '16px',
-                      backgroundColor: 'rgba(248,250,252,0.8)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+                <div className="mb-2.5">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Professional Email</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email className="text-slate-400" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '16px',
+                        backgroundColor: 'rgba(248,250,252,0.8)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                      },
+                    }}
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Create Password"
-                  type={showPassword ? 'text' : 'password'}
-                  variant="outlined"
-                  value={formData.password}
-                  onChange={(e) => {
-                    setFormData({ ...formData, password: e.target.value });
-                    if (passwordError) setPasswordError('');
-                  }}
-                  error={!!passwordError}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          size="small"
-                        >
-                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    mb: 2.5,
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '16px',
-                      backgroundColor: 'rgba(248,250,252,0.8)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+                <div className="mb-2.5">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Create Password</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type={showPassword ? 'text' : 'password'}
+                    variant="outlined"
+                    placeholder="Minimum 8 characters"
+                    value={formData.password}
+                    onChange={(e) => {
+                      setFormData({ ...formData, password: e.target.value });
+                      if (passwordError) setPasswordError('');
+                    }}
+                    error={!!passwordError}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '16px',
+                        backgroundColor: 'rgba(248,250,252,0.8)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                      },
+                    }}
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Confirm Password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  variant="outlined"
-                  value={formData.confirmPassword}
-                  onChange={(e) => {
-                    setFormData({ ...formData, confirmPassword: e.target.value });
-                    if (passwordError) setPasswordError('');
-                  }}
-                  error={!!passwordError}
-                  helperText={passwordError}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle confirm password visibility"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          edge="end"
-                          size="small"
-                        >
-                          {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    mb: 2.5,
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '16px',
-                      backgroundColor: 'rgba(248,250,252,0.8)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+                <div className="mb-2.5">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Confirm Password</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    variant="outlined"
+                    placeholder="Re-enter your password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => {
+                      setFormData({ ...formData, confirmPassword: e.target.value });
+                      if (passwordError) setPasswordError('');
+                    }}
+                    error={!!passwordError}
+                    helperText={passwordError}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle confirm password visibility"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '16px',
+                        backgroundColor: 'rgba(248,250,252,0.8)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                      },
+                    }}
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  select
-                  size="small"
-                  label="Coaching Specialty"
-                  variant="outlined"
-                  value={formData.specialty}
-                  onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
-                  sx={{ 
-                    mb: 2.5, // Added margin bottom
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '16px',
-                      backgroundColor: 'rgba(248,250,252,0.8)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                >
-                  <MenuItem value="Badminton">Badminton</MenuItem>
-                  <MenuItem value="Tennis">Tennis</MenuItem>
-                  <MenuItem value="Table Tennis">Table Tennis</MenuItem>
-                  <MenuItem value="Squash">Squash</MenuItem>
-                </TextField>
+                <div className="mb-2.5">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Coaching Specialty</label>
+                  <TextField
+                    fullWidth
+                    select
+                    size="small"
+                    variant="outlined"
+                    value={formData.specialty}
+                    onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '16px',
+                        backgroundColor: 'rgba(248,250,252,0.8)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                      },
+                    }}
+                  >
+                    <MenuItem value="Badminton">Badminton</MenuItem>
+                    <MenuItem value="Tennis">Tennis</MenuItem>
+                    <MenuItem value="Table Tennis">Table Tennis</MenuItem>
+                    <MenuItem value="Squash">Squash</MenuItem>
+                  </TextField>
+                </div>
 
 
 

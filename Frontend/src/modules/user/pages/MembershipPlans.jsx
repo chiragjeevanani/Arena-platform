@@ -504,7 +504,7 @@ const MembershipPlans = () => {
           status: 'active',
           planId: active.membershipPlanId,
           planName: active.planName || 'Membership',
-          category: (active.discountPercent ?? 0) >= 15 ? 'premium' : 'non-premium',
+          category: active.category || 'non-premium',
           discountPercent: active.discountPercent ?? 0,
           startDate: active.startsAt ? String(active.startsAt).slice(0, 10) : '',
           expiryDate: active.expiresAt
@@ -620,7 +620,7 @@ const MembershipPlans = () => {
             status: 'active',
             planId: active.membershipPlanId,
             planName: active.planName || 'Membership',
-            category: (active.discountPercent ?? 0) >= 15 ? 'premium' : 'non-premium',
+            category: active.category || 'non-premium',
             discountPercent: active.discountPercent ?? 0,
             startDate: active.startsAt ? String(active.startsAt).slice(0, 10) : '',
             expiryDate: active.expiresAt

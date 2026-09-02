@@ -74,69 +74,75 @@ const ResetPassword = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <TextField
-              fullWidth
-              size="small"
-              label="6-Digit OTP Code"
-              variant="outlined"
-              value={otp}
-              onChange={(ev) => {
-                setOtp(ev.target.value);
-                if (submitError) setSubmitError('');
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-              }}
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">6-Digit OTP Code</label>
+              <TextField
+                fullWidth
+                size="small"
+                variant="outlined"
+                placeholder="000000"
+                value={otp}
+                onChange={(ev) => {
+                  setOtp(ev.target.value);
+                  if (submitError) setSubmitError('');
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                }}
+              />
+            </div>
 
-            <TextField
-              fullWidth
-              size="small"
-              label="New password"
-              type={showPassword ? 'text' : 'password'}
-              variant="outlined"
-              value={password}
-              onChange={(ev) => {
-                setPassword(ev.target.value);
-                if (submitError) setSubmitError('');
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock className="text-slate-400" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-              }}
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">New password</label>
+              <TextField
+                fullWidth
+                size="small"
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                placeholder="Minimum 8 characters"
+                value={password}
+                onChange={(ev) => {
+                  setPassword(ev.target.value);
+                  if (submitError) setSubmitError('');
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock className="text-slate-400" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                }}
+              />
+            </div>
 
-            <TextField
-              fullWidth
-              size="small"
-              label="Confirm password"
-              type={showPassword ? 'text' : 'password'}
-              variant="outlined"
-              value={confirm}
-              onChange={(ev) => {
-                setConfirm(ev.target.value);
-                if (submitError) setSubmitError('');
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-              }}
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Confirm password</label>
+              <TextField
+                fullWidth
+                size="small"
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                placeholder="Re-enter your password"
+                value={confirm}
+                onChange={(ev) => {
+                  setConfirm(ev.target.value);
+                  if (submitError) setSubmitError('');
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                }}
+              />
+            </div>
 
             {submitError && (
               <p className="text-xs text-red-600 font-semibold text-center">{submitError}</p>

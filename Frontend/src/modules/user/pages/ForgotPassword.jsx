@@ -72,33 +72,35 @@ const ForgotPassword = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <TextField
-              fullWidth
-              size="small"
-              label="Email"
-              variant="outlined"
-              value={email}
-              onChange={(ev) => {
-                setEmail(ev.target.value);
-                if (emailError) setEmailError('');
-              }}
-              error={!!emailError}
-              helperText={emailError}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email className="text-slate-400" />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(255,255,255,0.7)',
-                },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-              }}
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Email</label>
+              <TextField
+                fullWidth
+                size="small"
+                variant="outlined"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(ev) => {
+                  setEmail(ev.target.value);
+                  if (emailError) setEmailError('');
+                }}
+                error={!!emailError}
+                helperText={emailError}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email className="text-slate-400" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.7)',
+                  },
+                }}
+              />
+            </div>
 
             {submitError && (
               <p className="text-xs text-red-600 font-semibold text-center">{submitError}</p>

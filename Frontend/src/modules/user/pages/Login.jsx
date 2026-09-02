@@ -104,88 +104,92 @@ const Login = () => {
             <p className="text-slate-500 mt-1 text-xs font-medium">Sign in to book courts</p>
           </div>
 
-          <form onSubmit={handleLoginSubmit} className="flex flex-col gap-3">
-            <TextField
-              fullWidth
-              size="small"
-              label="Email Address"
-              variant="outlined"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (emailError) setEmailError('');
-              }}
-              onBlur={() => {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (email && !emailRegex.test(email.trim())) {
-                  setEmailError('Please enter a valid email address');
-                }
-              }}
-              error={!!emailError}
-              helperText={emailError}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                '& .MuiOutlinedInput-root': { 
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(255,255,255,0.7)',
-                  backdropFilter: 'blur(10px)',
-                  '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                  '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                },
-                '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-                '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
-              }}
-            />
+          <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Email Address</label>
+              <TextField
+                fullWidth
+                size="small"
+                variant="outlined"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
+                onBlur={() => {
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (email && !emailRegex.test(email.trim())) {
+                    setEmailError('Please enter a valid email address');
+                  }
+                }}
+                error={!!emailError}
+                helperText={emailError}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'blur(10px)',
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                    '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                  },
+                  '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                  '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
+                }}
+              />
+            </div>
 
-            <TextField
-              fullWidth
-              size="small"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              variant="outlined"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (submitError) setSubmitError('');
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                '& .MuiOutlinedInput-root': { 
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(255,255,255,0.7)',
-                  backdropFilter: 'blur(10px)',
-                  '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                  '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                },
-                '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-              }}
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Password</label>
+              <TextField
+                fullWidth
+                size="small"
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (submitError) setSubmitError('');
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        size="small"
+                      >
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'blur(10px)',
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                    '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                  },
+                  '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                }}
+              />
+            </div>
 
             <div className="flex justify-end mt-1 mb-3">
               <Link to="/forgot-password" className="text-xs font-bold text-[#CE2029] hover:underline">

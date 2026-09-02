@@ -175,22 +175,12 @@ const MarkAttendanceModal = ({ target, onClose, isDark, onSaved }) => {
 
 // ── Attendance Detail Modal ──────────────────────────────────────
 const AttendanceDetailModal = ({ record, onClose, isDark }) => {
-  // Generate student list that matches the record counts
-  const generateStudents = () => {
-    const total = record.present + record.absent;
-    const list = [];
-    for (let i = 0; i < total; i++) {
-      const isPresent = i < record.present;
-      list.push({
-        id: `STU-${101 + i}`,
-        name: `Student ${i + 1}`,
-        present: isPresent,
-      });
-    }
-    return list;
-  };
-
-  const [students] = useState(generateStudents());
+  // Real per-student attendance from the session's saved records — never fabricated.
+  const students = (record.students || []).map((s) => ({
+    id: s.userId,
+    name: s.name || 'Student',
+    present: s.status === 'present' || s.status === 'late',
+  }));
 
   const presentStudents = students.filter(s => s.present);
   const absentStudents = students.filter(s => !s.present);
@@ -333,6 +323,7 @@ const AttendanceRecords = () => {
           present: s.present,
           absent: s.absent,
           status: s.status || 'Logged',
+          students: s.records || [],
         }))
       );
       const batches = batchesRes.batches || [];

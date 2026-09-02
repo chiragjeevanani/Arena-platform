@@ -108,79 +108,83 @@ const CoachLogin = () => {
             {submitError && (
               <p className="text-xs text-red-600 font-semibold text-center">{submitError}</p>
             )}
-            <TextField
-              fullWidth
-              size="small"
-              label="Staff Email"
-              variant="outlined"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (emailError) setEmailError('');
-              }}
-              error={!!emailError}
-              helperText={emailError}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                mb: 2.5,
-                '& .MuiOutlinedInput-root': { 
-                  borderRadius: '16px',
-                  backgroundColor: 'rgba(248,250,252,0.8)',
-                  '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                  '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
-                },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-                '& .MuiFormHelperText-root': { fontWeight: '700', fontSize: '10px' }
-              }}
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Staff Email</label>
+              <TextField
+                fullWidth
+                size="small"
+                variant="outlined"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
+                error={!!emailError}
+                helperText={emailError}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  mb: 2.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '16px',
+                    backgroundColor: 'rgba(248,250,252,0.8)',
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                    '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                  },
+                  '& .MuiFormHelperText-root': { fontWeight: '700', fontSize: '10px' }
+                }}
+              />
+            </div>
 
-            <TextField
-              fullWidth
-              size="small"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              variant="outlined"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (submitError) setSubmitError('');
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                mb: 1.5,
-                '& .MuiOutlinedInput-root': { 
-                  borderRadius: '16px',
-                  backgroundColor: 'rgba(248,250,252,0.8)',
-                  '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                  '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
-                },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-              }}
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Password</label>
+              <TextField
+                fullWidth
+                size="small"
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (submitError) setSubmitError('');
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        size="small"
+                      >
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  mb: 1.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '16px',
+                    backgroundColor: 'rgba(248,250,252,0.8)',
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                    '& fieldset': { borderColor: 'rgba(0,0,0,0.05)' }
+                  },
+                }}
+              />
+            </div>
 
             <div className="flex justify-end mt-1 mb-2">
               <Link to="/forgot-password" className="text-[10px] font-bold text-[#CE2029] hover:underline">

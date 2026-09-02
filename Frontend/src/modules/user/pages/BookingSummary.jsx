@@ -87,11 +87,17 @@ const BookingSummary = () => {
     (acc, s) => acc + (s.pricing?.basePrice ?? serverPricing?.baseAmount ?? perSlotPrice),
     0
   );
-  const memberDiscountAmount = (serverPricing ? serverPricing.discountAmount : 0) * slotCount;
+  // Member discount is a percentage applied to each slot's own price, then summed —
+  // slots can carry different prices (peak vs. standard), so a single slot's discount
+  // must never be multiplied by slotCount.
+  const memberDiscountPercent = serverPricing?.discountPercent || 0;
+  const memberDiscountAmount = memberDiscountPercent > 0
+    ? Math.round(rawSubtotal * memberDiscountPercent) / 100
+    : 0;
 
   // Peak Surcharge Breakdown Calculation — use per-slot pricing from availability API
   const calculatedBasePrice = slotsArray.reduce(
-    (acc, s) => acc + (s.pricing?.basePrice ?? Number(arena?.pricePerHour) ?? perSlotPrice),
+    (acc, s) => acc + (s.pricing?.basePrice ?? (Number(arena?.pricePerHour) || perSlotPrice)),
     0
   );
   const totalPeakSurcharge = slotsArray.reduce((acc, s) => acc + (s.pricing?.peakSurcharge ?? 0), 0);

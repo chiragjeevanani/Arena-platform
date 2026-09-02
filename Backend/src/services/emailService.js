@@ -28,7 +28,7 @@ function getResend() {
   return resend;
 }
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'Arena CRM <onboarding@resend.dev>';
+const FROM_ADDRESS = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'AMM Arena <onboarding@resend.dev>';
 
 async function sendEmail({ to, subject, html }) {
   const resendInstance = getResend();

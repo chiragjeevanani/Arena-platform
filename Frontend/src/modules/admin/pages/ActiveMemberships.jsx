@@ -81,6 +81,7 @@ const ActiveMemberships = () => {
           email: m.user?.email || 'N/A',
           phone: m.user?.phone || 'N/A',
           type: m.plan?.name || 'Standard',
+          category: m.plan?.category || 'non-premium',
           price: m.plan?.price || 0,
           startDate: new Date(m.startsAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           endDate: new Date(m.expiresAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -133,7 +134,7 @@ ID: ${member.id}002934
 Name: ${member.firstName} ${member.surname}
 Email: ${member.email}
 Phone: ${member.phone}
-Plan Type: ${member.type === 'GAP' ? 'Gold Annual Premium' : 'General Annual'}
+Plan Type: ${member.type}
 Price: OMR ${member.price.toFixed(3)}
 Start Date: ${member.startDate}
 End Date: ${member.endDate}
@@ -183,7 +184,7 @@ Email: ${member.email}
 Phone: ${member.phone}
 
 SUBSCRIPTION DETAILS:
-Plan: ${member.type === 'GAP' ? 'Gold Annual Premium' : 'General Annual Membership'}
+Plan: ${member.type}
 Duration: ${member.startDate} to ${member.endDate}
 Arena ID: ${selectedArenaId || 'N/A'}
 
@@ -370,7 +371,7 @@ Thank you for choosing Arena Platform!
                       <div>
                         <h4 className="text-sm font-black text-[#1e293b] leading-none mb-1.5 flex items-center gap-2">
                           {member.firstName} {member.surname}
-                          {member.type === 'GAP' && <ArrowUpRight size={12} className="text-[#eb483f]" />}
+                          {member.category === 'premium' && <ArrowUpRight size={12} className="text-[#eb483f]" />}
                         </h4>
                         <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400">
                            <span className="flex items-center gap-1"><Mail size={10} /> {member.email}</span>
@@ -380,7 +381,7 @@ Thank you for choosing Arena Platform!
                   </td>
                   <td className="px-6 py-5">
                     <div className="space-y-1">
-                      <p className="text-xs font-black text-[#1e293b]">{member.type === 'GAP' ? 'Gold Annual Premium' : 'General Annual'}</p>
+                      <p className="text-xs font-black text-[#1e293b]">{member.type}</p>
                       <p className="text-[10px] font-extrabold uppercase text-[#eb483f] tracking-tighter">OMR {member.price.toFixed(3)} Paid</p>
                     </div>
                   </td>
@@ -551,7 +552,7 @@ Thank you for choosing Arena Platform!
                    </div>
                    <div>
                       <h3 className="text-xl font-black text-[#1e293b] mb-1">{selectedMember.firstName} {selectedMember.surname}</h3>
-                      <p className="text-sm font-bold text-[#eb483f]">{selectedMember.type === 'GAP' ? 'Gold Annual Premium' : 'General Annual Member'}</p>
+                      <p className="text-sm font-bold text-[#eb483f]">{selectedMember.type}</p>
                       <div className="flex items-center gap-4 mt-2">
                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
                             <Phone size={12} /> {selectedMember.phone}

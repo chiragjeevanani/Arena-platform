@@ -141,7 +141,9 @@ const SlotSelection = () => {
             price: serverPrice,
             pricing: s.pricing || null,   // full pricing object from backend
             isPeak,
-            type: isPrimeTimeSlot(s.timeSlot) ? 'prime' : 'nonPrime',
+            // Prefer the server's authoritative pricing category (peak/prime/standard/service);
+            // only fall back to the time-based heuristic when the server doesn't supply one.
+            type: s.pricing?.type || (isPrimeTimeSlot(s.timeSlot) ? 'prime' : 'nonPrime'),
           };
         });
         setApiSlots(mapped);
@@ -203,12 +205,8 @@ const SlotSelection = () => {
   const selectedSlotObjs = allDaySlots.filter(s => selectedSlotIds.has(s.id));
   const hasSelection = selectedSlotObjs.length > 0;
 
-  // For pricing card: use first slot as representative (mixed types use per-slot logic inside card)
+  // For pricing card: use first slot as representative (each slot is priced individually inside the card)
   const primarySlotObj = selectedSlotObjs[0] ?? null;
-  // Use the server-computed price from the availability API (already accounts for peak/weekend/normal)
-  const priceOverride =
-    useLiveSlots && primarySlotObj ? Number(primarySlotObj.price) || Number(arena?.pricePerHour) || 0 : null;
-  const showApiRate = useLiveSlots && hasSelection;
 
   // Toggle a slot in/out of the selection set
   const toggleSlot = (slotId) => {
@@ -232,18 +230,16 @@ const SlotSelection = () => {
     if (selectedSlotObjs.length === 0) return;
     const dateYmd = toYMDFromDateString(selectedDate);
 
-    // Build a serverPricing object from the first selected slot's backend pricing,
-    // carrying over the member discount % from the arena-level pricing fetch
-    // (the availability API's per-slot pricing doesn't know about the logged-in
-    // user's membership, so it can't compute this itself).
+    // Carry over the member discount % from the arena-level pricing fetch (the
+    // availability API's per-slot pricing doesn't know about the logged-in user's
+    // membership, so it can't compute this itself). BookingSummary applies this
+    // percent to each selected slot's own price and sums the result — it must NOT
+    // be pre-multiplied by slot count here, since slots can have different prices.
     const firstSlotPricing = selectedSlotObjs[0]?.pricing;
     const discountPercent = serverPricing?.discountPercent || 0;
-    const discountAmount = Math.round(firstSlotPricing?.finalPrice * discountPercent) / 100;
     const slotServerPricing = firstSlotPricing
       ? {
           baseAmount: firstSlotPricing.basePrice,
-          finalAmount: Math.round((firstSlotPricing.finalPrice - discountAmount) * 100) / 100,
-          discountAmount,
           discountPercent,
           pricingType: firstSlotPricing.type,
           peakSurcharge: firstSlotPricing.peakSurcharge,
@@ -541,8 +537,8 @@ const SlotSelection = () => {
 
               {(() => {
                 const filteredSlots = allDaySlots.filter((slot) => {
-                  if (slotFilter === 'prime') return slot.type === 'prime';
-                  if (slotFilter === 'nonPrime') return slot.type === 'nonPrime';
+                  if (slotFilter === 'prime') return slot.type === 'prime' || slot.type === 'peak';
+                  if (slotFilter === 'nonPrime') return slot.type !== 'prime' && slot.type !== 'peak';
                   return true;
                 });
                 return (
@@ -675,9 +671,8 @@ const SlotSelection = () => {
                   slots={selectedSlotObjs}
                   slot={primarySlotObj}
                   isMember={useLiveSlots ? isCustomer : true}
-                  adminOverride={showApiRate ? priceOverride : null}
-                  showOverrideBanner={!showApiRate}
-                  serverPricing={selectedSlotObjs.length === 1 ? serverPricing : null}
+                  useServerPrice={useLiveSlots}
+                  memberDiscountPercent={serverPricing?.discountPercent}
                 />
               ) : (
                 <div className="rounded-[32px] p-10 bg-white border border-slate-100 shadow-sm text-center flex flex-col items-center justify-center min-h-[220px]">
@@ -719,10 +714,9 @@ const SlotSelection = () => {
             slots={selectedSlotObjs.length > 0 ? selectedSlotObjs : null}
             slot={primarySlotObj}
             isMember={useLiveSlots ? isCustomer : true}
-            adminOverride={showApiRate ? priceOverride : null}
-            showOverrideBanner={!showApiRate}
+            useServerPrice={useLiveSlots}
+            memberDiscountPercent={serverPricing?.discountPercent}
             compact
-            serverPricing={selectedSlotObjs.length === 1 ? serverPricing : null}
           />
           <button
             type="button"

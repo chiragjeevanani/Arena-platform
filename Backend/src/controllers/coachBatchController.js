@@ -178,6 +178,11 @@ async function listCoachAttendanceHistory(req, res) {
   const q = { batchId: { $in: batchIds } };
   if (from && to) q.sessionDate = { $gte: from, $lte: to };
   const rows = await CoachingAttendance.find(q).sort({ sessionDate: -1 }).lean();
+
+  const studentIds = [...new Set(rows.flatMap((row) => (row.records || []).map((r) => String(r.userId))))];
+  const students = studentIds.length ? await User.find({ _id: { $in: studentIds } }).lean() : [];
+  const nameById = new Map(students.map((s) => [String(s._id), s.name || 'Student']));
+
   const sessions = rows.map((row) => {
     const recs = row.records || [];
     const present = recs.filter((r) => r.status === 'present' || r.status === 'late').length;
@@ -190,6 +195,12 @@ async function listCoachAttendanceHistory(req, res) {
       present,
       absent,
       status: 'Logged',
+      // Real per-student attendance so the coach UI never has to fabricate names.
+      records: recs.map((r) => ({
+        userId: String(r.userId),
+        name: nameById.get(String(r.userId)) || 'Student',
+        status: r.status,
+      })),
     };
   });
   return res.json({ sessions });

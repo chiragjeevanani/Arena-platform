@@ -1,3 +1,5 @@
+import { isSlotTimePassed } from './slotTime';
+
 const STATUS_BADGES = {
   Upcoming: { statusBg: '#E88E3E', statusText: '#ffffff' },
   Completed: { statusBg: '#76A87A', statusText: '#ffffff' },
@@ -17,6 +19,13 @@ function displayStatus(b) {
   if (b.status === 'completed') return 'Completed';
   if (b.status === 'rescheduled') return 'Rescheduled';
   if (b.paymentStatus === 'refunded') return 'Refunded';
+  // Mirror meBookingAdapter.js: a 'confirmed'/'pending' booking whose slot time
+  // has already passed reads as Completed here too, so the admin ledger never
+  // disagrees with what the customer sees on their own Dashboard for the same
+  // booking.
+  if ((b.status === 'confirmed' || b.status === 'pending') && b.date && isSlotTimePassed(b.date, b.timeSlot)) {
+    return 'Completed';
+  }
   return 'Upcoming';
 }
 

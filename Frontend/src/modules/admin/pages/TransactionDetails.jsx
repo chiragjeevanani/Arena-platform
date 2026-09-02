@@ -241,11 +241,11 @@ const TransactionDetails = () => {
                     <div className="mt-12 pt-8 border-t-2 border-dashed border-slate-100 space-y-3">
                        <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                           <span>Subtotal</span>
-                          <span className="text-[#36454F]">OMR {sale.totalAmount.toFixed(3)}</span>
+                          <span className="text-[#36454F]">OMR {sale.subtotal.toFixed(3)}</span>
                        </div>
                        <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                          <span>Service Charge & Tax (18%)</span>
-                          <span className="text-[#36454F]">Inclusive</span>
+                          <span>Service Charge & Tax ({Math.round(sale.taxRate * 100)}%)</span>
+                          <span className="text-[#36454F]">OMR {sale.taxAmount.toFixed(3)}</span>
                        </div>
                        <div className="flex justify-between items-end pt-4 border-t border-slate-50">
                           <div>
@@ -376,11 +376,11 @@ const TransactionDetails = () => {
          <div className="border-t-2 border-slate-200 pt-4 space-y-1">
             <div className="flex justify-between">
                <span>Subtotal</span>
-               <span>{sale.totalAmount.toFixed(3)}</span>
+               <span>{sale.subtotal.toFixed(3)}</span>
             </div>
             <div className="flex justify-between">
-               <span>Tax (18%)</span>
-               <span>Inclusive</span>
+               <span>Tax ({Math.round(sale.taxRate * 100)}%)</span>
+               <span>{sale.taxAmount.toFixed(3)}</span>
             </div>
             <div className="flex justify-between text-base font-bold pt-2">
                <span>TOTAL PAID</span>

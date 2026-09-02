@@ -29,6 +29,9 @@ const posSaleSchema = new mongoose.Schema(
       required: true,
     },
     lines: { type: [saleLineSchema], required: true },
+    subtotal: { type: Number, required: true, min: 0 },
+    taxRate: { type: Number, required: true, min: 0, default: 0 },
+    taxAmount: { type: Number, required: true, min: 0, default: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
     customer: {
       id: { type: String, default: 'GUEST-01' },
@@ -47,6 +50,11 @@ function toPublic(doc) {
     arenaId: String(o.arenaId),
     recordedByUserId: String(o.recordedByUserId),
     lines: o.lines,
+    // Older sales recorded before tax tracking existed have no subtotal/tax split —
+    // fall back to totalAmount so they still render sensibly.
+    subtotal: o.subtotal ?? o.totalAmount,
+    taxRate: o.taxRate ?? 0,
+    taxAmount: o.taxAmount ?? 0,
     totalAmount: o.totalAmount,
     customer: o.customer || { id: 'GUEST-01', name: 'Walk-in Customer', phone: 'N/A' },
     createdAt: o.createdAt,

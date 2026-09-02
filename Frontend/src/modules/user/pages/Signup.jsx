@@ -312,41 +312,44 @@ const Signup = () => {
               {submitError && (
                 <p className="text-xs text-red-600 font-semibold text-center">{submitError}</p>
               )}
-              <div className="grid grid-cols-1 gap-4">
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Full Name"
-                  variant="outlined"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (submitError) setSubmitError('');
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                    },
-                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+              <div className="grid grid-cols-1 gap-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Full Name</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (submitError) setSubmitError('');
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        backdropFilter: 'blur(10px)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                      },
+                      '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    }}
+                  />
+                </div>
 
-                <TextField
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Phone Number</label>
+                  <TextField
                   fullWidth
                   size="small"
-                  label="Phone Number"
                   variant="outlined"
                   value={phone}
                   onChange={(e) => {
@@ -423,71 +426,76 @@ const Signup = () => {
                       '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
                     },
                     '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
                     '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
                   }}
-                />
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Full Address"
-                  variant="outlined"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="e.g. Street 12, Al Khuwair, Muscat"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Home fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                    },
-                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Country"
-                  variant="outlined"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  placeholder="e.g. Oman or UAE"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Public fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                    },
-                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Full Address</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="e.g. Street 12, Al Khuwair, Muscat"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Home fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        backdropFilter: 'blur(10px)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                      },
+                      '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    }}
+                  />
+                </div>
 
-                <TextField
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Country</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="e.g. Oman or UAE"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Public fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        backdropFilter: 'blur(10px)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                      },
+                      '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Email Address</label>
+                  <TextField
                   fullWidth
                   size="small"
-                  label="Email Address"
                   variant="outlined"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -518,130 +526,135 @@ const Signup = () => {
                       '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
                     },
                     '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
                     '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
                   }}
-                />
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Create Password"
-                  type={showPassword ? 'text' : 'password'}
-                  variant="outlined"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (passwordError) setPasswordError('');
-                  }}
-                  error={!!passwordError}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          size="small"
-                        >
-                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '&.Mui-error fieldset': { borderColor: '#d32f2f' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                    },
-                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-                    '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
-                  }}
-                />
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Create Password</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type={showPassword ? 'text' : 'password'}
+                    variant="outlined"
+                    placeholder="Minimum 8 characters"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    error={!!passwordError}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        backdropFilter: 'blur(10px)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '&.Mui-error fieldset': { borderColor: '#d32f2f' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                      },
+                      '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    }}
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Confirm Password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  variant="outlined"
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    if (passwordError) setPasswordError('');
-                  }}
-                  error={!!passwordError}
-                  helperText={passwordError}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle confirm password visibility"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          edge="end"
-                          size="small"
-                        >
-                          {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '&.Mui-error fieldset': { borderColor: '#d32f2f' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                    },
-                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' },
-                    '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
-                  }}
-                />
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Confirm Password</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    variant="outlined"
+                    placeholder="Re-enter your password"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    error={!!passwordError}
+                    helperText={passwordError}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock fontSize="small" className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle confirm password visibility"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        backdropFilter: 'blur(10px)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '&.Mui-error fieldset': { borderColor: '#d32f2f' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                      },
+                      '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                      '& .MuiFormHelperText-root': { marginLeft: '4px', fontWeight: '500' }
+                    }}
+                  />
+                </div>
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Referral Code (Optional)"
-                  variant="outlined"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Gift size={18} className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: '12px',
-                      backgroundColor: 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
-                      '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
-                    },
-                    '& .MuiOutlinedInput-input': { paddingY: '8px' },
-                    '& .MuiInputLabel-root.Mui-focused': { color: '#CE2029' }
-                  }}
-                />
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Referral Code (Optional)</label>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    placeholder="Enter referral code"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Gift size={18} className="text-slate-400 group-focus-within:text-[#CE2029] transition-colors" />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        backdropFilter: 'blur(10px)',
+                        '&.Mui-focused fieldset': { borderColor: '#CE2029', borderWidth: '2px' },
+                        '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' }
+                      },
+                      '& .MuiOutlinedInput-input': { paddingY: '8px' },
+                    }}
+                  />
+                </div>
               </div>
 
               <FormControlLabel

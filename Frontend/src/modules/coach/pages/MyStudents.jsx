@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Users, Search, Filter, MoreHorizontal, MessageSquare, 
-  Star, GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck, Target,
+  Users, Search, Filter, MoreHorizontal, MessageSquare,
+  GraduationCap, XCircle, Trash2, CheckCircle2, UserCheck, Target,
   Calendar, TrendingUp, BarChart3, ChevronLeft, ChevronRight, AlertCircle, Clock
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
@@ -492,21 +492,10 @@ const MyStudents = () => {
                       <span className={`${isDark ? 'text-white/40' : 'text-slate-400'} uppercase tracking-wider`}>Level</span>
                       <span className="text-blue-500">{student.level}</span>
                    </div>
-                   <div className="flex justify-between text-[10px] font-bold">
-                      <span className={`${isDark ? 'text-white/40' : 'text-slate-400'} uppercase tracking-wider`}>Attnd</span>
-                      <span className="text-[#CE2029]">{student.attendance}</span>
-                   </div>
                 </div>
 
                 <div className={`p-2 rounded-lg border flex items-center justify-between mb-3 ${isDark ? 'bg-black/20 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                    <div className="space-y-0.5">
-                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Rating</span>
-                      <div className="flex items-center gap-1">
-                         <Star size={10} className="text-[#CE2029] fill-[#CE2029]" />
-                         <span className={`text-[11px] font-bold ${isDark ? 'text-white' : 'text-[#36454F]'}`}>{student.rating}</span>
-                      </div>
-                   </div>
-                   <div className="text-right space-y-0.5">
                       <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? 'text-white/20' : 'text-slate-400'}`}>Status</span>
                       <p className={`text-[9px] font-bold uppercase ${student.status === 'Active' ? 'text-[#CE2029]' : 'text-slate-400'}`}>{student.status}</p>
                    </div>

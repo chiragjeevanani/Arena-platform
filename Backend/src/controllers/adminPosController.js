@@ -7,6 +7,12 @@ function roundMoney(n) {
   return Math.round(Number(n) * 100) / 100;
 }
 
+// Matches the rate the POS register displays and collects from the customer
+// (Frontend/src/modules/admin/pages/RetailPOS.jsx). Computed server-side —
+// never trust a tax/total figure sent by the client — so every sale's
+// persisted totalAmount actually matches what was charged.
+const POS_TAX_RATE = 0.18;
+
 async function createPosSale(req, res) {
   const { arenaId, lines, customer } = req.body;
   const recordedByUserId = req.auth.sub;
@@ -70,11 +76,16 @@ async function createPosSale(req, res) {
       applied.push({ id: line.inventoryItemId, qty: line.qty });
     }
 
-    const totalAmount = roundMoney(normalized.reduce((s, l) => s + l.lineTotal, 0));
+    const subtotal = roundMoney(normalized.reduce((s, l) => s + l.lineTotal, 0));
+    const taxAmount = roundMoney(subtotal * POS_TAX_RATE);
+    const totalAmount = roundMoney(subtotal + taxAmount);
     const sale = await PosSale.create({
       arenaId,
       recordedByUserId,
       lines: normalized,
+      subtotal,
+      taxRate: POS_TAX_RATE,
+      taxAmount,
       totalAmount,
       customer,
     });
