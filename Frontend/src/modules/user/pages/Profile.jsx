@@ -693,11 +693,11 @@ const Profile = () => {
                 onClick={() => setShowDeleteModal(true)}
                 className={`w-full mt-2 px-4 py-3 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest ${
                   isDark
-                    ? 'bg-transparent border-transparent text-slate-600 hover:text-red-500 hover:bg-red-500/5'
-                    : 'bg-transparent border-transparent text-slate-400 hover:text-red-500 hover:bg-red-50'
+                    ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 hover:text-red-300'
+                    : 'bg-red-50/50 border-red-100 text-[#CE2029] hover:bg-red-100/60'
                 }`}
               >
-                <Trash2 size={14} /> Delete Account
+                <Trash2 size={14} className="text-[#CE2029]" /> Delete Account
               </button>
             </div>
           </div>
