@@ -281,6 +281,11 @@ function App() {
               <Route path="profile/help" element={<Help />} />
 
               <Route path="profile/points-wallet" element={<PointsWalletPage />} />
+            </Route>
+
+            {/* Public legal/policy pages - must stay accessible without logging in
+                (required for payment gateway compliance and signup consent links) */}
+            <Route path="/" element={<UserLayout />}>
               <Route path="terms" element={<Terms />} />
               <Route path="privacy" element={<PublicPrivacy />} />
               <Route path="delivery-policy" element={<DeliveryPolicy />} />
