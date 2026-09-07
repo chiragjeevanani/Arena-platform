@@ -85,6 +85,13 @@ export function resendVerificationRequest(email) {
   });
 }
 
+export function deleteAccountRequest(password) {
+  return apiJson('/api/auth/delete-account', {
+    method: 'POST',
+    body: { password },
+  });
+}
+
 export async function logoutRequest() {
   const rt = getRefreshToken();
   try {

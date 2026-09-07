@@ -13,6 +13,7 @@ const {
   verifyEmailOtp,
   sendLoginOtp,
   resendVerification,
+  deleteAccount,
 } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/auth');
 const { asyncHandler } = require('../utils/asyncHandler');
@@ -34,5 +35,6 @@ router.post('/verify-email-otp', authRateLimit, asyncHandler(verifyEmailOtp));
 router.get('/verify-email', asyncHandler(verifyEmail));
 router.post('/resend-verification', authRateLimit, asyncHandler(resendVerification));
 router.get('/me', requireAuth, asyncHandler(me));
+router.post('/delete-account', requireAuth, authRateLimit, asyncHandler(deleteAccount));
 
 module.exports = router;

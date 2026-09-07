@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X, Calendar, BarChart3, Gift, CalendarDays, Check } from 'lucide-react';
+import { User, History, Wallet, Bell, Shield, HelpCircle, LogOut, ChevronRight, Pencil, Star, Settings, ArrowLeft, MapPin, QrCode, Ticket, Zap, Trophy, TrendingUp, ChevronLeft, CreditCard, Crown, CheckCircle2, Activity, FileText, Download, X, Calendar, BarChart3, Gift, CalendarDays, Check, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { listMyBookings } from '../../../services/bookingsApi';
 import { getMyWallet, listMyMemberships, listMyEnrollments, getMyEnrollmentById } from '../../../services/meApi';
+import { deleteAccountRequest } from '../../../services/authApi';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { storage } from '../../../utils/storage';
@@ -63,6 +64,7 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState(
     storage.getItem('userProfileImage') || DEFAULT_AVATAR
   );
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -685,10 +687,33 @@ const Profile = () => {
               >
                 <LogOut size={14} /> Logout
               </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className={`w-full mt-2 px-4 py-3 rounded-2xl border flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest ${
+                  isDark
+                    ? 'bg-transparent border-transparent text-slate-600 hover:text-red-500 hover:bg-red-500/5'
+                    : 'bg-transparent border-transparent text-slate-400 hover:text-red-500 hover:bg-red-50'
+                }`}
+              >
+                <Trash2 size={14} /> Delete Account
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* DELETE ACCOUNT MODAL */}
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        isDark={isDark}
+        onDeleted={async () => {
+          await logout();
+          navigate('/login', { state: { message: 'Your account has been deleted.' } });
+        }}
+      />
 
       {/* OVERALL REPORT CARD MODAL */}
       <ReportCardModal 
@@ -1044,6 +1069,128 @@ const MembershipDetailModal = ({ isOpen, onClose, membership, isDark }) => {
           >
             Dismiss Details
           </button>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+// DELETE ACCOUNT MODAL COMPONENT
+const DeleteAccountModal = ({ isOpen, onClose, isDark, onDeleted }) => {
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  const closeAndReset = () => {
+    setPassword('');
+    setError('');
+    setConfirming(false);
+    setSubmitting(false);
+    onClose();
+  };
+
+  const handleConfirm = async () => {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    if (!password) {
+      setError('Enter your password to confirm');
+      return;
+    }
+    setError('');
+    setSubmitting(true);
+    try {
+      await deleteAccountRequest(password);
+      await onDeleted();
+    } catch (err) {
+      setError(err.message || 'Failed to delete account');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-4 backdrop-blur-md bg-black/70"
+      >
+        <motion.div
+          initial={{ scale: 0.95, y: 15, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.95, y: 15, opacity: 0 }}
+          className={`relative w-full max-w-sm rounded-3xl border p-6 shadow-2xl overflow-hidden ${
+            isDark ? 'bg-[#0f1115] border-white/10 text-white' : 'bg-white border-slate-100 text-slate-900'
+          }`}
+        >
+          <button
+            onClick={closeAndReset}
+            disabled={submitting}
+            className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+              isDark ? 'bg-white/5 text-white/40 hover:bg-white/10' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+            }`}
+          >
+            <X size={16} />
+          </button>
+
+          <div className="flex items-center gap-3.5 mb-4 mt-2">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-red-500/10 text-red-500">
+              <Trash2 size={22} />
+            </div>
+            <h3 className="text-base font-black uppercase tracking-tight">Delete Account</h3>
+          </div>
+
+          <p className={`text-xs font-medium leading-relaxed mb-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            This permanently deactivates your account and signs you out everywhere. Your booking
+            history is kept for records, but you won't be able to log back in. This can't be undone.
+          </p>
+
+          {confirming && (
+            <div className="mb-4">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
+                Confirm your password
+              </label>
+              <div className={`flex items-center rounded-xl border px-3 ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
+                  autoFocus
+                  placeholder="Enter your password"
+                  className={`flex-1 bg-transparent py-2.5 text-sm font-semibold outline-none ${isDark ? 'text-white placeholder:text-slate-600' : 'text-slate-800 placeholder:text-slate-400'}`}
+                />
+                <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-slate-400 hover:text-slate-600">
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {error && <p className="text-[11px] font-semibold text-red-500 mt-1.5">{error}</p>}
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={closeAndReset}
+              disabled={submitting}
+              className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                isDark ? 'bg-white/5 text-slate-300 hover:bg-white/10' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirm}
+              disabled={submitting}
+              className="flex-1 py-3 rounded-xl bg-red-500 text-white text-xs font-black uppercase tracking-widest shadow-md shadow-red-500/20 active:scale-95 transition-all hover:bg-red-600 disabled:opacity-60"
+            >
+              {submitting ? 'Deleting…' : confirming ? 'Confirm Delete' : 'Delete My Account'}
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

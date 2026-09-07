@@ -636,6 +636,41 @@ async function sendLoginOtp(req, res) {
   return res.json({ message: 'Login OTP code sent. Please check your inbox.' });
 }
 
+async function deleteAccount(req, res) {
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required to delete your account' });
+  }
+
+  const user = await User.findById(req.auth.sub).select('+passwordHash');
+  if (!user || !user.isActive) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const match = user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
+  if (!match) {
+    return res.status(401).json({ error: 'Incorrect password' });
+  }
+
+  user.isActive = false;
+  user.email = `deleted+${user._id}@deleted.account`;
+  user.passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+  user.fcmTokens = [];
+  await user.save();
+
+  await RefreshToken.updateMany(
+    { userId: user._id, revokedAt: null },
+    { $set: { revokedAt: new Date() } }
+  );
+
+  await AuditLog.create({
+    action: 'account_deleted',
+    meta: { userId: user._id.toString() },
+  }).catch(() => {});
+
+  return res.json({ ok: true });
+}
+
 module.exports = {
   register,
   login,
@@ -650,4 +685,5 @@ module.exports = {
   verifyEmailOtp,
   sendLoginOtp,
   resendVerification,
+  deleteAccount,
 };
