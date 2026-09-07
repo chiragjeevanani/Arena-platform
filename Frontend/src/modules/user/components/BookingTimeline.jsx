@@ -277,7 +277,7 @@ const BookingTimelineCard = ({
           </div>
 
           {/* Footer */}
-          <div className="px-3 pb-3 pt-0 bg-slate-50/30 rounded-b-xl">
+          <div className="px-3 pb-3 pt-3 bg-slate-50/30 rounded-b-xl">
             {/* Countdown row */}
             {booking.status === 'Upcoming' && !isCancelled && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-100 shadow-sm mb-3 w-fit">
