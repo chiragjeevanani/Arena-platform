@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
-import { loginRequest } from '../../../services/authApi';
+import { loginRequest, resendVerificationRequest, verifyEmailOtpRequest } from '../../../services/authApi';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 import Logo from '../../../assets/Logo (3).png';
 
@@ -21,7 +21,83 @@ const Login = () => {
   const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otpError, setOtpError] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [resendTimer, setResendTimer] = useState(60);
+  const [resending, setResending] = useState(false);
+
   const { login } = useAuth();
+
+  useEffect(() => {
+    let interval = null;
+    if (needsVerification && resendTimer > 0) {
+      interval = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [needsVerification, resendTimer]);
+
+  const handleOtpChange = (index, value) => {
+    if (value && !/^\d+$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.substring(value.length - 1);
+    setOtp(newOtp);
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`login-otp-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`login-otp-${index - 1}`);
+      if (prevInput) {
+        prevInput.focus();
+        const newOtp = [...otp];
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+      }
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0 || resending) return;
+    setOtpError('');
+    setResending(true);
+    try {
+      await resendVerificationRequest(email.trim().toLowerCase());
+      setResendTimer(60);
+      setOtp(['', '', '', '', '', '']);
+      const firstInput = document.getElementById('login-otp-0');
+      if (firstInput) firstInput.focus();
+    } catch (err) {
+      setOtpError(err.message || 'Failed to resend verification OTP');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleVerifyOtpSubmit = async (e) => {
+    e.preventDefault();
+    setOtpError('');
+    const code = otp.join('');
+    if (code.length < 6) {
+      setOtpError('Please enter the full 6-digit OTP code');
+      return;
+    }
+    setVerifying(true);
+    try {
+      const data = await verifyEmailOtpRequest(email.trim().toLowerCase(), code);
+      login({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+      const from = location.state?.from || '/';
+      navigate(from, { replace: true, state: location.state });
+    } catch (err) {
+      setOtpError(err.message || 'OTP verification failed');
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   useEffect(() => {
     const st = location.state;
@@ -63,7 +139,19 @@ const Login = () => {
         const from = location.state?.from || '/';
         navigate(from, { replace: true, state: location.state });
       } catch (err) {
-        setSubmitError(err.message || 'Invalid email or password');
+        if (err.status === 403 && /verify your email/i.test(err.message || '')) {
+          try {
+            await resendVerificationRequest(email.trim().toLowerCase());
+          } catch {
+            // ignore; user can still tap "Resend" from the OTP screen
+          }
+          setOtp(['', '', '', '', '', '']);
+          setOtpError('');
+          setResendTimer(60);
+          setNeedsVerification(true);
+        } else {
+          setSubmitError(err.message || 'Invalid email or password');
+        }
       } finally {
         setLoading(false);
       }
@@ -89,14 +177,93 @@ const Login = () => {
         className="relative z-10 w-full md:max-w-[320px] bg-transparent md:bg-white md:p-8 md:rounded-3xl rounded-[40px] md:shadow-[0_20px_60px_rgba(206, 32, 41,0.08)] md:border md:border-slate-100"
       >
         <div className="space-y-6">
+          {needsVerification ? (
+            <div className="text-center py-2 space-y-6">
+              <button
+                onClick={() => setNeedsVerification(false)}
+                className="mb-2 text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 text-xs font-semibold"
+              >
+                Back to Login
+              </button>
+
+              <div className="w-16 h-16 bg-[#CE2029]/10 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                <Email className="text-[#CE2029] text-3xl" />
+              </div>
+
+              <div className="space-y-2">
+                <h1 className="text-2xl font-black text-[#0F172A] tracking-tight">Verify Your Email</h1>
+                <p className="text-slate-500 text-xs font-medium px-2 leading-relaxed">
+                  We've sent a 6-digit OTP code to <br />
+                  <span className="text-[#0F172A] font-bold">{email}</span>. Please enter it below.
+                </p>
+              </div>
+
+              <form onSubmit={handleVerifyOtpSubmit} className="space-y-6">
+                {otpError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-center text-xs font-semibold text-red-800">
+                    {otpError}
+                  </div>
+                )}
+
+                <div className="flex justify-center gap-2">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      id={`login-otp-${index}`}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      autoFocus={index === 0}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      className="w-11 h-14 bg-white/70 border-2 border-slate-100 backdrop-blur-md rounded-xl text-center text-2xl font-black text-[#0F172A] shadow-inner focus:border-[#CE2029] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#CE2029]/5 transition-all outline-none"
+                    />
+                  ))}
+                </div>
+
+                <p className="text-slate-500 font-medium text-xs">
+                  Didn't receive the code?{' '}
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendTimer > 0 || resending}
+                    className="text-[#CE2029] font-bold hover:underline disabled:text-slate-400 disabled:no-underline"
+                  >
+                    {resendTimer > 0 ? `Resend in 0:${String(resendTimer).padStart(2, '0')}` : resending ? 'Resending…' : 'Resend OTP'}
+                  </button>
+                </p>
+
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={verifying}
+                  className="bg-[#CE2029] hover:bg-[#CE2029]/90 py-3 shadow-xl shadow-[#CE2029]/30 active:scale-95 transition-all"
+                  sx={{
+                    borderRadius: '14px',
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    letterSpacing: '0.02em',
+                    backgroundColor: '#CE2029'
+                  }}
+                >
+                  {verifying ? 'Verifying…' : 'Verify & Continue'}
+                </Button>
+              </form>
+            </div>
+          ) : (
+          <>
           <div className="text-center">
             <div className="flex justify-center mb-2">
               <img src={Logo} alt="AMM Sports" className="w-20 h-20 object-contain" />
             </div>
             <div className="w-full max-w-[140px] aspect-square mx-auto mb-2 overflow-hidden pointer-events-none mix-blend-multiply bg-transparent">
-              <Lottie 
-                animationData={badmintonLottie} 
-                loop={true} 
+              <Lottie
+                animationData={badmintonLottie}
+                loop={true}
                 className="w-full h-full"
               />
             </div>
@@ -235,6 +402,8 @@ const Login = () => {
               </Link>
             </div>
           </div>
+          </>
+          )}
         </div>
       </motion.div>
     </div>
