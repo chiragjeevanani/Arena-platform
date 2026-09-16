@@ -150,6 +150,13 @@ const Signup = () => {
         return;
       }
       setPasswordError('');
+      // Phone/address/country are optional — only the format of a phone that was
+      // actually entered is checked.
+      if (phone && phone.length !== selectedCountry.digits) {
+        setPhoneError(`Phone number must be exactly ${selectedCountry.digits} digits for ${selectedCountry.name}`);
+        return;
+      }
+      setPhoneError('');
       setLoading(true);
       try {
         const formattedPhone = phone.trim() ? `${selectedCountry.code}${phone.trim()}` : '';
@@ -174,11 +181,8 @@ const Signup = () => {
       return;
     }
 
-    if (!phone) {
-      setPhoneError('Phone number is required');
-      return;
-    }
-    if (phone.length !== selectedCountry.digits) {
+    // Phone is optional — only validate the format when the user actually typed one.
+    if (phone && phone.length !== selectedCountry.digits) {
       setPhoneError(`Phone number must be exactly ${selectedCountry.digits} digits for ${selectedCountry.name}`);
       return;
     }
@@ -346,7 +350,7 @@ const Signup = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Phone Number</label>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Phone Number <span className="font-semibold text-slate-400">(Optional)</span></label>
                   <TextField
                   fullWidth
                   size="small"
@@ -432,7 +436,7 @@ const Signup = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Full Address</label>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Full Address <span className="font-semibold text-slate-400">(Optional)</span></label>
                   <TextField
                     fullWidth
                     size="small"
@@ -461,7 +465,7 @@ const Signup = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Country</label>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5 ml-0.5">Country <span className="font-semibold text-slate-400">(Optional)</span></label>
                   <TextField
                     fullWidth
                     size="small"

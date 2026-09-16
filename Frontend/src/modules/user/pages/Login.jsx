@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
-import { Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Email, Lock, Visibility, VisibilityOff, ArrowForward } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../context/AuthContext';
@@ -28,7 +28,12 @@ const Login = () => {
   const [resendTimer, setResendTimer] = useState(60);
   const [resending, setResending] = useState(false);
 
-  const { login } = useAuth();
+  const { login, continueAsGuest } = useAuth();
+
+  const handleSkip = () => {
+    continueAsGuest();
+    navigate('/', { replace: true });
+  };
 
   useEffect(() => {
     let interval = null;
@@ -170,7 +175,19 @@ const Login = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-[#CE2029]/10 rounded-full blur-[80px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-[#CE2029]/10 rounded-full blur-[80px]" />
 
-      <motion.div 
+      {/* Lets people explore the app without an account */}
+      {!needsVerification && (
+        <button
+          type="button"
+          onClick={handleSkip}
+          className="absolute top-5 right-5 z-20 flex items-center gap-1 rounded-full border border-[#CE2029]/20 bg-white/80 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#CE2029] shadow-sm backdrop-blur-md transition-all hover:bg-white active:scale-95"
+        >
+          Skip
+          <ArrowForward sx={{ fontSize: 14 }} />
+        </button>
+      )}
+
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
@@ -396,6 +413,13 @@ const Login = () => {
               Don't have an account? {' '}
               <Link to="/signup" className="text-[#CE2029] font-black underline underline-offset-4">Sign Up</Link>
             </p>
+            <button
+              type="button"
+              onClick={handleSkip}
+              className="text-[11px] font-bold text-slate-400 hover:text-[#CE2029] transition-colors underline underline-offset-4"
+            >
+              Continue as guest
+            </button>
             <div className="pt-4 border-t border-slate-50">
               <Link to="/coach/login" className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] hover:text-[#CE2029] transition-all">
                 Staff & Coach Portal

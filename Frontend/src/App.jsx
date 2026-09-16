@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { lazy, Suspense } from 'react';
 import { Box, CircularProgress } from '@mui/material';
@@ -13,24 +13,53 @@ const CoachLayout = lazy(() => import('./layouts/CoachLayout'));
 const ArenaLayout = lazy(() => import('./layouts/ArenaLayout'));
 
 // Route Guards
+// The shell is open to guests (people who tapped "Skip" on the login screen) so
+// they can browse arenas, events and coaching; anything personal still sits
+// behind ProtectedUserRoute.
 const UserAuthGuard = () => {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn, isGuest, isLoading } = useAuth();
   if (isLoading) {
     return <PageLoader />;
   }
-  if (!isLoggedIn) {
+  if (!isLoggedIn && !isGuest) {
     return <Navigate to="/login" replace />;
   }
   return <UserLayout />;
 };
 
+// Checkout steps only render from the router state the previous step handed
+// them, so bouncing someone back here after login would show an empty summary —
+// they land on Home instead.
+const FLOW_ONLY_PATHS = ['/booking-summary', '/coaching-summary', '/payment', '/booking-success'];
+
 const ProtectedUserRoute = ({ children }) => {
   const { isLoggedIn, isLoading } = useAuth();
+  const location = useLocation();
   if (isLoading) {
     return <PageLoader />;
   }
   if (!isLoggedIn) {
-    return <Navigate to="/login" replace />;
+    const canReturn = !FLOW_ONLY_PATHS.some((p) => location.pathname.startsWith(p));
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={canReturn ? { from: location.pathname + location.search } : undefined}
+      />
+    );
+  }
+  return children;
+};
+
+// Browsable without an account, but still a real page for logged-in users.
+const BrowsableRoute = ({ children }) => {
+  const { isLoggedIn, isGuest, isLoading } = useAuth();
+  const location = useLocation();
+  if (isLoading) {
+    return <PageLoader />;
+  }
+  if (!isLoggedIn && !isGuest) {
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   }
   return children;
 };
@@ -269,18 +298,18 @@ function App() {
               <Route path="arenas" element={<ArenaListing />} />
               <Route path="events" element={<Events />} />
               <Route path="events/:id" element={<EventDetail />} />
-              <Route path="bookings" element={<Dashboard />} />
+              <Route path="bookings" element={<ProtectedUserRoute><Dashboard /></ProtectedUserRoute>} />
               <Route path="coaching" element={<Coaching />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="profile/edit" element={<EditProfile />} />
-              <Route path="profile/wallet" element={<Wallet />} />
-              <Route path="profile/refer-earn" element={<ReferEarn />} />
-              <Route path="profile/attendance" element={<MyAttendance />} />
-              <Route path="profile/notifications" element={<Notifications />} />
-              <Route path="profile/privacy" element={<Privacy />} />
-              <Route path="profile/help" element={<Help />} />
+              <Route path="profile" element={<ProtectedUserRoute><Profile /></ProtectedUserRoute>} />
+              <Route path="profile/edit" element={<ProtectedUserRoute><EditProfile /></ProtectedUserRoute>} />
+              <Route path="profile/wallet" element={<ProtectedUserRoute><Wallet /></ProtectedUserRoute>} />
+              <Route path="profile/refer-earn" element={<ProtectedUserRoute><ReferEarn /></ProtectedUserRoute>} />
+              <Route path="profile/attendance" element={<ProtectedUserRoute><MyAttendance /></ProtectedUserRoute>} />
+              <Route path="profile/notifications" element={<ProtectedUserRoute><Notifications /></ProtectedUserRoute>} />
+              <Route path="profile/privacy" element={<ProtectedUserRoute><Privacy /></ProtectedUserRoute>} />
+              <Route path="profile/help" element={<ProtectedUserRoute><Help /></ProtectedUserRoute>} />
 
-              <Route path="profile/points-wallet" element={<PointsWalletPage />} />
+              <Route path="profile/points-wallet" element={<ProtectedUserRoute><PointsWalletPage /></ProtectedUserRoute>} />
             </Route>
 
             {/* Public legal/policy pages - must stay accessible without logging in
@@ -296,11 +325,11 @@ function App() {
             </Route>
 
             {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
-            <Route path="/arenas/:id" element={<ProtectedUserRoute><ArenaDetails /></ProtectedUserRoute>} />
-            <Route path="/book/:arenaId/:courtId" element={<ProtectedUserRoute><SlotSelection /></ProtectedUserRoute>} />
+            <Route path="/arenas/:id" element={<BrowsableRoute><ArenaDetails /></BrowsableRoute>} />
+            <Route path="/book/:arenaId/:courtId" element={<BrowsableRoute><SlotSelection /></BrowsableRoute>} />
             <Route path="/booking-summary" element={<ProtectedUserRoute><BookingSummary /></ProtectedUserRoute>} />
             <Route path="/coaching-summary" element={<ProtectedUserRoute><CoachingSummary /></ProtectedUserRoute>} />
-            <Route path="/membership" element={<ProtectedUserRoute><MembershipPlans /></ProtectedUserRoute>} />
+            <Route path="/membership" element={<BrowsableRoute><MembershipPlans /></BrowsableRoute>} />
             <Route path="/payment" element={<ProtectedUserRoute><Payment /></ProtectedUserRoute>} />
             <Route path="/payment/bank-muscat/return" element={<ProtectedUserRoute><BankMuscatReturn /></ProtectedUserRoute>} />
             <Route path="/booking-success" element={<ProtectedUserRoute><BookingSuccess /></ProtectedUserRoute>} />

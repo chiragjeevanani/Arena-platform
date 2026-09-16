@@ -53,8 +53,15 @@ function readInitialUser() {
   return null;
 }
 
+function readInitialGuest() {
+  return storage.getItem('guestMode') === 'true';
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(readInitialUser);
+  // Guest mode lets someone browse the app (home, arenas, events, coaching)
+  // without an account — everything personal still requires a real login.
+  const [isGuest, setIsGuest] = useState(readInitialGuest);
   const [isLoading, setIsLoading] = useState(() => {
     if (!isApiConfigured()) return false;
     return Boolean(getAuthToken());
@@ -62,9 +69,11 @@ export const AuthProvider = ({ children }) => {
 
   const clearSession = useCallback(() => {
     setUser(null);
+    setIsGuest(false);
     clearAuthTokens();
     storage.removeItem('user');
     storage.removeItem('isLoggedIn');
+    storage.removeItem('guestMode');
   }, []);
 
   useEffect(() => {
@@ -116,8 +125,21 @@ export const AuthProvider = ({ children }) => {
 
   const isLoggedIn = !!user;
 
+  const continueAsGuest = useCallback(() => {
+    storage.setItem('guestMode', 'true');
+    setIsGuest(true);
+    setIsLoading(false);
+  }, []);
+
+  const exitGuestMode = useCallback(() => {
+    storage.removeItem('guestMode');
+    setIsGuest(false);
+  }, []);
+
   const login = useCallback(
     (payload = {}) => {
+      storage.removeItem('guestMode');
+      setIsGuest(false);
       if (payload.token && payload.user) {
         setAuthToken(payload.token);
         if (payload.refreshToken) {
@@ -150,8 +172,10 @@ export const AuthProvider = ({ children }) => {
     }
     await logoutRequest();
     setUser(null);
+    setIsGuest(false);
     storage.removeItem('user');
     storage.removeItem('isLoggedIn');
+    storage.removeItem('guestMode');
     storage.removeItem('userBookings');
     setIsLoading(false);
   }, []);
@@ -184,7 +208,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, isLoggedIn, isLoading, login, logout, hasPermission }}
+      value={{ user, setUser, isLoggedIn, isGuest, isLoading, login, logout, continueAsGuest, exitGuestMode, hasPermission }}
     >
       {children}
     </AuthContext.Provider>
