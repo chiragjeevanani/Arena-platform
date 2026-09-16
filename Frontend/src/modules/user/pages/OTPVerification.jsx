@@ -5,6 +5,7 @@ import { Message, ArrowBackIos } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { getOtpMode, isApiConfigured } from '../../../services/config';
 import { verifyOtpRequest } from '../../../services/authApi';
+import { useOtpFocus } from '../../../utils/useOtpFocus';
 
 const OTPVerification = () => {
   const navigate = useNavigate();
@@ -13,25 +14,26 @@ const OTPVerification = () => {
   const [sending, setSending] = useState(false);
 
   const otpMode = getOtpMode();
+  const { focusBox, handleBlur } = useOtpFocus('otp', 4);
 
   const handleChange = (index, value) => {
     // Only allow numbers
     if (value && !/^\d+$/.test(value)) return;
-    
+
     const newOtp = [...otp];
     newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
 
     // Auto focus next
     if (value && index < 3) {
-      document.getElementById(`otp-${index + 1}`).focus();
+      focusBox(index + 1);
     }
   };
 
   const handleKeyDown = (index, e) => {
     // Handling backspace to focus previous input
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      document.getElementById(`otp-${index - 1}`).focus();
+      focusBox(index - 1);
     }
   };
 
@@ -121,6 +123,7 @@ const OTPVerification = () => {
                 autoFocus={index === 0}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                onBlur={handleBlur}
                 className="w-14 h-16 sm:w-16 sm:h-20 bg-white/70 border-2 border-slate-100 backdrop-blur-md rounded-2xl text-center text-3xl font-black text-[#0F172A] shadow-inner focus:border-[#CE2029] focus:bg-white focus:outline-none focus:ring-8 focus:ring-[#CE2029]/5 transition-all outline-none"
               />
             ))}

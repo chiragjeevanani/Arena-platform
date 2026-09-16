@@ -7,6 +7,7 @@ import Lottie from 'lottie-react';
 import { useAuth } from '../context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
 import { loginRequest, resendVerificationRequest, verifyEmailOtpRequest } from '../../../services/authApi';
+import { useOtpFocus } from '../../../utils/useOtpFocus';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 import Logo from '../../../assets/Logo (3).png';
 
@@ -29,6 +30,7 @@ const Login = () => {
   const [resending, setResending] = useState(false);
 
   const { login, continueAsGuest } = useAuth();
+  const { focusBox, handleBlur: handleOtpBlur } = useOtpFocus('login-otp', 6, needsVerification);
 
   const handleSkip = () => {
     continueAsGuest();
@@ -49,20 +51,16 @@ const Login = () => {
     newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
     if (value && index < 5) {
-      const nextInput = document.getElementById(`login-otp-${index + 1}`);
-      if (nextInput) nextInput.focus();
+      focusBox(index + 1);
     }
   };
 
   const handleOtpKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`login-otp-${index - 1}`);
-      if (prevInput) {
-        prevInput.focus();
-        const newOtp = [...otp];
-        newOtp[index - 1] = '';
-        setOtp(newOtp);
-      }
+      focusBox(index - 1);
+      const newOtp = [...otp];
+      newOtp[index - 1] = '';
+      setOtp(newOtp);
     }
   };
 
@@ -74,8 +72,7 @@ const Login = () => {
       await resendVerificationRequest(email.trim().toLowerCase());
       setResendTimer(60);
       setOtp(['', '', '', '', '', '']);
-      const firstInput = document.getElementById('login-otp-0');
-      if (firstInput) firstInput.focus();
+      focusBox(0);
     } catch (err) {
       setOtpError(err.message || 'Failed to resend verification OTP');
     } finally {
@@ -234,6 +231,7 @@ const Login = () => {
                       autoFocus={index === 0}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      onBlur={handleOtpBlur}
                       className="w-11 h-14 bg-white/70 border-2 border-slate-100 backdrop-blur-md rounded-xl text-center text-2xl font-black text-[#0F172A] shadow-inner focus:border-[#CE2029] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#CE2029]/5 transition-all outline-none"
                     />
                   ))}
