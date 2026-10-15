@@ -4,14 +4,14 @@ const Arena = require('../models/Arena');
 const PosSale = require('../models/PosSale');
 
 function roundMoney(n) {
-  return Math.round(Number(n) * 100) / 100;
+  return Math.round(Number(n) * 1000) / 1000; // OMR has 3 decimals
 }
 
-// Matches the rate the POS register displays and collects from the customer
-// (Frontend/src/modules/admin/pages/RetailPOS.jsx). Computed server-side —
-// never trust a tax/total figure sent by the client — so every sale's
-// persisted totalAmount actually matches what was charged.
-const POS_TAX_RATE = 0.18;
+// Oman VAT, matching what the POS register displays (Frontend/src/utils/tax.js).
+// Computed server-side — never trust a tax/total figure sent by the client — so every
+// sale's persisted totalAmount actually matches what was charged.
+const { vatPercent } = require('../services/catalogPricing');
+const POS_TAX_RATE = vatPercent() / 100;
 
 async function createPosSale(req, res) {
   const { arenaId, lines, customer } = req.body;

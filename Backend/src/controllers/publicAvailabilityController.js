@@ -3,10 +3,10 @@ const Court = require('../models/Court');
 const CourtSlot = require('../models/CourtSlot');
 const Booking = require('../models/Booking');
 const Arena = require('../models/Arena');
-const AvailabilityBlock = require('../models/AvailabilityBlock');
 const UserMembership = require('../models/UserMembership');
 const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
 const { evaluatePricing } = require('../services/pricingEngine');
+const { isValidYmd, listCourtDayAvailability } = require('../services/slotAvailability');
 
 const timeToMinutes = (t) => {
   if (!t) return 0;
@@ -21,19 +21,6 @@ const timeToMinutes = (t) => {
   return finalH * 60 + (m || 0);
 };
 
-const isSlotBlocked = (timeSlot, blocks) => {
-  if (!blocks || blocks.length === 0) return false;
-  const [sStartStr, sEndStr] = timeSlot.split(' - ');
-  const sStart = timeToMinutes(sStartStr);
-  const sEnd = timeToMinutes(sEndStr);
-
-  return blocks.some(b => {
-    const bStart = timeToMinutes(b.startTime);
-    const bEnd = timeToMinutes(b.endTime);
-    return (sStart < bEnd) && (sEnd > bStart);
-  });
-};
-
 async function getCourtAvailability(req, res) {
   const { courtId } = req.params;
   const { date } = req.query;
@@ -42,7 +29,8 @@ async function getCourtAvailability(req, res) {
     return res.status(400).json({ error: 'Invalid court id' });
   }
 
-  if (!date || typeof date !== 'string' || !date.trim()) {
+  const dateStr = typeof date === 'string' ? date.trim() : '';
+  if (!isValidYmd(dateStr)) {
     return res.status(400).json({ error: 'Query ?date=YYYY-MM-DD is required' });
   }
 
@@ -52,42 +40,17 @@ async function getCourtAvailability(req, res) {
   }
 
   const arena = await Arena.findById(court.arenaId).lean();
+  const courtActive = court.status !== 'inactive';
 
-  const dateStr = date.trim();
-  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const dateObj = new Date(dateStr + 'T12:00:00Z'); // noon UTC to avoid TZ boundary issues
-  const dayOfWeek = DAY_NAMES[dateObj.getUTCDay()];
+  // Public slots for this court/day minus confirmed bookings, arena blocks and weekly
+  // slots held by slot memberships — the same rules booking creation enforces.
+  const dayAvailability = await listCourtDayAvailability(court, dateStr);
 
-  // 1. Fetch public configured slots for this court and day (Exclude Academy, Reserved, Maintenance)
-  let configuredSlots = await CourtSlot.find({
-    arenaId: court.arenaId,
-    courtId: String(courtId),
-    dayOfWeek,
-    isActive: true,
-    status: 'Available',
-    type: { $in: ['Public', 'Normal', 'Peak', null] },
-  }).sort({ startTime: 1 }).lean();
-
-  // 2. Fetch Bookings and AvailabilityBlocks
-  const [booked, blocks] = await Promise.all([
-    Booking.find(buildCourtAvailabilityQuery({ courtId: court._id, date: dateStr }))
-      .select('timeSlot')
-      .lean(),
-    AvailabilityBlock.find({
-      courtId: court._id,
-      date: dateStr,
-    }).lean()
-  ]);
-
-  const bookedSet = new Set(booked.map((b) => b.timeSlot));
-
-  // 3. Map slots enriched with backend pricing engine calculation
-  const slots = configuredSlots.map((s) => {
-    const isAvail = !bookedSet.has(s.timeSlot) && !isSlotBlocked(s.timeSlot, blocks);
+  const slots = dayAvailability.map(({ slot: s, available }) => {
     const pricingRes = evaluatePricing({ arena, court, date: dateStr, timeSlot: s.timeSlot, slot: s });
     return {
       timeSlot: s.timeSlot,
-      available: isAvail,
+      available: courtActive && available,
       price: pricingRes.price,
       pricing: pricingRes.pricing,
     };

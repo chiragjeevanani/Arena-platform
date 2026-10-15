@@ -11,8 +11,8 @@ const GUESTS = [
 ];
 
 const GuestSystem = () => {
-  const [guests, setGuests] = useState(GUESTS);
-  const [showModal, setShowModal] = useState(false);
+  const [guests] = useState(GUESTS);
+  const [, setShowModal] = useState(false);
 
   return (
     <div className="space-y-6">

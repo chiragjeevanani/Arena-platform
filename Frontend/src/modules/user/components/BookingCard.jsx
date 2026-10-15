@@ -72,7 +72,7 @@ const BookingCard = ({ booking, index = 0 }) => {
               { icon: MapPin, label: 'Court', value: booking.courtName, color: 'text-[#CE2029]' },
               { icon: Calendar, label: 'Start', value: booking.fmtStart, color: 'text-emerald-600' },
               { icon: Clock, label: 'Slot', value: booking.slot?.replace('–', '–'), color: 'text-blue-600' },
-            ].map(({ icon: Icon, label, value, color }) => (
+            ].map(({ icon: _Icon, label, value, color }) => (
               <div key={label} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                 <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
                   {label}

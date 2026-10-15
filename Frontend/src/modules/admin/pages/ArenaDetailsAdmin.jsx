@@ -10,8 +10,6 @@ import {
   Clock, Wrench, Activity, BarChart3
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fetchPublicArenaById } from '../../../services/arenasApi';
-import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import DailyCourtBookingReport from './DailyCourtBookingReport';
@@ -460,7 +458,7 @@ const ArenaDetailsAdmin = () => {
                       <input 
                         type="number" step="0.001" value={courtToEdit.pricePerHour ?? ''} 
                         onChange={e => setCourtToEdit({...courtToEdit, pricePerHour: e.target.value})}
-                        placeholder="Leave empty for base rate"
+                        placeholder={`Empty = arena rate (OMR ${Number(form.pricePerHour || 0).toFixed(3)})`}
                         className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white"
                       />
                    </div>

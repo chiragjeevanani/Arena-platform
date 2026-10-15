@@ -168,10 +168,19 @@ export async function apiJson(path, options = {}) {
     if (res.status === 401 && shouldAttempt401Refresh(path, skipAuth, _retriedAfter401)) {
       const rt = getRefreshToken();
       if (rt) {
+        let refreshed = false;
         try {
           await refreshAccessToken();
-          return apiJson(path, { ...options, _retriedAfter401: true });
-        } catch {
+          refreshed = true;
+        } catch (refreshErr) {
+          // Only a real rejection of the refresh token ends the session. A network blip or
+          // server error (no status / 5xx) must not log the user out — the request just fails.
+          const rejected = [400, 401, 403].includes(refreshErr?.status);
+          if (!rejected) {
+            const err = new Error('Network problem — please try again.');
+            err.status = refreshErr?.status || 0;
+            throw err;
+          }
           clearAuthTokens();
           // AuthContext owns the React `user`/isLoggedIn state and has no way to
           // observe a token clear that happens here, outside React. Without this,
@@ -179,6 +188,9 @@ export async function apiJson(path, options = {}) {
           // next full reload — so every subsequent authenticated call 401s again,
           // bouncing the user back to /login repeatedly ("logged out again and again").
           window.dispatchEvent(new Event('auth:sessionExpired'));
+        }
+        if (refreshed) {
+          return apiJson(path, { ...options, _retriedAfter401: true });
         }
       }
     }

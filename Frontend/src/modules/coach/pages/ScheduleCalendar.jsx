@@ -132,8 +132,7 @@ const ScheduleCalendar = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [leaves, setLeaves] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showNotificationBadge, setShowNotificationBadge] = useState(true);
+  const [, setLoading] = useState(false);
   const weekDates = getWeekDates(weekOffset);
   const todayDayIdx = getToday();
 
@@ -173,7 +172,6 @@ const ScheduleCalendar = () => {
   const sessionHeight = (duration) => Math.max(duration * cellHeight - (isMobile ? 2 : 3), isMobile ? 24 : 28);
 
   const getMonthDays = (date) => {
-    const start = new Date(date.getFullYear(), date.getMonth(), 1);
     const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     const days = [];
     for (let d = 1; d <= end.getDate(); d++) days.push(new Date(date.getFullYear(), date.getMonth(), d));
@@ -597,7 +595,7 @@ const ScheduleCalendar = () => {
       </AnimatePresence>
 
       <div className="max-w-[1600px] mx-auto min-h-screen">
-        {isMobile ? <MobileView /> : <DesktopView />}
+        {isMobile ? MobileView() : DesktopView()}
       </div>
     </div>
   );

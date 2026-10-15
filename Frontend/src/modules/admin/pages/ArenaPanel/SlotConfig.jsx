@@ -54,7 +54,7 @@ const SlotConfig = () => {
       // Fetch for first day of group to represent the template, or just show all
       const res = await listMyCourtSlots(selectedCourtId, DAY_MAP[dayNums[0]]);
       setSlotsByDay(prev => ({ ...prev, [activeTab]: res.slots }));
-    } catch (err) {
+    } catch {
       showToast('Failed to load slots', 'error');
     } finally {
       setLoadingSlots(false);
@@ -99,7 +99,7 @@ const SlotConfig = () => {
       fetchSlots();
       setShowModal(false);
       setForm(emptyForm);
-    } catch (err) {
+    } catch {
       showToast('Failed to add slots', 'error');
     } finally {
       setSaving(false);
@@ -111,7 +111,7 @@ const SlotConfig = () => {
       await deleteMyCourtSlot(slotId);
       showToast('Slot removed', 'success');
       fetchSlots();
-    } catch (err) {
+    } catch {
       showToast('Failed to remove slot', 'error');
     }
   };

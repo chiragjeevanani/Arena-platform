@@ -1,37 +1,39 @@
+const mongoose = require('mongoose');
 const EventRegistration = require('../models/EventRegistration');
 const CmsContent = require('../models/CmsContent');
 const { asyncHandler } = require('../utils/asyncHandler');
-
 const { deductFromWallet } = require('../services/walletService');
+const { eventPrice } = require('../services/catalogPricing');
 
 const registerForEvent = asyncHandler(async (req, res) => {
-  const { eventId, name, phone, paymentMethod, amount } = req.body;
+  const { eventId, name, phone, paymentMethod } = req.body;
 
   if (!eventId || !name || !phone) {
     return res.status(400).json({ error: 'Missing required registration fields' });
   }
+  if (!mongoose.isValidObjectId(eventId)) {
+    return res.status(400).json({ error: 'Invalid event id' });
+  }
 
   const userId = req.auth?.sub;
 
-  // Handle Wallet Deduction
-  if (paymentMethod === 'wallet' && userId) {
-    const payAmount = Number(amount || 0);
-    if (payAmount > 0) {
-      await deductFromWallet(userId, payAmount, 'event_registration', { eventId });
-    }
-  }
-
-  // Verify event exists
+  // Verify event exists before anything else (money included).
   const event = await CmsContent.findById(eventId);
-  if (!event || event.kind !== 'event') {
+  if (!event || event.kind !== 'event' || !event.isPublished) {
     return res.status(404).json({ error: 'Event not found or invalid' });
   }
 
   const cleanPhone = String(phone).trim();
   const cleanName = String(name).trim();
-  const isFree = event.price ? String(event.price).toLowerCase().includes('free') : false;
+  // Price is parsed from the event's CMS subtitle — the same source the app displays.
+  const { isFree, isTba, amount: price } = eventPrice(event);
+  const noFee = isFree || isTba || !(price > 0);
 
-  const targetStatus = (paymentMethod === 'wallet' || paymentMethod === 'cash' || isFree)
+  if (paymentMethod === 'wallet' && !userId) {
+    return res.status(401).json({ error: 'Please log in to pay with your wallet' });
+  }
+
+  const targetStatus = (noFee || paymentMethod === 'wallet' || paymentMethod === 'cash')
     ? 'Approved'
     : 'PAYMENT_PENDING';
 
@@ -48,31 +50,32 @@ const registerForEvent = asyncHandler(async (req, res) => {
     }
   }
 
-  // Atomic Upsert: Match strictly on { eventId, phone } to prevent duplicate document insertion
-  const filter = {
-    eventId,
-    phone: cleanPhone,
-  };
-
-  const update = {
-    $setOnInsert: {
-      eventId,
-      phone: cleanPhone,
-      name: cleanName,
-      status: targetStatus,
-      ...(userId ? { userId } : {}),
-    },
-  };
-
-  const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-  const registration = await EventRegistration.findOneAndUpdate(filter, update, options);
-
-  // If document already existed in Approved status, reject duplicate registration
-  if (registration.status === 'Approved' || registration.status === 'APPROVED') {
+  const existing = await EventRegistration.findOne({ eventId, phone: cleanPhone });
+  if (existing && (existing.status === 'Approved' || existing.status === 'APPROVED')) {
     return res.status(409).json({ error: 'You are already registered for this event.' });
   }
 
-  // If existing document was in FAILED_PAYMENT or PAYMENT_PENDING, update name/status for retry
+  // Charge the wallet only once we know the registration will go through.
+  if (paymentMethod === 'wallet' && !noFee) {
+    await deductFromWallet(userId, price, 'event_registration', { eventId: String(eventId) });
+  }
+
+  // Atomic Upsert: Match strictly on { eventId, phone } to prevent duplicate document insertion
+  const registration = await EventRegistration.findOneAndUpdate(
+    { eventId, phone: cleanPhone },
+    {
+      $setOnInsert: {
+        eventId,
+        phone: cleanPhone,
+        name: cleanName,
+        status: targetStatus,
+        ...(userId ? { userId } : {}),
+      },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  // Existing FAILED_PAYMENT / PAYMENT_PENDING / Cancelled row: update for this retry
   if (registration.status !== targetStatus || registration.name !== cleanName) {
     registration.name = cleanName;
     registration.status = targetStatus;

@@ -11,7 +11,6 @@ import { getMyWallet, listMyMemberships, listMyEnrollments, getMyEnrollmentById 
 import { deleteAccountRequest } from '../../../services/authApi';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { storage } from '../../../utils/storage';
 
 const DEFAULT_AVATAR =
   'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop';
@@ -61,9 +60,10 @@ const Profile = () => {
   const [favoriteArenas] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [stats, setStats] = useState({ arenasVisited: 0, bookingsTotal: 0 });
-  const [profileImage, setProfileImage] = useState(
-    storage.getItem('userProfileImage') || DEFAULT_AVATAR
-  );
+  const [performanceData, setPerformanceData] = useState({
+    weekly: { overall: 0, trend: '—', categories: [] },
+    monthly: { overall: 0, trend: '—', categories: [] },
+  });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
@@ -183,7 +183,7 @@ const Profile = () => {
                 });
 
                 return Object.entries(groups)
-                  .filter(([_, ms]) => ms.length > 0)
+                  .filter(([__, ms]) => ms.length > 0)
                   .map(([name, ms]) => ({
                     name,
                     score: Math.round(ms.reduce((acc, i) => acc + i.score, 0) / ms.length),
@@ -217,10 +217,6 @@ const Profile = () => {
   const [performanceMode, setPerformanceMode] = useState('weekly');
   const [showReportCard, setShowReportCard] = useState(false);
   const [showMembershipModal, setShowMembershipModal] = useState(false);
-  const [performanceData, setPerformanceData] = useState({
-    weekly: { overall: 0, trend: '—', categories: [] },
-    monthly: { overall: 0, trend: '—', categories: [] },
-  });
 
   const displayName = user?.name?.trim() || 'Your profile';
   const roleLabel = user?.role ? String(user.role).replace(/_/g, ' ') : 'Member';
@@ -782,7 +778,6 @@ const ReportCardModal = ({ isOpen, onClose, isDark, data, mode, user, activeCoac
     A: cat.score,
   }));
 
-  const handleDownload = () => window.print();
 
   return (
     <AnimatePresence>

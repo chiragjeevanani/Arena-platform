@@ -1,10 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CourtIcon, StadiumIcon, ShuttleCalendarIcon, RacketIcon, PlayerAvatarIcon } from './BadmintonIcons';
-import { useTheme } from '../context/ThemeContext';
 
 const DesktopNavbar = () => {
-  const { isDark } = useTheme();
 
   const navItems = [
     { path: '/', label: 'Home', icon: CourtIcon },

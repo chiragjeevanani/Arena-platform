@@ -8,6 +8,7 @@ const CourtSlot = require('../models/CourtSlot');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const User = require('../models/User');
 const { buildCourtAvailabilityQuery, buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
+const { evaluatePricing } = require('../services/pricingEngine');
 
 // Helper to convert time string to minutes for comparison
 const timeToMins = (t) => {
@@ -28,7 +29,7 @@ const timeToMins = (t) => {
  */
 async function getWalkinCourts(req, res) {
   const courts = await Court.find({ arenaId: req.arenaScopeId, status: 'active' })
-    .select('_id name type pricePerHour')
+    .select('_id name type pricePerHour priceOverride')
     .lean();
 
   return res.json({
@@ -36,7 +37,7 @@ async function getWalkinCourts(req, res) {
       id: c._id.toString(),
       name: c.name,
       type: c.type,
-      pricePerHour: c.pricePerHour,
+      pricePerHour: c.priceOverride ? c.pricePerHour : null,
     })),
   });
 }
@@ -51,7 +52,7 @@ async function getWalkinSlots(req, res) {
   if (!courtId || !mongoose.isValidObjectId(courtId)) {
     return res.status(400).json({ error: 'courtId is required' });
   }
-  if (!date) {
+  if (!date || !/^d{4}-d{2}-d{2}$/.test(String(date))) {
     return res.status(400).json({ error: 'date (YYYY-MM-DD) is required' });
   }
 
@@ -59,7 +60,8 @@ async function getWalkinSlots(req, res) {
   const court = await Court.findOne({ _id: courtId, arenaId: req.arenaScopeId }).lean();
   if (!court) return res.status(404).json({ error: 'Court not found in your arena' });
 
-  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+  // Weekday from the calendar date itself (server timezone must not shift it).
+  const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(`${date}T12:00:00Z`).getUTCDay()];
 
   // Get configured slots for this court/day
   const configuredSlots = await CourtSlot.find({
@@ -69,18 +71,25 @@ async function getWalkinSlots(req, res) {
     isActive: true,
   }).sort({ startTime: 1 }).lean();
 
+  // Same price the customer app shows (slot price > court rate > arena rate, peak/weekend rules).
+  const arena = await Arena.findById(req.arenaScopeId).lean();
+  const priceOf = (timeSlot, slot) => evaluatePricing({ arena, court, date, timeSlot, slot }).price;
+
   let baseSlots = [];
   if (configuredSlots.length > 0) {
     baseSlots = configuredSlots.map((s) => ({
       timeSlot: s.timeSlot,
-      price: s.price ?? court.pricePerHour ?? 0,
+      price: priceOf(s.timeSlot, s),
     }));
   } else {
     // Fallback: standard slots
     const hours = ['06:00 AM','07:00 AM','08:00 AM','09:00 AM','10:00 AM','11:00 AM',
                    '12:00 PM','01:00 PM','02:00 PM','03:00 PM','04:00 PM','05:00 PM',
                    '06:00 PM','07:00 PM','08:00 PM','09:00 PM','10:00 PM'];
-    baseSlots = hours.map((t) => ({ timeSlot: `${t} - ${hours[hours.indexOf(t) + 1] || '11:00 PM'}`, price: court.pricePerHour ?? 0 }));
+    baseSlots = hours.map((t) => {
+      const timeSlot = `${t} - ${hours[hours.indexOf(t) + 1] || '11:00 PM'}`;
+      return { timeSlot, price: priceOf(timeSlot, null) };
+    });
   }
 
   // Get booked slots
@@ -124,10 +133,13 @@ async function searchWalkinCustomers(req, res) {
 
   if (query.length < 2) {
     // Return 10 most recent users if no query
-    users = await User.find().sort({ createdAt: -1 }).limit(10).lean();
+    users = await User.find({ role: 'CUSTOMER', isActive: true }).sort({ createdAt: -1 }).limit(10).lean();
   } else {
     const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    // Customers only — staff must not be able to look up admin accounts here.
     users = await User.find({
+      role: 'CUSTOMER',
+      isActive: true,
       $or: [
         { name: regex },
         { email: regex },
@@ -202,9 +214,13 @@ async function createWalkinBooking(req, res) {
     return res.status(400).json({ error: 'Invalid courtId or customerId' });
   }
 
+  if (!/^d{4}-d{2}-d{2}$/.test(String(date))) {
+    return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+  }
+
   // Verify customer exists
   const customer = await User.findById(customerId);
-  if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  if (!customer || !customer.isActive) return res.status(404).json({ error: 'Customer not found' });
 
   // Verify court is in this arena
   const court = await Court.findOne({ _id: courtId, arenaId: req.arenaScopeId }).lean();

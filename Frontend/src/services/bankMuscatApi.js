@@ -7,6 +7,7 @@ import { apiJson } from './apiClient';
 export function createBankMuscatPayment({
   purpose,
   bookingId,
+  bookingIds,
   amount,
   planId,
   batchId,
@@ -20,6 +21,7 @@ export function createBankMuscatPayment({
     body: {
       purpose,
       ...(bookingId ? { bookingId } : {}),
+      ...(bookingIds?.length ? { bookingIds } : {}),
       ...(amount != null ? { amount } : {}),
       ...(planId ? { planId } : {}),
       ...(batchId ? { batchId } : {}),

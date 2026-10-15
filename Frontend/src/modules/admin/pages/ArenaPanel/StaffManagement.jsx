@@ -11,8 +11,8 @@ const STAFF = [
 ];
 
 const StaffManagement = () => {
-  const [staff, setStaff] = useState(STAFF);
-  const [showModal, setShowModal] = useState(false);
+  const [staff] = useState(STAFF);
+  const [, setShowModal] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -42,7 +42,7 @@ const StaffManagement = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-             {staff.map((s, idx) => (
+             {staff.map((s) => (
                 <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

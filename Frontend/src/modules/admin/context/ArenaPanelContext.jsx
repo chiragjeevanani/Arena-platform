@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../user/context/AuthContext';
 import { getMyArena } from '../../../services/arenaStaffApi';
 import { listAdminArenas } from '../../../services/adminOpsApi';
 
-const ArenaPanelContext = createContext();
+export const ArenaPanelContext = createContext(null);
 
 export const useArenaPanel = () => {
   const context = useContext(ArenaPanelContext);

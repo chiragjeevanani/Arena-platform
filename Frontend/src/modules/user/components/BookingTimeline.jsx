@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { shouldCancelBookingViaApi, shouldCancelEnrollmentViaApi, shouldCancelEventRegistrationViaApi } from '../../../utils/bookingCancelPolicy';
+import { getBookingCancelQuote } from '../../../services/bookingsApi';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 
 /**
@@ -26,6 +27,37 @@ const BookingTimelineCard = ({
   const [rescheduleDate, setRescheduleDate] = useState(initialBooking.date || '');
   const [rescheduledDone, setRescheduledDone] = useState(false);
   const [cancelDone, setCancelDone] = useState(false);
+  // Server-side refund quote for court bookings (24h policy), loaded when the dialog opens.
+  const [cancelQuote, setCancelQuote] = useState(null);
+  const [cancelQuoteError, setCancelQuoteError] = useState('');
+  const isCourtBookingApi = shouldCancelBookingViaApi(booking, isApiConfigured(), Boolean(getAuthToken()));
+
+  useEffect(() => {
+    if (!showCancelModal || !isCourtBookingApi) return undefined;
+    let cancelled = false;
+    getBookingCancelQuote(booking.id)
+      .then((q) => { if (!cancelled) { setCancelQuote(q); setCancelQuoteError(''); } })
+      .catch((e) => { if (!cancelled) setCancelQuoteError(e.message || 'Could not load refund details'); });
+    return () => {
+      cancelled = true;
+      setCancelQuote(null);
+    };
+  }, [showCancelModal, isCourtBookingApi, booking.id]);
+
+  const cancelMessage = (() => {
+    if (!isCourtBookingApi) return 'Are you sure you want to cancel?';
+    if (cancelQuoteError) return cancelQuoteError;
+    if (!cancelQuote) return 'Checking your refund…';
+    if (!cancelQuote.cancellable) return 'This booking can no longer be cancelled.';
+    if (!cancelQuote.paid) {
+      return cancelQuote.refundAmount > 0
+        ? `OMR ${Number(cancelQuote.refundAmount).toFixed(3)} taken from your wallet will be returned to it.`
+        : 'No payment has been taken for this booking.';
+    }
+    return cancelQuote.eligible
+      ? `You will get OMR ${Number(cancelQuote.refundAmount).toFixed(3)} back as Arena Wallet credit.`
+      : `This booking starts in less than ${cancelQuote.policyHours} hours, so under our cancellation policy the booking fee is not refundable.`;
+  })();
   const { isDark } = useTheme();
   const navigate = useNavigate();
 
@@ -339,11 +371,12 @@ const BookingTimelineCard = ({
                 </div>
                 <h3 className="text-lg font-black text-[#36454F] text-center">Cancel Booking?</h3>
                 <p className="text-xs text-slate-500 text-center mt-2 leading-relaxed">
-                  Are you sure you want to cancel your booking at <span className="font-bold text-[#36454F]">{booking.arenaName}</span>? A refund of <span className="font-bold text-[#CE2029]">OMR {Number(booking.price).toFixed(3)}</span> will be processed within 5–7 business days.
+                  Cancel your booking at <span className="font-bold text-[#36454F]">{booking.arenaName}</span>?{' '}
+                  <span className={`font-bold ${cancelQuote && cancelQuote.paid && !cancelQuote.eligible ? 'text-red-600' : 'text-[#CE2029]'}`}>{cancelMessage}</span>
                 </p>
                 <div className="mt-6 flex gap-3">
                   <button onClick={() => setShowCancelModal(false)} className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-wider hover:bg-slate-50 transition-all">Keep It</button>
-                  <button onClick={handleCancel} disabled={cancelDone} className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-xs font-black uppercase tracking-wider hover:bg-red-600 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
+                  <button onClick={handleCancel} disabled={cancelDone || (isCourtBookingApi && (!cancelQuote || !cancelQuote.cancellable))} className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-xs font-black uppercase tracking-wider hover:bg-red-600 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
                     {cancelDone ? <><CheckCircle size={14} /> Done</> : 'Yes, Cancel'}
                   </button>
                 </div>

@@ -2,23 +2,21 @@ import React from 'react';
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Sun, Moon, LogIn } from 'lucide-react';
+import CartButton from './CartButton';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ShuttlecockIcon, PlayerAvatarIcon, CourtIcon, StadiumIcon, ShuttleCalendarIcon, RacketIcon } from './BadmintonIcons';
 import ScoreboardSearch from './ScoreboardSearch';
 import DesktopNavbar from './DesktopNavbar';
-import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isDark, toggleTheme } = useTheme();
   const { isLoggedIn } = useAuth();
   const lightRef1 = useRef(null);
   const lightRef2 = useRef(null);
 
-  const isHome = location.pathname === '/';
 
   useEffect(() => {
     if (lightRef1.current && lightRef2.current) {
@@ -122,6 +120,7 @@ const Header = () => {
           {/* 3. Right Corner: Theme, Notification & Auth */}
           <div className="flex justify-end pr-[3px]">
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              <CartButton className="!bg-white/5 !shadow-none" />
               {/* Notification Bell */}
               <button
                 onClick={() => {

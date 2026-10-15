@@ -11,8 +11,8 @@ const TASKS = [
 ];
 
 const MaintenanceScheduler = () => {
-  const [tasks, setTasks] = useState(TASKS);
-  const [showModal, setShowModal] = useState(false);
+  const [tasks] = useState(TASKS);
+  const [, setShowModal] = useState(false);
 
   return (
     <div className="space-y-6">

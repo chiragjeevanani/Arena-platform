@@ -1,6 +1,7 @@
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const Booking = require('../models/Booking');
 const mongoose = require('mongoose');
+const Court = require('../models/Court');
 const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
 
 function mapBlock(doc) {
@@ -35,8 +36,14 @@ async function createMyBlock(req, res) {
     return res.status(400).json({ error: 'courtId, date, startTime, and endTime are required' });
   }
 
-  // Optional: Check for booking conflicts before blocking
-  const conflict = await Booking.findOne(buildCourtAvailabilityQuery({ courtId, date }));
+  if (!mongoose.isValidObjectId(courtId)) {
+    return res.status(400).json({ error: 'Invalid court id' });
+  }
+  // The court must belong to the staff member's arena.
+  const court = await Court.findOne({ _id: courtId, arenaId: req.arenaScopeId }).lean();
+  if (!court) {
+    return res.status(404).json({ error: 'Court not found' });
+  }
 
   const block = await AvailabilityBlock.create({
     arenaId: req.arenaScopeId,

@@ -7,7 +7,8 @@ function mapCourt(c) {
     id: c._id.toString(),
     name: c.name,
     type: c.type,
-    pricePerHour: c.pricePerHour,
+    pricePerHour: c.priceOverride ? c.pricePerHour : null,
+    priceOverride: Boolean(c.priceOverride),
     arenaId: c.arenaId.toString(),
     imageUrl: c.imageUrl || '',
   };

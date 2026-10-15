@@ -126,7 +126,7 @@ const MembershipMgmt = () => {
         if (list.length) {
           setSelectedArenaId((prev) => prev || String(list[0].id));
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setLoadError('Failed to load arenas for membership management.');
           setArenas([]);

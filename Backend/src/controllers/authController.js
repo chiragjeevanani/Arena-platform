@@ -10,6 +10,7 @@ const Referral = require('../models/Referral');
 const ReferralSettings = require('../models/ReferralSettings');
 const StaffAttendance = require('../models/StaffAttendance');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
+const { invalidateAccountCache } = require('../middleware/auth');
 
 function hashOpaqueToken(raw) {
   return crypto.createHash('sha256').update(raw, 'utf8').digest('hex');
@@ -22,6 +23,48 @@ function refreshTokenTtlMs() {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Demo / QA shortcuts. Off unless DEMO_LOGIN_ENABLED=true is set on the server.
+const DEMO_EMAILS = ['coach@gmail.com', 'arenaadmin@gmail.com', 'superadmin@gmail.com', 'chirag@gmail.com', 'user@gmail.com', 'customer@gmail.com'];
+const DEMO_OTP_EMAILS = ['coach@gmail.com', 'arenaadmin@gmail.com', 'superadmin@gmail.com'];
+const DEMO_PASSWORD = '12345678';
+const DEMO_OTP = '123456';
+
+function isDemoLoginEnabled() {
+  return process.env.DEMO_LOGIN_ENABLED === 'true';
+}
+
+/** 6-digit one-time code from a cryptographically secure source. */
+function generateOtp() {
+  return String(crypto.randomInt(100000, 1000000));
+}
+
+// Per-email cap on wrong OTP guesses (a 6-digit code is otherwise brute-forceable).
+const OTP_MAX_FAILURES = 5;
+const otpFailures = new Map();
+
+function otpLockedOut(key) {
+  const entry = otpFailures.get(key);
+  if (!entry) return false;
+  if (Date.now() > entry.resetAt) {
+    otpFailures.delete(key);
+    return false;
+  }
+  return entry.count >= OTP_MAX_FAILURES;
+}
+
+function recordOtpFailure(key) {
+  const now = Date.now();
+  const entry = otpFailures.get(key);
+  if (!entry || now > entry.resetAt) {
+    otpFailures.set(key, { count: 1, resetAt: now + 15 * 60 * 1000 });
+  } else {
+    entry.count += 1;
+  }
+  if (otpFailures.size > 10000) {
+    for (const [k, v] of otpFailures) if (now > v.resetAt) otpFailures.delete(k);
+  }
+}
 
 function validateRegisterBody(body) {
   const errors = [];
@@ -64,7 +107,7 @@ async function register(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(parsed.password, 10);
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const verificationToken = generateOtp();
     const emailVerifyToken = hashOpaqueToken(verificationToken);
     const emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
 
@@ -124,11 +167,12 @@ async function login(req, res) {
 
   let user = await User.findOne({ email }).select('+passwordHash');
 
-  const mockEmails = ['coach@gmail.com', 'arenaadmin@gmail.com', 'superadmin@gmail.com', 'chirag@gmail.com', 'user@gmail.com', 'customer@gmail.com'];
-
-  // Auto-provision demo customer/staff if logging in with demo credentials (12345678)
-  if (!user && (mockEmails.includes(email) || password === '12345678')) {
-    const passwordHash = await bcrypt.hash('12345678', 10);
+  // Demo accounts are auto-created ONLY when explicitly enabled (local/staging), and only
+  // for this fixed list. Previously any new email with password 12345678 was provisioned
+  // (as SUPER_ADMIN if the email contained "admin"), and any existing account — admins
+  // included — accepted 12345678 as its password.
+  if (!user && isDemoLoginEnabled() && DEMO_EMAILS.includes(email) && password === DEMO_PASSWORD) {
+    const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
     const role = email.includes('admin') ? 'SUPER_ADMIN' : email.includes('coach') ? 'COACH' : 'CUSTOMER';
     const rawName = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ').trim() || 'User';
     const name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
@@ -151,13 +195,7 @@ async function login(req, res) {
     return res.status(403).json({ error: 'Please verify your email before logging in.' });
   }
 
-  let match = false;
-
-  if ((mockEmails.includes(email) || password === '12345678') && password === '12345678') {
-    match = true;
-  } else {
-    match = user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
-  }
+  const match = user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
 
   if (!match) {
     return res.status(401).json({ error: 'Invalid email or password' });
@@ -288,7 +326,7 @@ async function resendVerification(req, res) {
       return res.status(400).json({ error: 'Email is already verified' });
     }
 
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const verificationToken = generateOtp();
     user.emailVerifyToken = hashOpaqueToken(verificationToken);
     user.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
     await user.save();
@@ -303,7 +341,7 @@ async function resendVerification(req, res) {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  const verificationToken = generateOtp();
   pendingUser.emailVerifyToken = hashOpaqueToken(verificationToken);
   pendingUser.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
   pendingUser.createdAt = new Date(); // Reset creation time to extend TTL index expiration
@@ -377,7 +415,7 @@ async function forgotPassword(req, res) {
   const user = await User.findOne({ email });
   let otpCode = null;
   if (user && user.isActive) {
-    otpCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    otpCode = generateOtp();
     await PasswordResetToken.create({
       userId: user._id,
       tokenHash: hashOpaqueToken(otpCode),
@@ -406,13 +444,22 @@ async function resetPassword(req, res) {
     return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
 
-  const tokenHash = hashOpaqueToken(otp);
-  const pr = await PasswordResetToken.findOne({
-    tokenHash,
-    usedAt: null,
-    expiresAt: { $gt: new Date() },
-  });
+  // Email is optional for older app builds; when sent, the code must belong to that account.
+  const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const lockKey = `reset:${email || req.ip}`;
+  if (otpLockedOut(lockKey)) {
+    return res.status(429).json({ error: 'Too many incorrect codes. Request a new code and try again later.' });
+  }
+
+  const tokenHash = hashOpaqueToken(otp.trim());
+  const query = { tokenHash, usedAt: null, expiresAt: { $gt: new Date() } };
+  if (email) {
+    const owner = await User.findOne({ email }).select('_id').lean();
+    query.userId = owner ? owner._id : null;
+  }
+  const pr = await PasswordResetToken.findOne(query);
   if (!pr) {
+    recordOtpFailure(lockKey);
     return res.status(400).json({ error: 'Invalid or expired reset token' });
   }
 
@@ -421,10 +468,23 @@ async function resetPassword(req, res) {
     return res.status(400).json({ error: 'Invalid or expired reset token' });
   }
 
+  // Burn the code first so it can't be replayed by a concurrent request.
+  const claimed = await PasswordResetToken.findOneAndUpdate(
+    { _id: pr._id, usedAt: null },
+    { $set: { usedAt: new Date() } }
+  );
+  if (!claimed) {
+    return res.status(400).json({ error: 'Invalid or expired reset token' });
+  }
+
   user.passwordHash = await bcrypt.hash(newPassword, 10);
   await user.save();
-  pr.usedAt = new Date();
-  await pr.save();
+
+  // A password reset signs out every other session.
+  await RefreshToken.updateMany(
+    { userId: user._id, revokedAt: null },
+    { $set: { revokedAt: new Date() } }
+  );
 
   await AuditLog.create({
     action: 'password_reset',
@@ -460,10 +520,10 @@ async function verifyEmailOtp(req, res) {
     return res.status(400).json({ error: 'Email and OTP code are required' });
   }
 
-  const mockEmails = ['coach@gmail.com', 'arenaadmin@gmail.com', 'superadmin@gmail.com'];
   let user;
 
-  if (mockEmails.includes(email) && (otp === '123456' || otp === '12345678')) {
+  // Fixed demo OTP only when demo login is explicitly enabled (never in production).
+  if (isDemoLoginEnabled() && DEMO_OTP_EMAILS.includes(email) && otp === DEMO_OTP) {
     user = await User.findOne({ email }).select('+emailVerifyToken +emailVerifyExpires');
     if (!user) {
       return res.status(400).json({ error: 'Mock user not found' });
@@ -473,12 +533,20 @@ async function verifyEmailOtp(req, res) {
     user.emailVerifyExpires = null;
     await user.save();
   } else {
+    const lockKey = `verify:${email}`;
+    if (otpLockedOut(lockKey)) {
+      return res.status(429).json({ error: 'Too many incorrect codes. Request a new code and try again later.' });
+    }
     const tokenHash = hashOpaqueToken(otp);
     user = await User.findOne({
       email,
       emailVerifyToken: tokenHash,
       emailVerifyExpires: { $gt: new Date() },
     }).select('+emailVerifyToken +emailVerifyExpires');
+
+    if (user && !user.isActive) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     if (user) {
       user.isEmailVerified = true;
@@ -493,6 +561,7 @@ async function verifyEmailOtp(req, res) {
       });
 
       if (!pendingUser) {
+        recordOtpFailure(lockKey);
         return res.status(400).json({ error: 'Invalid or expired OTP code' });
       }
 
@@ -574,7 +643,7 @@ async function coachRegister(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(parsed.password, 10);
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const verificationToken = generateOtp();
     const emailVerifyToken = hashOpaqueToken(verificationToken);
     const emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
 
@@ -621,12 +690,11 @@ async function sendLoginOtp(req, res) {
     return res.status(401).json({ error: 'Invalid email address' });
   }
 
-  const mockEmails = ['coach@gmail.com', 'arenaadmin@gmail.com', 'superadmin@gmail.com'];
-  if (mockEmails.includes(email)) {
-    return res.json({ message: 'Mock login OTP code enabled for demo. Use 123456.' });
+  if (isDemoLoginEnabled() && DEMO_OTP_EMAILS.includes(email)) {
+    return res.json({ message: `Mock login OTP code enabled for demo. Use ${DEMO_OTP}.` });
   }
 
-  const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  const verificationToken = generateOtp();
   user.emailVerifyToken = hashOpaqueToken(verificationToken);
   user.emailVerifyExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes OTP expiry
   await user.save();
@@ -657,6 +725,7 @@ async function deleteAccount(req, res) {
   user.passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
   user.fcmTokens = [];
   await user.save();
+  invalidateAccountCache(user._id);
 
   await RefreshToken.updateMany(
     { userId: user._id, revokedAt: null },

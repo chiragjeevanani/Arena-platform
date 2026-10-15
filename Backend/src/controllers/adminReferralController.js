@@ -117,11 +117,15 @@ async function adjustWalletBalance(req, res) {
   }
 
   const increment = type === 'credit' ? numericAmount : -numericAmount;
-  const updated = await Wallet.findByIdAndUpdate(
-    wallet._id,
+  // Conditional update so a concurrent debit can't push the balance below zero.
+  const updated = await Wallet.findOneAndUpdate(
+    type === 'debit' ? { _id: wallet._id, balance: { $gte: numericAmount } } : { _id: wallet._id },
     { $inc: { balance: increment } },
     { new: true }
   );
+  if (!updated) {
+    return res.status(400).json({ error: 'Insufficient wallet balance for this debit adjustment' });
+  }
 
   // Log in wallet transactions
   await WalletTransaction.create({

@@ -4,7 +4,7 @@ import { Search, GraduationCap, Star, Target, ChevronRight, Trophy, X, Activity,
 import { listAdminBatchStudents, enrollOfflineStudent } from '../../../services/adminOpsApi';
 import { COACH_PERFORMANCE_RUBRIC } from '../../coach/utils/performanceRubric';
 
-const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
+const CoachingStudentMatrix = ({ batches = [] }) => {
   const [selectedBatchId, setSelectedBatchId] = useState('');
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,11 +20,6 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
     }
   }, [batches]);
 
-  useEffect(() => {
-    if (!selectedBatchId) return;
-    loadStudents(selectedBatchId);
-  }, [selectedBatchId]);
-
   const loadStudents = async (batchId) => {
     setLoading(true);
     try {
@@ -36,6 +31,11 @@ const CoachingStudentMatrix = ({ arenaId, batches = [] }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!selectedBatchId) return;
+    loadStudents(selectedBatchId);
+  }, [selectedBatchId]);
 
   const filteredStudents = students.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || (s.email && s.email.toLowerCase().includes(searchQuery.toLowerCase()));

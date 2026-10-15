@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, Plus, Edit2, Trash2, X, CheckCircle2, 
@@ -56,7 +56,7 @@ const CourtMgmt = () => {
          setUploadProgress(0);
       }, 300);
       showToast('Court image uploaded', 'success');
-    } catch (err) {
+    } catch {
       clearInterval(progressInterval);
       setUploading(false);
       setUploadProgress(0);

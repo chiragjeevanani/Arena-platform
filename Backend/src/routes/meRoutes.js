@@ -6,6 +6,9 @@ const {
   createMyBooking,
   listMyBookings,
   cancelMyBooking,
+  getCancelQuote,
+  quoteMyCheckout,
+  checkoutMyBookings,
   computeBookingPricing,
 } = require('../controllers/meBookingController');
 const { getMyWallet, topUpMyWallet } = require('../controllers/meWalletController');
@@ -47,7 +50,10 @@ router.use(requireRole('CUSTOMER', 'COACH', 'ARENA_ADMIN'));
 
 router.post('/bookings', asyncHandler(createMyBooking));
 router.post('/bookings/pricing', asyncHandler(computeBookingPricing));
+router.post('/bookings/checkout/quote', asyncHandler(quoteMyCheckout));
+router.post('/bookings/checkout', asyncHandler(checkoutMyBookings));
 router.get('/bookings', asyncHandler(listMyBookings));
+router.get('/bookings/:id/cancel-quote', asyncHandler(getCancelQuote));
 router.patch('/bookings/:id/cancel', asyncHandler(cancelMyBooking));
 
 router.get('/wallet', asyncHandler(getMyWallet));

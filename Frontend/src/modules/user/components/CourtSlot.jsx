@@ -1,16 +1,14 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import gsap from 'gsap';
-import { Star, Check, Zap } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { Star, Check, Zap, ShoppingCart } from 'lucide-react';
 
 /**
  * CourtSlot — Shows time slot with Prime / Non-Prime / Peak classification badge.
  * Supports multi-select: isSelected is a boolean, onSelect toggles slot.id in/out.
  */
-const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
+const CourtSlot = ({ slot, isSelected, onSelect, disabled = false, inCart = false }) => {
   const slotRef = useRef(null);
-  const { isDark } = useTheme();
 
   const isPeak = slot.pricing?.type === 'peak' || slot.type === 'peak' || slot.isPeak;
   const isPrime = slot.type === 'prime';
@@ -60,8 +58,10 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
 
   const config = statusConfig[slot.status] || statusConfig.Blocked;
 
+  const selectable = slot.status === 'Available' && !inCart && !disabled;
+
   const handleSelect = () => {
-    if (disabled || slot.status !== 'Available') return;
+    if (!selectable) return;
     if (slotRef.current) {
       gsap.timeline()
         .to(slotRef.current, { scale: 0.9, duration: 0.06, ease: 'power3.in' })
@@ -78,14 +78,15 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
   return (
     <motion.button
       ref={slotRef}
-      whileTap={slot.status === 'Available' ? { scale: 0.95 } : {}}
-      disabled={slot.status !== 'Available'}
+      whileTap={selectable ? { scale: 0.95 } : {}}
+      disabled={!selectable}
       onClick={handleSelect}
+      title={inCart ? 'Already in your cart' : undefined}
       className={`
         relative py-1.5 px-1 rounded-sm text-center font-black border
         transition-all duration-300 overflow-hidden min-h-[46px] flex flex-col items-center justify-center
-        ${isSelected ? selectedStyles : `${config.bg} ${config.border}`}
-        ${slot.status !== 'Available' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-[#CE2029]/30'}
+        ${inCart ? 'bg-blue-50 border-blue-300' : isSelected ? selectedStyles : `${config.bg} ${config.border}`}
+        ${!selectable ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-[#CE2029]/30'}
       `}
     >
       {/* Peak Badge */}
@@ -96,9 +97,14 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false }) => {
       )}
 
       {/* Time */}
-      <span className={`text-[11px] font-black block leading-tight ${isSelected ? 'text-[#CE2029]' : config.text}`}>
+      <span className={`text-[11px] font-black block leading-tight ${inCart ? 'text-blue-700' : isSelected ? 'text-[#CE2029]' : config.text}`}>
         {slot.time.split(' - ')[0]}
       </span>
+      {inCart && (
+        <span className="text-[7px] font-black uppercase tracking-wider text-blue-600 flex items-center gap-0.5 mt-0.5">
+          <ShoppingCart size={8} strokeWidth={3} /> In cart
+        </span>
+      )}
 
       {/* Selected checkmark */}
       {isSelected && (

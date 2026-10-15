@@ -22,12 +22,10 @@ const Coaching = () => {
   const [batches, setBatches] = useState([]);
   const [enrolledBatches, setEnrolledBatches] = useState([]);
   const [enrolledBatchIds, setEnrolledBatchIds] = useState(new Set());
-  const [batchEnrollmentMap, setBatchEnrollmentMap] = useState({}); // batchId -> enrollmentId
+  const [, setBatchEnrollmentMap] = useState({}); // batchId -> enrollmentId
   const [loading, setLoading] = useState(true);
   const [showEnded, setShowEnded] = useState(false);
 
-  // Compute today's date string once per render cycle for expiry comparison
-  const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     if (!isApiConfigured()) return undefined;
@@ -115,7 +113,7 @@ const Coaching = () => {
   }, []);
 
   // Relaxed expiry check to ensure published batches show up in the customer app
-  const isBatchExpired = (b) => false;
+  const isBatchExpired = (_b) => false;
 
   const activeBatches = batches.filter(b => !isBatchExpired(b));
   const endedBatches  = batches.filter(b => isBatchExpired(b));

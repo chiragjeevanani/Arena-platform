@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Payment = require('../../models/Payment');
 const Booking = require('../../models/Booking');
 const User = require('../../models/User');
+const MembershipPlan = require('../../models/MembershipPlan');
+const CoachingBatch = require('../../models/CoachingBatch');
+const CmsContent = require('../../models/CmsContent');
+const { roundMoney } = require('../../services/pricing');
+const { enrollmentTotal, eventPrice } = require('../../services/catalogPricing');
 const { getBankMuscatConfig } = require('./bankMuscatConfig');
 const { encrypt, decryptQueryToObj } = require('./bankMuscatCrypto');
 const {
@@ -15,6 +20,8 @@ const { finalizeSuccessfulPayment, markPaymentTerminalFailure } = require('../..
 const PROVIDER = 'bank_muscat';
 const OPEN_STATUSES = ['created', 'initiated', 'pending'];
 const ALLOWED_PURPOSES = ['top_up', 'booking', 'membership', 'enrollment'];
+// Cart checkout pays for several court bookings in one gateway transaction.
+const MAX_BOOKINGS_PER_PAYMENT = 20;
 
 function sanitizeClientMeta(meta = {}) {
   const out = {};
@@ -22,6 +29,10 @@ function sanitizeClientMeta(meta = {}) {
   if (meta.planId) out.planId = String(meta.planId);
   if (meta.batchId) out.batchId = String(meta.batchId);
   if (meta.bookingId) out.bookingId = String(meta.bookingId);
+  if (Array.isArray(meta.bookingIds)) {
+    const ids = [...new Set(meta.bookingIds.map(String))].filter((id) => mongoose.isValidObjectId(id));
+    if (ids.length) out.bookingIds = ids.slice(0, MAX_BOOKINGS_PER_PAYMENT);
+  }
   if (meta.eventId) out.eventId = String(meta.eventId);
   if (meta.eventName) out.eventName = String(meta.eventName).slice(0, 200);
   if (meta.registrantName) out.registrantName = String(meta.registrantName).slice(0, 120);
@@ -49,48 +60,76 @@ function assertConfigured() {
  * Resolve trusted amount from DB (never trust client for court bookings).
  * Client amount is allowed for top_up / membership / enrollment / event registration.
  */
-async function resolveTrustedAmount({ purpose, userId, bookingId, requestedAmount, meta = {} }) {
+async function resolveBookingDue(bookingId, userId) {
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    const err = new Error('Booking not found');
+    err.status = 404;
+    throw err;
+  }
+  if (String(booking.userId) !== String(userId)) {
+    const err = new Error('Booking does not belong to this user');
+    err.status = 403;
+    throw err;
+  }
+  if (booking.paymentStatus === 'paid') {
+    const err = new Error('Booking is already paid');
+    err.status = 409;
+    throw err;
+  }
+  if (booking.status === 'cancelled') {
+    const err = new Error('Cannot pay for a cancelled booking');
+    err.status = 400;
+    throw err;
+  }
+  const due = Number(booking.paidAmount > 0 ? booking.paidAmount : Math.max(0, booking.amount - (booking.walletUsed || 0)));
+  if (!Number.isFinite(due) || due <= 0) {
+    const err = new Error('No outstanding amount on this booking');
+    err.status = 400;
+    throw err;
+  }
+  return { booking, due };
+}
+
+async function resolveTrustedAmount({ purpose, userId, bookingId, bookingIds, requestedAmount, meta = {} }) {
   if (purpose === 'booking') {
-    if (bookingId && mongoose.isValidObjectId(bookingId)) {
-      const booking = await Booking.findById(bookingId);
-      if (!booking) {
-        const err = new Error('Booking not found');
-        err.status = 404;
-        throw err;
-      }
-      if (String(booking.userId) !== String(userId)) {
-        const err = new Error('Booking does not belong to this user');
-        err.status = 403;
-        throw err;
-      }
-      if (booking.paymentStatus === 'paid') {
-        const err = new Error('Booking is already paid');
-        err.status = 409;
-        throw err;
-      }
-      if (booking.status === 'cancelled') {
-        const err = new Error('Cannot pay for a cancelled booking');
+    // Cart checkout: one payment settles several bookings; total is summed from the DB.
+    if (Array.isArray(bookingIds) && bookingIds.length > 1) {
+      const ids = [...new Set(bookingIds.map(String))];
+      if (ids.length > MAX_BOOKINGS_PER_PAYMENT || ids.some((id) => !mongoose.isValidObjectId(id))) {
+        const err = new Error('Invalid booking list');
         err.status = 400;
         throw err;
       }
-      const due = Number(booking.paidAmount > 0 ? booking.paidAmount : Math.max(0, booking.amount - (booking.walletUsed || 0)));
-      if (!Number.isFinite(due) || due <= 0) {
-        const err = new Error('No outstanding amount on this booking');
-        err.status = 400;
-        throw err;
-      }
+      const resolved = [];
+      for (const id of ids) resolved.push(await resolveBookingDue(id, userId));
+      const amount = Math.round(resolved.reduce((s, r) => s + r.due, 0) * 1000) / 1000;
+      return { amount, booking: null, bookings: resolved.map((r) => r.booking), currency: 'OMR' };
+    }
+
+    const singleId = bookingId || (Array.isArray(bookingIds) ? bookingIds[0] : undefined);
+    if (singleId && mongoose.isValidObjectId(singleId)) {
+      const { booking, due } = await resolveBookingDue(singleId, userId);
       return { amount: due, booking, currency: 'OMR' };
     }
 
-    // Paid event registration (no Booking document) — client amount + eventId in meta
+    // Paid event registration (no Booking document) — price comes from the event itself.
     if (meta.eventId) {
-      const n = Number(requestedAmount);
-      if (!Number.isFinite(n) || n <= 0) {
-        const err = new Error('amount must be a positive number for event payments');
+      const event = mongoose.isValidObjectId(meta.eventId)
+        ? await CmsContent.findOne({ _id: meta.eventId, kind: 'event', isPublished: true }).lean()
+        : null;
+      if (!event) {
+        const err = new Error('Event not found');
+        err.status = 404;
+        throw err;
+      }
+      const { amount: eventAmount } = eventPrice(event);
+      if (!(eventAmount > 0)) {
+        const err = new Error('This event has no online fee to pay');
         err.status = 400;
         throw err;
       }
-      return { amount: n, booking: null, currency: 'OMR' };
+      return { amount: eventAmount, booking: null, currency: 'OMR' };
     }
 
     const err = new Error('bookingId is required for booking payments');
@@ -98,8 +137,52 @@ async function resolveTrustedAmount({ purpose, userId, bookingId, requestedAmoun
     throw err;
   }
 
-  if (purpose === 'top_up' || purpose === 'membership' || purpose === 'enrollment') {
-    const n = Number(requestedAmount);
+  // Memberships and coaching enrolments are priced from the plan / batch — a client-sent
+  // amount would let someone pay 0.001 OMR for a full membership.
+  if (purpose === 'membership') {
+    const plan = mongoose.isValidObjectId(meta.planId)
+      ? await MembershipPlan.findOne({ _id: meta.planId, isActive: true }).lean()
+      : null;
+    if (!plan) {
+      const err = new Error('Membership plan not found');
+      err.status = 404;
+      throw err;
+    }
+    if (plan.slotBased) {
+      // Activation after payment only exists for regular plans; slot plans are bought with wallet.
+      const err = new Error('Slot-based memberships are paid from the wallet');
+      err.status = 400;
+      throw err;
+    }
+    const planAmount = roundMoney(plan.price);
+    if (!(planAmount > 0)) {
+      const err = new Error('This plan has no fee to pay');
+      err.status = 400;
+      throw err;
+    }
+    return { amount: planAmount, booking: null, currency: 'OMR' };
+  }
+
+  if (purpose === 'enrollment') {
+    const batch = mongoose.isValidObjectId(meta.batchId)
+      ? await CoachingBatch.findById(meta.batchId).lean()
+      : null;
+    if (!batch || !batch.isPublished) {
+      const err = new Error('Coaching batch not found');
+      err.status = 404;
+      throw err;
+    }
+    const total = enrollmentTotal(batch);
+    if (!(total > 0)) {
+      const err = new Error('This batch has no fee to pay');
+      err.status = 400;
+      throw err;
+    }
+    return { amount: total, booking: null, currency: 'OMR' };
+  }
+
+  if (purpose === 'top_up') {
+    const n = roundMoney(requestedAmount);
     if (!Number.isFinite(n) || n <= 0) {
       const err = new Error(`amount must be a positive number for ${purpose}`);
       err.status = 400;
@@ -152,23 +235,33 @@ function buildRedirectPayload(payment, cfg, encRequest) {
  * Create (or reuse) a pending Bank Muscat payment and return redirect fields.
  * Access code is returned for the browser form POST only (not the working key).
  */
-async function createBankMuscatPayment({ userId, purpose, bookingId, amount, meta = {}, req }) {
+async function createBankMuscatPayment({ userId, purpose, bookingId, bookingIds, amount, meta = {}, req }) {
   if (!ALLOWED_PURPOSES.includes(purpose)) {
     const err = new Error(`purpose must be one of: ${ALLOWED_PURPOSES.join(', ')}`);
     err.status = 400;
     throw err;
   }
   const cfg = assertConfigured();
-  const safeMeta = sanitizeClientMeta(meta);
+  const safeMeta = sanitizeClientMeta({ ...meta, bookingIds: bookingIds || meta.bookingIds });
   const trusted = await resolveTrustedAmount({
     purpose,
     userId,
     bookingId,
+    bookingIds: safeMeta.bookingIds,
     requestedAmount: amount,
     meta: safeMeta,
   });
 
-  let payment = await findReusablePendingPayment({
+  // Multi-booking (cart) payments are never reused — a fresh order per checkout.
+  const isMulti = Boolean(trusted.bookings?.length);
+  if (isMulti) {
+    safeMeta.bookingIds = trusted.bookings.map((b) => b._id.toString());
+    safeMeta.bookingId = safeMeta.bookingIds[0];
+  } else {
+    delete safeMeta.bookingIds;
+  }
+
+  let payment = isMulti ? null : await findReusablePendingPayment({
     userId,
     purpose,
     bookingId: trusted.booking?._id?.toString() || bookingId,

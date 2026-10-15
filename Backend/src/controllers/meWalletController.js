@@ -16,7 +16,15 @@ async function getMyWallet(req, res) {
   });
 }
 
+/**
+ * Direct credit with no payment behind it — dev/testing only. In production wallet credit
+ * comes from a verified gateway payment (purpose 'top_up') via payment finalization;
+ * leaving this open let any logged-in user add unlimited money to their own wallet.
+ */
 async function topUpMyWallet(req, res) {
+  if (process.env.ALLOW_DIRECT_WALLET_TOPUP !== 'true') {
+    return res.status(403).json({ error: 'Direct wallet top-up is disabled. Please top up through online payment.' });
+  }
   const userId = req.auth.sub;
   const { amount } = req.body;
 

@@ -1,4 +1,5 @@
 import { isSlotTimePassed } from './slotTime';
+import { VAT_PERCENT } from './tax';
 
 const PLACEHOLDER =
   'https://images.unsplash.com/photo-1626224583764-f87db24d4d83?w=800&q=80';
@@ -40,6 +41,9 @@ export function mapMeBookingToDashboardCard(b, extras = {}) {
     slot: b.timeSlot,
     status: statusLabel(b),
     price: Number(b.amount) || 0,
+    paymentMethod: b.paymentMethod,
+    pricingType: b.pricingType,
+    createdAt: b.createdAt,
     receiptUrl: b.id ? `#receipt-${b.id}` : undefined,
     sortKey: b.date ? `${b.date}T12:00:00` : String(b.id || ''),
   };
@@ -60,7 +64,7 @@ export function mapMeEnrollmentToDashboardCard(e) {
     status: e.status === 'confirmed' ? 'Upcoming' : e.status === 'cancelled' ? 'Cancelled' : 'Upcoming',
     price: Number(e.price) || 0,
     basePrice: Number(e.basePrice) || 0,
-    taxPercent: Number(e.taxPercent) || 18,
+    taxPercent: e.taxPercent != null ? Number(e.taxPercent) || 0 : VAT_PERCENT,
     days: e.days || '',
     timing: e.timing || '',
     attendance: e.attendance || [],

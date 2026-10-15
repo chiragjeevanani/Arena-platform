@@ -46,7 +46,6 @@ const CourtSlotsAdmin = () => {
     fetchSlots();
   }, [arenaId, courtId, selectedDay]);
 
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const deleteSlot = async (id) => {
     try {

@@ -9,6 +9,12 @@ import { useArenaPanel } from '../../context/ArenaPanelContext';
 import { patchMyArena } from '../../../../services/arenaStaffApi';
 import { showToast } from '../../../../utils/toast';
 
+const ToggleSwitch = ({ checked, onToggle }) => (
+  <button onClick={onToggle} className="transition-all shrink-0">
+    {checked ? <ToggleRight size={26} className="text-[#CE2029]" /> : <ToggleLeft size={26} className="text-slate-300" />}
+  </button>
+);
+
 const PricingRules = () => {
   const { arena, loading, refetch } = useArenaPanel();
   const [pricing, setPricing] = useState(null);
@@ -99,7 +105,7 @@ const PricingRules = () => {
       await patchMyArena(payload);
       await refetch();
       showToast('Pricing configurations saved', 'success');
-    } catch (err) {
+    } catch {
       showToast('Failed to save pricing', 'error');
     } finally {
       setSaving(false);
@@ -124,12 +130,6 @@ const PricingRules = () => {
   const removeOverride = (id) => setOverrides(prev => prev.filter(o => o.id !== id));
 
   const inputCls = "w-full py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-[12px] font-bold outline-none focus:border-[#CE2029] focus:bg-white transition-all text-[#36454F]";
-
-  const ToggleSwitch = ({ checked, onToggle }) => (
-    <button onClick={onToggle} className="transition-all shrink-0">
-      {checked ? <ToggleRight size={26} className="text-[#CE2029]" /> : <ToggleLeft size={26} className="text-slate-300" />}
-    </button>
-  );
 
   const SECTIONS = [
     { id: 'slotTypes', label: 'Slot Type Rates', icon: Star },

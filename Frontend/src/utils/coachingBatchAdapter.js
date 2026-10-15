@@ -1,3 +1,4 @@
+import { VAT_PERCENT } from './tax';
 const PLACEHOLDER =
   'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80';
 
@@ -22,8 +23,9 @@ export function mapPublicBatchToCoachCard(batch, arenaName = '') {
       Number.isFinite(batch.capacity) && Number.isFinite(batch.spotsRemaining)
         ? Math.max(0, batch.capacity - batch.spotsRemaining)
         : undefined,
-    registrationFee: Number(batch.registrationFee) ?? 500,
-    taxPercent: Number(batch.taxPercent) ?? 18,
+    // Number(undefined) is NaN (never nullish), so the old `?? default` never applied.
+    registrationFee: batch.registrationFee != null ? Number(batch.registrationFee) || 0 : 0,
+    taxPercent: batch.taxPercent != null ? Number(batch.taxPercent) || 0 : VAT_PERCENT,
     rating: batch.rating || 5.0,
     studentCount: `${batch.enrolledCount || 0} Students`,
     experienceYears: batch.experienceYears || '8+ Years',

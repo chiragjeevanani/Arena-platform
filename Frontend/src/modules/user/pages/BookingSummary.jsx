@@ -6,12 +6,13 @@ import ShuttleButton from '../components/ShuttleButton';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
-import { createMyBooking } from '../../../services/bookingsApi';
-import { getMyWallet, createPaymentIntent } from '../../../services/meApi';
+import { getMyWallet } from '../../../services/meApi';
+import { checkoutCourtLines } from '../../../utils/courtCheckout';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { storage } from '../../../utils/storage';
 import { useEffect } from 'react';
-import { listPublicCoupons, validateCoupon } from '../../../services/couponApi';
+import { VAT_RATE } from '../../../utils/tax';
+import CouponSection from '../components/CouponSection';
 
 function readStoredArenaSafe() {
   try {
@@ -29,17 +30,10 @@ const BookingSummary = () => {
   const { user } = useAuth();
   const [bookingError, setBookingError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' | 'wallet'
   const [walletBalance, setWalletBalance] = useState(null);
   const [useWallet, setUseWallet] = useState(false);
+  const [coupon, setCoupon] = useState(null); // { code, discount, description }
 
-  // Coupon state
-  const [publicCoupons, setPublicCoupons] = useState([]);
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null); // { coupon, discountAmount, finalAmount }
-  const [couponError, setCouponError] = useState('');
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [showCouponSection, setShowCouponSection] = useState(false);
 
   const storedArena = readStoredArenaSafe();
   const { arena: stateArena, court: stateCourt, date, slot, slots: stateSlots, useApiCheckout, dateYmd, serverPricing } = state || {};
@@ -56,10 +50,6 @@ const BookingSummary = () => {
         setWalletBalance(0);
       });
 
-      // Fetch public coupons for display
-      listPublicCoupons().then(data => {
-        setPublicCoupons(data.coupons || []);
-      }).catch(() => {});
     }
   }, [user]);
 
@@ -102,40 +92,26 @@ const BookingSummary = () => {
   );
   const totalPeakSurcharge = slotsArray.reduce((acc, s) => acc + (s.pricing?.peakSurcharge ?? 0), 0);
 
-  // Apply coupon discount on top
-  const couponDeduction = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const subtotal = Math.max(0, rawSubtotal - couponDeduction - memberDiscountAmount);
+  // Coupon applies on top of the member discount (amount quoted by the server).
+  const couponDiscount = coupon ? Number(coupon.discount) || 0 : 0;
+  const subtotal = Math.max(0, rawSubtotal - memberDiscountAmount - couponDiscount);
   const discountAmount = memberDiscountAmount;
 
-  const tax = useLiveCheckout ? 0 : subtotal * 0.18;
+  const tax = useLiveCheckout ? 0 : subtotal * VAT_RATE;
   const totalAmount = subtotal + tax;
   const walletDeduction = useWallet ? Math.min(walletBalance || 0, totalAmount) : 0;
   const finalPayable = totalAmount - walletDeduction;
   const canApiBook = isApiConfigured() && user?.role === 'CUSTOMER';
-
-  // ── Coupon helpers ───────────────────────────────────────────────────────
-  async function handleApplyCoupon(codeToApply) {
-    const code = (codeToApply || couponCode).trim().toUpperCase();
-    if (!code) return;
-    setCouponError('');
-    setCouponLoading(true);
-    try {
-      const result = await validateCoupon({ code, orderAmount: rawSubtotal });
-      setAppliedCoupon({ coupon: result.coupon, discountAmount: result.discountAmount, finalAmount: result.finalAmount });
-      setCouponCode('');
-    } catch (err) {
-      setCouponError(err.message || 'Invalid coupon code.');
-      setAppliedCoupon(null);
-    } finally {
-      setCouponLoading(false);
-    }
-  }
-
-  function handleRemoveCoupon() {
-    setAppliedCoupon(null);
-    setCouponCode('');
-    setCouponError('');
-  }
+  // Lines for the server's coupon quote (plain value — this sits below an early return, so no hooks).
+  const quoteYmd = dateYmd || toYMDFromDateString(date);
+  const couponLines = canApiBook && quoteYmd && court?.id
+    ? slotsArray
+      .map((s) => ({ arenaId: String(arena.id), courtId: String(court.id), date: quoteYmd, timeSlot: s?.timeSlot || s?.time }))
+      .filter((l) => l.timeSlot)
+    : [];
+  const couponBlock = couponLines.length > 0
+    ? <CouponSection lines={couponLines} applied={coupon} onChange={setCoupon} />
+    : null;
 
   const handlePayOrBook = async () => {
     if (canApiBook) {
@@ -145,88 +121,27 @@ const BookingSummary = () => {
         const ymd = dateYmd || toYMDFromDateString(date);
         if (!ymd || !court?.id) throw new Error('Missing date or court');
 
-        // Book each selected slot sequentially
-        let lastBooking = null;
-        for (const s of slotsArray) {
-          const timeSlot = s?.timeSlot || s?.time;
-          if (!timeSlot) throw new Error(`Missing time for slot ${s?.id}`);
-          const res = await createMyBooking({
-            arenaId: String(arena.id),
-            courtId: String(court.id),
-            date: ymd,
-            timeSlot,
-            paymentMethod: finalPayable === 0 ? 'wallet' : 'online',
-            useWallet,
-            couponCode: appliedCoupon?.coupon?.code || undefined,
-          });
-          lastBooking = res;
-        }
+        // Every slot becomes a booking; one payment then covers all of them.
+        const lines = slotsArray.map((s) => ({
+          arenaId: String(arena.id),
+          arenaName: arena.name,
+          arenaImage: arena.image,
+          arenaLocation: arena.location,
+          courtId: String(court.id),
+          courtName: court.name,
+          courtType: court.type,
+          date,
+          dateYmd: ymd,
+          timeSlot: s?.timeSlot || s?.time,
+          price: Number(s?.price) || 0,
+          pricing: s?.pricing || null,
+        }));
+        const result = await checkoutCourtLines({ lines, useWallet, couponCode: coupon?.code, extraState: { arena, court } });
+        if (result.redirected) return;
 
-        if (finalPayable > 0 && lastBooking) {
-          let intent;
-          try {
-            const { createBankMuscatPayment } = await import('../../../services/bankMuscatApi');
-            intent = await createBankMuscatPayment({
-              purpose: 'booking',
-              bookingId: lastBooking.booking.id,
-            });
-          } catch (bmErr) {
-            if (bmErr.status === 503) {
-              intent = await createPaymentIntent({
-                purpose: 'booking',
-                amount: lastBooking?.booking?.amount ?? finalPayable,
-                bookingId: lastBooking.booking.id,
-              });
-            } else {
-              throw bmErr;
-            }
-          }
-
-          const { isBankMuscatRedirectProvider } = await import('../../../services/bankMuscatApi');
-          if (isBankMuscatRedirectProvider(intent?.provider)) {
-            const { saveBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');
-            const { redirectToBankMuscat } = await import('../../../services/ccavenueRedirect');
-            saveBankMuscatCheckoutContext({
-              type: 'booking',
-              amount: lastBooking?.booking?.amount ?? finalPayable,
-              arena,
-              court,
-              date,
-              slot: slotsArray[0],
-              slots: slotsArray,
-              booking: lastBooking?.booking,
-              pricing: lastBooking?.pricing,
-            });
-            redirectToBankMuscat({
-              paymentUrl: intent.paymentUrl,
-              encRequest: intent.encRequest,
-              accessCode: intent.accessCode,
-            });
-            return;
-          } else if (intent?.provider === 'mock') {
-            const { getMockPaymentWebhookSecret } = await import('../../../services/config');
-            const mockSecret = getMockPaymentWebhookSecret();
-            if (mockSecret) {
-              const { confirmMockPayment } = await import('../../../services/meApi');
-              await confirmMockPayment(intent.payment.id, mockSecret);
-            }
-          }
-        }
-
-        navigate('/booking-success', {
-          replace: true,
-          state: {
-            arena,
-            court,
-            date,
-            slot: slotsArray[0],
-            slots: slotsArray,
-            amount: lastBooking?.booking?.amount,
-            booking: lastBooking?.booking,
-            pricing: lastBooking?.pricing,
-          },
-        });
+        navigate('/booking-success', { replace: true, state: result.successState });
       } catch (e) {
+        if (e.couponError) setCoupon(null);
         setBookingError(e.message || 'Booking failed');
       } finally {
         setSubmitting(false);
@@ -428,6 +343,8 @@ const BookingSummary = () => {
 
 
 
+                      {couponBlock}
+
                       {/* Wallet Balance Apply Option */}
                       {walletBalance !== null && walletBalance > 0 ? (
                         <div className={`p-4 rounded-2xl border transition-all ${
@@ -496,6 +413,12 @@ const BookingSummary = () => {
                            <div className="flex justify-between items-center text-[9px] font-bold text-green-500 uppercase tracking-widest">
                               <span>Member Discount</span>
                               <span className="text-green-600 font-black">-OMR {discountAmount.toFixed(3)}</span>
+                           </div>
+                         )}
+                         {couponDiscount > 0 && (
+                           <div className="flex justify-between items-center text-[9px] font-bold text-green-500 uppercase tracking-widest">
+                              <span>Coupon ({coupon.code})</span>
+                              <span className="text-green-600 font-black">-OMR {couponDiscount.toFixed(3)}</span>
                            </div>
                          )}
 
@@ -598,6 +521,11 @@ const BookingSummary = () => {
                      <span>Member Discount</span><span className="text-green-600">-OMR {discountAmount.toFixed(3)}</span>
                   </div>
                  )}
+                 {couponDiscount > 0 && (
+                   <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-green-500">
+                     <span>Coupon ({coupon.code})</span><span className="text-green-600">-OMR {couponDiscount.toFixed(3)}</span>
+                  </div>
+                 )}
 
                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
                     <span>Tax</span><span>OMR {tax.toFixed(3)}</span>
@@ -610,6 +538,8 @@ const BookingSummary = () => {
                </div>
  
 
+
+               {couponBlock}
 
                {/* Mobile Wallet Balance Apply Option */}
                {walletBalance !== null && walletBalance > 0 ? (

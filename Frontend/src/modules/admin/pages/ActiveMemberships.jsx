@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -27,7 +27,6 @@ const ActiveMemberships = () => {
   const [activeMenu, setActiveMenu] = useState(null); // Track which member's meatball menu is open
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [viewType, setViewType] = useState('TABLE'); // TABLE or LIST
   const [arenas, setArenas] = useState([]);
   const [selectedArenaId, setSelectedArenaId] = useState('');
   const navigate = useNavigate();
@@ -43,6 +42,7 @@ const ActiveMemberships = () => {
         if (list.length > 0) {
           setSelectedArenaId(list[0].id);
         } else {
+          // eslint-disable-next-line react-hooks/immutability -- runs after render, fetchData is initialised by then
           fetchData(); // Fetch without arenaId if none found
         }
       } catch (err) {
@@ -205,7 +205,8 @@ Thank you for choosing Arena Platform!
     document.body.removeChild(link);
   };
 
-  const filteredMembers = useMemo(() => {
+  // Cheap filter — computed directly each render.
+  const filteredMembers = (() => {
     return members.filter(member => {
       const matchesSearch = 
         member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -217,7 +218,7 @@ Thank you for choosing Arena Platform!
       
       return matchesSearch && matchesStatus;
     });
-  }, [members, searchTerm, statusFilter]);
+  })();
 
   const toggleMemberStatus = (id) => {
     // Ideally call API to toggle status

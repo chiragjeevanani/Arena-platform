@@ -26,6 +26,11 @@ const SalesHistory = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [toast, setToast] = useState(null);
 
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const loadSales = useCallback(async () => {
     if (!selectedArenaId || !isApiConfigured() || !getAuthToken()) return;
     setIsLoading(true);
@@ -60,11 +65,6 @@ const SalesHistory = () => {
   useEffect(() => {
     loadSales();
   }, [loadSales]);
-
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const filteredSales = sales.filter(s => 
     s.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||

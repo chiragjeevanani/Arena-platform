@@ -8,7 +8,7 @@ const STATUS_BADGES = {
   Refunded: { statusBg: '#64748b', statusText: '#ffffff' },
 };
 
-function paymentLabel(paymentStatus, paymentMethod) {
+function paymentLabel(paymentStatus) {
   if (paymentStatus === 'paid') return 'Paid';
   if (paymentStatus === 'refunded') return 'Refunded';
   return 'Pending';

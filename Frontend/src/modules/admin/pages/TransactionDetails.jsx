@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect} from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
@@ -74,7 +74,7 @@ const TransactionDetails = () => {
               if (styleAttr && styleAttr.includes('oklch')) {
                 el.setAttribute('style', styleAttr.replace(/oklch\([^)]+\)/g, '#CE2029'));
               }
-            } catch (e) {}
+            } catch { /* optional data — keep the page usable without it */ }
           });
 
           // html2canvas crashes on oklch() colors. 

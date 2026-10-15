@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PieChart, Download, Calendar, ArrowUpRight, ArrowDownLeft,
@@ -18,10 +18,6 @@ import { getAuthToken } from '../../../services/apiClient';
 import { getAdminReportSummary } from '../../../services/adminReportsApi';
 import { listAdminCoachingBatches } from '../../../services/adminOpsApi';
 
-// Revenue and ledger rows load from the API when connected.
-const monthlyRevenue = [];
-const outstandingPayments = [];
-const ledgerEntries = [];
 
 // ── Main Component ─────────────────────────────────────────────
 const FinancialReports = () => {
@@ -53,7 +49,7 @@ const FinancialReports = () => {
   const [batches, setBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState('');
   const [apiSummary, setApiSummary] = useState(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [, setSummaryLoading] = useState(false);
 
   // States for charts
   const [weeklyRevenue, setWeeklyRevenue] = useState([]);
@@ -138,8 +134,6 @@ const FinancialReports = () => {
                          (apiSummary?.pos?.totalAmount || 0) + 
                          (apiSummary?.coaching?.totalRevenue || 0) + 
                          (apiSummary?.membership?.totalRevenue || 0);
-    const opex = 2240; // Hardcoded OPEX for now
-    const netSurplus = grossInbound - opex;
 
     return (
       <div className="bg-slate-100 min-h-screen p-8 flex justify-center print:bg-white print:p-0 font-sans">
@@ -227,7 +221,7 @@ const FinancialReports = () => {
     );
   };
 
-  if (reportPreview) return <ReportPreviewDocument />;
+  if (reportPreview) return ReportPreviewDocument();
 
   const IntelligenceFilterBar = () => (
     <div className="bg-white p-3 px-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-3">
@@ -288,7 +282,7 @@ const FinancialReports = () => {
           </button>
         </div>
 
-        <IntelligenceFilterBar />
+        {IntelligenceFilterBar()}
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {TABS.map(tab => (

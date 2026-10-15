@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const RefreshToken = require('../models/RefreshToken');
+const { invalidateAccountCache } = require('../middleware/auth');
 
 const ROLES = ['SUPER_ADMIN', 'ARENA_ADMIN', 'RECEPTIONIST', 'COACH', 'CUSTOMER'];
 
@@ -63,7 +65,18 @@ async function patchAdminUser(req, res) {
     }
     user.isActive = Boolean(isActive);
   }
+  const roleChanged = user.isModified('role');
+  const deactivated = user.isModified('isActive') && user.isActive === false;
   await user.save();
+  invalidateAccountCache(user._id);
+
+  // Deactivated users / changed roles must sign in again (refresh tokens carry the old state).
+  if (roleChanged || deactivated) {
+    await RefreshToken.updateMany(
+      { userId: user._id, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
+    );
+  }
   return res.json({ user: User.toPublic(user) });
 }
 

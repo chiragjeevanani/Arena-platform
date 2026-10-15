@@ -7,10 +7,15 @@ const UserMembership = require('../models/UserMembership');
 const CoachingBatch = require('../models/CoachingBatch');
 const BatchEnrollment = require('../models/BatchEnrollment');
 const EventRegistration = require('../models/EventRegistration');
-const { getOrCreateWallet } = require('./walletService');
+const { getOrCreateWallet, refundBookingWallet, rechargeBookingWallet } = require('./walletService');
+const { onBookingConfirmed } = require('./bookingConfirmationService');
 
 const TERMINAL_SUCCESS = 'succeeded';
 const OPEN = ['created', 'initiated', 'pending'];
+// A verified gateway success can still arrive after we gave up on a payment (user closed the
+// tab, hit back, cancelled the booking, or the hold expired). The money was captured, so it
+// must still be recorded — never for payments we failed on a security/amount check.
+const LATE_SUCCESS_FROM = ['failed', 'cancelled', 'expired'];
 
 function buildSet(fields) {
   const $set = {};
@@ -42,11 +47,28 @@ async function finalizeSuccessfulPayment(paymentId, extras = {}) {
     }
   }
 
-  const claimed = await Payment.findOneAndUpdate(
+  let claimed = await Payment.findOneAndUpdate(
     { _id: paymentId, status: { $in: OPEN } },
     { $set },
     { new: true }
   );
+
+  if (!claimed) {
+    $set['meta.lateSuccess'] = true;
+    claimed = await Payment.findOneAndUpdate(
+      {
+        _id: paymentId,
+        status: { $in: LATE_SUCCESS_FROM },
+        'meta.amountMismatch': { $ne: true },
+        'meta.securityError': { $ne: true },
+      },
+      { $set },
+      { new: true }
+    );
+    if (claimed) {
+      console.warn(`[PaymentFinalize] Late gateway success recorded for payment ${paymentId}`);
+    }
+  }
 
   if (!claimed) {
     const existing = await Payment.findById(paymentId);
@@ -115,45 +137,82 @@ async function creditWalletOnce(payment, extras = {}) {
   });
 }
 
-async function markBookingPaidOnce(payment) {
-  const bookingId = payment.meta?.bookingId;
-  if (!bookingId) return;
+/** Bookings a payment settles: `meta.bookingIds` for cart checkouts, else the single `meta.bookingId`. */
+function paymentBookingIds(payment) {
+  const ids = payment.meta?.bookingIds;
+  if (Array.isArray(ids) && ids.length) return ids.map(String);
+  return payment.meta?.bookingId ? [String(payment.meta.bookingId)] : [];
+}
 
-  // Since a 'pending' booking no longer holds the slot, another user's booking
-  // for the same court/date/timeSlot may have been confirmed in the meantime.
-  // The DB's partial unique index (status in confirmed/rescheduled) is the
-  // real guard here: this update is rejected with E11000 if that happened.
-  try {
-    await Booking.findOneAndUpdate(
-      { _id: bookingId, paymentStatus: { $ne: 'paid' } },
-      {
-        $set: {
-          status: 'confirmed',
-          paymentStatus: 'paid',
-          paymentMethod: 'online',
-        },
+async function markBookingPaidOnce(payment) {
+  const bookingIds = paymentBookingIds(payment);
+  if (!bookingIds.length) return;
+
+  const conflicted = [];
+  for (const bookingId of bookingIds) {
+    const booking = await Booking.findById(bookingId);
+    if (!booking || booking.paymentStatus === 'paid') continue;
+
+    // The booking may have been cancelled/expired (and its wallet part refunded) while the
+    // user was still on the gateway page. Take the wallet part again before reviving it.
+    if (booking.status === 'cancelled') {
+      const recharged = await rechargeBookingWallet(booking);
+      if (!recharged) {
+        console.error(
+          `[BookingConflict] Payment ${payment._id} succeeded but booking ${bookingId} can no longer cover its wallet part — needs manual refund.`
+        );
+        await Booking.findByIdAndUpdate(bookingId, { $set: { paymentStatus: 'paid' } });
+        conflicted.push(bookingId);
+        continue;
       }
-    );
-  } catch (err) {
-    if (err.code === 11000) {
+    }
+
+    // Since a 'pending' booking no longer holds the slot, another user's booking
+    // for the same court/date/timeSlot may have been confirmed in the meantime.
+    // The DB's partial unique index (status in confirmed/rescheduled) is the
+    // real guard here: this update is rejected with E11000 if that happened.
+    try {
+      const confirmed = await Booking.findOneAndUpdate(
+        { _id: bookingId, paymentStatus: { $ne: 'paid' } },
+        {
+          $set: {
+            status: 'confirmed',
+            paymentStatus: 'paid',
+            // Keep 'partial_wallet' so receipts still show the wallet part.
+            paymentMethod: booking.walletUsed > 0 ? 'partial_wallet' : 'online',
+          },
+        },
+        { new: true }
+      );
+      if (confirmed) await onBookingConfirmed(confirmed);
+    } catch (err) {
+      if (err.code !== 11000) throw err;
       // Money was captured by the gateway but the slot was taken by someone
       // else's payment first — flag for manual refund, do not confirm this one.
       console.error(
         `[BookingConflict] Payment ${payment._id} succeeded but booking ${bookingId} lost the slot race — needs manual refund.`
       );
-      await Booking.findByIdAndUpdate(bookingId, {
-        $set: { status: 'cancelled', paymentStatus: 'paid' },
-      });
-      await Payment.findByIdAndUpdate(payment._id, {
-        $set: {
-          'meta.bookingMarkedPaid': false,
-          'meta.slotConflict': true,
-          'meta.needsManualRefund': true,
-        },
-      });
-      return;
+      const lost = await Booking.findByIdAndUpdate(
+        bookingId,
+        { $set: { status: 'cancelled', paymentStatus: 'paid' } },
+        { new: true }
+      );
+      // The wallet part can be returned right away; the card part needs a manual refund.
+      await refundBookingWallet(lost, 'booking_slot_conflict');
+      conflicted.push(bookingId);
     }
-    throw err;
+  }
+
+  if (conflicted.length) {
+    await Payment.findByIdAndUpdate(payment._id, {
+      $set: {
+        'meta.bookingMarkedPaid': conflicted.length < bookingIds.length,
+        'meta.slotConflict': true,
+        'meta.needsManualRefund': true,
+        'meta.conflictedBookingIds': conflicted,
+      },
+    });
+    return;
   }
 
   await Payment.findByIdAndUpdate(payment._id, {
@@ -330,27 +389,25 @@ async function markPaymentTerminalFailure(paymentId, opts = {}) {
     await handleEventRegistrationPaymentFailure(updated);
   }
 
-  if (updated && updated.meta?.bookingId) {
+  const failedBookingIds = updated ? paymentBookingIds(updated) : [];
+  if (failedBookingIds.length) {
     const nextPayStatus = next === 'cancelled' ? 'cancelled' : 'failed';
-    await Booking.findOneAndUpdate(
-      { _id: updated.meta.bookingId, status: { $ne: 'confirmed' } },
-      {
-        $set: {
-          status: 'cancelled',
-          paymentStatus: nextPayStatus,
-        },
-      }
-    );
+    // Only bookings still waiting on this payment — never touch confirmed/completed ones.
+    const toCancel = await Booking.find({ _id: { $in: failedBookingIds }, status: 'pending' });
+    for (const booking of toCancel) {
+      const cancelled = await Booking.findOneAndUpdate(
+        { _id: booking._id, status: 'pending' },
+        { $set: { status: 'cancelled', paymentStatus: nextPayStatus } },
+        { new: true }
+      );
+      // Return any wallet part taken when the booking was created.
+      if (cancelled) await refundBookingWallet(cancelled, `payment_${next}`);
+    }
   }
 
   if (updated) return updated;
   return Payment.findById(paymentId);
 }
-
-module.exports = {
-  finalizeSuccessfulPayment,
-  markPaymentTerminalFailure,
-};
 
 module.exports = {
   finalizeSuccessfulPayment,

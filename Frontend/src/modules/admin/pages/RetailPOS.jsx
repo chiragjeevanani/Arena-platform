@@ -20,6 +20,7 @@ import { listAdminInventoryItems, createAdminPosSale, listAdminPosSales } from '
 import { resolveLiveOpsArenaScope } from '../../../utils/liveOpsScope';
 import { mapArenaInventoryItemToPosProduct } from '../../../utils/arenaInventoryAdapter';
 import { fetchPublicArenas } from '../../../services/arenasApi';
+import { VAT_PERCENT, VAT_RATE } from '../../../utils/tax';
 
 const STATIC_CATALOG = [
   { id: 1, name: 'Yonex Mavis 350 (Y)', price: 1.200, category: 'Equipment', stock: 42, sku: 'SN-001' },
@@ -38,7 +39,7 @@ const RetailPOS = () => {
   const arenaIdFromQuery = searchParams.get('arenaId');
 
   const [arenas, setArenas] = useState([]);
-  const [isLoadingArenas, setIsLoadingArenas] = useState(false);
+  const [, setIsLoadingArenas] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'SUPER_ADMIN' && isApiConfigured()) {
@@ -105,7 +106,7 @@ const RetailPOS = () => {
   }, [categoryOptions, selectedCategory]);
   const [selectedCustomer, setSelectedCustomer] = useState({ name: 'Walk-in Customer', id: 'GUEST-01', phone: 'N/A' });
   const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [, setSelectedPaymentMethod] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentStage, setPaymentStage] = useState('METHOD_SELECT'); // 'METHOD_SELECT', 'CASH_ENTRY', 'PROCESSING', 'UPI_QR'
   const [cashTendered, setCashTendered] = useState('');
@@ -178,7 +179,7 @@ const RetailPOS = () => {
   };
 
   const subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-  const tax = subtotal * 0.18;
+  const tax = subtotal * VAT_RATE;
   const currentTotal = subtotal + tax;
 
   const handleCheckoutInitiate = () => {
@@ -223,6 +224,7 @@ const RetailPOS = () => {
           subtotal,
           tax,
           total: currentTotal,
+          // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
           orderId: sale?.id ? `POS-${sale.id}` : `AMM-${Date.now()}`,
           date: new Date().toLocaleString(),
           paymentMethod: method,
@@ -247,6 +249,7 @@ const RetailPOS = () => {
       subtotal,
       tax,
       total: currentTotal,
+      // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
       orderId: `AMM-${Date.now()}`,
       date: new Date().toLocaleString(),
       paymentMethod: method,
@@ -406,7 +409,7 @@ const RetailPOS = () => {
             {view === 'CATALOG' ? (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
                 <AnimatePresence>
-                  {filteredItems.map((item, i) => (
+                  {filteredItems.map((item) => (
                     <motion.div
                       key={item.id}
                       layout
@@ -577,7 +580,7 @@ const RetailPOS = () => {
                   <span className="text-slate-600 font-bold">OMR {subtotal.toFixed(3)}</span>
                </div>
                <div className="flex justify-between items-center text-slate-400">
-                  <span>Regional Tax (18%)</span>
+                  <span>VAT ({VAT_PERCENT}%)</span>
                   <span className="text-slate-600 font-bold">OMR {tax.toFixed(3)}</span>
                </div>
                <div className="h-px bg-slate-50 my-2" />
@@ -924,7 +927,7 @@ const RetailPOS = () => {
                     <span>{lastOrder.subtotal.toFixed(3)}</span>
                  </div>
                  <div className="flex justify-between italic opacity-60">
-                    <span>Tax (18%)</span>
+                    <span>VAT ({VAT_PERCENT}%)</span>
                     <span>{lastOrder.tax.toFixed(3)}</span>
                  </div>
                  

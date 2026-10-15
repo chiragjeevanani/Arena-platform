@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { dateRange, addDays } from '../../../utils/bookingDateUtils';
 
 /**
  * BookingCalendar
@@ -9,7 +8,7 @@ import { dateRange, addDays } from '../../../utils/bookingDateUtils';
  *   startDate  – string yyyy-mm-dd (first highlighted date)
  *   finalEndDate – string yyyy-mm-dd (last highlighted date)
  */
-const BookingCalendar = ({ classifyDate, startDate, finalEndDate }) => {
+const BookingCalendar = ({ classifyDate, startDate }) => {
   // start display at the month of startDate
   const initDate = new Date(startDate + 'T00:00:00');
   const [viewYear, setViewYear] = useState(initDate.getFullYear());

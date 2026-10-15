@@ -54,13 +54,6 @@ function getTodayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function addMonths(dateStr, months) {
-  const d = new Date(dateStr);
-  d.setMonth(d.getMonth() + months);
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
-
 function calculateMembershipEndDate(startDateStr, durationDays, activeDays) {
   if (!activeDays || activeDays.length === 0) {
     const d = new Date(startDateStr);
@@ -405,7 +398,6 @@ function Step3SelectSlots({ courtId, selectedSlots, startDate, onStartDateChange
             {groupedSlots.map((group) => {
               const isSelected = selectedSlots.some((s) => s.timeSlot === group.timeSlot);
               const isAvailable = group.available;
-              const dayLabels = group.days?.join(', ') || '';
 
               return (
                 <motion.button
@@ -490,8 +482,7 @@ function Step4Confirm({ durationOpt, arena, court, selectedSlots, arenaId, court
   const [pricing, setPricing] = useState(null);
   const [purchasing, setPurchasing] = useState(false);
   const [err, setErr] = useState('');
-  const [useWallet, setUseWallet] = useState(true);
-  const [selectedMethod, setSelectedMethod] = useState('upi');
+  const navigate = useNavigate();
 
   useEffect(() => {
     Promise.all([
@@ -513,7 +504,7 @@ function Step4Confirm({ durationOpt, arena, court, selectedSlots, arenaId, court
   const activeDays = [...new Set(selectedSlots.flatMap((s) => s.days || []))];
   const endDate = calculateMembershipEndDate(startDate, durationDays, activeDays);
 
-  const walletDeduction = useWallet && wallet ? Math.min(basePrice, wallet.balance) : 0;
+  const walletDeduction = wallet ? Math.min(basePrice, wallet.balance) : 0;
   const remainingDue = basePrice - walletDeduction;
 
   const purchase = async () => {
@@ -527,8 +518,8 @@ function Step4Confirm({ durationOpt, arena, court, selectedSlots, arenaId, court
         durationMonths: durationOpt.months,
         startDate,
         usePoints,
-        useWallet,
-        paymentMethod: remainingDue > 0 ? selectedMethod : 'wallet',
+        useWallet: true,
+        paymentMethod: 'wallet',
       });
       onSuccess();
     } catch (e) {
@@ -595,14 +586,8 @@ function Step4Confirm({ durationOpt, arena, court, selectedSlots, arenaId, court
       {/* Wallet Balance Integration */}
       {wallet && (
         <div className="space-y-4">
-          <div className={`p-4 rounded-2xl border transition-all ${useWallet ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-200 bg-white'}`}>
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={useWallet}
-                onChange={(e) => setUseWallet(e.target.checked)}
-                className="w-4.5 h-4.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              />
+          <div className="p-4 rounded-2xl border transition-all border-emerald-500 bg-emerald-50/20">
+            <label className="flex items-center gap-3 select-none">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
                 <Wallet size={18} className="text-emerald-600" />
               </div>
@@ -613,43 +598,27 @@ function Step4Confirm({ durationOpt, arena, court, selectedSlots, arenaId, court
             </label>
           </div>
 
-          {/* Other Payment Methods for remainder or full amount */}
-          {(!useWallet || wallet.balance < basePrice) && (
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 space-y-3 shadow-sm">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-                {useWallet && wallet.balance > 0 ? "Pay Remaining Amount Via" : "Select Payment Method"}
-              </span>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { id: 'upi', name: 'UPI', icon: Smartphone, color: 'text-[#CE2029]', bg: 'bg-[#CE2029]/10' },
-                  { id: 'card', name: 'Card', icon: CreditCard, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                  { id: 'netbanking', name: 'Net Banking', icon: Landmark, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-                  { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-500', bg: 'bg-emerald-50/20' },
-                ].map((m) => {
-                  const Icon = m.icon;
-                  const isSel = selectedMethod === m.id;
-                  return (
-                    <button
-                      key={m.id}
-                      onClick={() => setSelectedMethod(m.id)}
-                      className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
-                        isSel ? 'border-[#CE2029] bg-red-50/30' : 'border-slate-100 bg-white hover:border-slate-200'
-                      }`}
-                    >
-                      <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center shrink-0`}>
-                        <Icon size={14} className={m.color} />
-                      </div>
-                      <span className={`text-[11px] font-black uppercase tracking-wider ${isSel ? 'text-[#CE2029]' : 'text-slate-600'}`}>
-                        {m.name}
-                      </span>
-                    </button>
-                  );
-                })}
+          {/* Slot memberships are paid in full from the wallet — there is no card flow for them. */}
+          {wallet.balance < basePrice && (
+            <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex items-start gap-3">
+              <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-black text-amber-800">Top up your wallet to continue</p>
+                <p className="text-[11px] font-bold text-amber-700 mt-0.5">
+                  Slot memberships are paid from your Arena Wallet. You need {formatPrice(basePrice - wallet.balance)} more.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/wallet')}
+                  className="mt-2 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider"
+                >
+                  Top Up Wallet
+                </button>
               </div>
             </div>
           )}
 
-          {pointsWallet && (
+{pointsWallet && (
             <button
               onClick={() => setUsePoints((v) => !v)}
               className={`w-full bg-white rounded-2xl border-2 p-4 flex items-center gap-3 transition-all ${
@@ -707,7 +676,7 @@ function Step4Confirm({ durationOpt, arena, court, selectedSlots, arenaId, court
 
       <button
         onClick={purchase}
-        disabled={purchasing || selectedSlots.length === 0}
+        disabled={purchasing || selectedSlots.length === 0 || (remainingDue > 0 && !usePoints)}
         className="w-full py-3 bg-[#CE2029] text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#b01b22] active:scale-[0.99] transition-all disabled:opacity-50 shadow-xl shadow-[#CE2029]/20 flex-nowrap whitespace-nowrap"
       >
         {purchasing ? (

@@ -14,9 +14,10 @@ async function countActiveEnrollments(batchId) {
 }
 
 const { deductFromWallet } = require('../services/walletService');
+const { enrollmentTotal, vatPercent } = require('../services/catalogPricing');
 
 async function createMyEnrollment(req, res) {
-  const { batchId, paymentMethod, amount } = req.body;
+  const { batchId, paymentMethod } = req.body;
   if (!batchId || !mongoose.isValidObjectId(batchId)) {
     return res.status(400).json({ error: 'Valid batchId is required' });
   }
@@ -38,6 +39,14 @@ async function createMyEnrollment(req, res) {
   }
 
   const userId = req.auth.sub;
+
+  // Online (card) enrolments are created by payment finalization after the gateway confirms.
+  // This endpoint only handles wallet and pay-at-arena; anything else would be a free enrolment.
+  const method = paymentMethod || 'cash';
+  if (!['wallet', 'cash'].includes(method)) {
+    return res.status(400).json({ error: 'Use online payment to enrol with a card' });
+  }
+  const payAmount = enrollmentTotal(batch);
 
   // Atomic transaction: duplicate check + capacity check + enrollment creation
   // This eliminates the race-condition window where two concurrent requests could both
@@ -78,21 +87,28 @@ async function createMyEnrollment(req, res) {
     session.endSession();
   }
 
-  // Wallet deduction runs after successful enrollment (outside transaction intentionally;
-  // wallet service handles its own errors and the enrollment is already locked in).
-  if (paymentMethod === 'wallet') {
-    const payAmount = Number(amount || 0);
-    if (payAmount > 0) {
-      await deductFromWallet(userId, payAmount, 'coaching_enrollment', { batchId });
+  // Wallet payment uses the server-side batch price (never a client amount). If the wallet
+  // can't cover it, the enrolment just created is rolled back.
+  if (method === 'wallet' && payAmount > 0) {
+    try {
+      await deductFromWallet(userId, payAmount, 'coaching_enrollment', {
+        batchId: String(batch._id),
+        enrollmentId: enrollment._id.toString(),
+      });
+    } catch (err) {
+      await BatchEnrollment.deleteOne({ _id: enrollment._id });
+      if (err.status === 400) {
+        return res.status(400).json({ error: 'Insufficient wallet balance' });
+      }
+      throw err;
     }
   }
 
-
   const b_price = Number(batch.price || 0);
-  const b_regFee = Number(batch.registrationFee || 0);
-  const b_tax = Number(batch.taxPercent || 18);
+  const b_regFee = Number(batch.registrationFee ?? 0);
+  const b_tax = Number(batch.taxPercent ?? vatPercent());
   const base = b_price + b_regFee;
-  const total = base * (1 + (b_tax / 100));
+  const total = enrollmentTotal(batch);
 
   await createNotification(
     userId,
@@ -138,10 +154,10 @@ async function listMyEnrollments(req, res) {
     }
     
     const b_price = Number(b?.price || 0);
-    const b_regFee = Number(b?.registrationFee || 0);
-    const b_tax = Number(b?.taxPercent || 18);
+    const b_regFee = Number(b?.registrationFee ?? 0);
+    const b_tax = Number(b?.taxPercent ?? vatPercent());
     const base = b_price + b_regFee;
-    const total = base * (1 + (b_tax / 100));
+    const total = enrollmentTotal(b);
 
     return BatchEnrollment.toPublic(e, {
       batchTitle: b?.title || 'Coaching Program',
@@ -189,12 +205,13 @@ async function cancelMyEnrollment(req, res) {
     { batchId: enrollment.batchId.toString() }
   );
 
-  const arena = await Arena.findById(batch.arenaId);
-  const b_price = Number(batch.price || 0);
-  const b_regFee = Number(batch.registrationFee || 0);
-  const b_tax = Number(batch.taxPercent || 18);
+  // The batch may have been deleted since — don't crash after the cancel already saved.
+  const arena = batch ? await Arena.findById(batch.arenaId) : null;
+  const b_price = Number(batch?.price || 0);
+  const b_regFee = Number(batch?.registrationFee ?? 0);
+  const b_tax = Number(batch?.taxPercent ?? vatPercent());
   const base = b_price + b_regFee;
-  const total = base * (1 + (b_tax / 100));
+  const total = enrollmentTotal(batch);
 
   return res.json({
     enrollment: BatchEnrollment.toPublic(enrollment, {
@@ -207,9 +224,9 @@ async function cancelMyEnrollment(req, res) {
       basePrice: base,
       taxPercent: b_tax,
       date: enrollment.createdAt,
-      timing: batch.scheduleTime || 'See schedule',
-      days: batch.schedule || 'Coaching',
-      coachName: batch.title || 'Certified Coach'
+      timing: batch?.scheduleTime || 'See schedule',
+      days: batch?.schedule || 'Coaching',
+      coachName: batch?.title || 'Certified Coach'
     }),
   });
 }
@@ -233,10 +250,10 @@ async function getMyEnrollmentById(req, res) {
   }
 
   const b_price = Number(b?.price || 0);
-  const b_regFee = Number(b?.registrationFee || 0);
-  const b_tax = Number(b?.taxPercent || 18);
+  const b_regFee = Number(b?.registrationFee ?? 0);
+  const b_tax = Number(b?.taxPercent ?? vatPercent());
   const base = b_price + b_regFee;
-  const total = base * (1 + (b_tax / 100));
+  const total = enrollmentTotal(b);
 
   // Fetch Attendance
   const sessions = await CoachingAttendance.find({ batchId: enrollment.batchId }).sort({ sessionDate: -1 }).lean();

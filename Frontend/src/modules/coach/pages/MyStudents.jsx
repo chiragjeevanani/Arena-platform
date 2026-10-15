@@ -20,7 +20,6 @@ const MyStudents = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [toast, setToast] = useState(null);
-  const [attendanceTab, setAttendanceTab] = useState('daily'); // 'daily' | 'monthly' | 'yearly'
 
   // Remove / Unenroll Student Modal State
   const [unenrollStudentTarget, setUnenrollStudentTarget] = useState(null);

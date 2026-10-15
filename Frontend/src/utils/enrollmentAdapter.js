@@ -1,3 +1,4 @@
+import { VAT_PERCENT } from './tax';
 const PLACEHOLDER =
   'https://images.unsplash.com/photo-1626224583764-f87db24d4d83?w=800&q=80';
 
@@ -35,7 +36,7 @@ export function mapEnrollmentToDashboardCard(e) {
     status: statusFromEnrollment(e.status),
     price: Number(e.price) || 0,
     basePrice: Number(e.basePrice) || 0,
-    taxPercent: Number(e.taxPercent) || 18,
+    taxPercent: e.taxPercent != null ? Number(e.taxPercent) || 0 : VAT_PERCENT,
     sortKey: e.createdAt || e.id,
     receiptUrl: e.id ? `#receipt-enrollment-${e.id}` : undefined,
     batchId: e.batchId,

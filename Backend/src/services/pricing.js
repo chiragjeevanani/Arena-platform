@@ -1,8 +1,9 @@
 const MembershipPlan = require('../models/MembershipPlan');
 const UserMembership = require('../models/UserMembership');
 
+// OMR has 3 decimal places (baisa).
 function roundMoney(n) {
-  return Math.round(Number(n) * 100) / 100;
+  return Math.round(Number(n) * 1000) / 1000;
 }
 
 async function computeCourtBookingPrice(userId, arena, transactionType = 'booking') {
@@ -10,7 +11,8 @@ async function computeCourtBookingPrice(userId, arena, transactionType = 'bookin
 
   const activeMemberships = await UserMembership.find({
     userId,
-    arenaId: arena._id,
+    // Global memberships (arenaId null) apply at every arena.
+    arenaId: { $in: [arena._id, null] },
     status: 'active',
     expiresAt: { $gt: new Date() },
   }).lean();
@@ -55,7 +57,8 @@ async function computeDiscount(userId, arenaId, baseAmount, transactionType) {
   baseAmount = roundMoney(baseAmount || 0);
   const activeMemberships = await UserMembership.find({
     userId,
-    arenaId,
+    // Global memberships (arenaId null) apply at every arena.
+    arenaId: { $in: [arenaId, null] },
     status: 'active',
     expiresAt: { $gt: new Date() },
   }).lean();

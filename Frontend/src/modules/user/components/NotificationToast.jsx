@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X } from 'lucide-react';
@@ -54,7 +55,7 @@ export const useConflictToasts = (bookings = []) => {
 
   useEffect(() => {
     if (!bookings.length) return;
-    const initial = bookings.map((b, i) => ({
+    const initial = bookings.map((b) => ({
       id: `toast-${b.id}`,
       message: `Your booking on ${b.courtName} has been extended by ${b.overlappingDays} day${b.overlappingDays !== 1 ? 's' : ''} due to "${b.event.name}". New end date: ${b.fmtFinalEnd}.`,
     }));

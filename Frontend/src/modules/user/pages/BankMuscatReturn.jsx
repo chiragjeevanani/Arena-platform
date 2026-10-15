@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, XCircle, Clock3, Loader2, ArrowLeft } from 'lucide-react';
-import { getAuthToken } from '../../../services/apiClient';
 import { getBankMuscatPaymentStatus } from '../../../services/bankMuscatApi';
-import { registerForEvent } from '../../../services/eventsApi';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -98,12 +96,15 @@ const BankMuscatReturn = () => {
                 setUiState('SUCCESS');
                 // fall through by reusing success path via reload of status
                 attempts = 99;
+                // Same mapping as the direct-success path (event payments use purpose 'booking').
                 const type =
                   inquired.payment.purpose === 'top_up'
                     ? 'wallet_top_up'
                     : inquired.payment.purpose === 'enrollment'
                       ? 'coaching'
-                      : inquired.payment.purpose;
+                      : inquired.payment.meta?.eventId
+                        ? 'event'
+                        : inquired.payment.purpose;
                 const { consumeBankMuscatCheckoutContext } = await import('../../../services/bankMuscatCheckoutContext');
                 const saved = consumeBankMuscatCheckoutContext() || {};
                 setTimeout(() => {
@@ -125,7 +126,7 @@ const BankMuscatReturn = () => {
                 return;
               }
             } catch (inqErr) {
-              // eslint-disable-next-line no-console
+               
               console.warn('Status inquiry failed:', inqErr.message);
             }
           }

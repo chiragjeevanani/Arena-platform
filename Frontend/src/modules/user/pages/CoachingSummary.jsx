@@ -10,24 +10,20 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import SchoolIcon from '@mui/icons-material/School';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { motion } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
-import { isApiConfigured } from '../../../services/config';
-import { getAuthToken } from '../../../services/apiClient';
-import { createMyEnrollment } from '../../../services/meApi';
+import { VAT_PERCENT } from '../../../utils/tax';
 
 const CoachingSummary = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { isDark } = useTheme();
 
   const { batch } = state || {};
-  const [enrolling, setEnrolling] = useState(false);
-  const [enrollError, setEnrollError] = useState('');
+  const [enrolling] = useState(false);
+  const [enrollError] = useState('');
 
   const regFee = batch?.registrationFee ?? 0;
   const monthlyFee = batch ? (Number(batch.fees) || Number(batch.price) || 0) : 0;
   const total = monthlyFee + regFee;
-  const taxRate = (batch?.taxPercent ?? 18) / 100;
+  const taxRate = (batch?.taxPercent ?? VAT_PERCENT) / 100;
   const gst = total * taxRate;
   const finalPayable = total + gst;
 
@@ -285,7 +281,7 @@ const CoachingSummary = () => {
                     <div className="flex justify-between items-center group">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-bold text-slate-500">Tax Reconciliation</span>
-                        <span className="text-[8px] bg-slate-100 px-1 py-0.5 rounded text-slate-400 font-black">{(batch?.taxPercent ?? 18)}%</span>
+                        <span className="text-[8px] bg-slate-100 px-1 py-0.5 rounded text-slate-400 font-black">{(batch?.taxPercent ?? VAT_PERCENT)}%</span>
                       </div>
                       <span className="text-xs font-black text-[#0F172A]">OMR {gst.toFixed(3)}</span>
                     </div>

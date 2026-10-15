@@ -7,7 +7,7 @@ import { useTheme } from '../../user/context/ThemeContext';
 
 import Logo from '../../../assets/Logo (3).png';
 
-const CoachTopbar = ({ isCollapsed, setIsCollapsed }) => {
+const CoachTopbar = () => {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);

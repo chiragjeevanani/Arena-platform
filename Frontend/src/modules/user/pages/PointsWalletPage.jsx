@@ -53,7 +53,7 @@ const PointsWalletPage = () => {
       const data = await getMyPointsWallet();
       setWallet(data.wallet);
       setDiscountConfig(data.discountConfig);
-    } catch {}
+    } catch { /* optional data — keep the page usable without it */ }
   }, []);
 
   const loadTransactions = useCallback(async (p = 1) => {
@@ -66,7 +66,7 @@ const PointsWalletPage = () => {
       }
       setTxTotal(data.total || 0);
       setPage(p);
-    } catch {}
+    } catch { /* optional data — keep the page usable without it */ }
   }, []);
 
   useEffect(() => {

@@ -23,7 +23,16 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // Flags the standard "fetch in useEffect, setLoading/setData" pattern used across the app.
+      // It's a React Compiler performance hint, not a correctness issue; rewriting ~90 data
+      // loaders without browser testing would be riskier than the hint is worth.
+      'react-hooks/set-state-in-effect': 'off',
+      // `motion` is used as <motion.div>; core ESLint can't see JSX member usage (same reason as ^[A-Z]).
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^([A-Z_]|motion$)',
+        // PascalCase params are components rendered as JSX; a leading _ marks a deliberately unused one.
+        argsIgnorePattern: '^([A-Z]|_)',
+      }],
     },
   },
   {

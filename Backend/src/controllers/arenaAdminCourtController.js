@@ -2,6 +2,7 @@ const Court = require('../models/Court');
 const CourtSlot = require('../models/CourtSlot');
 const Arena = require('../models/Arena');
 const mongoose = require('mongoose');
+const { applyCourtRate } = require('../services/courtRate');
 
 function mapCourt(doc) {
   return {
@@ -11,7 +12,8 @@ function mapCourt(doc) {
     type: doc.type,
     status: doc.status,
     imageUrl: doc.imageUrl,
-    pricePerHour: doc.pricePerHour,
+    pricePerHour: doc.priceOverride ? doc.pricePerHour : null,
+    priceOverride: Boolean(doc.priceOverride),
   };
 }
 
@@ -40,13 +42,16 @@ async function createMyCourt(req, res) {
   const { name, type, status, imageUrl } = req.body;
   if (!name) return res.status(400).json({ error: 'Court name is required' });
 
-  const court = await Court.create({
+  const arena = await Arena.findById(req.arenaScopeId).select('pricePerHour').lean();
+  const court = new Court({
     arenaId: req.arenaScopeId,
     name: name.trim(),
     type: (type || 'Wooden').trim(),
     status: status || 'active',
     imageUrl: imageUrl || ''
   });
+  applyCourtRate(court, { pricePerHour: req.body.pricePerHour, priceOverride: req.body.priceOverride }, { arenaRate: arena?.pricePerHour, isCreate: true });
+  await court.save();
 
   await Arena.findByIdAndUpdate(req.arenaScopeId, { $inc: { courtsCount: 1 } });
 
@@ -64,7 +69,7 @@ async function patchMyCourt(req, res) {
   if (type !== undefined) court.type = type.trim();
   if (status !== undefined) court.status = status;
   if (imageUrl !== undefined) court.imageUrl = String(imageUrl || '');
-  if (pricePerHour !== undefined) court.pricePerHour = Number(pricePerHour) || 0;
+  applyCourtRate(court, { pricePerHour, priceOverride: req.body.priceOverride });
 
   await court.save();
   return res.json({ court: mapCourt(court) });
@@ -102,10 +107,13 @@ async function createMyCourtSlot(req, res) {
     return res.status(400).json({ error: 'dayOfWeek and timeSlot are required' });
   }
 
-  // Verify court belongs to arena
+  // Verify court belongs to this arena (staff could otherwise add slots to any court)
+  if (!mongoose.isValidObjectId(courtId)) {
+    return res.status(400).json({ error: 'Invalid court id' });
+  }
   const court = await Court.findOne({ _id: courtId, arenaId: req.arenaScopeId });
-  if (!court && !mongoose.isValidObjectId(courtId)) {
-      // It might be a sequence number if the backend allows it, but usually it's ObjectId
+  if (!court) {
+    return res.status(404).json({ error: 'Court not found' });
   }
 
   const slot = await CourtSlot.findOneAndUpdate(

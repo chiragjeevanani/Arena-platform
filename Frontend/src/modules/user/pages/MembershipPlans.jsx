@@ -455,6 +455,7 @@ const MembershipPlans = () => {
           // Clear state first
           navigate(location.pathname, { replace: true, state: {} });
           // Auto-trigger purchase since wallet is now funded
+          // eslint-disable-next-line react-hooks/immutability -- runs after render, handleConfirm is initialised by then
           handleConfirm(planToBuy);
         } else {
           setBuying(planToBuy);

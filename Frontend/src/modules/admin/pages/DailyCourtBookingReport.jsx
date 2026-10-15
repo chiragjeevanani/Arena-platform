@@ -26,12 +26,6 @@ const fmtDate = (str) => {
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
-const fmtTime = (isoStr) => {
-  if (!isoStr) return '—';
-  const d = new Date(isoStr);
-  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-};
-
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const yesterdayStr = () => {
   const d = new Date();
@@ -63,7 +57,7 @@ const PAYMENT_COLORS = {
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-const SummaryCard = ({ icon: Icon, label, value, sub, color = '#CE2029', accent = false }) => (
+const SummaryCard = ({ icon: _Icon, label, value, sub, color = '#CE2029', accent = false }) => (
   <motion.div
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
@@ -765,7 +759,7 @@ const DailyCourtBookingReport = ({ overrideArenaId } = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [isSuperAdmin, effectiveArenaId, fromDate, toDate, courtFilter, statusFilter, paymentFilter, pricingTypeFilter, search, user?.role]);
+  }, [isSuperAdmin, effectiveArenaId, fromDate, toDate, courtFilter, statusFilter, paymentFilter, pricingTypeFilter, search, user]);
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 

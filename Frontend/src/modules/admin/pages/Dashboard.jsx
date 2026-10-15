@@ -5,7 +5,6 @@ import {
   Receipt, WalletCards, Users, Zap
 } from 'lucide-react';
 import { listAdminArenas, getAdminArenaById, listAdminPosSales } from '../../../services/adminOpsApi';
-import { normalizeListArena } from '../../../utils/arenaAdapter';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import { useAuth } from '../../user/context/AuthContext';
@@ -16,9 +15,11 @@ import { listAdminArenaSlots } from '../../../services/adminSlotApi';
 const AdminDashboard = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+  // Fallback timestamp for rows missing one — fixed per mount (Date.now() during render is impure).
+  const [mountedAt] = useState(() => Date.now());
   const [arenas, setArenas] = useState([]);
   const [selectedArenaId, setSelectedArenaId] = useState('');
-  const [arenaDetails, setArenaDetails] = useState(null);
+  const [, setArenaDetails] = useState(null);
   const [arenaSlots, setArenaSlots] = useState([]);
   const [calendarView, setCalendarView] = useState('Week');
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -60,7 +61,7 @@ const AdminDashboard = () => {
             setSelectedArenaId(list[0].id);
           }
         }
-      } catch (e) {
+      } catch {
         setLoadError('Failed to fetch arenas');
       }
     })();
@@ -114,7 +115,7 @@ const AdminDashboard = () => {
             return allSlots;
           })
         ]);
-      } catch (e) {
+      } catch {
         if (!cancelled) setLoadError('Critical: Could not load arena details.');
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -237,7 +238,7 @@ const AdminDashboard = () => {
     const bookingPayments = rawBookings
       .filter(b => b.paymentStatus === 'paid')
       .map(b => {
-        const payDate = new Date(b.createdAt || b.updatedAt || Date.now());
+        const payDate = new Date(b.createdAt || b.updatedAt || mountedAt);
         return {
           player: b.userName || `User …${String(b.userId || '').slice(-6)}`,
           phone: b.userPhone || '',
@@ -253,7 +254,7 @@ const AdminDashboard = () => {
       });
 
     const posPayments = rawPosSales.map(s => {
-      const payDate = new Date(s.createdAt || Date.now());
+      const payDate = new Date(s.createdAt || mountedAt);
       return {
         player: s.customer?.name || `POS ${String(s.id || '').slice(-6)}`,
         phone: s.customer?.phone || '',

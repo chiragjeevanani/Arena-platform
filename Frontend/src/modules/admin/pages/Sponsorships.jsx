@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Filter, Briefcase, Calendar, 
@@ -9,17 +9,13 @@ import {
 } from 'lucide-react';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { listAdminSponsors, createAdminSponsor, deleteAdminSponsor } from '../../../services/adminSponsorsApi';
+import { listAdminSponsors, deleteAdminSponsor } from '../../../services/adminSponsorsApi';
 
 const INITIAL_SPONSORS = [];
 
 const INITIAL_MAPPINGS = [];
 
 const Sponsorships = () => {
-  const sponsorNameRef = useRef(null);
-  const sponsorEquityRef = useRef(null);
-  const sponsorStartRef = useRef(null);
-  const sponsorEndRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('directory'); // directory | mapping | reports
   const [sponsors, setSponsors] = useState(INITIAL_SPONSORS);
@@ -102,7 +98,7 @@ const Sponsorships = () => {
       const { listAdminCms } = await import('../../../services/cmsApi');
       const data = await listAdminCms('event');
       setEvents(data.contents || []);
-    } catch (e) {
+    } catch {
       setEvents([]);
     }
   }, []);
@@ -154,6 +150,7 @@ const Sponsorships = () => {
       return;
     }
     const newMapping = {
+      // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
       id: Date.now(),
       eventId: selectedEventId,
       sponsorId: selectedSponsorId,

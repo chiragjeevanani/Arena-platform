@@ -41,7 +41,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       await forgotPasswordRequest(email.trim().toLowerCase());
-      navigate('/reset-password');
+      navigate('/reset-password', { state: { email: email.trim().toLowerCase() } });
     } catch (err) {
       setSubmitError(err.message || 'Request failed');
     } finally {

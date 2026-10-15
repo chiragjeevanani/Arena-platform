@@ -3,15 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Search, Bell, Menu, UserCircle, Settings, LogOut, Calendar, Target, CheckCircle, Clock } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
-import { useTheme } from '../../user/context/ThemeContext';
 
-const AdminTopbar = ({ isCollapsed, setIsCollapsed, onMobileMenuClick }) => {
+const AdminTopbar = ({ onMobileMenuClick }) => {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { user, logout } = useAuth();
-  const { isDark } = useTheme();
 
   const [notifications, setNotifications] = useState([
     { id: 1, type: 'booking', title: 'New Booking', desc: 'Court A booked for 8:00 PM', time: '2 MINS AGO', unread: true },

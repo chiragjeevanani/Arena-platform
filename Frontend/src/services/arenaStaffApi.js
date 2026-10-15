@@ -80,5 +80,10 @@ export const createWalkinCustomer = (body, arenaId) =>
     headers: arenaId ? { 'X-Arena-Id': arenaId } : {}
   });
 
+export const refundMyBooking = (id, { method = 'wallet', reference = '' } = {}) =>
+  apiJson(`${BASE}/bookings/${encodeURIComponent(id)}/refund`, { method: 'POST', body: { method, reference } });
+
+export const listMyManualRefunds = () => apiJson(`${BASE}/refunds`, { method: 'GET' });
+
 export const updateMyBooking = (id, body) =>
   apiJson(`${BASE}/bookings/${encodeURIComponent(id)}`, { method: 'PATCH', body });

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useArenaPanel } from '../context/ArenaPanelContext';
 import { useAuth } from '../../user/context/AuthContext';
@@ -305,7 +304,7 @@ const ArenaManagementPanel = () => {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex min-w-max md:min-w-0">
-              {TABS.map((tab, idx) => {
+              {TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)}

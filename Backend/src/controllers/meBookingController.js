@@ -3,78 +3,54 @@ const Booking = require('../models/Booking');
 const Court = require('../models/Court');
 const CourtSlot = require('../models/CourtSlot');
 const Arena = require('../models/Arena');
-const Wallet = require('../models/Wallet');
-const WalletTransaction = require('../models/WalletTransaction');
-const User = require('../models/User');
-const Referral = require('../models/Referral');
+const Payment = require('../models/Payment');
 const ReferralSettings = require('../models/ReferralSettings');
-const { getOrCreateWallet } = require('../services/walletService');
-const { computeDiscount, amountsMatch } = require('../services/pricing');
+const { getOrCreateWallet, deductFromWallet, refundBookingWallet } = require('../services/walletService');
+const { computeDiscount, amountsMatch, roundMoney } = require('../services/pricing');
 const { createNotification } = require('../services/notificationService');
 const { markPaymentTerminalFailure } = require('../services/paymentFinalizationService');
-const { buildCourtSlotConflictQuery, findOwnResumableBooking } = require('../utils/bookingQuery');
+const { onBookingConfirmed } = require('../services/bookingConfirmationService');
+const { cancellationQuote, refundPaidBooking } = require('../services/refundService');
+const { quoteCheckout, createCheckout } = require('../services/checkoutService');
+const { findOwnResumableBooking } = require('../utils/bookingQuery');
 const { evaluatePricing } = require('../services/pricingEngine');
+const {
+  isValidYmd,
+  dayOfWeekOf,
+  isSlotInPast,
+  checkSlotBookable,
+} = require('../services/slotAvailability');
 
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-function getDayOfWeek(dateStr) {
-  const dateObj = new Date(String(dateStr).trim() + 'T12:00:00Z'); // noon UTC to avoid TZ boundary issues
-  return DAY_NAMES[dateObj.getUTCDay()];
-}
-
-function parseBackendSlotStartDateTime(dateInput, timeSlot) {
-  if (!dateInput || !timeSlot || typeof timeSlot !== 'string') return null;
-  const d = new Date(dateInput);
-  if (Number.isNaN(d.getTime())) return null;
-  const str = timeSlot.trim();
-  let hour = null;
-  let minute = 0;
-  const m12 = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-  if (m12) {
-    let h = parseInt(m12[1], 10);
-    minute = parseInt(m12[2], 10);
-    const ap = m12[3].toUpperCase();
-    if (ap === 'PM' && h !== 12) h += 12;
-    if (ap === 'AM' && h === 12) h = 0;
-    hour = h;
-  } else {
-    const m24 = str.match(/^(\d{1,2}):(\d{2})/);
-    if (m24) {
-      hour = parseInt(m24[1], 10);
-      minute = parseInt(m24[2], 10);
-    }
-  }
-  if (hour === null) return null;
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hour, minute, 0, 0);
-}
-
-function isBackendBookingInPast(dateInput, timeSlot) {
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const bookingDate = new Date(dateInput);
-  if (Number.isNaN(bookingDate.getTime())) return true;
-  const bookingDayStart = new Date(bookingDate.getFullYear(), bookingDate.getMonth(), bookingDate.getDate()).getTime();
-
-  if (bookingDayStart < todayStart) {
-    return true; // Past date
-  }
-
-  if (bookingDayStart === todayStart) {
-    const slotStart = parseBackendSlotStartDateTime(dateInput, timeSlot);
-    if (slotStart && slotStart.getTime() <= now.getTime()) {
-      return true; // Past time slot on today
-    }
-  }
-  return false;
+function buildPricingResponse(engineRes, memberPricing) {
+  return {
+    baseAmount: engineRes.pricing.basePrice,
+    discountPercent: memberPricing.discountPercent,
+    discountAmount: memberPricing.discountAmount,
+    finalAmount: memberPricing.finalAmount,
+    pricingType: engineRes.pricing.type,
+    peakSurcharge: engineRes.pricing.peakSurcharge,
+    normalPrice: engineRes.pricing.basePrice,
+    finalPrice: engineRes.pricing.finalPrice,
+    membershipPlanIds: memberPricing.membershipPlanIds || [],
+  };
 }
 
 async function createMyBooking(req, res) {
-  const { arenaId, courtId, date, timeSlot, amount, paymentMethod } = req.body;
+  const { arenaId, courtId, amount, paymentMethod } = req.body;
+  const date = typeof req.body.date === 'string' ? req.body.date.trim() : '';
+  const timeSlot = typeof req.body.timeSlot === 'string' ? req.body.timeSlot.trim() : '';
 
   if (!arenaId || !courtId || !date || !timeSlot) {
     return res.status(400).json({ error: 'arenaId, courtId, date, and timeSlot are required' });
   }
 
-  if (isBackendBookingInPast(date, timeSlot)) {
+  // Strict YYYY-MM-DD: the slot-uniqueness index keys on the raw date string, so
+  // "2026-1-5" and "2026-01-05" must never both be accepted.
+  if (!isValidYmd(date)) {
+    return res.status(400).json({ error: 'date must be in YYYY-MM-DD format' });
+  }
+
+  if (isSlotInPast(date, timeSlot)) {
     return res.status(400).json({ error: 'Cannot book past dates or expired time slots' });
   }
 
@@ -87,7 +63,7 @@ async function createMyBooking(req, res) {
     return res.status(404).json({ error: 'Court not found' });
   }
 
-  if (court.arenaId.toString() !== arenaId) {
+  if (court.arenaId.toString() !== String(arenaId)) {
     return res.status(400).json({ error: 'Court does not belong to this arena' });
   }
 
@@ -98,125 +74,74 @@ async function createMyBooking(req, res) {
 
   const userId = req.auth.sub;
 
-  // A real conflict only exists once someone's payment has actually succeeded
-  // ('confirmed'/'rescheduled') — an unpaid 'pending' checkout never blocks others.
-  const existingBooking = await Booking.findOne(buildCourtSlotConflictQuery({ courtId, date, timeSlot }));
-  if (existingBooking) {
-    return res.status(409).json({ error: 'This time slot is already booked' });
+  // Same rules as the public availability API: the slot must be offered to the public,
+  // not blocked, not held by a slot membership, and not already paid for by someone.
+  // (An unpaid 'pending' checkout never blocks others.)
+  const bookable = await checkSlotBookable({ court, dateStr: date, timeSlot });
+  if (!bookable.ok) {
+    return res.status(bookable.status).json({ error: bookable.error });
   }
+  const courtSlot = bookable.courtSlot;
+
+  // Pricing engine is the authoritative price (peak hours, weekends, holidays...),
+  // with any member discount applied on top.
+  const engineRes = evaluatePricing({ arena, court, date, timeSlot, slot: courtSlot });
+  const memberPricing = await computeDiscount(userId, arenaId, engineRes.price, 'booking');
+  const pricing = buildPricingResponse(engineRes, memberPricing);
 
   // Resume the user's own unfinished checkout for this slot instead of creating a duplicate.
   const ownPendingBooking = await Booking.findOne(findOwnResumableBooking({ userId, courtId, date, timeSlot }));
   if (ownPendingBooking) {
-    // Look up CourtSlot for correct pricing on re-use
-    const existingCourtSlot = await CourtSlot.findOne({
-      courtId: String(courtId),
-      arenaId: String(arenaId),
-      dayOfWeek: getDayOfWeek(date),
-      timeSlot: String(timeSlot).trim(),
-    }).lean();
-    const engineResExisting = evaluatePricing({ arena, court, date, timeSlot, slot: existingCourtSlot });
-    const pricingExisting = await computeDiscount(userId, arenaId, engineResExisting.price, 'booking');
     return res.status(200).json({
       booking: Booking.toPublic(ownPendingBooking, {
         arenaName: arena.name,
         courtName: court.name,
       }),
-      pricing: {
-        baseAmount: engineResExisting.pricing.basePrice,
-        discountPercent: pricingExisting.discountPercent,
-        discountAmount: pricingExisting.discountAmount,
-        finalAmount: pricingExisting.finalAmount,
-        pricingType: engineResExisting.pricing.type,
-        peakSurcharge: engineResExisting.pricing.peakSurcharge,
-        normalPrice: engineResExisting.pricing.basePrice,
-        finalPrice: engineResExisting.pricing.finalPrice,
-        membershipPlanIds: pricingExisting.membershipPlanIds || [],
-      },
+      pricing,
     });
   }
 
-  // Fetch the CourtSlot document for this specific time slot to get accurate startTime for pricing engine
-  const courtSlot = await CourtSlot.findOne({
-    courtId: String(courtId),
-    arenaId: String(arenaId),
-    dayOfWeek: getDayOfWeek(date),
-    timeSlot: String(timeSlot).trim(),
-  }).lean();
-
-  // Use pricingEngine as the authoritative price source (respects peak hours, weekends, etc.)
-  const engineRes = evaluatePricing({ arena, court, date, timeSlot, slot: courtSlot });
-
-  // Apply member discount (if any) on top of engine-computed price
-  const memberPricing = await computeDiscount(userId, arenaId, engineRes.price, 'booking');
-
-  const serverFinalAmount = memberPricing.finalAmount;
-
-  const pricing = {
-    baseAmount: engineRes.pricing.basePrice,
-    discountPercent: memberPricing.discountPercent,
-    discountAmount: memberPricing.discountAmount,
-    finalAmount: serverFinalAmount,
-    pricingType: engineRes.pricing.type,
-    peakSurcharge: engineRes.pricing.peakSurcharge,
-    normalPrice: engineRes.pricing.basePrice,
-    finalPrice: engineRes.pricing.finalPrice,
-    membershipPlanIds: memberPricing.membershipPlanIds || [],
-  };
-
-  if (!amountsMatch(amount, serverFinalAmount)) {
+  const finalAmount = memberPricing.finalAmount;
+  if (!amountsMatch(amount, finalAmount)) {
     return res.status(400).json({
       error: 'Amount does not match server pricing',
       pricing,
     });
   }
 
-  const finalAmount = serverFinalAmount;
   const useWallet = req.body.useWallet === true || paymentMethod === 'wallet';
 
-  let walletDebit = null;
   let walletDebitAmount = 0;
-
   if (useWallet) {
     const settings = await ReferralSettings.getSettings();
     if (settings.walletUsageEnabled) {
       const wallet = await getOrCreateWallet(userId);
-      walletDebitAmount = Math.min(wallet.balance, finalAmount);
-
       if (paymentMethod === 'wallet' && wallet.balance < finalAmount) {
         return res.status(400).json({ error: 'Insufficient wallet balance', pricing });
       }
-
-      if (walletDebitAmount > 0) {
-        const updated = await Wallet.findOneAndUpdate(
-          { _id: wallet._id, balance: { $gte: walletDebitAmount } },
-          { $inc: { balance: -walletDebitAmount } },
-          { new: true }
-        );
-        if (!updated) {
-          return res.status(400).json({ error: 'Insufficient wallet balance', pricing });
-        }
-        walletDebit = { walletId: wallet._id, amount: walletDebitAmount, balanceAfter: updated.balance };
-      }
+      walletDebitAmount = roundMoney(Math.min(wallet.balance, finalAmount));
+    } else if (paymentMethod === 'wallet') {
+      return res.status(400).json({ error: 'Wallet payments are currently disabled', pricing });
     }
   }
 
-  try {
-    const method = walletDebitAmount === finalAmount ? 'wallet' : (walletDebitAmount > 0 ? 'partial_wallet' : (paymentMethod || 'online'));
-    const payStatus = walletDebitAmount === finalAmount ? 'paid' : 'pending';
+  const fullyWalletPaid = walletDebitAmount > 0 && walletDebitAmount >= finalAmount;
+  const method = fullyWalletPaid ? 'wallet' : (walletDebitAmount > 0 ? 'partial_wallet' : 'online');
 
-    const booking = await Booking.create({
+  let booking;
+  try {
+    booking = await Booking.create({
       userId,
       arenaId,
       courtId,
-      date: String(date).trim(),
-      timeSlot: String(timeSlot).trim(),
+      date,
+      timeSlot,
       amount: finalAmount,
       paymentMethod: method,
-      paymentStatus: payStatus,
-      status: payStatus === 'paid' ? 'confirmed' : 'pending',
+      paymentStatus: fullyWalletPaid ? 'paid' : 'pending',
+      status: fullyWalletPaid ? 'confirmed' : 'pending',
       walletUsed: walletDebitAmount,
-      paidAmount: finalAmount - walletDebitAmount,
+      paidAmount: roundMoney(finalAmount - walletDebitAmount),
 
       // Audit pricing snapshot — always matches what customer saw
       normalPrice: engineRes.pricing.basePrice,
@@ -229,139 +154,41 @@ async function createMyBooking(req, res) {
       pricingRuleName: engineRes.pricing.ruleName,
       priceCalculatedAt: new Date(),
     });
-
-    if (walletDebit) {
-      await WalletTransaction.create({
-        walletId: walletDebit.walletId,
-        userId,
-        type: 'debit',
-        amount: walletDebit.amount,
-        reason: 'booking_payment',
-        balanceAfter: walletDebit.balanceAfter,
-        meta: {
-          bookingId: booking._id.toString(),
-          arenaId: String(arenaId),
-          courtId: String(courtId),
-        },
-      });
-    }
-
-    // Check if this is the referred user's first successful booking for referral payout
-    const isFirstBooking = (await Booking.countDocuments({
-      userId,
-      status: 'confirmed',
-      _id: { $ne: booking._id },
-    })) === 0;
-
-    if (isFirstBooking) {
-      const referral = await Referral.findOne({
-        referredUserId: userId,
-        status: 'pending',
-        expiryDate: { $gt: new Date() },
-      });
-
-      if (referral) {
-        // Mark referral as completed
-        referral.status = 'completed';
-        referral.bookingId = booking._id;
-        await referral.save();
-
-        // Credit Referrer
-        const referrerWallet = await getOrCreateWallet(referral.referrerId);
-        const referrerWalletUpdated = await Wallet.findByIdAndUpdate(
-          referrerWallet._id,
-          { $inc: { balance: referral.rewardAmountReferrer } },
-          { new: true }
-        );
-        await WalletTransaction.create({
-          walletId: referrerWallet._id,
-          userId: referral.referrerId,
-          type: 'credit',
-          amount: referral.rewardAmountReferrer,
-          reason: 'referral_reward',
-          balanceAfter: referrerWalletUpdated.balance,
-          meta: {
-            bookingId: booking._id.toString(),
-            referredUserId: userId,
-          },
-        });
-
-        // Credit Referred User
-        const referredWallet = await getOrCreateWallet(userId);
-        const referredWalletUpdated = await Wallet.findByIdAndUpdate(
-          referredWallet._id,
-          { $inc: { balance: referral.rewardAmountReferred } },
-          { new: true }
-        );
-        await WalletTransaction.create({
-          walletId: referredWallet._id,
-          userId,
-          type: 'credit',
-          amount: referral.rewardAmountReferred,
-          reason: 'welcome_reward',
-          balanceAfter: referredWalletUpdated.balance,
-          meta: {
-            bookingId: booking._id.toString(),
-          },
-        });
-
-        // Notifications
-        const user = await User.findById(userId).lean();
-        const referrerUser = await User.findById(referral.referrerId).lean();
-        if (referrerUser) {
-          await createNotification(
-            referral.referrerId,
-            'Referral Reward Credited!',
-            `Congratulations! You earned ₹${referral.rewardAmountReferrer} wallet credit as your referred friend ${user?.name || 'a friend'} made their first booking.`,
-            'success',
-            { bookingId: booking._id.toString() }
-          );
-        }
-
-        await createNotification(
-          userId,
-          'Welcome Reward Credited!',
-          `Welcome to Arena! You've received ₹${referral.rewardAmountReferred} welcome wallet credit for signing up with a referral code.`,
-          'success',
-          { bookingId: booking._id.toString() }
-        );
-      }
-    }
-
-    await createNotification(
-      userId,
-      'Booking Confirmed',
-      `Your booking at ${arena.name} on ${date} at ${timeSlot} is confirmed.`,
-      'success',
-      { bookingId: booking._id.toString() }
-    );
-
-    return res.status(201).json({
-      booking: Booking.toPublic(booking, {
-        arenaName: arena.name,
-        courtName: court.name,
-      }),
-      pricing,
-    });
   } catch (err) {
     if (err.code === 11000) {
-      if (walletDebit) {
-        await Wallet.findByIdAndUpdate(walletDebit.walletId, { $inc: { balance: walletDebit.amount } });
-        const refunded = await Wallet.findById(walletDebit.walletId);
-        await WalletTransaction.create({
-          walletId: walletDebit.walletId,
-          userId,
-          type: 'credit',
-          amount: walletDebit.amount,
-          reason: 'refund',
-          balanceAfter: refunded.balance,
-          meta: { reason: 'booking_slot_conflict' },
-        });
-      }
       return res.status(409).json({ error: 'This time slot is already booked' });
     }
     throw err;
   }
+
+  if (walletDebitAmount > 0) {
+    try {
+      await deductFromWallet(userId, walletDebitAmount, 'booking_payment', {
+        bookingId: booking._id.toString(),
+        arenaId: String(arenaId),
+        courtId: String(courtId),
+      });
+    } catch (err) {
+      // Balance changed since we read it — undo the booking rather than give it away.
+      await Booking.deleteOne({ _id: booking._id });
+      if (err.status === 400) {
+        return res.status(400).json({ error: 'Insufficient wallet balance', pricing });
+      }
+      throw err;
+    }
+  }
+
+  if (booking.status === 'confirmed') {
+    await onBookingConfirmed(booking);
+  }
+
+  return res.status(201).json({
+    booking: Booking.toPublic(booking, {
+      arenaName: arena.name,
+      courtName: court.name,
+    }),
+    pricing,
+  });
 }
 
 async function listMyBookings(req, res) {
@@ -369,21 +196,43 @@ async function listMyBookings(req, res) {
     .sort({ date: -1, createdAt: -1 })
     .lean();
 
-  const out = (await Promise.all(
-    list.map(async (b) => {
-      const [arena, court] = await Promise.all([
-        Arena.findById(b.arenaId).lean(),
-        Court.findById(b.courtId).lean(),
-      ]);
+  const arenaIds = [...new Set(list.map((b) => String(b.arenaId)))];
+  const courtIds = [...new Set(list.map((b) => String(b.courtId)))];
+  const [arenas, courts] = await Promise.all([
+    Arena.find({ _id: { $in: arenaIds } }).select('name').lean(),
+    Court.find({ _id: { $in: courtIds } }).select('name').lean(),
+  ]);
+  const arenaById = new Map(arenas.map((a) => [String(a._id), a]));
+  const courtById = new Map(courts.map((c) => [String(c._id), c]));
+
+  const out = list
+    .map((b) => {
+      const arena = arenaById.get(String(b.arenaId));
+      const court = courtById.get(String(b.courtId));
       if (!arena || !court) return null;
       return Booking.toPublic(b, {
-        arenaName: arena?.name || '',
-        courtName: court?.name || '',
+        arenaName: arena.name || '',
+        courtName: court.name || '',
       });
     })
-  )).filter(Boolean);
+    .filter(Boolean);
 
   return res.json({ bookings: out });
+}
+
+/** GET /me/bookings/:id/cancel-quote — what cancelling now would refund (shown before confirming). */
+async function getCancelQuote(req, res) {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ error: 'Invalid booking id' });
+  }
+  const booking = await Booking.findOne({ _id: id, userId: req.auth.sub }).lean();
+  if (!booking) {
+    return res.status(404).json({ error: 'Booking not found' });
+  }
+  const cancellable = !['cancelled', 'completed'].includes(booking.status)
+    && (booking.status === 'pending' || !isSlotInPast(booking.date, booking.timeSlot));
+  return res.json({ cancellable, ...cancellationQuote(booking) });
 }
 
 async function cancelMyBooking(req, res) {
@@ -392,30 +241,44 @@ async function cancelMyBooking(req, res) {
     return res.status(400).json({ error: 'Invalid booking id' });
   }
 
-  const booking = await Booking.findOne({
-    _id: id,
-    userId: req.auth.sub,
-  });
-  if (!booking) {
+  const existing = await Booking.findOne({ _id: id, userId: req.auth.sub }).lean();
+  if (!existing) {
     return res.status(404).json({ error: 'Booking not found' });
   }
-
-  if (booking.status === 'cancelled') {
+  if (existing.status === 'cancelled') {
     return res.status(400).json({ error: 'Booking is already cancelled' });
   }
+  if (existing.status === 'completed') {
+    return res.status(400).json({ error: 'A completed booking cannot be cancelled' });
+  }
+  if (existing.status !== 'pending' && isSlotInPast(existing.date, existing.timeSlot)) {
+    return res.status(400).json({ error: 'This booking has already started and can no longer be cancelled' });
+  }
 
-  const isWalletPaid = booking.paymentMethod === 'wallet' && booking.paymentStatus === 'paid';
-  const isPartialWallet = booking.walletUsed > 0;
-  const refundAmount = isWalletPaid ? booking.amount : (isPartialWallet ? booking.walletUsed : 0);
+  const quote = cancellationQuote(existing);
 
-  booking.status = 'cancelled';
-  booking.paymentStatus = isWalletPaid ? 'refunded' : 'cancelled';
-  await booking.save();
+  // Atomic status flip: two concurrent cancel requests can't both refund.
+  // A paid booking cancelled inside the refund window keeps paymentStatus 'paid' (fee forfeited).
+  const booking = await Booking.findOneAndUpdate(
+    { _id: id, userId: req.auth.sub, status: existing.status },
+    {
+      $set: {
+        status: 'cancelled',
+        cancelledAt: new Date(),
+        cancelledBy: 'customer',
+        ...(quote.paid ? {} : { paymentStatus: 'cancelled' }),
+        ...(quote.paid && !quote.eligible ? { refundMethod: 'none', refundedAmount: 0 } : {}),
+      },
+    },
+    { new: true }
+  );
+  if (!booking) {
+    return res.status(409).json({ error: 'Booking was updated by another request — please refresh' });
+  }
 
-  // Cancel associated open payment if any
-  const Payment = require('../models/Payment');
+  // Cancel the associated open payment (and, for a cart checkout, its sibling bookings).
   const openPayment = await Payment.findOne({
-    'meta.bookingId': booking._id.toString(),
+    $or: [{ 'meta.bookingId': booking._id.toString() }, { 'meta.bookingIds': booking._id.toString() }],
     status: { $in: ['created', 'initiated', 'pending'] },
   });
   if (openPayment) {
@@ -425,43 +288,40 @@ async function cancelMyBooking(req, res) {
     });
   }
 
-  if (refundAmount > 0) {
-    const wallet = await getOrCreateWallet(req.auth.sub);
-    const updated = await Wallet.findByIdAndUpdate(
-      wallet._id,
-      { $inc: { balance: refundAmount } },
-      { new: true }
-    );
-    await WalletTransaction.create({
-      walletId: wallet._id,
-      userId: req.auth.sub,
-      type: 'credit',
-      amount: refundAmount,
-      reason: 'refund',
-      balanceAfter: updated.balance,
-      meta: {
-        bookingId: booking._id.toString(),
-        reason: 'booking_cancel',
-      },
-    });
+  let refundedAmount = 0;
+  let result = booking;
+  if (!quote.paid) {
+    // Unpaid checkout: return whatever the wallet put in (idempotent).
+    refundedAmount = await refundBookingWallet(booking, 'booking_cancel');
+  } else if (quote.eligible) {
+    // Paid and cancelled in time: full refund as wallet credit.
+    const out = await refundPaidBooking(booking._id, { method: 'wallet', by: 'customer', reason: 'booking_cancel' });
+    refundedAmount = out.refundedAmount;
+    result = out.booking;
   }
 
-  const arena = await Arena.findById(booking.arenaId).lean();
-  const court = await Court.findById(booking.courtId).lean();
+  const [arena, court] = await Promise.all([
+    Arena.findById(booking.arenaId).lean(),
+    Court.findById(booking.courtId).lean(),
+  ]);
 
+  const refundNote = refundedAmount > 0
+    ? ` OMR ${refundedAmount.toFixed(3)} has been credited to your Arena Wallet.`
+    : (quote.paid ? ` As it was cancelled less than ${quote.policyHours} hours before the slot, the booking fee is not refundable.` : '');
   await createNotification(
     req.auth.sub,
     'Booking Cancelled',
-    `Your booking at ${arena?.name || 'Arena'} for ${booking.date} has been cancelled.`,
+    `Your booking at ${arena?.name || 'Arena'} for ${booking.date} has been cancelled.${refundNote}`,
     'info',
     { bookingId: booking._id.toString() }
   );
 
   return res.json({
-    booking: Booking.toPublic(booking, {
+    booking: Booking.toPublic(result, {
       arenaName: arena?.name || '',
       courtName: court?.name || '',
     }),
+    refund: { amount: refundedAmount, method: refundedAmount > 0 ? 'wallet' : 'none', policyHours: quote.policyHours },
   });
 }
 
@@ -474,24 +334,19 @@ async function computeBookingPricing(req, res) {
   if (!arena) return res.status(404).json({ error: 'Arena not found' });
 
   // Use pricingEngine if slot details provided, otherwise fall back to base rate
-  if (courtId && date && timeSlot) {
+  if (courtId && mongoose.isValidObjectId(courtId) && isValidYmd(date) && timeSlot) {
     const court = await Court.findById(courtId).lean();
-    const courtSlot = court ? await CourtSlot.findOne({ courtId: String(courtId), arenaId: String(arenaId), dayOfWeek: getDayOfWeek(date), timeSlot: String(timeSlot).trim() }).lean() : null;
+    const courtSlot = court
+      ? await CourtSlot.findOne({
+        courtId: String(courtId),
+        arenaId: String(arenaId),
+        dayOfWeek: dayOfWeekOf(date),
+        timeSlot: String(timeSlot).trim(),
+      }).lean()
+      : null;
     const engineRes = evaluatePricing({ arena, court, date, timeSlot, slot: courtSlot });
     const memberPricing = await computeDiscount(req.auth.sub, arenaId, engineRes.price, 'booking');
-    return res.json({
-      pricing: {
-        baseAmount: engineRes.pricing.basePrice,
-        discountPercent: memberPricing.discountPercent,
-        discountAmount: memberPricing.discountAmount,
-        finalAmount: memberPricing.finalAmount,
-        pricingType: engineRes.pricing.type,
-        peakSurcharge: engineRes.pricing.peakSurcharge,
-        normalPrice: engineRes.pricing.basePrice,
-        finalPrice: engineRes.pricing.finalPrice,
-        membershipPlanIds: memberPricing.membershipPlanIds || [],
-      }
-    });
+    return res.json({ pricing: buildPricingResponse(engineRes, memberPricing) });
   }
 
   // Fallback: base rate + member discount only
@@ -500,4 +355,44 @@ async function computeBookingPricing(req, res) {
   return res.json({ pricing });
 }
 
-module.exports = { createMyBooking, listMyBookings, cancelMyBooking, computeBookingPricing };
+function sendCheckoutError(res, err) {
+  if (!err.status) throw err;
+  return res.status(err.status).json({
+    error: err.message,
+    ...(err.lineIndex !== undefined ? { lineIndex: err.lineIndex, line: err.line } : {}),
+  });
+}
+
+/**
+ * POST /me/bookings/checkout/quote  { lines: [{ arenaId, courtId, date, timeSlot }], couponCode? }
+ * Exact server price for an order (member discount + coupon), no side effects.
+ */
+async function quoteMyCheckout(req, res) {
+  try {
+    const { summary } = await quoteCheckout({ userId: req.auth.sub, lines: req.body?.lines, couponCode: req.body?.couponCode });
+    return res.json({ quote: summary });
+  } catch (err) {
+    return sendCheckoutError(res, err);
+  }
+}
+
+/**
+ * POST /me/bookings/checkout  { lines, couponCode?, useWallet? }
+ * Books every slot in one go (all-or-nothing). The app then pays summary.due for the
+ * returned unpaid bookings with one gateway payment.
+ */
+async function checkoutMyBookings(req, res) {
+  try {
+    const out = await createCheckout({
+      userId: req.auth.sub,
+      lines: req.body?.lines,
+      couponCode: req.body?.couponCode,
+      useWallet: req.body?.useWallet === true,
+    });
+    return res.status(201).json(out);
+  } catch (err) {
+    return sendCheckoutError(res, err);
+  }
+}
+
+module.exports = { createMyBooking, listMyBookings, cancelMyBooking, getCancelQuote, computeBookingPricing, quoteMyCheckout, checkoutMyBookings };

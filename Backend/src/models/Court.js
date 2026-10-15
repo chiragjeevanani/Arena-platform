@@ -11,6 +11,8 @@ const courtSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     type: { type: String, default: 'Wooden', trim: true },
     pricePerHour: { type: Number, min: 0, default: null },
+    // Court rate only applies when an admin set it on purpose (see services/courtRate).
+    priceOverride: { type: Boolean, default: false },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     imageUrl: { type: String, default: null },
   },

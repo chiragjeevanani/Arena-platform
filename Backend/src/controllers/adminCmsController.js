@@ -66,7 +66,8 @@ async function updateCmsContent(req, res) {
 
   const { kind, arenaId, title, subtitle, body, imageUrl, linkUrl, sortOrder, isPublished, inclusions } = req.body;
   if (kind !== undefined) doc.kind = kind;
-  if (arenaId !== undefined) {
+  // Arena staff (req.arenaScopeId set) may not move content to another arena or make it global.
+  if (arenaId !== undefined && !req.arenaScopeId) {
     doc.arenaId = arenaId && arenaId !== '' && mongoose.isValidObjectId(arenaId) ? arenaId : null;
   }
   if (title !== undefined) doc.title = String(title).trim();

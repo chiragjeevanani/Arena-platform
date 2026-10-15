@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { isApiConfigured, getMockPaymentWebhookSecret } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { getMyWallet, topUpMyWallet } from '../../../services/meApi';
+import { getMyWallet } from '../../../services/meApi';
 import { completeWalletTopUpViaMockPayment } from '../../../services/mockTopUpFlow';
 import { mapWalletTransactionToRow } from '../../../utils/walletTxUi';
 
@@ -33,16 +33,10 @@ const TopUpModal = ({ onClose, useLiveApi, onSuccess }) => {
     setProcessing(true);
     try {
       if (useLiveApi) {
+        // Wallet credit only ever comes from a real (or dev mock) payment — never a direct
+        // credit call (the server rejects it outside development).
         const mockSecret = getMockPaymentWebhookSecret();
-        try {
-          await completeWalletTopUpViaMockPayment(finalAmount, mockSecret);
-        } catch (err) {
-          if (err.message && err.message.includes('secret')) {
-            await topUpMyWallet(finalAmount);
-          } else {
-            throw err;
-          }
-        }
+        await completeWalletTopUpViaMockPayment(finalAmount, mockSecret);
         setDone(true);
         onSuccess?.();
         setTimeout(onClose, 1500);

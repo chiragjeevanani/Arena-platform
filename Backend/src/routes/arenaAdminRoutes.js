@@ -17,6 +17,8 @@ const {
 const {
   listAdminBookings,
   updateAdminBooking,
+  refundAdminBooking,
+  listManualRefunds,
 } = require('../controllers/adminBookingController');
 const { uploadArenaImage } = require('../controllers/adminUploadController');
 const {
@@ -89,6 +91,12 @@ router.patch(
   asyncHandler(requireBookingInArenaScope),
   asyncHandler(updateAdminBooking)
 );
+router.post(
+  '/bookings/:bookingId/refund',
+  asyncHandler(requireBookingInArenaScope),
+  asyncHandler(refundAdminBooking)
+);
+router.get('/refunds', asyncHandler(listManualRefunds));
 
 router.post(
   '/membership-plans',
@@ -143,6 +151,7 @@ router.patch(
 );
 router.delete(
   '/cms/:contentId',
+  asyncHandler(requireCmsContentInArenaScope),
   asyncHandler(deleteCmsContent)
 );
 

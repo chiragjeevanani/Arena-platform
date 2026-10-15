@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Box, Typography, Button, IconButton, Card, Grid,
@@ -56,7 +56,6 @@ import {
   uploadAdminImage
 } from '../../../services/cmsApi';
 import { listEventRegistrations, updateEventRegistrationStatus } from '../../../services/adminOpsApi';
-import { registerForEvent } from '../../../services/eventsApi';
 
 const COLORS = ['#CE2029', '#36454F', '#627D98', '#36454F'];
 
@@ -94,6 +93,567 @@ const PremiumCard = ({ children, sx, ...props }) => {
 };
 
 // --- MAIN COMPONENT ---
+// Defined at module level (not inside EventBanners) so React keeps their identity — a
+// component declared inside another is re-created on every render, which resets its state
+// (e.g. the event form losing what was typed).
+const PageHeader = ({ title, subtitle, actionLabel, onAction, onBack, isDark }) => (
+  <Box sx={{
+    mb: 4,
+    display: 'flex',
+    flexDirection: { xs: 'column', md: 'row' },
+    justifyContent: 'space-between',
+    alignItems: { xs: 'flex-start', md: 'flex-end' },
+    gap: 2,
+    position: 'relative'
+  }}>
+    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      {onBack && (
+        <IconButton 
+          onClick={onBack}
+          sx={{ 
+            width: 44, h: 44, 
+            border: '1px solid', 
+            borderColor: 'divider',
+            bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'white',
+            color: '#36454F',
+            '&:hover': { bgcolor: '#CE2029', color: 'white', borderColor: '#CE2029' }
+          }}
+        >
+          <ChevronLeft />
+        </IconButton>
+      )}
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+          <Box sx={{ width: 4, height: 24, bgcolor: '#CE2029', borderRadius: 1 }} />
+          <Typography variant="overline" sx={{ fontWeight: 500, color: '#CE2029', letterSpacing: 2, lineHeight: 1, fontSize: '0.75rem' }}>
+            Portfolio Management
+          </Typography>
+        </Box>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: isDark ? 'white' : '#1e293b', letterSpacing: '-0.04em' }}>
+          {title}
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.5, opacity: 0.8 }}>
+          {subtitle}
+        </Typography>
+      </Box>
+    </Box>
+    {actionLabel && (
+      <Button
+        variant="contained"
+        onClick={onAction}
+        startIcon={onBack ? <DashboardIcon sx={{ fontSize: 18 }} /> : <AddCircleOutline />}
+        sx={{
+          bgcolor: onBack ? '#334155' : '#36454F',
+          color: 'white',
+          px: 3,
+          py: 1.25,
+          fontSize: '0.85rem',
+          borderRadius: 3,
+          '&:hover': { bgcolor: onBack ? '#0f172a' : 'black', transform: 'translateY(-2px)' },
+          textTransform: 'none',
+          fontWeight: 700,
+          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+          transition: 'all 0.2s'
+        }}
+      >
+        {actionLabel}
+      </Button>
+    )}
+  </Box>
+);
+
+const CalendarView = ({ events, setView, isDark, setActiveEvent }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+
+  return (
+    <Box>
+      <PageHeader isDark={isDark} title="Calendar View" subtitle="Event Schedule Management" onAction={() => setView('DASHBOARD')} actionLabel="Back to Dashboard" />
+
+      <PremiumCard sx={{ p: 0, overflow: 'hidden' }}>
+        <Box sx={{ p: 1.5, px: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>Select a date to manage scheduled events</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9', p: 0.5, borderRadius: 2 }}>
+            <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} sx={{ borderRadius: 1.5 }}><ChevronLeft /></IconButton>
+            <Button size="small" onClick={() => setCurrentDate(new Date())} sx={{ fontWeight: 700, px: 2, color: 'text.primary' }}>Today</Button>
+            <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} sx={{ borderRadius: 1.5 }}><ChevronRight /></IconButton>
+          </Box>
+        </Box>
+
+        <Box sx={{ p: 1 }}>
+          {/* Weekday Headers */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 0.5 }}>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <Box key={day} sx={{ textAlign: 'center', py: 0.5 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1 }}>{day}</Typography>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Days Grid */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}>
+            {Array.from({ length: 42 }).map((_, i) => {
+              const day = i - firstDayOfMonth + 1;
+              const isCurrentMonth = day > 0 && day <= daysInMonth(currentDate.getMonth(), currentDate.getFullYear());
+              const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+              const eventThisDay = events.find(e => {
+                const eventDate = new Date(e.date);
+                return eventDate.getDate() === day && eventDate.getMonth() === currentDate.getMonth() && eventDate.getFullYear() === currentDate.getFullYear();
+              });
+
+              return (
+                <Box key={i} sx={{
+                  minHeight: 55,
+                  borderRadius: 1.5,
+                  p: 1,
+                  position: 'relative',
+                  bgcolor: isCurrentMonth ? (isDark ? 'rgba(255,255,255,0.03)' : '#fff') : 'transparent',
+                  border: '1px solid',
+                  borderColor: isToday ? '#CE2029' : (isCurrentMonth ? (isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0') : 'transparent'),
+                  opacity: isCurrentMonth ? 1 : 0.3,
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  cursor: isCurrentMonth ? 'pointer' : 'default',
+                  '&:hover': isCurrentMonth ? {
+                    transform: 'scale(1.02)',
+                    borderColor: '#CE2029',
+                    boxShadow: '0 8px 24px -10px rgba(206, 32, 41, 0.3)',
+                    zIndex: 1,
+                    bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#fff'
+                  } : {},
+                }}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    color: isToday ? '#CE2029' : (isCurrentMonth ? 'text.primary' : 'text.disabled'),
+                    lineHeight: 1
+                  }}>
+                    {isCurrentMonth ? day : ''}
+                  </Typography>
+
+                  {isCurrentMonth && eventThisDay && (
+                    <Box
+                      onClick={(e) => { e.stopPropagation(); setActiveEvent(eventThisDay); setView('DETAILS'); }}
+                      sx={{
+                        position: 'absolute', bottom: 4, left: 4, right: 4,
+                        p: 0.25, px: 0.5,
+                        bgcolor: '#CE2029',
+                        borderRadius: 1.5,
+                        color: 'white',
+                        boxShadow: '0 4px 12px -2px rgba(206, 32, 41, 0.4)',
+                        transition: 'all 0.2s',
+                        '&:hover': { bgcolor: '#36454F' }
+                      }}
+                    >
+                      <Typography variant="caption" sx={{
+                        fontSize: '0.65rem',
+                        fontWeight: 800,
+                        display: 'block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        textTransform: 'uppercase'
+                      }}>
+                        {eventThisDay.name}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+      </PremiumCard>
+    </Box>
+  );
+};
+
+const EventFormView = ({ loadEvents, setView, isDark }) => {
+  const [step, setStep] = useState(0);
+  const steps = ['General Info', 'Date & Venue', 'Pricing & Rules'];
+  const [bannerPreview, setBannerPreview] = useState(null);
+
+  // Form fields state
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'Tournament',
+    sportCategory: 'Badminton',
+    description: '',
+    date: '',
+    time: '',
+    venue: 'Main Court',
+    maxParticipants: '',
+    entryFee: '',
+    rules: '',
+    inclusions: ''
+  });
+
+  const handleField = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.value }));
+
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const res = await uploadAdminImage(file);
+      setBannerPreview(res.url);
+    } catch {
+      alert('Failed to upload banner');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.name) return;
+    try {
+      const formattedRules = (formData.rules || '').split('\n').map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n');
+      const payload = {
+        kind: 'event',
+        title: formData.name,
+        subtitle: `${formData.date} | ${formData.time} | ${formData.venue} | ${formData.entryFee || '0'} | ${formData.type} | ${formData.sportCategory}`,
+        imageUrl: bannerPreview,
+        isPublished: true, 
+        body: `${formData.description || ''}\n\n${formattedRules}`,
+        inclusions: (formData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean)
+      };
+      await createAdminCms(payload);
+      loadEvents();
+      setView('DASHBOARD');
+    } catch {
+      alert('Failed to create event');
+    }
+  };
+
+  return (
+    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+      <PageHeader isDark={isDark} title="Create New Event" subtitle="Fill in the details to construct and launch a new event" />
+
+      <Box sx={{ mb: 6 }}>
+        <Stepper activeStep={step} alternativeLabel>
+          {steps.map((label, index) => (
+            <Step key={label}>
+              <StepLabel
+                StepIconProps={{
+                  sx: {
+                    '&.Mui-active': { color: '#CE2029' },
+                    '&.Mui-completed': { color: '#10B981' }
+                  }
+                }}
+                sx={{
+                  '& .MuiStepLabel-label': {
+                    fontWeight: 800,
+                    fontSize: '0.75rem',
+                    letterSpacing: 2,
+                    textTransform: 'uppercase',
+                    mt: 1,
+                    color: step >= index ? (step === index ? '#CE2029' : '#10B981') : 'text.disabled'
+                  }
+                }}
+              >
+                {label}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+
+      <PremiumCard sx={{ p: 4 }}>
+        {step === 0 && (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <TextField
+                fullWidth
+                label="Event Name"
+                variant="filled"
+                placeholder="e.g. Summer Badminton Smash 2026"
+                value={formData.name}
+                onChange={handleField('name')}
+                InputProps={{
+                  startAdornment: <Description sx={{ mr: 1, opacity: 0.5 }} />,
+                  disableUnderline: true,
+                  sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc', p: 1 }
+                }}
+                InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+              />
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth variant="filled">
+                    <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Type</InputLabel>
+                    <Select
+                      label="Event Type"
+                      disableUnderline
+                      value={formData.type}
+                      onChange={handleField('type')}
+                      sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                    >
+                      <MenuItem value="Tournament">Tournament</MenuItem>
+                      <MenuItem value="Coaching">Coaching</MenuItem>
+                      <MenuItem value="Camp">Training Camp</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth variant="filled">
+                    <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Sport Category</InputLabel>
+                    <Select
+                      label="Sport Category"
+                      disableUnderline
+                      value={formData.sportCategory}
+                      onChange={handleField('sportCategory')}
+                      sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                    >
+                      <MenuItem value="Badminton">Badminton</MenuItem>
+                      <MenuItem value="Table Tennis">Table Tennis</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  {bannerPreview ? (
+                    <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', height: 56, border: '2px solid #10B981' }}>
+                      <img src={bannerPreview} alt="Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <Box sx={{
+                        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        px: 2, bgcolor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)'
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CheckCircle sx={{ color: '#10B981', fontSize: 18 }} />
+                          <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>Banner uploaded</Typography>
+                        </Box>
+                        <Button
+                          component="label"
+                          size="small"
+                          sx={{ color: 'white', textTransform: 'none', fontSize: '0.7rem', fontWeight: 600,
+                            bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 2, px: 1.5,
+                            '&:hover': { bgcolor: '#CE2029' } }}
+                        >
+                          Change
+                          <input type="file" hidden accept="image/*"
+                            onChange={handleFileUpload} />
+                        </Button>
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      fullWidth
+                      startIcon={<CloudUpload />}
+                      sx={{
+                        height: 56, borderRadius: 3, borderStyle: 'dashed', borderWidth: 2,
+                        textTransform: 'none', fontWeight: 700, borderColor: 'divider',
+                        '&:hover': { borderColor: '#CE2029', bgcolor: 'rgba(206, 32, 41, 0.05)' }
+                      }}
+                    >
+                      {isUploading ? 'Uploading...' : 'Upload Banner (16:9)'}
+                      <input type="file" hidden accept="image/*"
+                        onChange={handleFileUpload} />
+                    </Button>
+                  )}
+                </Grid>
+              </Grid>
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
+                  Event Description
+                </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  placeholder="Describe the event goals and highlights..."
+                  value={formData.description}
+                  onChange={handleField('description')}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                      '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
+                      '&:hover fieldset': { borderColor: '#CE202966' },
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+          </motion.div>
+        )}
+
+        {step === 1 && (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Event Date"
+                    variant="filled"
+                    value={formData.date}
+                    onChange={handleField('date')}
+                    InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+                    InputProps={{
+                      disableUnderline: true,
+                      sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    type="time"
+                    label="Event Time"
+                    variant="filled"
+                    value={formData.time}
+                    onChange={handleField('time')}
+                    InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+                    InputProps={{
+                      disableUnderline: true,
+                      sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <FormControl fullWidth variant="filled">
+                <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Venue</InputLabel>
+                <Select
+                  disableUnderline
+                  value={formData.venue}
+                  onChange={handleField('venue')}
+                  sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
+                >
+                  <MenuItem value="Main Court">Sector 62 Main Court</MenuItem>
+                  <MenuItem value="Academy">Amm Sports Academy</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                type="number"
+                label="Max Participants"
+                variant="filled"
+                value={formData.maxParticipants}
+                onChange={handleField('maxParticipants')}
+                InputLabelProps={{ sx: { fontWeight: 700, color: '#CE2029' } }}
+                InputProps={{
+                  startAdornment: <Groups sx={{ mr: 1, opacity: 0.5 }} />,
+                  disableUnderline: true,
+                  sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                }}
+              />
+            </Box>
+          </motion.div>
+        )}
+
+        {step === 2 && (
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Entry Fee (OMR)"
+                variant="filled"
+                placeholder="e.g. 5.000"
+                value={formData.entryFee}
+                onChange={handleField('entryFee')}
+                InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end" sx={{ fontWeight: 800 }}>OMR</InputAdornment>,
+                  disableUnderline: true,
+                  sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
+                }}
+              />
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
+                  Event Rules & Guidelines
+                </Typography>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={6}
+                  variant="outlined"
+                  placeholder="List the event rules, eligibility, and guidelines..."
+                  value={formData.rules}
+                  onChange={handleField('rules')}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                      '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
+                      '&:hover fieldset': { borderColor: '#CE202966' },
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                    }
+                  }}
+                />
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
+                  What's Included (Amenities, comma separated)
+                </Typography>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="e.g. Sanitized, Equipment, Parking, Refreshments"
+                  value={formData.inclusions}
+                  onChange={handleField('inclusions')}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
+                      '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
+                      '&:hover fieldset': { borderColor: '#CE202966' },
+                      '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+          </motion.div>
+        )}
+
+        <Box sx={{ mt: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Button
+            disabled={step === 0}
+            onClick={() => setStep(step - 1)}
+            sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'none', fontSize: '1rem' }}
+          >
+            Back
+          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setView('DASHBOARD')}
+              sx={{ borderRadius: 2.5, px: 3, fontWeight: 700, textTransform: 'none', border: '2px solid' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => step === 2 ? handleSubmit() : setStep(step + 1)}
+              sx={{
+                bgcolor: '#CE2029',
+                px: 5,
+                py: 1.5,
+                borderRadius: 2.5,
+                fontWeight: 800,
+                textTransform: 'none',
+                boxShadow: '0 8px 20px -4px rgba(206, 32, 41, 0.4)',
+                '&:hover': { bgcolor: '#d43d35', transform: 'translateY(-2px)' }
+              }}
+            >
+              {step === 2 ? 'Create Event' : 'Continue'}
+            </Button>
+          </Box>
+        </Box>
+      </PremiumCard>
+    </Box>
+  );
+};
+
 const EventBanners = () => {
   const { isDark } = useTheme();
   const [view, setView] = useState('DASHBOARD');
@@ -119,7 +679,7 @@ const EventBanners = () => {
     try {
       const res = await uploadAdminImage(file);
       setEditFormData(prev => ({ ...prev, banner: res.url }));
-    } catch (err) {
+    } catch {
       alert('Failed to upload image');
     } finally {
       setIsEditUploading(false);
@@ -142,13 +702,13 @@ const EventBanners = () => {
       setIsEditModalOpen(false);
       setEditingEvent(null);
       loadEvents();
-    } catch (err) {
+    } catch {
       alert('Failed to update event');
     }
   };
 
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -261,17 +821,12 @@ const EventBanners = () => {
     }
   }, [view, activeEvent]);
 
-  const handleAddEvent = (newEvent) => {
-    // This was previously just local state. Now we'll call loadEvents after real save.
-    loadEvents();
-  };
-
   const handleDeleteEvent = async (id) => {
     if (!window.confirm('Are you sure you want to delete this event?')) return;
     try {
       await deleteAdminCms(id);
       loadEvents();
-    } catch (err) {
+    } catch {
       alert('Failed to delete event');
     }
   };
@@ -280,13 +835,11 @@ const EventBanners = () => {
   const [resultWinner, setResultWinner] = useState('');
   const [resultRunnerUp, setResultRunnerUp] = useState('');
   const [scorecardImage, setScorecardImage] = useState(null);
-  const [publishDuration, setPublishDuration] = useState('7');
-  const [hideEventBanner, setHideEventBanner] = useState(false);
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       await updateEventRegistrationStatus(id, newStatus);
       setParticipants(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
-    } catch (err) {
+    } catch {
       alert('Failed to update status');
     }
   };
@@ -369,76 +922,10 @@ const EventBanners = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
-  const PageHeader = ({ title, subtitle, actionLabel, onAction, onBack }) => (
-    <Box sx={{
-      mb: 4,
-      display: 'flex',
-      flexDirection: { xs: 'column', md: 'row' },
-      justifyContent: 'space-between',
-      alignItems: { xs: 'flex-start', md: 'flex-end' },
-      gap: 2,
-      position: 'relative'
-    }}>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-        {onBack && (
-          <IconButton 
-            onClick={onBack}
-            sx={{ 
-              width: 44, h: 44, 
-              border: '1px solid', 
-              borderColor: 'divider',
-              bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'white',
-              color: '#36454F',
-              '&:hover': { bgcolor: '#CE2029', color: 'white', borderColor: '#CE2029' }
-            }}
-          >
-            <ChevronLeft />
-          </IconButton>
-        )}
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-            <Box sx={{ width: 4, height: 24, bgcolor: '#CE2029', borderRadius: 1 }} />
-            <Typography variant="overline" sx={{ fontWeight: 500, color: '#CE2029', letterSpacing: 2, lineHeight: 1, fontSize: '0.75rem' }}>
-              Portfolio Management
-            </Typography>
-          </Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: isDark ? 'white' : '#1e293b', letterSpacing: '-0.04em' }}>
-            {title}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.5, opacity: 0.8 }}>
-            {subtitle}
-          </Typography>
-        </Box>
-      </Box>
-      {actionLabel && (
-        <Button
-          variant="contained"
-          onClick={onAction}
-          startIcon={onBack ? <DashboardIcon sx={{ fontSize: 18 }} /> : <AddCircleOutline />}
-          sx={{
-            bgcolor: onBack ? '#334155' : '#36454F',
-            color: 'white',
-            px: 3,
-            py: 1.25,
-            fontSize: '0.85rem',
-            borderRadius: 3,
-            '&:hover': { bgcolor: onBack ? '#0f172a' : 'black', transform: 'translateY(-2px)' },
-            textTransform: 'none',
-            fontWeight: 700,
-            boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-            transition: 'all 0.2s'
-          }}
-        >
-          {actionLabel}
-        </Button>
-      )}
-    </Box>
-  );
-
   // --- DASHBOARD VIEW ---
   const DashboardView = () => (
     <Box>
-      <PageHeader
+      <PageHeader isDark={isDark}
         title="Event Dashboard"
         subtitle="Growth & Operations Overview"
         actionLabel="Create New Event"
@@ -681,499 +1168,7 @@ const EventBanners = () => {
   );
 
   // --- CALENDAR VIEW (Simple Custom Implementation) ---
-  const CalendarView = () => {
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-
-    return (
-      <Box>
-        <PageHeader title="Calendar View" subtitle="Event Schedule Management" onAction={() => setView('DASHBOARD')} actionLabel="Back to Dashboard" />
-
-        <PremiumCard sx={{ p: 0, overflow: 'hidden' }}>
-          <Box sx={{ p: 1.5, px: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>Select a date to manage scheduled events</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9', p: 0.5, borderRadius: 2 }}>
-              <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} sx={{ borderRadius: 1.5 }}><ChevronLeft /></IconButton>
-              <Button size="small" onClick={() => setCurrentDate(new Date())} sx={{ fontWeight: 700, px: 2, color: 'text.primary' }}>Today</Button>
-              <IconButton size="small" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} sx={{ borderRadius: 1.5 }}><ChevronRight /></IconButton>
-            </Box>
-          </Box>
-
-          <Box sx={{ p: 1 }}>
-            {/* Weekday Headers */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 0.5 }}>
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <Box key={day} sx={{ textAlign: 'center', py: 0.5 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1 }}>{day}</Typography>
-                </Box>
-              ))}
-            </Box>
-
-            {/* Days Grid */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}>
-              {Array.from({ length: 42 }).map((_, i) => {
-                const day = i - firstDayOfMonth + 1;
-                const isCurrentMonth = day > 0 && day <= daysInMonth(currentDate.getMonth(), currentDate.getFullYear());
-                const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-                const eventThisDay = events.find(e => {
-                  const eventDate = new Date(e.date);
-                  return eventDate.getDate() === day && eventDate.getMonth() === currentDate.getMonth() && eventDate.getFullYear() === currentDate.getFullYear();
-                });
-
-                return (
-                  <Box key={i} sx={{
-                    minHeight: 55,
-                    borderRadius: 1.5,
-                    p: 1,
-                    position: 'relative',
-                    bgcolor: isCurrentMonth ? (isDark ? 'rgba(255,255,255,0.03)' : '#fff') : 'transparent',
-                    border: '1px solid',
-                    borderColor: isToday ? '#CE2029' : (isCurrentMonth ? (isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0') : 'transparent'),
-                    opacity: isCurrentMonth ? 1 : 0.3,
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    cursor: isCurrentMonth ? 'pointer' : 'default',
-                    '&:hover': isCurrentMonth ? {
-                      transform: 'scale(1.02)',
-                      borderColor: '#CE2029',
-                      boxShadow: '0 8px 24px -10px rgba(206, 32, 41, 0.3)',
-                      zIndex: 1,
-                      bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#fff'
-                    } : {},
-                  }}>
-                    <Typography variant="body2" sx={{
-                      fontWeight: 700,
-                      fontSize: '0.8rem',
-                      color: isToday ? '#CE2029' : (isCurrentMonth ? 'text.primary' : 'text.disabled'),
-                      lineHeight: 1
-                    }}>
-                      {isCurrentMonth ? day : ''}
-                    </Typography>
-
-                    {isCurrentMonth && eventThisDay && (
-                      <Box
-                        onClick={(e) => { e.stopPropagation(); setActiveEvent(eventThisDay); setView('DETAILS'); }}
-                        sx={{
-                          position: 'absolute', bottom: 4, left: 4, right: 4,
-                          p: 0.25, px: 0.5,
-                          bgcolor: '#CE2029',
-                          borderRadius: 1.5,
-                          color: 'white',
-                          boxShadow: '0 4px 12px -2px rgba(206, 32, 41, 0.4)',
-                          transition: 'all 0.2s',
-                          '&:hover': { bgcolor: '#36454F' }
-                        }}
-                      >
-                        <Typography variant="caption" sx={{
-                          fontSize: '0.65rem',
-                          fontWeight: 800,
-                          display: 'block',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          textTransform: 'uppercase'
-                        }}>
-                          {eventThisDay.name}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-        </PremiumCard>
-      </Box>
-    );
-  };
-
   // --- MULTI-STEP FORM (Stepper) ---
-  const EventFormView = () => {
-    const [step, setStep] = useState(0);
-    const steps = ['General Info', 'Date & Venue', 'Pricing & Rules'];
-    const [bannerPreview, setBannerPreview] = useState(null);
-
-    // Form fields state
-    const [formData, setFormData] = useState({
-      name: '',
-      type: 'Tournament',
-      sportCategory: 'Badminton',
-      description: '',
-      date: '',
-      time: '',
-      venue: 'Main Court',
-      maxParticipants: '',
-      entryFee: '',
-      rules: '',
-      inclusions: ''
-    });
-
-    const handleField = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.value }));
-
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleFileUpload = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      setIsUploading(true);
-      try {
-        const res = await uploadAdminImage(file);
-        setBannerPreview(res.url);
-      } catch (err) {
-        alert('Failed to upload banner');
-      } finally {
-        setIsUploading(false);
-      }
-    };
-
-    const handleSubmit = async () => {
-      if (!formData.name) return;
-      try {
-        const formattedRules = (formData.rules || '').split('\n').map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n');
-        const payload = {
-          kind: 'event',
-          title: formData.name,
-          subtitle: `${formData.date} | ${formData.time} | ${formData.venue} | ${formData.entryFee || '0'} | ${formData.type} | ${formData.sportCategory}`,
-          imageUrl: bannerPreview,
-          isPublished: true, 
-          body: `${formData.description || ''}\n\n${formattedRules}`,
-          inclusions: (formData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean)
-        };
-        await createAdminCms(payload);
-        loadEvents();
-        setView('DASHBOARD');
-      } catch (err) {
-        alert('Failed to create event');
-      }
-    };
-
-    return (
-      <Box sx={{ maxWidth: 900, mx: 'auto' }}>
-        <PageHeader title="Create New Event" subtitle="Fill in the details to construct and launch a new event" />
-
-        <Box sx={{ mb: 6 }}>
-          <Stepper activeStep={step} alternativeLabel>
-            {steps.map((label, index) => (
-              <Step key={label}>
-                <StepLabel
-                  StepIconProps={{
-                    sx: {
-                      '&.Mui-active': { color: '#CE2029' },
-                      '&.Mui-completed': { color: '#10B981' }
-                    }
-                  }}
-                  sx={{
-                    '& .MuiStepLabel-label': {
-                      fontWeight: 800,
-                      fontSize: '0.75rem',
-                      letterSpacing: 2,
-                      textTransform: 'uppercase',
-                      mt: 1,
-                      color: step >= index ? (step === index ? '#CE2029' : '#10B981') : 'text.disabled'
-                    }
-                  }}
-                >
-                  {label}
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
-
-        <PremiumCard sx={{ p: 4 }}>
-          {step === 0 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <TextField
-                  fullWidth
-                  label="Event Name"
-                  variant="filled"
-                  placeholder="e.g. Summer Badminton Smash 2026"
-                  value={formData.name}
-                  onChange={handleField('name')}
-                  InputProps={{
-                    startAdornment: <Description sx={{ mr: 1, opacity: 0.5 }} />,
-                    disableUnderline: true,
-                    sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc', p: 1 }
-                  }}
-                  InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-                />
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <FormControl fullWidth variant="filled">
-                      <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Type</InputLabel>
-                      <Select
-                        label="Event Type"
-                        disableUnderline
-                        value={formData.type}
-                        onChange={handleField('type')}
-                        sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
-                      >
-                        <MenuItem value="Tournament">Tournament</MenuItem>
-                        <MenuItem value="Coaching">Coaching</MenuItem>
-                        <MenuItem value="Camp">Training Camp</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <FormControl fullWidth variant="filled">
-                      <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Sport Category</InputLabel>
-                      <Select
-                        label="Sport Category"
-                        disableUnderline
-                        value={formData.sportCategory}
-                        onChange={handleField('sportCategory')}
-                        sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
-                      >
-                        <MenuItem value="Badminton">Badminton</MenuItem>
-                        <MenuItem value="Table Tennis">Table Tennis</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12}>
-                    {bannerPreview ? (
-                      <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', height: 56, border: '2px solid #10B981' }}>
-                        <img src={bannerPreview} alt="Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <Box sx={{
-                          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          px: 2, bgcolor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)'
-                        }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <CheckCircle sx={{ color: '#10B981', fontSize: 18 }} />
-                            <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>Banner uploaded</Typography>
-                          </Box>
-                          <Button
-                            component="label"
-                            size="small"
-                            sx={{ color: 'white', textTransform: 'none', fontSize: '0.7rem', fontWeight: 600,
-                              bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 2, px: 1.5,
-                              '&:hover': { bgcolor: '#CE2029' } }}
-                          >
-                            Change
-                            <input type="file" hidden accept="image/*"
-                              onChange={handleFileUpload} />
-                          </Button>
-                        </Box>
-                      </Box>
-                    ) : (
-                      <Button
-                        variant="outlined"
-                        component="label"
-                        fullWidth
-                        startIcon={<CloudUpload />}
-                        sx={{
-                          height: 56, borderRadius: 3, borderStyle: 'dashed', borderWidth: 2,
-                          textTransform: 'none', fontWeight: 700, borderColor: 'divider',
-                          '&:hover': { borderColor: '#CE2029', bgcolor: 'rgba(206, 32, 41, 0.05)' }
-                        }}
-                      >
-                        {isUploading ? 'Uploading...' : 'Upload Banner (16:9)'}
-                        <input type="file" hidden accept="image/*"
-                          onChange={handleFileUpload} />
-                      </Button>
-                    )}
-                  </Grid>
-                </Grid>
-                <Box>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
-                    Event Description
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={4}
-                    variant="outlined"
-                    placeholder="Describe the event goals and highlights..."
-                    value={formData.description}
-                    onChange={handleField('description')}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 3,
-                        bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
-                        '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
-                        '&:hover fieldset': { borderColor: '#CE202966' },
-                        '&.Mui-focused fieldset': { borderColor: '#CE2029' }
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
-            </motion.div>
-          )}
-
-          {step === 1 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Event Date"
-                      variant="filled"
-                      value={formData.date}
-                      onChange={handleField('date')}
-                      InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-                      InputProps={{
-                        disableUnderline: true,
-                        sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      type="time"
-                      label="Event Time"
-                      variant="filled"
-                      value={formData.time}
-                      onChange={handleField('time')}
-                      InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-                      InputProps={{
-                        disableUnderline: true,
-                        sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-                <FormControl fullWidth variant="filled">
-                  <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Venue</InputLabel>
-                  <Select
-                    disableUnderline
-                    value={formData.venue}
-                    onChange={handleField('venue')}
-                    sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
-                  >
-                    <MenuItem value="Main Court">Sector 62 Main Court</MenuItem>
-                    <MenuItem value="Academy">Amm Sports Academy</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Max Participants"
-                  variant="filled"
-                  value={formData.maxParticipants}
-                  onChange={handleField('maxParticipants')}
-                  InputLabelProps={{ sx: { fontWeight: 700, color: '#CE2029' } }}
-                  InputProps={{
-                    startAdornment: <Groups sx={{ mr: 1, opacity: 0.5 }} />,
-                    disableUnderline: true,
-                    sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
-                  }}
-                />
-              </Box>
-            </motion.div>
-          )}
-
-          {step === 2 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Entry Fee (OMR)"
-                  variant="filled"
-                  placeholder="e.g. 5.000"
-                  value={formData.entryFee}
-                  onChange={handleField('entryFee')}
-                  InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end" sx={{ fontWeight: 800 }}>OMR</InputAdornment>,
-                    disableUnderline: true,
-                    sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
-                  }}
-                />
-                <Box>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
-                    Event Rules & Guidelines
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={6}
-                    variant="outlined"
-                    placeholder="List the event rules, eligibility, and guidelines..."
-                    value={formData.rules}
-                    onChange={handleField('rules')}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 3,
-                        bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
-                        '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
-                        '&:hover fieldset': { borderColor: '#CE202966' },
-                        '&.Mui-focused fieldset': { borderColor: '#CE2029' }
-                      }
-                    }}
-                  />
-                </Box>
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
-                    What's Included (Amenities, comma separated)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    placeholder="e.g. Sanitized, Equipment, Parking, Refreshments"
-                    value={formData.inclusions}
-                    onChange={handleField('inclusions')}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 3,
-                        bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc',
-                        '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' },
-                        '&:hover fieldset': { borderColor: '#CE202966' },
-                        '&.Mui-focused fieldset': { borderColor: '#CE2029' }
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
-            </motion.div>
-          )}
-
-          <Box sx={{ mt: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Button
-              disabled={step === 0}
-              onClick={() => setStep(step - 1)}
-              sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'none', fontSize: '1rem' }}
-            >
-              Back
-            </Button>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="outlined"
-                onClick={() => setView('DASHBOARD')}
-                sx={{ borderRadius: 2.5, px: 3, fontWeight: 700, textTransform: 'none', border: '2px solid' }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => step === 2 ? handleSubmit() : setStep(step + 1)}
-                sx={{
-                  bgcolor: '#CE2029',
-                  px: 5,
-                  py: 1.5,
-                  borderRadius: 2.5,
-                  fontWeight: 800,
-                  textTransform: 'none',
-                  boxShadow: '0 8px 20px -4px rgba(206, 32, 41, 0.4)',
-                  '&:hover': { bgcolor: '#d43d35', transform: 'translateY(-2px)' }
-                }}
-              >
-                {step === 2 ? 'Create Event' : 'Continue'}
-              </Button>
-            </Box>
-          </Box>
-        </PremiumCard>
-      </Box>
-    );
-  };
-
   const ParticipantRegistration = () => (
     <Box>
       <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
@@ -1735,12 +1730,12 @@ const EventBanners = () => {
         )}
 
         <motion.div initial="hidden" animate="visible" variants={containerVariants}>
-          {view === 'DASHBOARD' && <DashboardView />}
-          {view === 'CALENDAR' && <CalendarView />}
-          {view === 'FORM' && <EventFormView />}
+          {view === 'DASHBOARD' && DashboardView()}
+          {view === 'CALENDAR' && <CalendarView setView={setView} isDark={isDark} setActiveEvent={setActiveEvent} events={events} />}
+          {view === 'FORM' && <EventFormView setView={setView} isDark={isDark} loadEvents={loadEvents} />}
           {view === 'DETAILS' && (
             <Box>
-              <PageHeader
+              <PageHeader isDark={isDark}
                 title={activeEvent?.name}
                 subtitle={`Management Module | ${activeEvent?.status}`}
                 onBack={() => setView('DASHBOARD')}
@@ -1789,11 +1784,11 @@ const EventBanners = () => {
                     key={activeSubTab} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
                     style={{ width: '100%' }}
                   >
-                    {activeSubTab === 0 && <ParticipantRegistration />}
-                    {activeSubTab === 1 && <SponsorManagement />}
-                    {activeSubTab === 2 && <ResultsManagement />}
-                    {activeSubTab === 3 && <ExpenseTracker />}
-                    {activeSubTab === 4 && <FinancialReports />}
+                    {activeSubTab === 0 && ParticipantRegistration()}
+                    {activeSubTab === 1 && SponsorManagement()}
+                    {activeSubTab === 2 && ResultsManagement()}
+                    {activeSubTab === 3 && ExpenseTracker()}
+                    {activeSubTab === 4 && FinancialReports()}
                   </motion.div>
                 </AnimatePresence>
               </Card>

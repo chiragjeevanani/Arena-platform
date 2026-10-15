@@ -11,6 +11,9 @@ import { getAuthToken } from '../../../services/apiClient';
 import { shouldPersistBookingSuccessToUserBookings } from '../../../utils/bookingSuccessPersistence';
 import { storage } from '../../../utils/storage';
 import Logo from '../../../assets/Logo (3).png';
+import { useAuth } from '../context/AuthContext';
+import { useCart, cartItemKey } from '../context/CartContext';
+import { buildReceiptFromSuccessState, downloadBookingReceiptPdf } from '../../../utils/bookingReceiptPdf';
 
 // Shuttlecock particle for confetti
 const ShuttleParticle = ({ delay, x, y, isDark }) => (
@@ -37,7 +40,9 @@ const BookingSuccess = () => {
   const courtRef = useRef(null);
   const [showConfetti, setShowConfetti] = useState(true);
   const [loadedBooking, setLoadedBooking] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { user } = useAuth();
 
   const searchParams = new URLSearchParams(useLocation().search);
   const queryBookingId = searchParams.get('bookingId');
@@ -66,16 +71,30 @@ const BookingSuccess = () => {
     }
   }, [queryBookingId, state]);
 
-  // Generate shuttle particles
-  const particles = Array.from({ length: 12 }, (_, i) => ({
+  // Shuttle particles — random once per mount, not on every render
+  const [particles] = useState(() => Array.from({ length: 12 }, (_, i) => ({
     id: i,
     delay: i * 0.1,
     x: (Math.random() - 0.5) * 300,
     y: (Math.random() - 0.5) * 400,
-  }));
+  })));
 
   const bookingData = state || loadedBooking;
   const amount = Number(bookingData?.amount) || 0;
+  const bookingLines = Array.isArray(bookingData?.lines) ? bookingData.lines : [];
+  const multiLines = bookingLines.length > 1;
+  // Stable reference shown on the receipt (was a new random string on every render).
+  const [fallbackRef] = useState(() => Math.random().toString(36).slice(2, 11).toUpperCase());
+  const receiptRef = String(
+    bookingData?.booking?.id || bookingLines[0]?.bookingId || bookingData?.paymentId || queryBookingId || fallbackRef
+  ).slice(-9).toUpperCase();
+
+  // Booked slots leave the cart (they may have come from it, or been re-picked directly).
+  const { removeItems: removeCartItems } = useCart();
+  useEffect(() => {
+    if (bookingLines.length) removeCartItems(bookingLines.map((l) => cartItemKey(l)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingData]);
 
   const formatReceiptDate = (value) => {
     if (!value) {
@@ -337,7 +356,7 @@ const BookingSuccess = () => {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] animate-pulse" />
-                  <span className="font-mono">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                  <span className="font-mono">#{receiptRef}</span>
                 </div>
               </div>
 
@@ -365,14 +384,32 @@ const BookingSuccess = () => {
                       ? 'Tier ' + bookingData.plan?.category 
                       : bookingData?.type === 'wallet_top_up'
                       ? 'Online Payment Added'
-                      : bookingData?.batch 
-                      ? bookingData.batch.level + ' Batch' 
+                      : bookingData?.batch
+                      ? bookingData.batch.level + ' Batch'
+                      : multiLines && new Set(bookingLines.map((l) => l.courtId)).size > 1
+                      ? `${bookingLines.length} slots booked`
                       : bookingData?.court?.name}
                   </span>
                 </h3>
               </div>
 
               {/* Detail Grid */}
+              {multiLines ? (
+              <div className="bg-slate-50/50 p-4 rounded-[20px] border border-slate-100 print:bg-slate-50 print:border-slate-200 divide-y divide-slate-100">
+                {bookingLines.map((l, i) => (
+                  <div key={l.bookingId || i} className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                    <div className="min-w-0">
+                      <p className="text-xs md:text-sm font-black text-slate-800 truncate">{l.courtName}</p>
+                      <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <CalendarDays size={11} className="text-slate-400" /> {formatReceiptDate(l.dateYmd || l.date)}
+                        <Clock size={11} className="text-slate-400 ml-1" /> {l.timeSlot}
+                      </p>
+                    </div>
+                    <span className="text-xs font-black text-slate-700 shrink-0">OMR {(Number(l.amount) || 0).toFixed(3)}</span>
+                  </div>
+                ))}
+              </div>
+              ) : (
               <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100 print:bg-slate-50 print:border-slate-200">
                 <div className="space-y-1 min-w-0">
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
@@ -407,6 +444,7 @@ const BookingSuccess = () => {
                   </div>
                 ) : null}
               </div>
+              )}
 
               {/* Bottom Notch Separator */}
               <div className="relative h-px flex items-center pt-2">
@@ -420,6 +458,11 @@ const BookingSuccess = () => {
                 <div>
                   <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Grand Total Paid</p>
                   <p className={`text-2xl md:text-3xl font-black font-display leading-none ${isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'}`}>OMR {amount.toFixed(3)}</p>
+                  {bookingData?.couponCode && Number(bookingData.couponDiscount) > 0 && (
+                    <p className="text-[10px] font-bold text-green-600 mt-1">
+                      Coupon {bookingData.couponCode} saved you OMR {Number(bookingData.couponDiscount).toFixed(3)}
+                    </p>
+                  )}
                 </div>
                 <div className={`px-3 py-1.5 rounded-[12px] font-black text-[8px] md:text-[9px] uppercase tracking-widest border transition-all ${isDark
                     ? 'bg-[#CE2029]/10 border-[#CE2029]/20 text-[#CE2029]'
@@ -457,7 +500,18 @@ const BookingSuccess = () => {
                   <span className="uppercase tracking-widest mt-0.5">Share</span>
                 </button>
                 <button 
-                  onClick={() => window.print()}
+                  disabled={isDownloading}
+                  onClick={async () => {
+                    setIsDownloading(true);
+                    try {
+                      await downloadBookingReceiptPdf(buildReceiptFromSuccessState(bookingData, user));
+                    } catch (err) {
+                      console.error('PDF Generation Error:', err);
+                      window.print();
+                    } finally {
+                      setIsDownloading(false);
+                    }
+                  }}
                   className={`h-12 rounded-[20px] font-black text-[10px] border flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-[#CE2029]/10 shadow-lg shadow-[#CE2029]/5 text-[#CE2029] hover:border-[#CE2029]/30'
                   }`}>
                   <Download size={16} className={isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'} />

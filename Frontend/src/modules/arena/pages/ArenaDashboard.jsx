@@ -33,7 +33,7 @@ const ArenaDashboard = () => {
   const [arenaBookings, setArenaBookings] = useState([]);
   const [courts, setCourts] = useState([]);
   const [blocks, setBlocks] = useState([]);
-  const [courtSlots, setCourtSlots] = useState({}); // Current day specific
+  const [, setCourtSlots] = useState({}); // Current day specific
   const [weekdayTemplate, setWeekdayTemplate] = useState({});
   const [weekendTemplate, setWeekendTemplate] = useState({});
   const [coachingBatches, setCoachingBatches] = useState([]);

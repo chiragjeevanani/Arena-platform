@@ -181,6 +181,7 @@ const Inventory = () => {
     }
     // Demo fallback
     const entry = {
+      // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
       id: isEditing ? selectedItem.id : `inv-${Date.now()}`,
       name: newItem.name,
       category: newItem.category,
@@ -302,6 +303,7 @@ const Inventory = () => {
 
   const addAuditEntry = (itemName, action) => {
     const entry = {
+      // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
       id: Date.now(),
       item: itemName,
       action,

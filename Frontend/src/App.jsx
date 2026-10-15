@@ -96,6 +96,7 @@ const ArenaListing = lazy(() => import('./modules/user/pages/ArenaListing'));
 const ArenaDetails = lazy(() => import('./modules/user/pages/ArenaDetails'));
 const SlotSelection = lazy(() => import('./modules/user/pages/SlotSelection'));
 const BookingSummary = lazy(() => import('./modules/user/pages/BookingSummary'));
+const Cart = lazy(() => import('./modules/user/pages/Cart'));
 const Payment = lazy(() => import('./modules/user/pages/Payment'));
 const BankMuscatReturn = lazy(() => import('./modules/user/pages/BankMuscatReturn'));
 const BookingSuccess = lazy(() => import('./modules/user/pages/BookingSuccess'));
@@ -171,6 +172,7 @@ const CourtSlotsAdmin = lazy(() => import('./modules/admin/pages/CourtSlotsAdmin
 const ReferralManagement = lazy(() => import('./modules/admin/pages/ReferralManagement'));
 const SlotMembershipAdmin = lazy(() => import('./modules/admin/pages/SlotMembershipAdmin'));
 const CouponManagement = lazy(() => import('./modules/admin/pages/CouponManagement'));
+const RefundsQueue = lazy(() => import('./modules/admin/pages/RefundsQueue'));
 
 const PointsWalletPage = lazy(() => import('./modules/user/pages/PointsWalletPage'));
 const SlotMembershipPurchase = lazy(() => import('./modules/user/pages/SlotMembershipPurchase'));
@@ -282,6 +284,7 @@ function App() {
               <Route path="referrals" element={<ReferralManagement />} />
               <Route path="slot-memberships" element={<SlotMembershipAdmin />} />
               <Route path="coupons" element={<CouponManagement />} />
+              <Route path="refunds" element={<RefundsQueue />} />
             </Route>
 
             {/* Auth Routes */}
@@ -327,6 +330,7 @@ function App() {
             {/* Booking Flow (Separate from Bottom Nav but still under User Context) */}
             <Route path="/arenas/:id" element={<BrowsableRoute><ArenaDetails /></BrowsableRoute>} />
             <Route path="/book/:arenaId/:courtId" element={<BrowsableRoute><SlotSelection /></BrowsableRoute>} />
+            <Route path="/cart" element={<BrowsableRoute><Cart /></BrowsableRoute>} />
             <Route path="/booking-summary" element={<ProtectedUserRoute><BookingSummary /></ProtectedUserRoute>} />
             <Route path="/coaching-summary" element={<ProtectedUserRoute><CoachingSummary /></ProtectedUserRoute>} />
             <Route path="/membership" element={<BrowsableRoute><MembershipPlans /></BrowsableRoute>} />

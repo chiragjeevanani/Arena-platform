@@ -48,7 +48,7 @@ const EventsAdmin = () => {
   const [participants, setParticipants] = useState([]);
   const [filterQuery, setFilterQuery] = useState('');
   const [activeAthleteMenu, setActiveAthleteMenu] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!cmsScope.live) {
@@ -126,7 +126,7 @@ const EventsAdmin = () => {
          category: 'Standard',
          age: 'N/A'
       })));
-    } catch (err) {
+    } catch {
       alert('Enrollment failed');
     } finally {
       setIsSubmitting(false);
@@ -147,7 +147,7 @@ const EventsAdmin = () => {
     try {
       await updateEventRegistrationStatus(id, newStatus);
       setParticipants(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
-    } catch (err) {
+    } catch {
       alert('Failed to update status');
     }
     setActiveAthleteMenu(null);

@@ -29,6 +29,8 @@ const couponSchema = new mongoose.Schema(
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         usedAt: { type: Date, default: Date.now },
+        // Checkout the use belongs to (one cart = one use, however many bookings).
+        checkoutId: { type: String, default: null },
       },
     ],
     // Public = listed in checkout; Private = hidden (must be typed manually)

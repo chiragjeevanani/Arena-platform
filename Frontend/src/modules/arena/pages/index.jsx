@@ -11,7 +11,7 @@ import AccountSettings from './AccountSettings';
 import CoachAttendance from '../../admin/pages/ArenaPanel/CoachAttendance';
 
 // Helper: wraps a light-theme page inside the dark arena layout content area
-const PageShell = ({ title, subtitle, component: Component, color = '#CE2029' }) => (
+const PageShell = ({ title, subtitle }) => (
   <div className="min-h-full bg-transparent">
     {/* Page Header Bar */}
     <div className="px-4 py-4 md:px-8 bg-transparent">

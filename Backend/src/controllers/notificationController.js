@@ -48,6 +48,12 @@ async function registerFcmToken(req, res) {
     return res.status(400).json({ error: 'Token is required' });
   }
   const platformValue = platform === 'app' ? 'app' : 'web';
+  // A device token belongs to whoever is signed in on it now — drop it from any other
+  // account so the previous user's notifications don't keep arriving on this device.
+  await User.updateMany(
+    { _id: { $ne: req.auth.sub }, 'fcmTokens.token': token },
+    { $pull: { fcmTokens: { token } } }
+  );
   // Avoid duplicate registration by pulling any existing entry with this token first
   await User.findByIdAndUpdate(req.auth.sub, {
     $pull: { fcmTokens: { token } },

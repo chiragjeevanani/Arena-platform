@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
+const { refundBookingWallet } = require('./walletService');
 
 /**
  * Periodically auto-expires abandoned pending bookings whose payment hold window has passed.
@@ -9,22 +10,34 @@ async function cleanupStalePendingBookings() {
     const holdMinutes = Number(process.env.BOOKING_PAYMENT_HOLD_MINUTES) || 15;
     const holdCutoff = new Date(Date.now() - holdMinutes * 60 * 1000);
 
-    const result = await Booking.updateMany(
-      {
-        status: 'pending',
-        paymentStatus: 'pending',
-        createdAt: { $lt: holdCutoff },
-      },
-      {
-        $set: {
-          status: 'cancelled',
-          paymentStatus: 'expired',
-        },
-      }
-    );
+    const stale = await Booking.find({
+      status: 'pending',
+      paymentStatus: 'pending',
+      createdAt: { $lt: holdCutoff },
+    })
+      .select('_id')
+      .lean();
 
-    if (result.modifiedCount > 0) {
-      console.log(`[BookingCleanup] Auto-expired ${result.modifiedCount} stale pending booking(s).`);
+    let expired = 0;
+    for (const { _id } of stale) {
+      const booking = await Booking.findOneAndUpdate(
+        { _id, status: 'pending', paymentStatus: 'pending' },
+        { $set: { status: 'cancelled', paymentStatus: 'expired' } },
+        { new: true }
+      );
+      if (!booking) continue;
+      expired += 1;
+      // Give back any wallet part taken at checkout. If the gateway payment still succeeds
+      // later, payment finalization takes it again before re-confirming the booking.
+      try {
+        await refundBookingWallet(booking, 'booking_expired');
+      } catch (err) {
+        console.error(`[BookingCleanup] Wallet refund failed for booking ${_id}:`, err.message);
+      }
+    }
+
+    if (expired > 0) {
+      console.log(`[BookingCleanup] Auto-expired ${expired} stale pending booking(s).`);
     }
   } catch (err) {
     console.error('[BookingCleanup] Error cleaning up stale bookings:', err.message);

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { applyCourtRate } = require('../services/courtRate');
 const Arena = require('../models/Arena');
 const Court = require('../models/Court');
 
@@ -26,7 +27,8 @@ function mapCourt(doc) {
     arenaId: doc.arenaId.toString(),
     name: doc.name,
     type: doc.type,
-    pricePerHour: doc.pricePerHour,
+    pricePerHour: doc.priceOverride ? doc.pricePerHour : null,
+    priceOverride: Boolean(doc.priceOverride),
     status: doc.status || 'active',
     imageUrl: doc.imageUrl || '',
   };
@@ -111,21 +113,13 @@ async function createCourt(req, res) {
     return res.status(400).json({ error: 'Court name is required' });
   }
 
-  let courtPrice = null;
-  if (pricePerHour !== undefined && pricePerHour !== null && pricePerHour !== '') {
-    const p = Number(pricePerHour);
-    if (Number.isNaN(p) || p < 0) {
-      return res.status(400).json({ error: 'pricePerHour must be a number >= 0' });
-    }
-    courtPrice = p;
-  }
-
-  const court = await Court.create({
+  const court = new Court({
     arenaId: arena._id,
     name: name.trim(),
     type: (type || 'Wooden').trim(),
-    pricePerHour: courtPrice,
   });
+  applyCourtRate(court, { pricePerHour, priceOverride: req.body.priceOverride }, { arenaRate: arena.pricePerHour, isCreate: true });
+  await court.save();
 
   // Sync arena.courtsCount
   await Arena.findByIdAndUpdate(arena._id, { $inc: { courtsCount: 1 } });
@@ -254,13 +248,7 @@ async function updateCourt(req, res) {
   if (name !== undefined) court.name = String(name).trim();
   if (type !== undefined) court.type = String(type).trim();
   if (status !== undefined) court.status = status;
-  if (pricePerHour !== undefined) {
-    const p = pricePerHour === null || pricePerHour === '' ? null : Number(pricePerHour);
-    if (p !== null && (Number.isNaN(p) || p < 0)) {
-      return res.status(400).json({ error: 'pricePerHour must be >= 0' });
-    }
-    court.pricePerHour = p;
-  }
+  applyCourtRate(court, { pricePerHour, priceOverride: req.body.priceOverride });
   if (imageUrl !== undefined) court.imageUrl = String(imageUrl || '');
 
   await court.save();

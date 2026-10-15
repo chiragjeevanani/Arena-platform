@@ -19,7 +19,8 @@ const CourtManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [newCourtName, setNewCourtName] = useState('');
   const [newCourtType, setNewCourtType] = useState('Wooden');
-  const [newCourtPrice, setNewCourtPrice] = useState(8);
+  // Empty = court charges the arena's rate. A number sets this court's own rate.
+  const [newCourtPrice, setNewCourtPrice] = useState('');
   const [courtError, setCourtError] = useState('');
 
   useEffect(() => {
@@ -58,7 +59,7 @@ const CourtManagement = () => {
           name: c.name,
           type: c.type || 'Court',
           status: 'Active',
-          pricePerHour: Number(c.pricePerHour) || 0,
+          pricePerHour: c.priceOverride && Number(c.pricePerHour) > 0 ? Number(c.pricePerHour) : null,
         }))
       );
     } catch {
@@ -78,12 +79,13 @@ const CourtManagement = () => {
       await createAdminCourt(selectedArenaId, {
         name: newCourtName.trim(),
         type: newCourtType,
-        pricePerHour: newCourtPrice,
+        pricePerHour: newCourtPrice === '' ? null : Number(newCourtPrice),
+        priceOverride: newCourtPrice !== '' && Number(newCourtPrice) > 0,
       });
       setShowAddCourtModal(false);
       setNewCourtName('');
       setNewCourtType('Wooden');
-      setNewCourtPrice(8);
+      setNewCourtPrice('');
       await reloadCourts();
     } catch (e) {
       setCourtError(e.message || 'Failed to create court');
@@ -251,7 +253,7 @@ const CourtManagement = () => {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
                   <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Base Rate</p>
-                  <p className="text-[13px] font-display font-black text-[#36454F]">{court.pricePerHour} <span className="text-[9px] font-bold text-slate-400">OMR/hr</span></p>
+                  <p className="text-[13px] font-display font-black text-[#36454F]">{court.pricePerHour != null ? <>{Number(court.pricePerHour).toFixed(3)} <span className="text-[9px] font-bold text-slate-400">OMR/hr</span></> : <span className="text-[11px] text-slate-400">Arena rate</span>}</p>
                 </div>
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner">
                   <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Occupancy</p>
@@ -344,7 +346,8 @@ const CourtManagement = () => {
                     <input
                       type="number"
                       value={newCourtPrice}
-                      onChange={(e) => setNewCourtPrice(parseFloat(e.target.value) || 0)}
+                      placeholder="Leave empty to use the arena rate"
+                      onChange={(e) => setNewCourtPrice(e.target.value)}
                       className="w-full py-4 pl-6 pr-16 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none focus:border-[#CE2029] focus:bg-white text-[#36454F] shadow-inner"
                     />
                   </div>

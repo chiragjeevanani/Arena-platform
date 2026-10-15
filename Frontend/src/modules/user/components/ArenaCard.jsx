@@ -3,14 +3,12 @@ import { Link } from 'react-router-dom';
 import { MapPin, Star } from 'lucide-react';
 import { useRef } from 'react';
 import gsap from 'gsap';
-import { useTheme } from '../context/ThemeContext';
 
 /**
  * ArenaCard — Mini stadium tile with neon glow and availability indicator
  */
-const ArenaCard = ({ arena, index = 0 }) => {
+const ArenaCard = ({ arena }) => {
   const cardRef = useRef(null);
-  const { isDark } = useTheme();
 
   const handleTap = () => {
     if (cardRef.current) {

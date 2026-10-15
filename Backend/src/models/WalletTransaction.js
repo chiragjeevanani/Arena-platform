@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const REASONS = ['top_up', 'booking_payment', 'refund', 'membership_purchase', 'membership_slot_purchase', 'membership_slot_discount', 'admin_adjustment', 'referral_reward', 'welcome_reward'];
+const REASONS = ['top_up', 'booking_payment', 'refund', 'membership_purchase', 'membership_slot_purchase', 'membership_slot_discount', 'admin_adjustment', 'referral_reward', 'welcome_reward', 'coaching_enrollment', 'event_registration'];
 
 const walletTransactionSchema = new mongoose.Schema(
   {

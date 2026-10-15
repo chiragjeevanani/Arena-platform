@@ -23,7 +23,6 @@ const EventDetail = () => {
   const [showRegModal, setShowRegModal] = useState(false);
   const [regStep, setRegStep] = useState('form'); // form, payment, success
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [regForm, setRegForm] = useState({ name: '', phone: '' });
    const [cmsEvent, setCmsEvent] = useState(null);
   const [cmsStatus, setCmsStatus] = useState('idle');
@@ -83,8 +82,9 @@ const EventDetail = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (regForm.phone.length !== 10) {
-      alert("Contact number must be exactly 10 digits.");
+    // Oman mobile numbers are 8 digits; allow international numbers up to 15.
+    if (regForm.phone.length < 8 || regForm.phone.length > 15) {
+      alert("Please enter a valid contact number (8 to 15 digits).");
       return;
     }
     
@@ -132,13 +132,6 @@ const EventDetail = () => {
     }
   };
 
-  const confirmPayment = () => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setRegStep('success');
-    }, 1500);
-  };
 
   const handleNameChange = (e) => {
     const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
@@ -146,7 +139,7 @@ const EventDetail = () => {
   };
 
   const handlePhoneChange = (e) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const val = e.target.value.replace(/\D/g, '').slice(0, 15);
     setRegForm({ ...regForm, phone: val });
   };
 
@@ -294,7 +287,7 @@ const EventDetail = () => {
                 { icon: CalendarDays, label: 'Date', value: event.date },
                 { icon: Clock, label: 'Time', value: event.time },
                 { icon: MapPin, label: 'Venue', value: event.location },
-              ].map(({ icon: Icon, label, value }) => (
+              ].map(({ icon: _Icon, label, value }) => (
                 <div
                   key={label}
                   className="bg-white lg:bg-transparent rounded-2xl lg:rounded-none px-4 py-3 lg:px-6 lg:py-2 border border-slate-100 lg:border-none shadow-sm lg:shadow-none flex flex-col items-start gap-2"
@@ -480,7 +473,7 @@ const EventDetail = () => {
                           required
                           value={regForm.phone}
                           onChange={handlePhoneChange}
-                          placeholder="10 Digits Number" 
+                          placeholder="Contact Number" 
                           className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-sm font-bold placeholder:text-slate-300 focus:border-[#CE2029] outline-none transition-all"
                         />
                       </div>

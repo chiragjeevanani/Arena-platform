@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,10 +9,10 @@ import {
 } from 'lucide-react';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { listAdminBookings, updateAdminBooking } from '../../../services/adminBookingsApi';
-import { listMyBookings, updateMyBooking } from '../../../services/arenaStaffApi';
+import { listAdminBookings, updateAdminBooking, refundAdminBooking } from '../../../services/adminBookingsApi';
+import { listMyBookings, updateMyBooking, refundMyBooking } from '../../../services/arenaStaffApi';
 import { mapAdminBookingToLedgerRow } from '../../../utils/adminBookingAdapter';
-import { useArenaPanel } from '../context/ArenaPanelContext';
+import { ArenaPanelContext } from '../context/ArenaPanelContext';
 import WalkInBookingModal from '../components/WalkInBookingModal';
 import { jsPDF } from 'jspdf';
 
@@ -163,9 +163,26 @@ const RescheduleModal = ({ booking, onClose, onConfirm }) => {
 // ── Refund Modal ────────────────────────────────────────────────
 const RefundModal = ({ booking, onClose, onConfirm }) => {
   const [done, setDone] = useState(false);
-  const handleConfirm = () => {
-    setDone(true);
-    setTimeout(() => { onConfirm(booking.id); onClose(); }, 1200);
+  const [busy, setBusy] = useState(false);
+  const [method, setMethod] = useState('wallet');
+  const [reference, setReference] = useState('');
+  const [error, setError] = useState('');
+  const handleConfirm = async () => {
+    if (method === 'bank' && !reference.trim()) {
+      setError('Enter the Bank Muscat refund reference');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      await onConfirm(booking.id, { method, reference: reference.trim() });
+      setDone(true);
+      setTimeout(onClose, 900);
+    } catch (e) {
+      setError(e.message || 'Refund failed');
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
@@ -175,13 +192,27 @@ const RefundModal = ({ booking, onClose, onConfirm }) => {
           <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-4"><RefreshCw size={26} className="text-amber-500" /></div>
           <h3 className="text-lg font-black text-[#36454F] text-center">Process Refund?</h3>
           <p className="text-xs text-slate-500 text-center mt-2 leading-relaxed">
-            Refund <span className="font-black text-[#CE2029]">OMR {booking.amount.toFixed(3)}</span> to <span className="font-black text-[#36454F]">{booking.customer}</span>?<br />Amount will be credited within 5–7 business days.
+            Refund <span className="font-black text-[#CE2029]">OMR {booking.amount.toFixed(3)}</span> to <span className="font-black text-[#36454F]">{booking.customer}</span> and cancel the booking?
           </p>
+          <div className="mt-4 space-y-2">
+            <label className="flex items-start gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer">
+              <input type="radio" name="refundMethod" checked={method === 'wallet'} onChange={() => setMethod('wallet')} className="mt-0.5" />
+              <span className="text-[11px] text-slate-600"><span className="font-black text-[#36454F]">Arena Wallet credit</span> — instant, customer can use it for the next booking.</span>
+            </label>
+            <label className="flex items-start gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer">
+              <input type="radio" name="refundMethod" checked={method === 'bank'} onChange={() => setMethod('bank')} className="mt-0.5" />
+              <span className="text-[11px] text-slate-600"><span className="font-black text-[#36454F]">Card refund via Bank Muscat</span> — do the refund in the SmartPay merchant portal first, then record its reference here.</span>
+            </label>
+            {method === 'bank' && (
+              <input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Bank refund reference" className="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-[#CE2029]" />
+            )}
+            {error && <p className="text-[11px] font-bold text-red-600">{error}</p>}
+          </div>
           <div className="mt-6 flex gap-3">
             <button onClick={onClose} className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 text-xs font-black uppercase hover:bg-slate-50 transition-all">Cancel</button>
-            <button onClick={handleConfirm} disabled={done}
+            <button onClick={handleConfirm} disabled={done || busy}
               className="flex-1 py-3 rounded-2xl bg-amber-500 text-white text-xs font-black uppercase hover:bg-amber-600 transition-all flex items-center justify-center gap-2 disabled:opacity-70">
-              {done ? <><CheckCircle size={14} /> Done</> : 'Process Refund'}
+              {done ? <><CheckCircle size={14} /> Done</> : busy ? 'Refunding…' : 'Process Refund'}
             </button>
           </div>
         </div>
@@ -411,12 +442,13 @@ const ActionMenu = ({ booking, onAction }) => {
 const Bookings = () => {
   const location = useLocation();
   const isArenaPanel = location.pathname.startsWith('/arena');
-  const arenaPanelContext = isArenaPanel ? useArenaPanel() : null;
+  // Hooks must not be called conditionally; read the context directly (null outside the arena panel).
+  const panelContext = useContext(ArenaPanelContext);
+  const arenaPanelContext = isArenaPanel ? panelContext : null;
   const currentArenaId = arenaPanelContext?.arenaId || null;
 
   const [bookings, setBookings] = useState(mockBookings);
   const [loadError, setLoadError] = useState('');
-  const [activeMenu, setActiveMenu] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
@@ -478,19 +510,16 @@ const Bookings = () => {
     setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, date: newDate } : b)));
   };
 
-  const handleRefund = async (id) => {
+  const handleRefund = async (id, opts = {}) => {
     const booking = bookings.find(b => b.id === id);
     const mongoId = booking?.bookingId;
 
     if (isApiConfigured() && getAuthToken() && mongoId) {
-      try {
-        const updateFn = isArenaPanel ? updateMyBooking : updateAdminBooking;
-        await updateFn(mongoId, { paymentStatus: 'refunded', status: 'cancelled' });
-        await refreshFromApi();
-        return;
-      } catch (e) {
-        setLoadError(e.message || 'Refund failed');
-      }
+      // Real refund: credits the wallet or records the bank refund (errors surface in the modal).
+      const refundFn = isArenaPanel ? refundMyBooking : refundAdminBooking;
+      await refundFn(mongoId, opts);
+      await refreshFromApi();
+      return;
     }
 
     setBookings((prev) =>
@@ -502,7 +531,7 @@ const Bookings = () => {
     );
   };
 
-  const handleWalkinSuccess = (booking) => {
+  const handleWalkinSuccess = (_booking) => {
     // Refresh from API to show the new walk-in booking in the list
     refreshFromApi();
   };

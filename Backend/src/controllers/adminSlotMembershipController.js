@@ -220,11 +220,14 @@ async function adjustPointsBalance(req, res) {
   }
 
   const inc = type === 'credit' ? amount : -amount;
-  const updated = await PointsWallet.findByIdAndUpdate(
-    wallet._id,
+  const updated = await PointsWallet.findOneAndUpdate(
+    type === 'debit' ? { _id: wallet._id, points: { $gte: amount } } : { _id: wallet._id },
     { $inc: { points: inc } },
     { new: true }
   );
+  if (!updated) {
+    return res.status(400).json({ error: 'Insufficient points balance' });
+  }
 
   await PointsTransaction.create({
     userId,

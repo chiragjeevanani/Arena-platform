@@ -15,7 +15,6 @@ const AccountSettings = () => {
   const [saveError, setSaveError] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [notificationPrefs, setNotificationPrefs] = useState([true, true, false, true]);
   const [profileImg, setProfileImg] = useState(storage.getItem('arena_manager_img'));
   const [showImgModal, setShowImgModal] = useState(false);
 

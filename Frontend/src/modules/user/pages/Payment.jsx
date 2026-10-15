@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Smartphone, CreditCard, Landmark, Banknote, ShieldCheck, ChevronRight, Lock, Wallet } from 'lucide-react';
-// eslint-disable-next-line no-unused-vars
+ 
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShuttlecockIcon } from '../components/BadmintonIcons';
 import { useTheme } from '../context/ThemeContext';
@@ -40,11 +40,14 @@ const Payment = () => {
   // Fallback amount in case navigated without state
   const amount = state?.amount || 0;
 
+  // Wallet / pay-at-arena only exist server-side for events and coaching. For anything else
+  // (wallet top-up, memberships) they used to show a success screen without charging anything.
+  const supportsOfflineMethods = !isApiConfigured() || state?.type === 'event' || state?.type === 'coaching';
   const paymentMethods = [
     { id: 'bank_muscat', name: 'Bank Muscat SmartPay (Card / OmanNet)', icon: CreditCard, color: 'text-[#CE2029]', bg: 'bg-[#CE2029]/10', desc: 'Debit / Credit Card, OmanNet & Apple Pay' },
     { id: 'wallet', name: 'Arena Wallet', icon: Wallet, color: 'text-emerald-500', bg: 'bg-emerald-500/10', desc: walletBalance !== null ? `Balance: OMR ${walletBalance.toFixed(3)}` : 'Pay from Credits' },
     { id: 'cash', name: 'Pay at Arena', icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-400/10', desc: 'On-Site Cash Payment' },
-  ];
+  ].filter((m) => m.id === 'bank_muscat' || supportsOfflineMethods);
 
   const resolvePurpose = () => {
     let purpose = state?.paymentPurpose || state?.type || 'top_up';
@@ -150,6 +153,11 @@ const Payment = () => {
         setPayError(e.message || 'Payment failed');
         setIsProcessing(false);
       }
+      return;
+    }
+
+    if (!supportsOfflineMethods) {
+      setPayError('Please pay online with Bank Muscat SmartPay for this purchase.');
       return;
     }
 

@@ -8,8 +8,10 @@
  *   2. Custom Rules (if configured)
  *   3. Weekend Pricing
  *   4. Peak Hour Surcharge
- *   5. Standard Base Price (Resolution: Court Override > Slot Configured Price > Arena Price Per Hour)
+ *   5. Standard Base Price (Resolution: Slot Configured Price > Court Rate > Arena Price Per Hour)
  */
+
+const { effectiveCourtRate } = require('./courtRate');
 
 const timeToMinutes = (t) => {
   if (!t) return 0;
@@ -43,13 +45,11 @@ function evaluatePricing({ arena, court, date, timeSlot, slot }) {
   const arenaObj = arena || {};
   const priceConfig = arenaObj.priceConfig || {};
 
-  // 1. Resolve Base Price (Court Level Override > Slot Configured Price > Arena Price Per Hour)
-  let basePrice = Number(arenaObj.pricePerHour || 0);
+  // 1. Resolve Base Price (Slot Configured Price > Court Rate > Arena Price Per Hour).
+  // A court rate only counts when an admin deliberately set it (court.priceOverride).
+  let basePrice = effectiveCourtRate(court, arenaObj);
   if (slot && typeof slot.price === 'number' && slot.price > 0) {
     basePrice = Number(slot.price);
-  }
-  if (court && typeof court.customPrice === 'number' && court.customPrice > 0) {
-    basePrice = Number(court.customPrice);
   }
 
   // Parse Date & Time — use noon UTC to avoid off-by-one day in timezones east of UTC

@@ -34,13 +34,14 @@ export function cancelMyEnrollment(id) {
   return apiJson(`/api/me/enrollments/${encodeURIComponent(id)}/cancel`, { method: 'PATCH' });
 }
 
-export function createPaymentIntent({ purpose, amount, bookingId }) {
+export function createPaymentIntent({ purpose, amount, bookingId, bookingIds }) {
   return apiJson('/api/me/payments/intent', {
     method: 'POST',
     body: {
       purpose,
       ...(amount != null ? { amount } : {}),
       ...(bookingId ? { bookingId } : {}),
+      ...(bookingIds?.length ? { bookingIds } : {}),
     },
   });
 }

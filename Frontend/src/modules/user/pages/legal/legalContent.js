@@ -50,7 +50,7 @@ export const refundSections = [
     content: [
       'Customers may cancel an eligible booking up to 4 hours before the booked slot start time.',
       'Eligible cancellations typically receive a refund credited to the Arena Wallet (or as otherwise communicated at cancellation).',
-      'Cancellations made within 4 hours of the slot, or no-shows, may attract a full cancellation fee (no refund).',
+      'Bookings cancelled at least 24 hours before the slot receive a full refund as Arena Wallet credit. Cancellations within 24 hours of the slot, or no-shows, forfeit the full booking fee (no refund).',
       'Arena-initiated cancellations (facility closure/emergency) are eligible for full refund or rebooking support.',
     ],
   },
@@ -168,7 +168,7 @@ export const contactFaqSections = [
   {
     title: 'FAQ — Can I cancel my booking?',
     content:
-      'Yes. Eligible bookings can be cancelled up to 4 hours before slot time. See https://www.ammarena.com/refund-policy for full rules.',
+      'Yes. Bookings cancelled at least 24 hours before slot time are fully refunded to your Arena Wallet; later cancellations forfeit the fee. See https://www.ammarena.com/refund-policy for full rules.',
   },
   {
     title: 'FAQ — When is my payment confirmed?',

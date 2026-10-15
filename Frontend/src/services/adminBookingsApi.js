@@ -11,6 +11,19 @@ export function listAdminBookings(query = {}) {
   return apiJson(`/api/admin/bookings${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }
 
+/** Full refund of a paid booking. method: 'wallet' (credit Arena Wallet) | 'bank' (record a Bank Muscat portal refund). */
+export function refundAdminBooking(bookingId, { method = 'wallet', reference = '' } = {}) {
+  return apiJson(`/api/admin/bookings/${encodeURIComponent(bookingId)}/refund`, {
+    method: 'POST',
+    body: { method, reference },
+  });
+}
+
+/** Captured gateway payments whose booking couldn't be confirmed and still need a refund. */
+export function listManualRefunds() {
+  return apiJson('/api/admin/refunds', { method: 'GET' });
+}
+
 export function updateAdminBooking(bookingId, body) {
   return apiJson(`/api/admin/bookings/${encodeURIComponent(bookingId)}`, {
     method: 'PATCH',

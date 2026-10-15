@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../user/context/AuthContext';
 import { isApiConfigured } from '../../../services/config';
-import { coachRegisterRequest, loginRequest, verifyEmailOtpRequest, resendVerificationRequest } from '../../../services/authApi';
+import { coachRegisterRequest, verifyEmailOtpRequest, resendVerificationRequest } from '../../../services/authApi';
 import { useOtpFocus } from '../../../utils/useOtpFocus';
 import badmintonLottie from '../../../assets/lotties/Badminton_Player_Character3.json';
 

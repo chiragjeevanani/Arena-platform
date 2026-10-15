@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useRef, useEffect } from 'react';
+import { useRef} from 'react';
 import gsap from 'gsap';
 
 /**
@@ -17,7 +17,6 @@ const ShuttleButton = ({
   ...props
 }) => {
   const btnRef = useRef(null);
-  const glowRef = useRef(null);
 
   const variants = {
     primary: 'bg-[#CE2029] text-white hover:shadow-[0_0_30px_rgba(206, 32, 41,0.3)]',

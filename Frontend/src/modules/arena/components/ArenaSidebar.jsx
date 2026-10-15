@@ -6,7 +6,6 @@ import {
   ArrowLeftRight, Package, Trophy, Store, Receipt, UserCheck,
   BarChart3
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import Logo from '../../../assets/Logo (3).png';
 import SidebarImage from '../../../assets/sidebarImage.png';
 
@@ -25,7 +24,6 @@ const NAV_ITEMS = [
 ];
 
 const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
-  const navigate = useNavigate();
 
   return (
     <motion.aside

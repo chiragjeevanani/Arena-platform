@@ -14,6 +14,7 @@ const WalletTransaction = require('../models/WalletTransaction');
 const { getOrCreateWallet } = require('../services/walletService');
 const { createNotification } = require('../services/notificationService');
 const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
+const { arenaTodayYmd } = require('../services/slotAvailability');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -483,14 +484,17 @@ async function purchaseSlotMembership(req, res) {
   if (!Array.isArray(courtSlotIds) || courtSlotIds.length === 0) return res.status(400).json({ error: 'At least one courtSlotId is required' });
   if (![1, 3, 6, 12].includes(Number(durationMonths))) return res.status(400).json({ error: 'durationMonths must be 1, 3, 6, or 12' });
   if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return res.status(400).json({ error: 'startDate must be YYYY-MM-DD' });
+  if (startDate < arenaTodayYmd()) return res.status(400).json({ error: 'startDate cannot be in the past' });
 
   // Load arena
   const arena = await Arena.findById(arenaId).lean();
   if (!arena) return res.status(404).json({ error: 'Arena not found' });
 
-  // Load court
+  // Load court (must belong to the arena)
   const court = await Court.findById(courtId).lean();
-  if (!court) return res.status(404).json({ error: 'Court not found' });
+  if (!court || String(court.arenaId) !== String(arena._id)) {
+    return res.status(404).json({ error: 'Court not found' });
+  }
 
   // Determine base price from arena slotPricingConfig
   const months = Number(durationMonths);
@@ -500,14 +504,22 @@ async function purchaseSlotMembership(req, res) {
     6:  arena.slotPricingConfig?.price6Month  ?? 0,
     12: arena.slotPricingConfig?.price12Month ?? 0,
   };
-  const basePrice = priceMap[months];
+  const basePrice = Number(priceMap[months]) || 0;
+  if (!(basePrice > 0)) {
+    return res.status(400).json({ error: 'Slot membership pricing is not configured for this arena' });
+  }
 
-  // Validate all courtSlotIds first to get active days
+  // Validate all courtSlotIds first to get active days. Each slot must be an active slot
+  // of the selected court — otherwise any slot anywhere could be reserved.
+  const uniqueSlotIds = [...new Set(courtSlotIds.map(String))];
   const courtSlotDocs = [];
-  for (const slotId of courtSlotIds) {
+  for (const slotId of uniqueSlotIds) {
     if (!mongoose.isValidObjectId(slotId)) return res.status(400).json({ error: `Invalid courtSlotId: ${slotId}` });
     const cs = await CourtSlot.findById(slotId).lean();
     if (!cs) return res.status(404).json({ error: `CourtSlot not found: ${slotId}` });
+    if (String(cs.courtId) !== String(court._id) || String(cs.arenaId) !== String(arena._id) || cs.isActive === false) {
+      return res.status(400).json({ error: `Slot ${cs.dayOfWeek} ${cs.timeSlot} is not available on this court` });
+    }
     courtSlotDocs.push(cs);
   }
 
@@ -516,7 +528,7 @@ async function purchaseSlotMembership(req, res) {
   const activeDays = [...new Set(courtSlotDocs.map(cs => cs.dayOfWeek))];
   const endDate = calculateMembershipEndDate(startDate, durationDays, activeDays);
 
-  // Check availability conflicts
+  // Check availability conflicts: other memberships and already-paid regular bookings.
   for (const cs of courtSlotDocs) {
     const conflictingMembership = await UserMembership.findOne({
       status: 'active',
@@ -528,6 +540,19 @@ async function purchaseSlotMembership(req, res) {
       return res.status(409).json({
         error: `Slot ${cs.dayOfWeek} ${cs.timeSlot} is already booked by another member for this period`,
         courtSlotId: cs._id.toString(),
+      });
+    }
+    const occurrences = getOccurrenceDates(startDate, endDate, cs.dayOfWeek);
+    const bookedConflict = await Booking.findOne(buildCourtAvailabilityQuery({
+      courtId: court._id,
+      timeSlot: cs.timeSlot,
+      date: { $in: occurrences },
+    })).lean();
+    if (bookedConflict) {
+      return res.status(409).json({
+        error: `Slot ${cs.dayOfWeek} ${cs.timeSlot} is already booked on ${bookedConflict.date}`,
+        courtSlotId: cs._id.toString(),
+        conflictDate: bookedConflict.date,
       });
     }
   }
@@ -551,47 +576,31 @@ async function purchaseSlotMembership(req, res) {
 
   const finalAmount = Math.max(0, basePrice - discountAmount);
 
-  // Calculate wallet deduction vs other payment methods
-  let amountPaidFromWallet = 0;
-  let amountPaidOutside = 0;
-
-  const wallet = await getOrCreateWallet(userId);
-
-  if (useWallet && finalAmount > 0) {
-    if (wallet.balance >= finalAmount) {
-      amountPaidFromWallet = finalAmount;
-      amountPaidOutside = 0;
-    } else {
-      amountPaidFromWallet = wallet.balance;
-      amountPaidOutside = finalAmount - wallet.balance;
-    }
-  } else {
-    amountPaidFromWallet = 0;
-    amountPaidOutside = finalAmount;
+  // There is no card/online flow for slot memberships: the full price comes from the wallet.
+  // (Previously the shortfall was recorded as "paid outside" and the membership activated unpaid.)
+  if (!useWallet && finalAmount > 0) {
+    return res.status(400).json({ error: 'Slot memberships are paid from your wallet. Please top up your wallet first.' });
   }
-
-  // Debit wallet if any amount is paid from it
-  if (amountPaidFromWallet > 0) {
-    const updatedWallet = await Wallet.findByIdAndUpdate(
-      wallet._id,
-      { $inc: { balance: -amountPaidFromWallet } },
-      { new: true }
-    );
-    await WalletTransaction.create({
-      walletId: wallet._id,
-      userId,
-      type: 'debit',
-      amount: amountPaidFromWallet,
-      reason: 'membership_slot_purchase',
-      balanceAfter: updatedWallet.balance,
-      meta: { arenaId, courtId, courtSlotIds, durationMonths: months, description: `Slot membership — ${court.name}, ${months} month(s)` },
+  const wallet = await getOrCreateWallet(userId);
+  if (wallet.balance < finalAmount) {
+    return res.status(400).json({
+      error: `Insufficient wallet balance. OMR ${finalAmount.toFixed(3)} is needed — please top up your wallet.`,
+      required: finalAmount,
+      balance: wallet.balance,
     });
   }
 
-  // Debit points if used
+  // Debit points first (atomic), then wallet (atomic); undo points if the wallet debit fails.
   if (usePoints && pointsUsed > 0) {
     const pw = await getOrCreatePointsWallet(userId);
-    const updPw = await PointsWallet.findByIdAndUpdate(pw._id, { $inc: { points: -pointsUsed } }, { new: true });
+    const updPw = await PointsWallet.findOneAndUpdate(
+      { _id: pw._id, points: { $gte: pointsUsed } },
+      { $inc: { points: -pointsUsed } },
+      { new: true }
+    );
+    if (!updPw) {
+      return res.status(400).json({ error: 'Insufficient points balance' });
+    }
     await PointsTransaction.create({
       userId,
       type: 'debit',
@@ -601,6 +610,31 @@ async function purchaseSlotMembership(req, res) {
       meta: { arenaId, courtId, durationMonths: months },
     });
   }
+
+  const amountPaidFromWallet = finalAmount;
+  if (amountPaidFromWallet > 0) {
+    const updatedWallet = await Wallet.findOneAndUpdate(
+      { _id: wallet._id, balance: { $gte: amountPaidFromWallet } },
+      { $inc: { balance: -amountPaidFromWallet } },
+      { new: true }
+    );
+    if (!updatedWallet) {
+      if (pointsUsed > 0) {
+        await PointsWallet.findOneAndUpdate({ userId }, { $inc: { points: pointsUsed } });
+      }
+      return res.status(400).json({ error: 'Insufficient wallet balance. Please top up your wallet.' });
+    }
+    await WalletTransaction.create({
+      walletId: wallet._id,
+      userId,
+      type: 'debit',
+      amount: amountPaidFromWallet,
+      reason: 'membership_slot_purchase',
+      balanceAfter: updatedWallet.balance,
+      meta: { arenaId, courtId, courtSlotIds: uniqueSlotIds, durationMonths: months, description: `Slot membership — ${court.name}, ${months} month(s)` },
+    });
+  }
+  const amountPaidOutside = 0;
 
   // Create UserMembership record
   const membership = await UserMembership.create({

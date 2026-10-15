@@ -32,7 +32,8 @@ import {
   PenTool,
   ShieldCheck,
   Store,
-  Tag
+  Tag,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -102,6 +103,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/pricing', icon: DollarSign, label: 'Pricing Rules' },
       { path: '/admin/referrals', icon: Gift, label: 'Referrals & Wallets' },
       { path: '/admin/coupons', icon: Tag, label: 'Coupon Codes' },
+      { path: '/admin/refunds', icon: RefreshCw, label: 'Pending Refunds' },
     ]
   },
 ];
@@ -110,6 +112,12 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
   const { user } = useAuth();
   const location = useLocation();
   const currentPathWithSearch = location.pathname + location.search;
+
+  // Close the mobile drawer after navigating to another page.
+  useEffect(() => {
+    onMobileClose?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPathWithSearch]);
 
   const [expandedFolders, setExpandedFolders] = useState(() => {
     const activeSite = SIDEBAR_STRUCTURE.some(s => s.items.some(i => i.isSiteMgmt && currentPathWithSearch === i.path));

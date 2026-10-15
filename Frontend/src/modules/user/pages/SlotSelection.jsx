@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Star, CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Star, CalendarDays, ChevronLeft, ChevronRight, X, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import CourtSlot from '../components/CourtSlot';
 import PriceBreakdownCard from '../components/PriceBreakdownCard';
@@ -12,6 +12,8 @@ import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { isPrimeTimeSlot, isSlotTimePassed } from '../../../utils/slotTime';
 import { useAuth } from '../context/AuthContext';
+import { useCart, cartItemKey, MAX_CART_ITEMS } from '../context/CartContext';
+import CartButton from '../components/CartButton';
 import { storage } from '../../../utils/storage';
 
 function readStoredArena() {
@@ -32,6 +34,8 @@ const SlotSelection = () => {
   const isCustomer = user?.role === 'CUSTOMER';
   const navigate = useNavigate();
   const isDark = false;
+  const cart = useCart();
+  const [cartNotice, setCartNotice] = useState('');
 
   useEffect(() => {
     if (!isApiConfigured() || !arenaId) return undefined;
@@ -68,7 +72,7 @@ const SlotSelection = () => {
     if (arena?.courts?.length) return arena.courts;
     if (storedArena?.courts?.length) return storedArena.courts;
     return [];
-  }, [storedArena, arena, arenaId]);
+  }, [storedArena, arena]);
 
   const initialCourtId =
     storedArena?.selectedCourt?.id ?? courtId ?? arenaCourts[0]?.id;
@@ -120,10 +124,10 @@ const SlotSelection = () => {
     const ymd = toYMDFromDateString(selectedDate);
     if (!ymd) return undefined;
     let cancelled = false;
-    /* eslint-disable react-hooks/set-state-in-effect -- show loading before availability fetch */
+     
     setAvailabilityLoading(true);
     setAvailabilityError('');
-    /* eslint-enable react-hooks/set-state-in-effect */
+     
     fetchCourtAvailability(activeCourtId, ymd)
       .then((data) => {
         if (cancelled) return;
@@ -219,6 +223,52 @@ const SlotSelection = () => {
       }
       return next;
     });
+  };
+
+  const selectedYmd = toYMDFromDateString(selectedDate);
+  const isSlotInCart = (slot) =>
+    cart.has({ key: cartItemKey({ courtId: activeCourtId, dateYmd: selectedYmd, timeSlot: slot.timeSlot || slot.time }) });
+
+  const switchCourt = (id) => {
+    if (String(id) === String(activeCourtId)) return;
+    setSelectedCourt(String(id));
+    navigate(`/book/${arenaId}/${id}`, { replace: true });
+  };
+
+  useEffect(() => {
+    if (!cartNotice) return undefined;
+    const t = setTimeout(() => setCartNotice(''), 3500);
+    return () => clearTimeout(t);
+  }, [cartNotice]);
+
+  const addSelectionToCart = () => {
+    if (!selectedSlotObjs.length || !currentCourt) return;
+    const added = cart.addItems(
+      selectedSlotObjs.map((s) => ({
+        arenaId: String(arena.id),
+        arenaName: arena.name,
+        arenaImage: arena.image,
+        arenaLocation: arena.location,
+        courtId: String(currentCourt.id),
+        courtName: currentCourt.name,
+        courtType: currentCourt.type,
+        date: selectedDate,
+        dateYmd: selectedYmd,
+        timeSlot: s.timeSlot || s.time,
+        price: Number(s.price) || 0,
+        pricing: s.pricing || null,
+      })),
+    );
+    const skipped = selectedSlotObjs.length - added;
+    setSelectedSlotIds(new Set());
+    if (added === 0) {
+      setCartNotice(cart.isFull ? `Cart is full (max ${MAX_CART_ITEMS} slots)` : 'Those slots are already in your cart');
+    } else {
+      setCartNotice(
+        `${added} slot${added === 1 ? '' : 's'} added to cart` +
+          (skipped > 0 ? ` · ${skipped} skipped (cart limit ${MAX_CART_ITEMS})` : ''),
+      );
+    }
   };
 
   const heroCardImage =
@@ -358,6 +408,7 @@ const SlotSelection = () => {
           <h1 className="text-sm md:text-base font-black text-white uppercase tracking-wider font-display">
             Select Time Slot
           </h1>
+          <CartButton className="ml-auto" />
         </div>
       </div>
 
@@ -450,6 +501,35 @@ const SlotSelection = () => {
             </div>
 
             <div className="px-6 py-8 md:py-8 md:px-8 rounded-[36px] border transition-all duration-500 bg-white border-blue-50 shadow-[0_12px_40px_rgba(10,31,68,0.05)]">
+              {arenaCourts.length > 1 && (
+                <div className="mb-6">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#CE2029]/60 mb-2">
+                    Court
+                  </h3>
+                  <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                    {arenaCourts.map((c) => {
+                      const active = String(c.id) === String(activeCourtId);
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => switchCourt(c.id)}
+                          className={`shrink-0 px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                            active
+                              ? 'bg-[#CE2029] border-[#CE2029] text-white shadow-md'
+                              : 'bg-white border-slate-200 text-slate-500 hover:border-[#CE2029]/40'
+                          }`}
+                        >
+                          {c.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2">
+                    Add slots to your cart, then switch court or date to add more
+                  </p>
+                </div>
+              )}
               <div className="mb-5 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
@@ -589,6 +669,7 @@ const SlotSelection = () => {
                           key={slot.id}
                           slot={slot}
                           isSelected={selectedSlotIds.has(slot.id)}
+                          inCart={slot.status === 'Available' && isSlotInCart(slot)}
                           onSelect={toggleSlot}
                         />
                       ))
@@ -613,6 +694,10 @@ const SlotSelection = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm bg-slate-200 border border-slate-300" />
                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Booked</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-blue-50 border border-blue-300" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">In Cart</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm bg-red-100 border border-red-200" />
@@ -703,6 +788,27 @@ const SlotSelection = () => {
                     : 'Confirm Booking'
                   : 'Select a Slot'}
               </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  disabled={!hasSelection}
+                  onClick={addSelectionToCart}
+                  className={`flex items-center justify-center gap-2 py-3.5 rounded-[18px] border font-black uppercase tracking-widest text-[10px] transition-all ${
+                    hasSelection
+                      ? 'bg-white border-[#CE2029]/40 text-[#CE2029] hover:bg-[#CE2029]/5 active:scale-95'
+                      : 'bg-white border-slate-100 text-slate-300 cursor-not-allowed'
+                  }`}
+                >
+                  <ShoppingCart size={14} /> Add to Cart
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/cart')}
+                  className="flex items-center justify-center gap-2 py-3.5 rounded-[18px] border border-slate-200 bg-white text-slate-600 font-black uppercase tracking-widest text-[10px] hover:border-[#CE2029]/30 hover:text-[#CE2029] transition-all active:scale-95"
+                >
+                  View Cart{cart.count ? ` (${cart.count})` : ''}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -718,21 +824,68 @@ const SlotSelection = () => {
             memberDiscountPercent={serverPricing?.discountPercent}
             compact
           />
-          <button
-            type="button"
-            disabled={!hasSelection}
-            onClick={goToSummary}
-            className={`px-6 py-2.5 rounded-lg font-black uppercase tracking-[0.1em] text-[10px] transition-all ${
-              hasSelection
-                ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
-                : 'bg-slate-100 text-slate-300'
-            }`}
-          >
-            {hasSelection && selectedSlotObjs.length > 1
-              ? `Review (${selectedSlotObjs.length})`
-              : 'Review Order'}
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {hasSelection && (
+              <button
+                type="button"
+                onClick={addSelectionToCart}
+                aria-label="Add selected slots to cart"
+                className="w-10 h-10 rounded-lg border border-[#CE2029]/40 text-[#CE2029] bg-white flex items-center justify-center active:scale-95 transition-all"
+              >
+                <ShoppingCart size={16} />
+              </button>
+            )}
+            {!hasSelection && cart.count > 0 ? (
+              <button
+                type="button"
+                onClick={() => navigate('/cart')}
+                className="px-5 py-2.5 rounded-lg font-black uppercase tracking-[0.1em] text-[10px] bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20"
+              >
+                View Cart ({cart.count})
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={!hasSelection}
+                onClick={goToSummary}
+                className={`px-6 py-2.5 rounded-lg font-black uppercase tracking-[0.1em] text-[10px] transition-all ${
+                  hasSelection
+                    ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
+                    : 'bg-slate-100 text-slate-300'
+                }`}
+              >
+                {hasSelection && selectedSlotObjs.length > 1
+                  ? `Review (${selectedSlotObjs.length})`
+                  : 'Review Order'}
+              </button>
+            )}
+          </div>
         </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-24 lg:bottom-8 z-[70] flex justify-center px-4 pointer-events-none">
+      <AnimatePresence>
+        {cartNotice && (
+          <Motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="w-full max-w-sm pointer-events-auto"
+          >
+            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900 text-white shadow-2xl">
+              <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+              <span className="text-[11px] font-bold flex-1">{cartNotice}</span>
+              <button
+                type="button"
+                onClick={() => navigate('/cart')}
+                className="text-[10px] font-black uppercase tracking-widest text-[#ff6b72] shrink-0"
+              >
+                View Cart
+              </button>
+            </div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
       </div>
     </div>
   );

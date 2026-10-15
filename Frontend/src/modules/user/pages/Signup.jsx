@@ -31,7 +31,7 @@ const Signup = () => {
   const [phoneError, setPhoneError] = useState('');
   const [address, setAddress] = useState('');
   const [country, setCountry] = useState('');
-  const [location, setLocation] = useState('');
+  const [location] = useState('');
   const [referralCode, setReferralCode] = useState(searchParams.get('ref') || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

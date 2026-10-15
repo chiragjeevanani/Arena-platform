@@ -12,6 +12,7 @@ const ALLOWED_PURPOSES = ['top_up', 'booking'];
  */
 async function createPaymentIntent(req, res) {
   const { purpose, amount, bookingId } = req.body || {};
+  const bookingIds = Array.isArray(req.body?.bookingIds) ? req.body.bookingIds.map(String) : undefined;
   if (!purpose || !ALLOWED_PURPOSES.includes(purpose)) {
     return res.status(400).json({ error: `purpose must be one of: ${ALLOWED_PURPOSES.join(', ')}` });
   }
@@ -23,6 +24,7 @@ async function createPaymentIntent(req, res) {
         userId: req.auth.sub,
         purpose,
         bookingId,
+        bookingIds,
         amount,
         req,
       });
@@ -47,8 +49,11 @@ async function createPaymentIntent(req, res) {
   }
 
   const meta = {};
-  if (purpose === 'booking' && bookingId) {
-    meta.bookingId = String(bookingId);
+  if (purpose === 'booking' && bookingIds && bookingIds.length > 1) {
+    meta.bookingIds = bookingIds;
+    meta.bookingId = bookingIds[0];
+  } else if (purpose === 'booking' && (bookingId || bookingIds?.[0])) {
+    meta.bookingId = String(bookingId || bookingIds[0]);
   }
 
   const payment = await Payment.create({

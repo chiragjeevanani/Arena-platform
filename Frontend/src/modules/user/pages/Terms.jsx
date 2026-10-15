@@ -18,7 +18,7 @@ const Terms = () => {
     {
       icon: CheckCircle,
       title: '2. Booking & Cancellation Policy',
-      content: 'Bookings must be made in advance. Cancellations are permitted up to 4 hours prior to the booked slot for a full refund. Late cancellations will strictly incur a 100% cancellation fee. See also https://www.ammarena.com/refund-policy for full refund rules.',
+      content: 'Bookings must be made in advance. Cancellations made at least 24 hours prior to the booked slot receive a full refund or account credit. Cancellations within 24 hours forfeit the entire booking fee. See also https://www.ammarena.com/refund-policy for full refund rules.',
       color: 'text-emerald-500',
       bg: 'bg-emerald-500/10'
     },

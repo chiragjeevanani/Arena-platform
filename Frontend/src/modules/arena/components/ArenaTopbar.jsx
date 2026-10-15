@@ -5,7 +5,7 @@ import { Search, Bell, Menu, UserCircle, Settings, LogOut, Building2, Calendar, 
 import { useAuth } from '../../user/context/AuthContext';
 import { useArenaPanel } from '../../admin/context/ArenaPanelContext';
 
-const ArenaTopbar = ({ isCollapsed, onMobileMenuClick }) => {
+const ArenaTopbar = ({ onMobileMenuClick }) => {
   const navigate = useNavigate();
   const { user, logout: authLogout } = useAuth();
   const { arena } = useArenaPanel();

@@ -13,10 +13,6 @@ const ReferEarn = () => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    fetchReferrals();
-  }, []);
-
   const fetchReferrals = async () => {
     try {
       setLoading(true);
@@ -29,6 +25,10 @@ const ReferEarn = () => {
     }
   };
 
+  useEffect(() => {
+    fetchReferrals();
+  }, []);
+
   const handleCopyLink = () => {
     if (!data?.referralLink) return;
     navigator.clipboard.writeText(data.referralLink);
@@ -36,7 +36,7 @@ const ReferEarn = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const { stats, referrals, referralCode, referralLink, settings } = data || {
+  const { stats, referrals, referralCode, settings } = data || {
     stats: { totalReferrals: 0, pendingCount: 0, completedCount: 0, expiredCount: 0, totalEarned: 0 },
     referrals: [],
     referralCode: '',

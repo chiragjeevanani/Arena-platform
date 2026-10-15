@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Heart, MapPin, Star, Wifi, ParkingCircle, Coffee, ShowerHead, CheckCircle, ChevronRight } from 'lucide-react';
 import ShuttleButton from '../components/ShuttleButton';
+import CartButton from '../components/CartButton';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 import CourtImage from '../../../assets/court.jpeg';
 import { storage } from '../../../utils/storage';
@@ -96,6 +97,7 @@ const ArenaDetails = () => {
           >
             <ArrowLeft size={18} className="text-white" />
           </button>
+          <CartButton className="!w-11 !h-11 !rounded-2xl !bg-white/20 backdrop-blur-md !border-white/30" />
         </div>
 
         <div className={`absolute bottom-4 left-4 right-4 backdrop-blur-xl rounded-xl p-3.5 border shadow-xl bg-white/95 border-white/40 shadow-[0_10px_25px_rgba(0,0,0,0.08)]`}>

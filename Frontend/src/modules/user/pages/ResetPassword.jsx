@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import { Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -9,6 +9,7 @@ import Logo from '../../../assets/Logo (3).png';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -41,7 +42,7 @@ const ResetPassword = () => {
 
     setLoading(true);
     try {
-      await resetPasswordRequest(t, password);
+      await resetPasswordRequest(t, password, location.state?.email);
       setDone(true);
       setTimeout(() => navigate('/login', { replace: true, state: { message: 'Password updated. Please sign in.' } }), 1200);
     } catch (err) {

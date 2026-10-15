@@ -20,6 +20,7 @@ import { listAdminBookings } from '../../../services/adminBookingsApi';
 import CoachingStudentMatrix from '../components/CoachingStudentMatrix';
 import { useAuth } from '../../../modules/user/context/AuthContext';
 import { useArenaPanel } from '../context/ArenaPanelContext';
+import { VAT_PERCENT } from '../../../utils/tax';
 
 function getWeekRange(weekStr) {
   const parts = (weekStr || '').split('-W');
@@ -101,21 +102,20 @@ const CoachingAdmin = () => {
 
 
   const [editingBatch, setEditingBatch] = useState(null);
-  const [editingStudent, setEditingStudent] = useState(null);
+  const [editingStudent] = useState(null);
   const [editingBooking, setEditingBooking] = useState(null);
   const [batches, setBatches] = useState(BATCHES_DATA);
-  const [students, setStudents] = useState(STUDENT_DIRECTORY);
+  const [, setStudents] = useState(STUDENT_DIRECTORY);
   const [bookings, setBookings] = useState(BOOKINGS_DATA);
   const [showCoachModal, setShowCoachModal] = useState(false);
-  const [editingCoach, setEditingCoach] = useState(null);
+  const [editingCoach] = useState(null);
   const [coaches, setCoaches] = useState(COACHES_DATA);
-  const [requestedCoaches, setRequestedCoaches] = useState(REQUESTED_COACHES);
   const [attendance, setAttendance] = useState(ATTENDANCE_DATA);
   const [filterType, setFilterType] = useState('all'); // 'all', 'date', 'week'
   const [filterDate, setFilterDate] = useState('');
   const [filterWeek, setFilterWeek] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage] = useState(null);
   const [toast, setToast] = useState(null);
   const [viewingCoachDetails, setViewingCoachDetails] = useState(null);
   
@@ -316,17 +316,6 @@ const CoachingAdmin = () => {
   }, [selectedArenaId, filterType, filterDate, filterWeek]);
 
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSaveCoach = () => {
     const name = nameRef.current.value;
     const role = roleRef.current.value;
@@ -501,35 +490,6 @@ const CoachingAdmin = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleEditCoach = (coach) => {
-    setEditingCoach(coach);
-    setSelectedImage(coach.image);
-    setShowCoachModal(true);
-  };
-
-  const handleAddCoach = () => {
-    setEditingCoach(null);
-    setSelectedImage(null);
-    setShowCoachModal(true);
-  };
-
-  const handleAddStudent = () => {
-    setEditingStudent(null);
-    setShowStudentModal(true);
-  };
-
-  const handleEditStudent = (student) => {
-    setEditingStudent(student);
-    setShowStudentModal(true);
-  };
-
-  const handleDeleteStudent = (id) => {
-    if (window.confirm('Are you sure you want to remove this student?')) {
-      setStudents(prev => prev.filter(s => s.id !== id));
-      setToast('Student removed successfully');
-      setTimeout(() => setToast(null), 3000);
-    }
-  };
 
   const handleSaveStudent = (e) => {
     e.preventDefault();
@@ -589,12 +549,6 @@ const CoachingAdmin = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Searching logic
-  const filteredStudents = students.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.parent.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.phone.includes(searchQuery)
-  );
 
   const filteredBatches = batches.filter(b => 
     b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -760,7 +714,7 @@ const CoachingAdmin = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch content-start">
-                {filteredBatches.map((batch, idx) => (
+                {filteredBatches.map((batch) => (
                 <motion.div
                   layout
                   key={batch.id}
@@ -820,7 +774,7 @@ const CoachingAdmin = () => {
 
           {view === 'coaches' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredCoaches.map((coach, idx) => (
+              {filteredCoaches.map((coach) => (
                 <motion.div
                   layout
                   key={coach.id}
@@ -1402,7 +1356,7 @@ const CoachingAdmin = () => {
                           </div>
                           <div>
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Tax %</label>
-                            <input ref={batchTaxPercentRef} type="number" defaultValue={editingBatch?.taxPercent ?? 18} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                            <input ref={batchTaxPercentRef} type="number" defaultValue={editingBatch?.taxPercent ?? VAT_PERCENT} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
                           </div>
                        </div>
 

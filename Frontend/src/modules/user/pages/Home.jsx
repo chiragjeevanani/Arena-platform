@@ -10,8 +10,8 @@ import { normalizeListArena } from '../../../utils/arenaAdapter';
 import { mapCmsCategoryForHome, mapCmsHeroForHome } from '../../../utils/cmsUiAdapter';
 import { ShuttlecockIcon, PlayerAvatarIcon } from '../components/BadmintonIcons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableTennisPaddleBall, faBasketball, faFutbol } from '@fortawesome/free-solid-svg-icons';
 import ScoreboardSearch from '../components/ScoreboardSearch';
+import CartButton from '../components/CartButton';
 import MatchBanner from '../components/MatchBanner';
 import ArenaCard from '../components/ArenaCard';
 import DesktopNavbar from '../components/DesktopNavbar';
@@ -36,7 +36,7 @@ const UserHome = () => {
   const heroRef = useRef(null);
   const lightRef1 = useRef(null);
   const lightRef2 = useRef(null);
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
 
   const promos = heroBanners;
   const categories = categoryCards;
@@ -72,7 +72,7 @@ const UserHome = () => {
             setHeroBanners(cachedData.heroBanners);
             setCategoryCards(cachedData.categoryCards);
           }
-        } catch (e) {
+        } catch {
           // Promise failed, let it fall through to retry
         }
         return;
@@ -224,14 +224,16 @@ const UserHome = () => {
                   <PlayerAvatarIcon size={16} className="text-[#fffdd0]" />
                 </button>
 
-                <button 
+                <CartButton className="!w-9 !h-9 !bg-white/5 !text-[#fffdd0]" />
+
+                <button
                   onClick={() => {
                     if (!isLoggedIn) {
                       navigate('/login');
                       return;
                     }
                     navigate('/profile/notifications');
-                  }} 
+                  }}
                   className="relative w-9 h-9 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 transition-all hover:bg-white/10 shadow-sm"
                 >
                   <Bell size={16} className="text-[#fffdd0]" />
@@ -271,7 +273,7 @@ const UserHome = () => {
                   No category tiles yet. Publish CMS rows with kind &quot;category&quot; in the admin.
                 </p>
               )}
-              {categories.map((sport, i) => (
+              {categories.map((sport) => (
                 <motion.div
                   key={sport.id || sport.title}
                   initial={{ opacity: 0, scale: 0.95 }}

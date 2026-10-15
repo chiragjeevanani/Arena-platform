@@ -9,7 +9,7 @@ const Help = () => {
 
   const faqs = [
     { q: 'How do I book a court?', a: 'Go to the home page, select an arena, choose your court and time slot, and proceed to payment.' },
-    { q: 'Can I cancel my booking?', a: 'Yes, bookings can be cancelled up to 4 hours before the slot time. Refunds are credited to your wallet.' },
+    { q: 'Can I cancel my booking?', a: 'Yes. Cancel at least 24 hours before the slot time for a full refund to your Arena Wallet. Cancellations within 24 hours forfeit the booking fee.' },
     { q: 'What is a Premium Member?', a: 'Premium members get exclusive discounts, early access to bookings, and zero convenience fees.' },
   ];
 

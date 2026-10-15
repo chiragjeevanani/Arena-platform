@@ -30,7 +30,6 @@ const ArenaDetails = () => {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const galleryRef = useRef();
   const bannerRef = useRef();
 
   useEffect(() => {
@@ -305,7 +304,7 @@ const ArenaDetails = () => {
           
           <div className="flex flex-wrap gap-2.5">
             {amenityOptions.map(({ id, label, icon: Icon }) => {
-              const selected = Math.random() > 0 ? arena.amenities.includes(id) : false; // Safe check
+              const selected = Array.isArray(arena.amenities) && arena.amenities.includes(id);
               return (
                 <motion.button 
                   key={id} 

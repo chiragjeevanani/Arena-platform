@@ -42,6 +42,20 @@ const bookingSchema = new mongoose.Schema(
     walletUsed: { type: Number, default: 0 },
     paidAmount: { type: Number, default: 0 },
 
+    // Checkout grouping + coupon (one coupon use per checkout, split across its bookings)
+    checkoutId: { type: String, default: null, index: true },
+    couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon', default: null },
+    couponCode: { type: String, default: '', trim: true },
+    couponDiscount: { type: Number, default: 0 },
+
+    // Cancellation / refund record
+    cancelledAt: { type: Date, default: null },
+    cancelledBy: { type: String, enum: ['customer', 'staff', 'system', null], default: null },
+    refundedAmount: { type: Number, default: 0 },
+    refundMethod: { type: String, enum: ['wallet', 'bank', 'none', null], default: null },
+    refundReference: { type: String, default: '', trim: true },
+    refundedAt: { type: Date, default: null },
+
     // Audit Pricing Snapshot Fields
     normalPrice: { type: Number, default: 0 },
     basePrice: { type: Number, default: 0 },
@@ -88,6 +102,15 @@ function toPublicBooking(doc, extras = {}) {
     type: o.type,
     walletUsed: o.walletUsed || 0,
     paidAmount: o.paidAmount || 0,
+    cancelledAt: o.cancelledAt || null,
+    cancelledBy: o.cancelledBy || null,
+    refundedAmount: o.refundedAmount || 0,
+    refundMethod: o.refundMethod || null,
+    refundReference: o.refundReference || '',
+    refundedAt: o.refundedAt || null,
+    checkoutId: o.checkoutId || null,
+    couponCode: o.couponCode || '',
+    couponDiscount: o.couponDiscount || 0,
     normalPrice: normalVal,
     basePrice: normalVal,
     peakPrice: o.peakPrice ?? (o.pricingType === 'peak' ? o.amount : 0),

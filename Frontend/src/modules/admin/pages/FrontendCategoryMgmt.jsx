@@ -59,7 +59,7 @@ const FrontendCategoryMgmt = () => {
       ]);
       setCategories(cmsRes.contents || []);
       setArenas(arenasRes.arenas || []);
-    } catch (e) {
+    } catch {
       setLoadError('Failed to load data. Ensure API is running.');
     } finally {
       setLoading(false);

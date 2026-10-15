@@ -4,7 +4,7 @@ import { Shield, Clock, DollarSign, ArrowRight, Zap, Target, BookOpen, ToggleLef
 import ArenaPanelDemoBanner from './ArenaPanelDemoBanner';
 
 const PolicySettings = () => {
-  const [refundRules, setRefundRules] = useState([
+  const [refundRules] = useState([
     { hours: 24, percent: 100, active: true },
     { hours: 12, percent: 50, active: true },
     { hours: 4, percent: 0, active: true },

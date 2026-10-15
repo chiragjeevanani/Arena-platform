@@ -5,7 +5,7 @@ import {
   UsersRound, PenLine, Plus, ArrowRight, Activity, Clock,
   Trash2, Hash, Loader2
 } from 'lucide-react';
-import { format, addDays, startOfToday, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay } from 'date-fns';
+import { format, startOfToday, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getDay } from 'date-fns';
 import { useArenaPanel } from '../../context/ArenaPanelContext';
 import { listMyBlocks, listMyBookings, createMyBlock, deleteMyBlock, getBlockSummary, listMyCourtSlots } from '../../../../services/arenaStaffApi';
 import { showToast } from '../../../../utils/toast';
@@ -191,7 +191,7 @@ const AvailabilityControl = () => {
       showToast('Slot block released', 'success');
       fetchData();
       fetchSummary();
-    } catch (err) {
+    } catch {
       showToast('Failed to release block', 'error');
     }
   };
