@@ -41,7 +41,8 @@ const timeToMinutes = (t) => {
 
 function isSlotBlocked(timeSlot, blocks) {
   if (!blocks || blocks.length === 0) return false;
-  const [sStartStr, sEndStr] = String(timeSlot).split(' - ');
+  // Slots are stored as "06:00 AM - 07:00 AM" or "06:00-07:00"; split on the dash either way.
+  const [sStartStr, sEndStr] = String(timeSlot).split(/\s*-\s*/);
   const sStart = timeToMinutes(sStartStr);
   let sEnd = timeToMinutes(sEndStr);
   if (sEnd <= sStart) sEnd += 24 * 60; // slot running past midnight

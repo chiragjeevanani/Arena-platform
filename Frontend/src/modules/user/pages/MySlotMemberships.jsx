@@ -35,7 +35,7 @@ function getUpcomingDates(membership, slot, limit = 8) {
 
 function isBeforeDeadline(date, timeSlot, freeWindowHours = 24) {
   // Parse startTime from "06:00 AM - 07:00 AM" format
-  const rawStart = timeSlot?.split(' - ')[0] || '';
+  const rawStart = timeSlot?.split(/\s*-\s*/)[0] || '';
   const match = rawStart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
   if (!match) return true; // allow if can't parse
 

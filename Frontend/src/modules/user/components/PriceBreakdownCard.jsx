@@ -141,7 +141,7 @@ const PriceBreakdownCard = ({
         </div>
         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
           {slotCount > 1
-            ? slotList.map(s => s.time.split(' - ')[0]).join(', ')
+            ? slotList.map(s => s.time.split(/\s*-\s*/)[0]).join(', ')
             : primarySlot.time}
         </span>
       </div>
@@ -158,7 +158,7 @@ const PriceBreakdownCard = ({
             </div>
             {slotList.map(s => (
               <div key={s.id} className="flex items-center justify-between px-2 py-1 bg-slate-50 rounded-lg">
-                <span className="text-[9px] font-bold text-slate-400">{s.time.split(' - ')[0]}</span>
+                <span className="text-[9px] font-bold text-slate-400">{s.time.split(/\s*-\s*/)[0]}</span>
                 <span className="text-[10px] font-black text-slate-600">OMR {getSlotBase(s).toFixed(3)}</span>
               </div>
             ))}

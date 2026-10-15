@@ -597,7 +597,7 @@ const SlotSelection = () => {
                           onClick={() => toggleSlot(s.id)}
                           className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#CE2029]/10 border border-[#CE2029]/30 text-[9px] font-black text-[#CE2029] hover:bg-[#CE2029]/20 transition-all"
                         >
-                          {s.time.split(' - ')[0]}
+                          {s.time.split(/\s*-\s*/)[0]}
                           <X size={9} strokeWidth={3} />
                         </button>
                       ))}

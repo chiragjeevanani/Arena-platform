@@ -346,7 +346,7 @@ async function freeMySlot(req, res) {
   const pointsPerFreeSlot = arena?.slotFreeConfig?.pointsPerFreeSlot ?? 10;
 
   // Parse startTime (e.g. "06:00 AM - 07:00 AM" → extract "06:00 AM")
-  const rawStartTime = courtSlot.startTime || courtSlot.timeSlot?.split(' - ')[0] || '';
+  const rawStartTime = courtSlot.startTime || courtSlot.timeSlot?.split(/\s*-\s*/)[0] || '';
   const slotDateTime = new Date(`${freedDate}T00:00:00`);
 
   if (rawStartTime) {

@@ -189,7 +189,7 @@ const BookingTimelineCard = ({
   // Detect if this booking's slot is a Prime slot (5 PM onwards)
   const isPrimeSlot = (() => {
     if (!booking.slot) return false;
-    const timeStr = booking.slot.split(' - ')[0]; // e.g. "07:00 PM"
+    const timeStr = booking.slot.split(/\s*-\s*/)[0]; // e.g. "07:00 PM"
     const [time, period] = timeStr.trim().split(' ');
     if (period === 'PM') {
       const hour = parseInt(time.split(':')[0]);

@@ -98,7 +98,7 @@ const CourtSlot = ({ slot, isSelected, onSelect, disabled = false, inCart = fals
 
       {/* Time */}
       <span className={`text-[11px] font-black block leading-tight ${inCart ? 'text-blue-700' : isSelected ? 'text-[#CE2029]' : config.text}`}>
-        {slot.time.split(' - ')[0]}
+        {slot.time.split(/\s*-\s*/)[0]}
       </span>
       {inCart && (
         <span className="text-[7px] font-black uppercase tracking-wider text-blue-600 flex items-center gap-0.5 mt-0.5">

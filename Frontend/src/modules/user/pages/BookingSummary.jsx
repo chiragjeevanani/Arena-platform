@@ -320,7 +320,7 @@ const BookingSummary = () => {
                              {slotsArray.map((s, i) => (
                                <div key={i} className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-100">
                                  <Clock size={11} className="text-blue-500" />
-                                 <span className="text-[11px] font-black text-slate-900">{s?.time?.split(' - ')[0]}</span>
+                                 <span className="text-[11px] font-black text-slate-900">{s?.time?.split(/\s*-\s*/)[0]}</span>
                                </div>
                              ))}
                            </div>
@@ -508,7 +508,7 @@ const BookingSummary = () => {
                  </div>
                  <div className="bg-slate-50 p-3 rounded-xl space-y-0.5 text-center">
                     <p className="text-[7.5px] font-black uppercase tracking-widest text-slate-400">Time</p>
-                    <span className="text-[11px] font-bold text-slate-900">{slot?.time?.split(' - ')[0]}</span>
+                    <span className="text-[11px] font-bold text-slate-900">{slot?.time?.split(/\s*-\s*/)[0]}</span>
                  </div>
               </div>
               <div className="h-px bg-slate-100" />

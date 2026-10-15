@@ -103,8 +103,9 @@ async function getWalkinSlots(req, res) {
   const blocks = await AvailabilityBlock.find({ courtId, date }).lean();
 
   const slots = baseSlots.map((s) => {
-    const sStart = timeToMins(s.timeSlot.split(' - ')[0]);
-    const sEnd = timeToMins(s.timeSlot.split(' - ')[1]);
+    const [startStr, endStr] = s.timeSlot.split(/\s*-\s*/); // "06:00 AM - 07:00 AM" or "06:00-07:00"
+    const sStart = timeToMins(startStr);
+    const sEnd = timeToMins(endStr);
     const isBlocked = blocks.some((b) => {
       const bStart = timeToMins(b.startTime);
       const bEnd = timeToMins(b.endTime);
