@@ -24,8 +24,12 @@ export function shouldPersistBookingSuccessToUserBookings(state, ctx) {
     return true;
   }
 
+  // Court bookings: with a server session the server is the only source of truth. Saving a
+  // local row here produced an incomplete "booking" (no court / date / time) whenever the
+  // success page lost its checkout details on the way back from the bank.
+  if (apiConfigured && hasToken) return false;
   const bid = state.booking?.id;
-  if (apiConfigured && hasToken && bid != null && isMongoObjectId(String(bid))) {
+  if (bid != null && isMongoObjectId(String(bid))) {
     return false;
   }
 

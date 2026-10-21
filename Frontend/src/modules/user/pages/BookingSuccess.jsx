@@ -14,6 +14,7 @@ import Logo from '../../../assets/Logo (3).png';
 import { useAuth } from '../context/AuthContext';
 import { useCart, cartItemKey } from '../context/CartContext';
 import { buildReceiptFromSuccessState, downloadBookingReceiptPdf } from '../../../utils/bookingReceiptPdf';
+import ReceiptPreview from '../components/ReceiptPreview';
 
 // Shuttlecock particle for confetti
 const ShuttleParticle = ({ delay, x, y, isDark }) => (
@@ -80,14 +81,65 @@ const BookingSuccess = () => {
   })));
 
   const bookingData = state || loadedBooking;
-  const amount = Number(bookingData?.amount) || 0;
   const bookingLines = Array.isArray(bookingData?.lines) ? bookingData.lines : [];
-  const multiLines = bookingLines.length > 1;
-  // Stable reference shown on the receipt (was a new random string on every render).
-  const [fallbackRef] = useState(() => Math.random().toString(36).slice(2, 11).toUpperCase());
-  const receiptRef = String(
-    bookingData?.booking?.id || bookingLines[0]?.bookingId || bookingData?.paymentId || queryBookingId || fallbackRef
-  ).slice(-9).toUpperCase();
+
+  // The receipt is built from the server's bookings whenever we know their ids — after a
+  // Bank Muscat payment the app-side checkout details can be missing (the bank page may
+  // open in a fresh browser context), but the payment always carries its booking ids.
+  const isCourtBooking = !bookingData?.type || bookingData.type === 'booking';
+  const receiptIdsKey = isCourtBooking
+    ? [...new Set([
+      ...bookingLines.map((l) => l.bookingId),
+      ...(Array.isArray(bookingData?.bookings) ? bookingData.bookings.map((x) => x?.id) : []),
+      ...(Array.isArray(bookingData?.payment?.meta?.bookingIds) ? bookingData.payment.meta.bookingIds : []),
+      bookingData?.payment?.meta?.bookingId,
+      bookingData?.booking?.id,
+      queryBookingId,
+    ].filter(Boolean).map(String))].join(',')
+    : '';
+  const [serverReceiptData, setServerReceiptData] = useState(null);
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
+  useEffect(() => {
+    if (!receiptIdsKey) return undefined;
+    const ids = new Set(receiptIdsKey.split(','));
+    let cancelled = false;
+    setLoadingReceipt(true);
+    import('../../../services/bookingsApi')
+      .then(({ listMyBookings }) => listMyBookings())
+      .then((res) => {
+        if (cancelled) return;
+        const mine = (res.bookings || []).filter((x) => ids.has(String(x.id)));
+        if (!mine.length) return;
+        mine.sort((x, y) => String(x.date).localeCompare(String(y.date)) || String(x.timeSlot).localeCompare(String(y.timeSlot)));
+        setServerReceiptData({
+          ...(bookingData || {}),
+          type: 'booking',
+          lines: mine.map((x) => ({
+            bookingId: x.id,
+            courtId: x.courtId,
+            courtName: x.courtName,
+            arenaName: x.arenaName,
+            date: x.date,
+            dateYmd: x.date,
+            timeSlot: x.timeSlot,
+            price: Number(x.finalPrice) || Number(x.amount) || 0,
+            amount: Number(x.amount) || 0,
+            pricingType: x.pricingType,
+          })),
+          amount: mine.reduce((s, x) => s + (Number(x.amount) || 0), 0),
+          booking: mine[0],
+          bookings: mine,
+          couponCode: mine.find((x) => x.couponCode)?.couponCode || bookingData?.couponCode || null,
+          couponDiscount: mine.reduce((s, x) => s + (Number(x.couponDiscount) || 0), 0) || Number(bookingData?.couponDiscount) || 0,
+        });
+      })
+      .catch((err) => console.error('Receipt bookings load failed', err))
+      .finally(() => { if (!cancelled) setLoadingReceipt(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [receiptIdsKey]);
+  const receiptData = serverReceiptData || bookingData;
+  const receipt = receiptData ? buildReceiptFromSuccessState(receiptData, user) : null;
 
   // Booked slots leave the cart (they may have come from it, or been re-picked directly).
   const { removeItems: removeCartItems } = useCart();
@@ -95,66 +147,6 @@ const BookingSuccess = () => {
     if (bookingLines.length) removeCartItems(bookingLines.map((l) => cartItemKey(l)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingData]);
-
-  const formatReceiptDate = (value) => {
-    if (!value) {
-      return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    }
-    if (value instanceof Date && !Number.isNaN(value.getTime())) {
-      return value.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    }
-    const raw = String(value).trim();
-    // YYYY-MM-DD — avoid UTC timezone shift
-    const ymd = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (ymd) {
-      const d = new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3]));
-      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    }
-    const parsed = new Date(raw);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    }
-    return raw;
-  };
-
-  const formatReceiptTime = (value) => {
-    const d = value ? new Date(value) : new Date();
-    if (Number.isNaN(d.getTime())) return '—';
-    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
-  };
-
-  const receiptStamp =
-    bookingData?.transactionAt ||
-    bookingData?.payment?.completedAt ||
-    bookingData?.payment?.verifiedAt ||
-    bookingData?.payment?.updatedAt ||
-    null;
-
-  const displayDate =
-    bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up'
-      ? formatReceiptDate(receiptStamp)
-      : formatReceiptDate(bookingData?.date || receiptStamp);
-
-  const displayTiming =
-    bookingData?.type === 'wallet_top_up'
-      ? formatReceiptTime(receiptStamp)
-      : bookingData?.type === 'membership'
-        ? (bookingData.plan?.duration || '—')
-        : bookingData?.batch
-          ? (bookingData.batch.timing || '—')
-          : (bookingData?.slot?.time || bookingData?.slots?.[0]?.time || '—');
-
-  const timingLabel =
-    bookingData?.type === 'wallet_top_up'
-      ? 'Transaction Time'
-      : bookingData?.type === 'membership'
-        ? 'Validity Period'
-        : 'Timing';
-
-  const dateLabel =
-    bookingData?.type === 'membership' || bookingData?.type === 'wallet_top_up'
-      ? 'Transaction Date'
-      : 'Date';
 
   useEffect(() => {
     // Save booking/enrollment to localStorage for persistence in Dashboard
@@ -320,158 +312,29 @@ const BookingSuccess = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start max-w-3xl mx-auto">
-          {/* Success Ticket Card - Left/Center */}
+          {/* Receipt — the same receipt the customer downloads as PDF (utils/bookingReceiptPdf). */}
           <motion.div
             id="print-area"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, type: 'spring', stiffness: 100 }}
-            className={`lg:col-span-8 rounded-[32px] p-5 md:p-6 border shadow-2xl relative overflow-hidden transition-all group ${isDark ? 'bg-[#1a1d24] border-white/5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]' : 'bg-white border-[#CE2029]/10 shadow-[0_20px_60px_rgba(206, 32, 41,0.08)]'}`}
+            className="lg:col-span-8 relative"
           >
-            {/* Subtle court lines */}
-            <div className={`absolute inset-0 court-lines ${isDark ? 'opacity-[0.03]' : 'opacity-5'} transition-opacity group-hover:opacity-10`} />
-            <div className={`absolute top-0 left-0 right-0 h-1.5 ${isDark ? 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]' : 'bg-gradient-to-r from-[#CE2029] to-[#d43b33]'} print:hidden`} />
-
-            <div className="space-y-5 md:space-y-6 relative z-10 pt-2">
-              {/* Print-only Header */}
-              <div className="hidden print:flex items-center justify-between border-b pb-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <img src={Logo} alt="AMM Sports Arena Logo" className="h-10 w-auto object-contain" />
-                  <div>
-                    <h1 className="text-sm font-black tracking-tight text-slate-900 font-display">AMM SPORTS ARENA</h1>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Verified Invoice Receipt</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Date of Download</p>
-                  <p className="text-[10px] font-black text-slate-800">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-                </div>
+            {receipt ? (
+              <ReceiptPreview receipt={receipt} className="!shadow-2xl !rounded-[24px] mx-auto" />
+            ) : (
+              <div className="bg-white rounded-[24px] border border-slate-200 p-8 text-center text-xs font-bold text-slate-400">
+                Loading your receipt…
               </div>
-
-              {/* Ticket Header */}
-              <div className={`flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-white/30' : 'text-slate-400'} print:hidden`}>
-                <div className="flex items-center gap-2">
-                  <Receipt size={14} className={isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'} />
-                  <span>Verified Receipt</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] animate-pulse" />
-                  <span className="font-mono">#{receiptRef}</span>
-                </div>
-              </div>
-
-              {/* Arena Info */}
-              <div className="space-y-1">
-                <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                  {bookingData?.type === 'membership' 
-                    ? 'Membership Active' 
-                    : bookingData?.type === 'wallet_top_up'
-                    ? 'Arena Wallet'
-                    : bookingData?.batch 
-                    ? 'Academic Program' 
-                    : 'Arena Details'}
-                </p>
-                <h3 className={`text-xl md:text-2xl font-black font-display leading-tight tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {bookingData?.type === 'membership' 
-                    ? bookingData.plan?.name 
-                    : bookingData?.type === 'wallet_top_up'
-                    ? 'Wallet Top Up'
-                    : bookingData?.batch 
-                    ? bookingData.batch.coachName 
-                    : bookingData?.arena?.name}
-                  <span className={`block text-lg md:text-xl mt-0.5 ${isDark ? 'text-[#CE2029]/80' : 'text-[#CE2029]'}`}>
-                    {bookingData?.type === 'membership' 
-                      ? 'Tier ' + bookingData.plan?.category 
-                      : bookingData?.type === 'wallet_top_up'
-                      ? 'Online Payment Added'
-                      : bookingData?.batch
-                      ? bookingData.batch.level + ' Batch'
-                      : multiLines && new Set(bookingLines.map((l) => l.courtId)).size > 1
-                      ? `${bookingLines.length} slots booked`
-                      : bookingData?.court?.name}
-                  </span>
-                </h3>
-              </div>
-
-              {/* Detail Grid */}
-              {multiLines ? (
-              <div className="bg-slate-50/50 p-4 rounded-[20px] border border-slate-100 print:bg-slate-50 print:border-slate-200 divide-y divide-slate-100">
-                {bookingLines.map((l, i) => (
-                  <div key={l.bookingId || i} className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
-                    <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-black text-slate-800 truncate">{l.courtName}</p>
-                      <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        <CalendarDays size={11} className="text-slate-400" /> {formatReceiptDate(l.dateYmd || l.date)}
-                        <Clock size={11} className="text-slate-400 ml-1" /> {l.timeSlot}
-                      </p>
-                    </div>
-                    <span className="text-xs font-black text-slate-700 shrink-0">OMR {(Number(l.amount) || 0).toFixed(3)}</span>
-                  </div>
-                ))}
-              </div>
-              ) : (
-              <div className="grid grid-cols-2 gap-4 md:gap-6 bg-slate-50/50 dark:bg-white/5 p-4 rounded-[20px] border dark:border-white/5 border-slate-100 print:bg-slate-50 print:border-slate-200">
-                <div className="space-y-1 min-w-0">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                    {dateLabel}
-                  </p>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <CalendarDays size={14} className={`shrink-0 ${isDark ? 'text-white/50' : 'text-slate-400'}`} />
-                    <p className={`text-xs md:text-sm font-black truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                      {displayDate || '—'}
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                    {timingLabel}
-                  </p>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Clock size={14} className={`shrink-0 ${isDark ? 'text-white/50' : 'text-slate-400'}`} />
-                    <p className={`text-xs md:text-sm font-black truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                      {displayTiming || '—'}
-                    </p>
-                  </div>
-                </div>
-                {bookingData?.type === 'wallet_top_up' ? (
-                  <div className="col-span-2 space-y-1 pt-1 border-t border-slate-100 dark:border-white/5 print:border-slate-200">
-                    <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
-                      Target Account
-                    </p>
-                    <p className={`text-xs md:text-sm font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                      My Arena Wallet
-                    </p>
-                  </div>
-                ) : null}
-              </div>
-              )}
-
-              {/* Bottom Notch Separator */}
-              <div className="relative h-px flex items-center pt-2">
-                <div className={`absolute left-0 -translate-x-9 md:-translate-x-10 w-6 h-6 rounded-full border print:hidden ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
-                <div className={`w-full border-t-[2px] border-dashed ${isDark ? 'border-white/10' : 'border-slate-200'} print:border-solid print:border-t-[1px]`} />
-                <div className={`absolute right-0 translate-x-9 md:translate-x-10 w-6 h-6 rounded-full border print:hidden ${isDark ? 'bg-[#0f1115] border-white/5' : 'bg-slate-50 border-[#CE2029]/10 shadow-inner'}`} />
-              </div>
-
-              {/* Total Paid Section */}
-              <div className="flex items-center justify-between pt-2">
-                <div>
-                  <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Grand Total Paid</p>
-                  <p className={`text-2xl md:text-3xl font-black font-display leading-none ${isDark ? 'text-[#CE2029]' : 'text-[#CE2029]'}`}>OMR {amount.toFixed(3)}</p>
-                  {bookingData?.couponCode && Number(bookingData.couponDiscount) > 0 && (
-                    <p className="text-[10px] font-bold text-green-600 mt-1">
-                      Coupon {bookingData.couponCode} saved you OMR {Number(bookingData.couponDiscount).toFixed(3)}
-                    </p>
-                  )}
-                </div>
-                <div className={`px-3 py-1.5 rounded-[12px] font-black text-[8px] md:text-[9px] uppercase tracking-widest border transition-all ${isDark
-                    ? 'bg-[#CE2029]/10 border-[#CE2029]/20 text-[#CE2029]'
-                    : 'bg-[#CE2029] text-white border-[#CE2029] shadow-lg shadow-[#CE2029]/20'
-                  }`}>
-                  Securely Credited
-                </div>
-              </div>
-            </div>
+            )}
+            {loadingReceipt && receipt && (
+              <p className="text-center text-[10px] font-bold text-slate-400 mt-2">Updating receipt…</p>
+            )}
+            {receiptData?.couponCode && Number(receiptData.couponDiscount) > 0 && (
+              <p className="text-center text-[11px] font-bold text-green-600 mt-3">
+                Coupon {receiptData.couponCode} saved you OMR {Number(receiptData.couponDiscount).toFixed(3)}
+              </p>
+            )}
           </motion.div>
 
           {/* Desktop Right Column: Quick Actions & Dashboard Navigation */}
@@ -504,7 +367,7 @@ const BookingSuccess = () => {
                   onClick={async () => {
                     setIsDownloading(true);
                     try {
-                      await downloadBookingReceiptPdf(buildReceiptFromSuccessState(bookingData, user));
+                      await downloadBookingReceiptPdf(receipt || buildReceiptFromSuccessState(bookingData, user));
                     } catch (err) {
                       console.error('PDF Generation Error:', err);
                       window.print();

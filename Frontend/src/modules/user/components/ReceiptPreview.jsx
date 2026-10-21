@@ -2,10 +2,12 @@ import Logo from '../../../assets/Logo (3).png';
 import { formatOmr } from '../../../utils/bookingReceiptPdf';
 
 /**
- * On-screen preview of the booking receipt PDF (utils/bookingReceiptPdf.js).
+ * On-screen version of the booking receipt PDF (utils/bookingReceiptPdf.js).
  * Takes the same normalized receipt object so both always show the same data.
+ * Responsive: on phones the line-item table becomes stacked rows so nothing needs
+ * zooming; from `sm` up it matches the PDF layout.
  */
-const ReceiptPreview = ({ receipt: r }) => {
+const ReceiptPreview = ({ receipt: r, className = '' }) => {
   const cancelled = r.status === 'CANCELLED';
   const summary = [
     ['Booking Reference:', r.bookingRef],
@@ -15,16 +17,16 @@ const ReceiptPreview = ({ receipt: r }) => {
   ].filter(Boolean);
 
   return (
-    <div className="bg-white p-6 sm:p-8 shadow-lg border border-slate-200 w-[680px] min-w-[680px] md:w-full md:max-w-[700px] md:min-w-0 rounded-lg text-[#334155] font-sans">
+    <div className={`bg-white p-4 sm:p-8 shadow-lg border border-slate-200 w-full max-w-[700px] rounded-lg text-[#334155] font-sans ${className}`}>
       {/* Header */}
-      <div className="flex justify-between items-start gap-6 pb-4 border-b-[3px] border-[#0F172A]">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-6 pb-4 border-b-[3px] border-[#0F172A]">
         <div>
-          <img src={Logo} alt="AMM Sports Arena" className="h-16 w-auto object-contain -ml-2 -my-2" />
+          <img src={Logo} alt="AMM Sports Arena" className="h-14 sm:h-16 w-auto object-contain -ml-2 -my-2" />
           <p className="text-[11px] text-slate-500 mt-2">Premier Badminton &amp; Racquet Facility</p>
           <p className="text-[11px] text-slate-500">Ghala, Muscat | Contact: 91783155 | www.ammsportsarena.com</p>
         </div>
-        <div className="text-right text-[11px] shrink-0">
-          <h1 className="text-xl font-bold text-[#2563EB] mb-1">TAX INVOICE</h1>
+        <div className="sm:text-right text-[11px] shrink-0">
+          <h1 className="text-lg sm:text-xl font-bold text-[#2563EB] mb-1">TAX INVOICE</h1>
           <p><span className="font-bold">Invoice #:</span> <span className="text-slate-500">{r.invoiceNo}</span></p>
           <p><span className="font-bold">Date:</span> <span className="text-slate-500">{r.invoiceDate}</span></p>
           <p className="mt-0.5">
@@ -35,24 +37,40 @@ const ReceiptPreview = ({ receipt: r }) => {
       </div>
 
       {/* Billed to / summary */}
-      <div className="grid grid-cols-2 gap-4 mt-5 text-[11px]">
-        <div className="bg-slate-50 border border-slate-200 border-l-[3px] border-l-[#2563EB] rounded p-3.5 space-y-0.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-5 text-[11px]">
+        <div className="bg-slate-50 border border-slate-200 border-l-[3px] border-l-[#2563EB] rounded p-3.5 space-y-0.5 min-w-0">
           <h3 className="font-bold text-[#0F172A] text-xs mb-1">BILLED TO:</h3>
           <p className="font-bold text-[#0F172A]">{r.customer.name}</p>
           {r.customer.phone && <p>Phone: {r.customer.phone}</p>}
           {r.customer.email && <p className="break-all">Email: {r.customer.email}</p>}
         </div>
-        <div className="bg-slate-50 border border-slate-200 border-l-[3px] border-l-[#2563EB] rounded p-3.5 space-y-0.5">
+        <div className="bg-slate-50 border border-slate-200 border-l-[3px] border-l-[#2563EB] rounded p-3.5 space-y-0.5 min-w-0">
           <h3 className="font-bold text-[#0F172A] text-xs mb-1">BOOKING SUMMARY:</h3>
           {summary.map(([label, value]) => (
-            <p key={label}><span className="font-bold text-[#0F172A]">{label}</span> {value}</p>
+            <p key={label} className="break-words"><span className="font-bold text-[#0F172A]">{label}</span> {value}</p>
           ))}
         </div>
       </div>
 
       {/* Line items */}
-      <h3 className="font-bold text-[#0F172A] text-[13px] mt-6 pb-1 border-b border-slate-300">{r.itemsTitle}</h3>
-      <table className="w-full text-left border-collapse text-[11px] mt-2">
+      <h3 className="font-bold text-[#0F172A] text-[13px] mt-5 sm:mt-6 pb-1 border-b border-slate-300">{r.itemsTitle}</h3>
+
+      {/* Phones: one stacked row per slot */}
+      <div className="sm:hidden mt-2 divide-y divide-slate-200 border-b border-slate-200">
+        {r.items.map((it, i) => (
+          <div key={i} className={`py-2.5 px-1 flex items-start justify-between gap-3 text-[11px] ${i % 2 ? 'bg-slate-50' : ''}`}>
+            <div className="min-w-0">
+              <p className="font-bold text-[#0F172A]">{it.court}</p>
+              <p>{it.date} · {it.slot}</p>
+              <p className="text-slate-500">{[it.rateType, it.duration].filter((v) => v && v !== '—').join(' · ')}</p>
+            </div>
+            <span className="font-bold text-[#0F172A] whitespace-nowrap">{formatOmr(it.amount)}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Tablet / desktop: same table as the PDF */}
+      <table className="hidden sm:table w-full text-left border-collapse text-[11px] mt-2">
         <thead>
           <tr className="bg-[#0F172A] text-white font-bold text-[10px] tracking-wide">
             <th className="py-2 px-2.5">DATE</th>
@@ -79,7 +97,7 @@ const ReceiptPreview = ({ receipt: r }) => {
 
       {/* Totals */}
       <div className="flex justify-end mt-2 text-[12px]">
-        <div className="w-60">
+        <div className="w-full sm:w-60">
           <div className="flex justify-between py-1.5 px-2.5 border-b border-slate-200">
             <span className="text-slate-500">Subtotal</span><span className="font-bold text-[#0F172A]">{formatOmr(r.subtotal)}</span>
           </div>

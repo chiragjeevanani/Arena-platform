@@ -1,4 +1,6 @@
 const STORAGE_KEY = 'arena_bank_muscat_pending_context';
+// localStorage (not sessionStorage): the bank page can open in a new browser context, which
+// starts with an empty sessionStorage and lost the booking details on return.
 
 /**
  * Save checkout UI context before redirecting to Bank Muscat.
@@ -10,7 +12,7 @@ export function saveBankMuscatCheckoutContext(context = {}) {
       ...context,
       savedAt: Date.now(),
     };
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
     /* ignore quota / private mode */
   }
@@ -18,7 +20,7 @@ export function saveBankMuscatCheckoutContext(context = {}) {
 
 export function peekBankMuscatCheckoutContext() {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return null;
@@ -35,9 +37,9 @@ export function peekBankMuscatCheckoutContext() {
 
 export function consumeBankMuscatCheckoutContext() {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return null;
     // Drop stale context older than 2 hours

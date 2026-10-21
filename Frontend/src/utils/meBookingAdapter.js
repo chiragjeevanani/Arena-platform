@@ -8,6 +8,9 @@ function statusLabel(b) {
   const s = String(b.status || '').toLowerCase();
   if (s === 'cancelled') return 'Cancelled';
   if (s === 'completed') return 'Completed';
+  // Unpaid checkout (payment never finished): not a real booking yet — keep it out of
+  // Upcoming. It is confirmed once the gateway reports success, or expires after ~15 min.
+  if (s === 'pending' && String(b.paymentStatus || '').toLowerCase() !== 'paid') return 'Payment Pending';
   // 'confirmed' (paid) and 'pending' (payment still finalizing) both read as
   // Upcoming until their actual slot time has passed — using the slot's own
   // start time (not a fixed noon cutoff) so a same-day booking moves into
@@ -42,9 +45,13 @@ export function mapMeBookingToDashboardCard(b, extras = {}) {
     status: statusLabel(b),
     price: Number(b.amount) || 0,
     paymentMethod: b.paymentMethod,
+    paymentStatus: b.paymentStatus,
     pricingType: b.pricingType,
     createdAt: b.createdAt,
-    receiptUrl: b.id ? `#receipt-${b.id}` : undefined,
+    // Only money actually taken gets a receipt (cancelled / expired / unpaid checkouts don't).
+    receiptUrl: b.id && ['paid', 'refunded'].includes(String(b.paymentStatus || '').toLowerCase())
+      ? `#receipt-${b.id}`
+      : undefined,
     sortKey: b.date ? `${b.date}T12:00:00` : String(b.id || ''),
   };
 }
