@@ -340,7 +340,7 @@ const Payment = () => {
       </div>
 
       {/* Mobile Sticky Footer */}
-      <div className={`fixed bottom-0 left-0 right-0 p-6 z-[100] lg:hidden backdrop-blur-xl border-t border-[#CE2029]/10 shadow-[0_-10px_30px_rgba(206, 32, 41,0.05)] rounded-t-[32px] ${isDark ? 'bg-[#0f1115]/90' : 'bg-white/90'}`}>
+      <div className={`fixed bottom-0 left-0 right-0 p-6 pb-[calc(1.5rem+var(--safe-bottom))] z-[100] lg:hidden backdrop-blur-xl border-t border-[#CE2029]/10 shadow-[0_-10px_30px_rgba(206, 32, 41,0.05)] rounded-t-[32px] ${isDark ? 'bg-[#0f1115]/90' : 'bg-white/90'}`}>
         <button
           disabled={isProcessing}
           onClick={handlePay}

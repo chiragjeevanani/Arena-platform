@@ -383,7 +383,7 @@ const ScheduleCalendar = () => {
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
-              className={`fixed bottom-0 left-0 right-0 max-h-[75vh] z-[140] rounded-t-[40px] border-t shadow-2xl overflow-hidden ${
+              className={`fixed bottom-0 left-0 right-0 max-h-[75vh] z-[140] rounded-t-[40px] border-t shadow-2xl overflow-hidden pb-[var(--safe-bottom)] ${
                 isDark ? 'bg-[#0f1115] border-white/10' : 'bg-white border-slate-200'
               }`}
             >

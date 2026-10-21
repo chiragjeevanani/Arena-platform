@@ -822,7 +822,7 @@ const SlotMembershipPurchase = () => {
 
       {/* Bottom Navigation */}
       {step < 3 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 p-4 z-40">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 p-4 pb-[calc(1rem+var(--safe-bottom))] z-40">
           <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
             {step > 0 ? (
               <button

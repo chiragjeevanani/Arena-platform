@@ -24,7 +24,7 @@ const CoachBottomNav = () => {
         ? 'bg-[#0f1115]/90 border-white/5 shadow-[0_-8px_30px_rgb(0,0,0,0.4)]' 
         : 'bg-white/90 border-slate-200 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]'
     }`}>
-      <div className="flex items-center justify-around px-1 py-2.5">
+      <div className="flex items-center justify-around px-1 pt-2.5 pb-[calc(0.625rem+var(--safe-bottom))]">
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.path}

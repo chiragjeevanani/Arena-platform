@@ -392,7 +392,7 @@ const Cart = () => {
 
       {/* Mobile sticky checkout */}
       {items.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden p-4 bg-white/90 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
+        <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden p-4 pb-[calc(1rem+var(--safe-bottom))] bg-white/90 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-4">
             <div className="shrink-0">
               <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Total</p>

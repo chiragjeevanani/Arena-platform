@@ -597,7 +597,7 @@ const BookingSummary = () => {
       </div>
 
       {/* Mobile Footer Sticky */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 z-[100] border-t backdrop-blur-xl lg:hidden bg-white/80 border-blue-50 shadow-[0_-12px_40px_rgba(10,31,68,0.06)]">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pb-[calc(1.5rem+var(--safe-bottom))] z-[100] border-t backdrop-blur-xl lg:hidden bg-white/80 border-blue-50 shadow-[0_-12px_40px_rgba(10,31,68,0.06)]">
         <ShuttleButton
           variant="primary"
           size="md"

@@ -50,7 +50,7 @@ const UserLayout = () => {
         {/* Top glow line */}
         <div className={`h-[1px] bg-gradient-to-r from-transparent via-[#CE2029]/20 to-transparent`} />
 
-        <div className={`backdrop-blur-xl px-1 pt-1.5 pb-2 flex justify-around items-center transition-colors duration-500 bg-white/80 border-t border-[#CE2029]/10 shadow-[0_-4px_20px_rgba(206, 32, 41,0.05)]`}>
+        <div className={`backdrop-blur-xl px-1 pt-1.5 pb-[calc(0.5rem+var(--safe-bottom))] flex justify-around items-center transition-colors duration-500 bg-white/80 border-t border-[#CE2029]/10 shadow-[0_-4px_20px_rgba(206, 32, 41,0.05)]`}>
           {navItems.map((item, index) => {
             const Icon = item.icon;
             const content = (

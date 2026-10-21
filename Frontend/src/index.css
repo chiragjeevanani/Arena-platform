@@ -7,6 +7,10 @@
    ════════════════════════════════════════════════════════════════════════════ */
 
 :root {
+  /* Height of the phone's system navigation (3-button bar, gesture strip, iPhone home
+     indicator). 0 on desktop and on devices/wrappers that don't draw under it. */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
   /* Core Palette */
   --neon-green: #fffdd0;
   --court-blue: #CE2029;
@@ -683,4 +687,11 @@ html.light .recharts-tooltip-item {
   .print-only-header {
     display: none;
   }
+}
+
+/* Safe areas — the app draws edge-to-edge (viewport-fit=cover). Bars fixed to the bottom pad
+   themselves by --safe-bottom so their background still reaches the screen edge while their
+   buttons stay above the system navigation; the page gets the same extra room to scroll. */
+body {
+  padding-bottom: var(--safe-bottom);
 }

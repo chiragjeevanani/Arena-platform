@@ -815,7 +815,7 @@ const SlotSelection = () => {
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
-        <div className="backdrop-blur-xl py-2 px-6 flex items-center justify-between bg-white/90 border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.04)] rounded-t-[20px]">
+        <div className="backdrop-blur-xl pt-2 pb-[calc(0.5rem+var(--safe-bottom))] px-6 flex items-center justify-between bg-white/90 border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.04)] rounded-t-[20px]">
           <PriceBreakdownCard
             slots={selectedSlotObjs.length > 0 ? selectedSlotObjs : null}
             slot={primarySlotObj}

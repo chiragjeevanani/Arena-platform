@@ -618,7 +618,7 @@ const BookingSuccess = () => {
       </div>
 
       {/* Dashboard Sticky Footer - Mobile/Tablet Only */}
-      <div className={`fixed bottom-0 left-0 right-0 p-3 z-[60] lg:hidden border-t backdrop-blur-xl transition-all rounded-t-3xl ${isDark ? 'bg-[#0f1115]/90 border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]' : 'bg-white/95 border-[#CE2029]/10 shadow-[0_-5px_30px_rgba(206, 32, 41,0.05)]'
+      <div className={`fixed bottom-0 left-0 right-0 p-3 pb-[calc(0.75rem+var(--safe-bottom))] z-[60] lg:hidden border-t backdrop-blur-xl transition-all rounded-t-3xl ${isDark ? 'bg-[#0f1115]/90 border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]' : 'bg-white/95 border-[#CE2029]/10 shadow-[0_-5px_30px_rgba(206, 32, 41,0.05)]'
         }`}>
         <ShuttleButton
           variant="primary"

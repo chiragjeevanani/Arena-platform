@@ -104,7 +104,7 @@ function FreeSlotModal({ membership, slot, onClose, onSuccess }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed bottom-0 inset-x-0 z-[210] bg-white rounded-t-3xl shadow-2xl p-6 pb-10 max-w-lg mx-auto"
+        className="fixed bottom-0 inset-x-0 z-[210] bg-white rounded-t-3xl shadow-2xl p-6 pb-[calc(2.5rem+var(--safe-bottom))] max-w-lg mx-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -422,7 +422,7 @@ const MySlotMemberships = () => {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-6 left-4 right-4 max-w-lg mx-auto bg-[#36454F] text-white rounded-2xl px-5 py-4 flex items-center gap-3 shadow-xl z-[300]"
+            className="fixed bottom-[calc(1.5rem+var(--safe-bottom))] left-4 right-4 max-w-lg mx-auto bg-[#36454F] text-white rounded-2xl px-5 py-4 flex items-center gap-3 shadow-xl z-[300]"
           >
             <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
             <p className="text-sm font-bold flex-1">{toast}</p>

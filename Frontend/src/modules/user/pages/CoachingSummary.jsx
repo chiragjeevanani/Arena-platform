@@ -334,7 +334,7 @@ const CoachingSummary = () => {
       </div>
 
       {/* Footer Payment Action - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 z-[100] lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+var(--safe-bottom))] z-[100] lg:hidden">
         <div className="max-w-md mx-auto bg-white/95 backdrop-blur-2xl p-1.5 rounded-[24px] border border-slate-100 shadow-xl shadow-black/10">
           <button
             className="w-full bg-[#CE2029] text-white py-3.5 rounded-[20px] font-black text-xs uppercase tracking-[0.15em] shadow-lg shadow-[#CE2029]/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
