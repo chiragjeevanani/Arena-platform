@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import Logo from '../assets/Logo (3).png';
+import { VAT_PERCENT, splitInclusiveVat } from './tax';
 
 /**
  * Booking receipt PDF (tax invoice + terms page), drawn with jsPDF vectors so
@@ -431,7 +432,12 @@ function drawLineItems(pdf, r, startY, newPage) {
 function drawTotals(pdf, r, startY, newPage) {
   const rows = [['Subtotal', r.subtotal]];
   if (r.discount > 0.0005) rows.push(['Discount', -r.discount]);
-  if (r.taxAmount > 0.0005) rows.push([`VAT (${r.taxPercent}%)`, r.taxAmount]);
+  if (r.vatInclusive) {
+    rows.push(['Amount excl. VAT', r.netAmount]);
+    rows.push([`VAT ${r.taxPercent}% (included)`, r.taxAmount]);
+  } else if (r.taxAmount > 0.0005) {
+    rows.push([`VAT (${r.taxPercent}%)`, r.taxAmount]);
+  }
   const blockH = rows.length * 7 + 10;
 
   let y = startY + 1.5;
@@ -449,7 +455,7 @@ function drawTotals(pdf, r, startY, newPage) {
   });
   hLine(pdf, x1, R, y, C.ink, 0.6);
   setFont(pdf, 11.5, 'normal', C.blue);
-  pdf.text('Grand Total', x1 + 2.8, y + 6.3);
+  pdf.text(r.vatInclusive || r.taxAmount > 0.0005 ? 'Grand Total (incl. VAT)' : 'Grand Total', x1 + 2.8, y + 6.3);
   setFont(pdf, 11.5, 'bold', C.blue);
   pdf.text(formatOmr(r.total), R - CELL_PAD, y + 6.3, { align: 'right' });
   return y + 10;
@@ -591,11 +597,17 @@ export async function downloadBookingReceiptPdf(r) {
   pdf.save(r.fileName || `Receipt-${r.invoiceNo}.pdf`);
 }
 
-function finalizeReceipt({ id, createdAt, status, customer, paymentMethod, items, total, taxPercent, taxAmount, itemsTitle, totalSlots, extraSummary }) {
+function finalizeReceipt({ id, createdAt, status, customer, paymentMethod, items, total, taxPercent, taxAmount, itemsTitle, totalSlots, extraSummary, vatInclusive = true }) {
   const subtotal = items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
-  const tax = Number(taxAmount) > 0 ? Number(taxAmount) : 0;
   const grand = Number(total) || 0;
-  const discount = Math.max(0, subtotal + tax - grand);
+  // Two cases:
+  //  - tax added on top (coaching: fee + VAT) → taxAmount passed in, shown as "VAT (x%)".
+  //  - everything else: prices INCLUDE 5% VAT → split the total into net + VAT included.
+  const addedTax = Number(taxAmount) > 0 ? Number(taxAmount) : 0;
+  const inclusive = !addedTax && vatInclusive && grand > 0;
+  const split = inclusive ? splitInclusiveVat(grand) : null;
+  const tax = inclusive ? split.vat : addedTax;
+  const discount = Math.max(0, inclusive ? subtotal - grand : subtotal + addedTax - grand);
   const issued = createdAt ? new Date(createdAt) : new Date();
   const issuedDate = Number.isNaN(issued.getTime()) ? new Date() : issued;
   const ref = shortRef(id, 6) || shortRef(Date.now().toString(36), 6);
@@ -617,8 +629,10 @@ function finalizeReceipt({ id, createdAt, status, customer, paymentMethod, items
     items,
     subtotal,
     discount,
-    taxPercent: Number(taxPercent) || 0,
+    taxPercent: inclusive ? VAT_PERCENT : Number(taxPercent) || 0,
     taxAmount: tax,
+    vatInclusive: inclusive,
+    netAmount: inclusive ? split.net : Math.max(0, grand - tax),
     total: grand,
     fileName: `Receipt-${ref}.pdf`,
   };
@@ -682,7 +696,7 @@ export function buildReceiptFromSuccessState(data, user) {
   const today = formatReceiptDate(createdAt || new Date());
 
   const single = (row, title, extraSummary) =>
-    finalizeReceipt({ id, createdAt, status: 'paid', customer, paymentMethod, items: [{ amount: total, duration: '—', ...row }], total, itemsTitle: title, extraSummary });
+    finalizeReceipt({ id, createdAt, status: 'paid', customer, paymentMethod, items: [{ amount: total, duration: '—', ...row }], total, itemsTitle: title, extraSummary, vatInclusive: data?.type !== 'wallet_top_up' });
 
   if (data?.type === 'wallet_top_up') {
     return single({ date: today, court: '—', slot: '—', rateType: 'Wallet Top-up' }, 'TRANSACTION LINE ITEMS');

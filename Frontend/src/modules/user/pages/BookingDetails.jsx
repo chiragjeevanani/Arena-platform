@@ -175,8 +175,9 @@ const BookingDetails = () => {
   // Same figures as the downloadable receipt so the card and PDF never disagree.
   const receipt = buildReceiptFromBookingCard(booking, user);
   const priceParsed = receipt.total;
-  const baseRate = receipt.subtotal;
+  const baseRate = receipt.vatInclusive ? receipt.netAmount : receipt.subtotal;
   const taxAmount = receipt.taxAmount;
+  const taxLabel = receipt.vatInclusive ? `VAT ${receipt.taxPercent}% (included)` : `VAT ${receipt.taxPercent || 0}%`;
 
   return (
     <div className={`min-h-screen pb-20 relative overflow-hidden ${'bg-[#F8FAFC]'}`}>
@@ -466,11 +467,11 @@ const BookingDetails = () => {
 
                   <div className="space-y-3">
                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        <span>Base Rate</span>
+                        <span>{receipt.vatInclusive ? 'Amount excl. VAT' : 'Base Rate'}</span>
                         <span className="text-slate-900 font-black">OMR {baseRate.toFixed(3)}</span>
                      </div>
                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        <span>Tax Amount</span >
+                        <span>{taxLabel}</span>
                         <span className="text-slate-900 font-black">OMR {taxAmount.toFixed(3)}</span>
                      </div>
                      

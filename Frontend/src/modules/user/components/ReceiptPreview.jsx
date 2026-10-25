@@ -97,7 +97,7 @@ const ReceiptPreview = ({ receipt: r, className = '' }) => {
 
       {/* Totals */}
       <div className="flex justify-end mt-2 text-[12px]">
-        <div className="w-full sm:w-60">
+        <div className="w-full sm:w-72">
           <div className="flex justify-between py-1.5 px-2.5 border-b border-slate-200">
             <span className="text-slate-500">Subtotal</span><span className="font-bold text-[#0F172A]">{formatOmr(r.subtotal)}</span>
           </div>
@@ -106,13 +106,22 @@ const ReceiptPreview = ({ receipt: r, className = '' }) => {
               <span className="text-slate-500">Discount</span><span className="font-bold text-[#0F172A]">- {formatOmr(r.discount)}</span>
             </div>
           )}
-          {r.taxAmount > 0.0005 && (
+          {r.vatInclusive ? (
+            <>
+              <div className="flex justify-between py-1.5 px-2.5 border-b border-slate-200">
+                <span className="text-slate-500">Amount excl. VAT</span><span className="font-bold text-[#0F172A]">{formatOmr(r.netAmount)}</span>
+              </div>
+              <div className="flex justify-between py-1.5 px-2.5 border-b border-slate-200">
+                <span className="text-slate-500">VAT {r.taxPercent}% (included)</span><span className="font-bold text-[#0F172A]">{formatOmr(r.taxAmount)}</span>
+              </div>
+            </>
+          ) : r.taxAmount > 0.0005 && (
             <div className="flex justify-between py-1.5 px-2.5 border-b border-slate-200">
               <span className="text-slate-500">VAT ({r.taxPercent}%)</span><span className="font-bold text-[#0F172A]">{formatOmr(r.taxAmount)}</span>
             </div>
           )}
           <div className="flex justify-between py-2 px-2.5 border-t-2 border-[#0F172A] text-[#2563EB] text-sm">
-            <span>Grand Total</span><span className="font-bold">{formatOmr(r.total)}</span>
+            <span>{r.vatInclusive || r.taxAmount > 0.0005 ? 'Grand Total (incl. VAT)' : 'Grand Total'}</span><span className="font-bold">{formatOmr(r.total)}</span>
           </div>
         </div>
       </div>

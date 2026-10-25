@@ -11,6 +11,7 @@ import { getMyWallet } from '../../../services/meApi';
 import { checkoutCourtLines } from '../../../utils/courtCheckout';
 import CouponSection from '../components/CouponSection';
 import { isSlotTimePassed } from '../../../utils/slotTime';
+import { VAT_PERCENT, splitInclusiveVat } from '../../../utils/tax';
 
 const omr = (n) => `OMR ${(Number(n) || 0).toFixed(3)}`;
 
@@ -356,6 +357,13 @@ const Cart = () => {
                   <div className="flex justify-between text-[10px] font-bold text-[#CE2029] uppercase tracking-widest">
                     <span>Wallet Applied</span>
                     <span className="font-black">-{omr(walletDeduction)}</span>
+                  </div>
+                )}
+
+                {total > 0 && (
+                  <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <span>VAT {VAT_PERCENT}% (included)</span>
+                    <span className="font-black text-slate-700">{omr(splitInclusiveVat(total).vat)}</span>
                   </div>
                 )}
 

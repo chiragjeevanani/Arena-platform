@@ -11,7 +11,7 @@ import { checkoutCourtLines } from '../../../utils/courtCheckout';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { storage } from '../../../utils/storage';
 import { useEffect } from 'react';
-import { VAT_RATE } from '../../../utils/tax';
+import { VAT_RATE, VAT_PERCENT, splitInclusiveVat } from '../../../utils/tax';
 import CouponSection from '../components/CouponSection';
 
 function readStoredArenaSafe() {
@@ -99,6 +99,9 @@ const BookingSummary = () => {
 
   const tax = useLiveCheckout ? 0 : subtotal * VAT_RATE;
   const totalAmount = subtotal + tax;
+  // Live prices already include VAT: show the VAT contained in the total (it is not added again).
+  const taxShown = useLiveCheckout ? splitInclusiveVat(totalAmount).vat : tax;
+  const taxLabel = useLiveCheckout ? `VAT ${VAT_PERCENT}% (included)` : 'Tax Reconciliation';
   const walletDeduction = useWallet ? Math.min(walletBalance || 0, totalAmount) : 0;
   const finalPayable = totalAmount - walletDeduction;
   const canApiBook = isApiConfigured() && user?.role === 'CUSTOMER';
@@ -423,8 +426,8 @@ const BookingSummary = () => {
                          )}
 
                          <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                            <span>{useLiveCheckout ? 'Tax' : 'Tax Reconciliation'}</span>
-                            <span className="text-slate-900 font-black">OMR {tax.toFixed(3)}</span>
+                            <span>{taxLabel}</span>
+                            <span className="text-slate-900 font-black">OMR {taxShown.toFixed(3)}</span>
                          </div>
                          {walletDeduction > 0 && (
                            <div className="flex justify-between items-center text-[9px] font-bold text-[#CE2029] uppercase tracking-widest">
@@ -528,7 +531,7 @@ const BookingSummary = () => {
                  )}
 
                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                    <span>Tax</span><span>OMR {tax.toFixed(3)}</span>
+                    <span>{taxLabel}</span><span>OMR {taxShown.toFixed(3)}</span>
                  </div>
                  {walletDeduction > 0 && (
                    <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-[#CE2029]">
