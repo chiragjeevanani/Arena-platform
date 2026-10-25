@@ -181,7 +181,7 @@ const Cart = () => {
             <ArrowLeft size={16} />
           </button>
           <h1 className="text-sm md:text-base font-black text-white uppercase tracking-wider font-display">
-            My Cart{items.length ? ` (${items.length})` : ''}
+            Review & Book{items.length ? ` (${items.length})` : ''}
           </h1>
           {items.length > 0 && (
             <button
@@ -202,9 +202,9 @@ const Cart = () => {
           <div className="w-20 h-20 mx-auto rounded-3xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-[#CE2029]/30 mb-6">
             <ShoppingCart size={36} />
           </div>
-          <h2 className="text-xl font-black text-slate-900 font-display">Your cart is empty</h2>
+          <h2 className="text-xl font-black text-slate-900 font-display">No slots selected</h2>
           <p className="text-[12px] font-bold text-slate-500 mt-2 leading-relaxed">
-            Pick slots on any court and any date, tap <span className="text-[#CE2029]">Add to Cart</span>, and book them all in one payment.
+            Tap slots on any court and any date — switch court to add more — and book them all in one payment.
           </p>
           <ShuttleButton variant="primary" className="mt-8 mx-auto" onClick={() => navigate('/arenas')}>
             Browse Courts

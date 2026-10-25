@@ -147,6 +147,13 @@ const BookingSuccess = () => {
     if (bookingLines.length) removeCartItems(bookingLines.map((l) => cartItemKey(l)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingData]);
+  // Same for bookings reloaded from the server (checkout details lost on the bank round trip),
+  // so paid slots never stay "selected" on the slot page afterwards.
+  useEffect(() => {
+    const lines = serverReceiptData?.lines || [];
+    if (lines.length) removeCartItems(lines.map((l) => cartItemKey({ courtId: l.courtId, dateYmd: l.dateYmd, timeSlot: l.timeSlot })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverReceiptData]);
 
   useEffect(() => {
     // Save booking/enrollment to localStorage for persistence in Dashboard

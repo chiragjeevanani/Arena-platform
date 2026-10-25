@@ -1,17 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Star, CalendarDays, ChevronLeft, ChevronRight, X, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Star, CalendarDays, ChevronLeft, ChevronRight, X, CheckCircle2, Layers } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import CourtSlot from '../components/CourtSlot';
-import PriceBreakdownCard from '../components/PriceBreakdownCard';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 import { isApiConfigured } from '../../../services/config';
 import { fetchPublicArenaById } from '../../../services/arenasApi';
-import { fetchCourtAvailability, fetchBookingPricing } from '../../../services/bookingsApi';
+import { fetchCourtAvailability } from '../../../services/bookingsApi';
 import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
 import { isPrimeTimeSlot, isSlotTimePassed } from '../../../utils/slotTime';
-import { useAuth } from '../context/AuthContext';
 import { useCart, cartItemKey, MAX_CART_ITEMS } from '../context/CartContext';
 import CartButton from '../components/CartButton';
 import { storage } from '../../../utils/storage';
@@ -30,8 +28,6 @@ const SlotSelection = () => {
   const storedArena = useMemo(() => readStoredArena(), []);
   const [arenaResolved, setArenaResolved] = useState(null);
   const [arenaLoadError, setArenaLoadError] = useState('');
-  const { user } = useAuth();
-  const isCustomer = user?.role === 'CUSTOMER';
   const navigate = useNavigate();
   const isDark = false;
   const cart = useCart();
@@ -89,8 +85,6 @@ const SlotSelection = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date().toDateString());
   const [viewDate, setViewDate] = useState(new Date());
-  // Multi-select: store a Set of selected slot IDs
-  const [selectedSlotIds, setSelectedSlotIds] = useState(new Set());
   const [slotFilter, setSlotFilter] = useState('all');
   const [apiSlots, setApiSlots] = useState(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -98,20 +92,6 @@ const SlotSelection = () => {
   const [availabilityRetryTick, setAvailabilityRetryTick] = useState(0);
 
   const useLiveSlots = isApiConfigured() && Boolean(activeCourtId);
-  const [serverPricing, setServerPricing] = useState(null);
-
-  useEffect(() => {
-    if (useLiveSlots && arenaId && isCustomer) {
-      fetchBookingPricing(arenaId)
-        .then(res => setServerPricing(res.pricing))
-        .catch(console.error);
-    }
-  }, [useLiveSlots, arenaId, isCustomer]);
-
-  useEffect(() => {
-    // Clear all selections when court/date/mode changes
-    queueMicrotask(() => setSelectedSlotIds(new Set()));
-  }, [activeCourtId, selectedDate, useLiveSlots]);
 
   useEffect(() => {
     if (!useLiveSlots) {
@@ -204,30 +184,49 @@ const SlotSelection = () => {
   };
 
   const currentCourt = arenaCourts.find((c) => String(c.id) === String(activeCourtId));
-
-  // Derive the array of full slot objects that are selected
-  const selectedSlotObjs = allDaySlots.filter(s => selectedSlotIds.has(s.id));
-  const hasSelection = selectedSlotObjs.length > 0;
-
-  // For pricing card: use first slot as representative (each slot is priced individually inside the card)
-  const primarySlotObj = selectedSlotObjs[0] ?? null;
-
-  // Toggle a slot in/out of the selection set
-  const toggleSlot = (slotId) => {
-    setSelectedSlotIds(prev => {
-      const next = new Set(prev);
-      if (next.has(slotId)) {
-        next.delete(slotId);
-      } else {
-        next.add(slotId);
-      }
-      return next;
-    });
-  };
-
   const selectedYmd = toYMDFromDateString(selectedDate);
-  const isSlotInCart = (slot) =>
-    cart.has({ key: cartItemKey({ courtId: activeCourtId, dateYmd: selectedYmd, timeSlot: slot.timeSlot || slot.time }) });
+
+  // One selection across every court and date. Picking a slot puts it straight into the
+  // cart, so switching court or date never loses what was already picked, and everything
+  // picked is booked together in one payment (see Cart / courtCheckout).
+  const keyFor = (cid, slot) =>
+    cartItemKey({ courtId: String(cid), dateYmd: selectedYmd, timeSlot: slot.timeSlot || slot.time });
+  const isSlotSelected = (slot) => cart.has({ key: keyFor(activeCourtId, slot) });
+  const selectedItems = cart.items;
+  const hasSelection = selectedItems.length > 0;
+  const selectedTotal = cart.total;
+  const selectedCourtCount = new Set(selectedItems.map((i) => `${i.arenaId}|${i.courtId}`)).size;
+  const selectedCountForCourt = (cid) =>
+    selectedItems.filter((i) => String(i.courtId) === String(cid) && i.dateYmd === selectedYmd).length;
+  const formatShortDate = (d) =>
+    new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+  const toggleSlot = (slotId) => {
+    const slot = allDaySlots.find((x) => x.id === slotId);
+    if (!slot || slot.status !== 'Available' || !currentCourt || !arena) return;
+    const key = keyFor(currentCourt.id, slot);
+    if (cart.has({ key })) {
+      cart.removeItem(key);
+      return;
+    }
+    const added = cart.addItems([{
+      arenaId: String(arena.id),
+      arenaName: arena.name,
+      arenaImage: arena.image,
+      arenaLocation: arena.location,
+      courtId: String(currentCourt.id),
+      courtName: currentCourt.name,
+      courtType: currentCourt.type,
+      date: selectedDate,
+      dateYmd: selectedYmd,
+      timeSlot: slot.timeSlot || slot.time,
+      price: Number(slot.price) || 0,
+      pricing: slot.pricing || null,
+    }]);
+    if (!added) {
+      setCartNotice(cart.isFull ? `You can book up to ${MAX_CART_ITEMS} slots at once` : 'This slot can no longer be selected');
+    }
+  };
 
   const switchCourt = (id) => {
     if (String(id) === String(activeCourtId)) return;
@@ -241,77 +240,45 @@ const SlotSelection = () => {
     return () => clearTimeout(t);
   }, [cartNotice]);
 
-  const addSelectionToCart = () => {
-    if (!selectedSlotObjs.length || !currentCourt) return;
-    const added = cart.addItems(
-      selectedSlotObjs.map((s) => ({
-        arenaId: String(arena.id),
-        arenaName: arena.name,
-        arenaImage: arena.image,
-        arenaLocation: arena.location,
-        courtId: String(currentCourt.id),
-        courtName: currentCourt.name,
-        courtType: currentCourt.type,
-        date: selectedDate,
-        dateYmd: selectedYmd,
-        timeSlot: s.timeSlot || s.time,
-        price: Number(s.price) || 0,
-        pricing: s.pricing || null,
-      })),
-    );
-    const skipped = selectedSlotObjs.length - added;
-    setSelectedSlotIds(new Set());
-    if (added === 0) {
-      setCartNotice(cart.isFull ? `Cart is full (max ${MAX_CART_ITEMS} slots)` : 'Those slots are already in your cart');
-    } else {
-      setCartNotice(
-        `${added} slot${added === 1 ? '' : 's'} added to cart` +
-          (skipped > 0 ? ` · ${skipped} skipped (cart limit ${MAX_CART_ITEMS})` : ''),
-      );
-    }
+  // Review & pay for everything selected (any courts, any dates) — the cart page re-checks
+  // availability, applies member discount / coupon / wallet, and takes one payment.
+  const goToCheckout = () => {
+    if (!hasSelection) return;
+    navigate('/cart');
   };
+
+  const selectionList = (
+    <div className="space-y-1.5">
+      {selectedItems.map((item) => (
+        <div key={item.key} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[#CE2029]/5 border border-[#CE2029]/15">
+          <div className="min-w-0">
+            <p className="text-[11px] font-black text-slate-900 truncate">
+              {item.courtName}{item.arenaId !== String(arena?.id) ? ` · ${item.arenaName}` : ''}
+            </p>
+            <p className="text-[10px] font-bold text-slate-500">
+              {formatShortDate(item.date)} · {item.timeSlot}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[11px] font-black text-slate-900">OMR {(Number(item.price) || 0).toFixed(3)}</span>
+            <button
+              type="button"
+              onClick={() => cart.removeItem(item.key)}
+              aria-label={`Remove ${item.courtName} ${item.timeSlot}`}
+              className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#CE2029] hover:bg-white"
+            >
+              <X size={12} strokeWidth={3} />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   const heroCardImage =
     arena?.image && typeof arena.image === 'string' && arena.image.startsWith('http')
       ? arena.image
       : ArenaProfile;
-
-  const goToSummary = () => {
-    if (selectedSlotObjs.length === 0) return;
-    const dateYmd = toYMDFromDateString(selectedDate);
-
-    // Carry over the member discount % from the arena-level pricing fetch (the
-    // availability API's per-slot pricing doesn't know about the logged-in user's
-    // membership, so it can't compute this itself). BookingSummary applies this
-    // percent to each selected slot's own price and sums the result — it must NOT
-    // be pre-multiplied by slot count here, since slots can have different prices.
-    const firstSlotPricing = selectedSlotObjs[0]?.pricing;
-    const discountPercent = serverPricing?.discountPercent || 0;
-    const slotServerPricing = firstSlotPricing
-      ? {
-          baseAmount: firstSlotPricing.basePrice,
-          discountPercent,
-          pricingType: firstSlotPricing.type,
-          peakSurcharge: firstSlotPricing.peakSurcharge,
-          normalPrice: firstSlotPricing.basePrice,
-          finalPrice: firstSlotPricing.finalPrice,
-        }
-      : serverPricing;
-
-    // Pass all selected slots; BookingSummary handles multi-slot
-    navigate('/booking-summary', {
-      state: {
-        arena,
-        court: currentCourt,
-        date: selectedDate,
-        dateYmd,
-        slots: selectedSlotObjs,          // array (each has .pricing from server)
-        slot: selectedSlotObjs[0],        // backward compat (first slot)
-        useApiCheckout: useLiveSlots,
-        serverPricing: slotServerPricing,
-      },
-    });
-  };
 
   const renderCalendarGrid = () => (
     <div className="space-y-4">
@@ -506,27 +473,36 @@ const SlotSelection = () => {
                   <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#CE2029]/60 mb-2">
                     Court
                   </h3>
-                  <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                  <div className="flex gap-2 overflow-x-auto pb-1 pt-1.5 -mx-1 px-1">
                     {arenaCourts.map((c) => {
                       const active = String(c.id) === String(activeCourtId);
+                      const picked = selectedCountForCourt(c.id);
                       return (
                         <button
                           key={c.id}
                           type="button"
                           onClick={() => switchCourt(c.id)}
-                          className={`shrink-0 px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                          className={`relative shrink-0 px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
                             active
                               ? 'bg-[#CE2029] border-[#CE2029] text-white shadow-md'
-                              : 'bg-white border-slate-200 text-slate-500 hover:border-[#CE2029]/40'
+                              : picked
+                                ? 'bg-[#CE2029]/5 border-[#CE2029]/40 text-[#CE2029]'
+                                : 'bg-white border-slate-200 text-slate-500 hover:border-[#CE2029]/40'
                           }`}
                         >
                           {c.name}
+                          {picked > 0 && (
+                            <span className={`absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center border-2 border-white ${active ? 'bg-slate-900 text-white' : 'bg-[#CE2029] text-white'}`}>
+                              {picked}
+                            </span>
+                          )}
                         </button>
                       );
                     })}
                   </div>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2">
-                    Add slots to your cart, then switch court or date to add more
+                  <p className="text-[10px] font-bold text-slate-500 mt-2 flex items-start gap-1.5">
+                    <Layers size={12} className="text-[#CE2029] shrink-0 mt-0.5" />
+                    <span>Booking more than one court? Tap slots here, then switch court and tap more — everything you pick is booked together.</span>
                   </p>
                 </div>
               )}
@@ -580,36 +556,25 @@ const SlotSelection = () => {
                 </div>
               </div>
 
-              {/* Selected slots summary chip bar */}
+              {/* Everything picked so far, across courts and dates (phones — desktop shows it in the sidebar) */}
               <AnimatePresence>
-                {selectedSlotObjs.length > 0 && (
+                {hasSelection && (
                   <Motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
+                    className="overflow-hidden lg:hidden"
                   >
-                    <div className="flex flex-wrap gap-1.5 pt-2 pb-1">
-                      {selectedSlotObjs.map(s => (
-                        <button
-                          key={s.id}
-                          type="button"
-                          onClick={() => toggleSlot(s.id)}
-                          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#CE2029]/10 border border-[#CE2029]/30 text-[9px] font-black text-[#CE2029] hover:bg-[#CE2029]/20 transition-all"
-                        >
-                          {s.time.split(/\s*-\s*/)[0]}
-                          <X size={9} strokeWidth={3} />
+                    <div className="pb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Your selection · {selectedItems.length} slot{selectedItems.length === 1 ? '' : 's'}
+                        </p>
+                        <button type="button" onClick={() => cart.clearCart()} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#CE2029]">
+                          Clear
                         </button>
-                      ))}
-                      {selectedSlotObjs.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedSlotIds(new Set())}
-                          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[9px] font-black text-slate-500 hover:bg-slate-200 transition-all"
-                        >
-                          Clear all
-                        </button>
-                      )}
+                      </div>
+                      {selectionList}
                     </div>
                   </Motion.div>
                 )}
@@ -668,8 +633,7 @@ const SlotSelection = () => {
                         <CourtSlot
                           key={slot.id}
                           slot={slot}
-                          isSelected={selectedSlotIds.has(slot.id)}
-                          inCart={slot.status === 'Available' && isSlotInCart(slot)}
+                          isSelected={slot.status === 'Available' && isSlotSelected(slot)}
                           onSelect={toggleSlot}
                         />
                       ))
@@ -694,10 +658,6 @@ const SlotSelection = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm bg-slate-200 border border-slate-300" />
                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Booked</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-blue-50 border border-blue-300" />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">In Cart</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm bg-red-100 border border-red-200" />
@@ -752,30 +712,41 @@ const SlotSelection = () => {
 
             <div className="space-y-4">
               {hasSelection ? (
-                <PriceBreakdownCard
-                  slots={selectedSlotObjs}
-                  slot={primarySlotObj}
-                  isMember={useLiveSlots ? isCustomer : true}
-                  useServerPrice={useLiveSlots}
-                  memberDiscountPercent={serverPricing?.discountPercent}
-                />
+                <div className="rounded-[32px] p-6 bg-white border border-slate-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#CE2029]/70">Your Selection</h4>
+                    <button type="button" onClick={() => cart.clearCart()} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#CE2029]">
+                      Clear
+                    </button>
+                  </div>
+                  {selectionList}
+                  <div className="flex items-end justify-between pt-4 mt-4 border-t border-slate-100">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        {selectedItems.length} slot{selectedItems.length === 1 ? '' : 's'} · {selectedCourtCount} court{selectedCourtCount === 1 ? '' : 's'}
+                      </p>
+                      <p className="text-[9px] font-bold text-slate-400">Member discount & coupons applied at checkout</p>
+                    </div>
+                    <span className="text-xl font-black font-display text-slate-900">OMR {selectedTotal.toFixed(3)}</span>
+                  </div>
+                </div>
               ) : (
                 <div className="rounded-[32px] p-10 bg-white border border-slate-100 shadow-sm text-center flex flex-col items-center justify-center min-h-[220px]">
                   <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-4 text-slate-200">
                     <Star size={32} />
                   </div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300 max-w-[200px] leading-relaxed">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300 max-w-[220px] leading-relaxed">
                     Tap any available slot to select it
                   </p>
-                  <p className="text-[9px] font-bold text-slate-200 uppercase tracking-wider mt-1">
-                    You can select multiple slots
+                  <p className="text-[9px] font-bold text-slate-300 uppercase tracking-wider mt-1">
+                    Switch court to add more courts
                   </p>
                 </div>
               )}
               <button
                 type="button"
                 disabled={!hasSelection}
-                onClick={goToSummary}
+                onClick={goToCheckout}
                 className={`w-full py-4 rounded-[22px] font-black uppercase tracking-widest text-xs transition-all duration-500 ${
                   hasSelection
                     ? 'bg-[#CE2029] text-white shadow-xl hover:-translate-y-1 active:scale-95'
@@ -783,83 +754,43 @@ const SlotSelection = () => {
                 }`}
               >
                 {hasSelection
-                  ? selectedSlotObjs.length > 1
-                    ? `Confirm ${selectedSlotObjs.length} Slots`
-                    : 'Confirm Booking'
+                  ? `Book ${selectedItems.length} Slot${selectedItems.length === 1 ? '' : 's'}`
                   : 'Select a Slot'}
               </button>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  disabled={!hasSelection}
-                  onClick={addSelectionToCart}
-                  className={`flex items-center justify-center gap-2 py-3.5 rounded-[18px] border font-black uppercase tracking-widest text-[10px] transition-all ${
-                    hasSelection
-                      ? 'bg-white border-[#CE2029]/40 text-[#CE2029] hover:bg-[#CE2029]/5 active:scale-95'
-                      : 'bg-white border-slate-100 text-slate-300 cursor-not-allowed'
-                  }`}
-                >
-                  <ShoppingCart size={14} /> Add to Cart
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/cart')}
-                  className="flex items-center justify-center gap-2 py-3.5 rounded-[18px] border border-slate-200 bg-white text-slate-600 font-black uppercase tracking-widest text-[10px] hover:border-[#CE2029]/30 hover:text-[#CE2029] transition-all active:scale-95"
-                >
-                  View Cart{cart.count ? ` (${cart.count})` : ''}
-                </button>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
-        <div className="backdrop-blur-xl pt-2 pb-[calc(0.5rem+var(--safe-bottom))] px-6 flex items-center justify-between bg-white/90 border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.04)] rounded-t-[20px]">
-          <PriceBreakdownCard
-            slots={selectedSlotObjs.length > 0 ? selectedSlotObjs : null}
-            slot={primarySlotObj}
-            isMember={useLiveSlots ? isCustomer : true}
-            useServerPrice={useLiveSlots}
-            memberDiscountPercent={serverPricing?.discountPercent}
-            compact
-          />
-          <div className="flex items-center gap-2 shrink-0">
-            {hasSelection && (
-              <button
-                type="button"
-                onClick={addSelectionToCart}
-                aria-label="Add selected slots to cart"
-                className="w-10 h-10 rounded-lg border border-[#CE2029]/40 text-[#CE2029] bg-white flex items-center justify-center active:scale-95 transition-all"
-              >
-                <ShoppingCart size={16} />
-              </button>
-            )}
-            {!hasSelection && cart.count > 0 ? (
-              <button
-                type="button"
-                onClick={() => navigate('/cart')}
-                className="px-5 py-2.5 rounded-lg font-black uppercase tracking-[0.1em] text-[10px] bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20"
-              >
-                View Cart ({cart.count})
-              </button>
+        <div className="backdrop-blur-xl pt-3 pb-[calc(0.75rem+var(--safe-bottom))] px-5 flex items-center justify-between gap-3 bg-white/95 border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.06)] rounded-t-[20px]">
+          <div className="min-w-0">
+            {hasSelection ? (
+              <>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                  {selectedItems.length} slot{selectedItems.length === 1 ? '' : 's'} · {selectedCourtCount} court{selectedCourtCount === 1 ? '' : 's'}
+                </p>
+                <p className="text-lg font-black text-slate-900 leading-tight">OMR {selectedTotal.toFixed(3)}</p>
+              </>
             ) : (
-              <button
-                type="button"
-                disabled={!hasSelection}
-                onClick={goToSummary}
-                className={`px-6 py-2.5 rounded-lg font-black uppercase tracking-[0.1em] text-[10px] transition-all ${
-                  hasSelection
-                    ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
-                    : 'bg-slate-100 text-slate-300'
-                }`}
-              >
-                {hasSelection && selectedSlotObjs.length > 1
-                  ? `Review (${selectedSlotObjs.length})`
-                  : 'Review Order'}
-              </button>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-snug">
+                Tap slots to select<br />
+                <span className="text-slate-300">switch court to add more</span>
+              </p>
             )}
           </div>
+          <button
+            type="button"
+            disabled={!hasSelection}
+            onClick={goToCheckout}
+            className={`shrink-0 px-6 py-3 rounded-xl font-black uppercase tracking-[0.1em] text-[11px] transition-all active:scale-95 ${
+              hasSelection
+                ? 'bg-[#CE2029] text-white shadow-lg shadow-[#CE2029]/20'
+                : 'bg-slate-100 text-slate-300'
+            }`}
+          >
+            {hasSelection ? `Book ${selectedItems.length} Slot${selectedItems.length === 1 ? '' : 's'}` : 'Book'}
+          </button>
         </div>
       </div>
 
@@ -875,13 +806,6 @@ const SlotSelection = () => {
             <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900 text-white shadow-2xl">
               <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
               <span className="text-[11px] font-bold flex-1">{cartNotice}</span>
-              <button
-                type="button"
-                onClick={() => navigate('/cart')}
-                className="text-[10px] font-black uppercase tracking-widest text-[#ff6b72] shrink-0"
-              >
-                View Cart
-              </button>
             </div>
           </Motion.div>
         )}
