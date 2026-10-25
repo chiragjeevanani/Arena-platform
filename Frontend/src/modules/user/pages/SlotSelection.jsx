@@ -9,10 +9,46 @@ import { fetchPublicArenaById } from '../../../services/arenasApi';
 import { fetchCourtAvailability } from '../../../services/bookingsApi';
 import { normalizeDetailArena } from '../../../utils/arenaAdapter';
 import { toYMDFromDateString } from '../../../utils/bookingDates';
-import { isPrimeTimeSlot, isSlotTimePassed } from '../../../utils/slotTime';
+import { isPrimeTimeSlot, isSlotTimePassed, slotStartHourAndMinute } from '../../../utils/slotTime';
 import { useCart, cartItemKey, MAX_CART_ITEMS } from '../context/CartContext';
 import CartButton from '../components/CartButton';
 import { storage } from '../../../utils/storage';
+
+/** Court availability API response → slot tiles used by this page. */
+function mapAvailabilitySlots(data, selectedDate, fallbackPrice) {
+  const now = new Date();
+  return (data.slots || []).map((s) => {
+    const isExpired = isSlotTimePassed(selectedDate, s.timeSlot, now);
+    // Use server-computed price (respects peak hours, weekends, etc.)
+    const serverPrice = Number(s.price) || Number(fallbackPrice) || 0;
+    const isPeak = s.pricing?.type === 'peak';
+    return {
+      id: s.timeSlot,
+      time: s.timeSlot,
+      timeSlot: s.timeSlot,
+      status: isExpired ? 'Expired' : (s.available ? 'Available' : 'Booked'),
+      price: serverPrice,
+      pricing: s.pricing || null,   // full pricing object from backend
+      isPeak,
+      // Prefer the server's authoritative pricing category (peak/prime/standard/service);
+      // only fall back to the time-based heuristic when the server doesn't supply one.
+      type: s.pricing?.type || (isPrimeTimeSlot(s.timeSlot) ? 'prime' : 'nonPrime'),
+    };
+  });
+}
+
+/** Courts may label the same hour differently ("14:00-15:00" vs "02:00 PM - 03:00 PM"). */
+function findSlotAtSameTime(slots, timeSlot) {
+  const want = slotStartHourAndMinute(timeSlot);
+  if (!want) return null;
+  return slots.find((s) => {
+    const hm = slotStartHourAndMinute(s.timeSlot);
+    return hm && hm.hour === want.hour && hm.minute === want.minute;
+  }) || null;
+}
+
+// Other courts' availability is re-fetched after this long so "Same time" doesn't offer stale slots.
+const COURT_DAY_CACHE_MS = 60 * 1000;
 
 function readStoredArena() {
   try {
@@ -111,26 +147,7 @@ const SlotSelection = () => {
     fetchCourtAvailability(activeCourtId, ymd)
       .then((data) => {
         if (cancelled) return;
-        const now = new Date();
-        const mapped = (data.slots || []).map((s) => {
-          const isExpired = isSlotTimePassed(selectedDate, s.timeSlot, now);
-          // Use server-computed price (respects peak hours, weekends, etc.)
-          const serverPrice = Number(s.price) || Number(arena?.pricePerHour) || 0;
-          const isPeak = s.pricing?.type === 'peak';
-          return {
-            id: s.timeSlot,
-            time: s.timeSlot,
-            timeSlot: s.timeSlot,
-            status: isExpired ? 'Expired' : (s.available ? 'Available' : 'Booked'),
-            price: serverPrice,
-            pricing: s.pricing || null,   // full pricing object from backend
-            isPeak,
-            // Prefer the server's authoritative pricing category (peak/prime/standard/service);
-            // only fall back to the time-based heuristic when the server doesn't supply one.
-            type: s.pricing?.type || (isPrimeTimeSlot(s.timeSlot) ? 'prime' : 'nonPrime'),
-          };
-        });
-        setApiSlots(mapped);
+        setApiSlots(mapAvailabilitySlots(data, selectedDate, arena?.pricePerHour));
       })
       .catch((e) => {
         if (!cancelled) {
@@ -201,6 +218,33 @@ const SlotSelection = () => {
   const formatShortDate = (d) =>
     new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
+  const buildCartItem = (court, slot) => ({
+    arenaId: String(arena.id),
+    arenaName: arena.name,
+    arenaImage: arena.image,
+    arenaLocation: arena.location,
+    courtId: String(court.id),
+    courtName: court.name,
+    courtType: court.type,
+    date: selectedDate,
+    dateYmd: selectedYmd,
+    timeSlot: slot.timeSlot || slot.time,
+    price: Number(slot.price) || 0,
+    pricing: slot.pricing || null,
+  });
+  const addToSelection = (entries) => {
+    const added = cart.addItems(entries.map(({ court, slot }) => buildCartItem(court, slot)));
+    if (!added) {
+      setCartNotice(cart.isFull ? `You can book up to ${MAX_CART_ITEMS} slots at once` : 'This slot can no longer be selected');
+    }
+    return added;
+  };
+
+  // "Same time on other courts": after a slot is picked, offer that hour on every other court.
+  const [sameTime, setSameTime] = useState(null); // { ymd, timeSlot }
+  const [courtDayCache, setCourtDayCache] = useState({}); // `${courtId}|${ymd}` → { status, slots, at }
+  const sameTimeSlot = sameTime && sameTime.ymd === selectedYmd ? sameTime.timeSlot : null;
+
   const toggleSlot = (slotId) => {
     const slot = allDaySlots.find((x) => x.id === slotId);
     if (!slot || slot.status !== 'Available' || !currentCourt || !arena) return;
@@ -209,23 +253,52 @@ const SlotSelection = () => {
       cart.removeItem(key);
       return;
     }
-    const added = cart.addItems([{
-      arenaId: String(arena.id),
-      arenaName: arena.name,
-      arenaImage: arena.image,
-      arenaLocation: arena.location,
-      courtId: String(currentCourt.id),
-      courtName: currentCourt.name,
-      courtType: currentCourt.type,
-      date: selectedDate,
-      dateYmd: selectedYmd,
-      timeSlot: slot.timeSlot || slot.time,
-      price: Number(slot.price) || 0,
-      pricing: slot.pricing || null,
-    }]);
-    if (!added) {
-      setCartNotice(cart.isFull ? `You can book up to ${MAX_CART_ITEMS} slots at once` : 'This slot can no longer be selected');
+    if (addToSelection([{ court: currentCourt, slot }]) && arenaCourts.length > 1) {
+      setSameTime({ ymd: selectedYmd, timeSlot: slot.timeSlot || slot.time });
     }
+  };
+
+  useEffect(() => {
+    if (!sameTimeSlot || !selectedYmd || !isApiConfigured()) return;
+    const now = Date.now();
+    const stale = arenaCourts.filter((c) => {
+      const entry = courtDayCache[`${c.id}|${selectedYmd}`];
+      return !entry || (entry.status !== 'loading' && now - entry.at > COURT_DAY_CACHE_MS);
+    });
+    if (stale.length === 0) return;
+    setCourtDayCache((prev) => {
+      const next = { ...prev };
+      stale.forEach((c) => { next[`${c.id}|${selectedYmd}`] = { status: 'loading', slots: [], at: now }; });
+      return next;
+    });
+    stale.forEach((c) => {
+      const cacheKey = `${c.id}|${selectedYmd}`;
+      fetchCourtAvailability(c.id, selectedYmd)
+        .then((data) => ({ status: 'ok', slots: mapAvailabilitySlots(data, selectedDate, arena?.pricePerHour) }))
+        .catch(() => ({ status: 'error', slots: [] }))
+        .then((entry) => setCourtDayCache((prev) => ({ ...prev, [cacheKey]: { ...entry, at: Date.now() } })));
+    });
+  }, [sameTime, sameTimeSlot, selectedYmd, selectedDate, arenaCourts, courtDayCache, arena?.pricePerHour]);
+
+  // One row per other court for the "Same time" panel.
+  const sameTimeOptions = sameTimeSlot
+    ? arenaCourts
+      .filter((c) => String(c.id) !== String(activeCourtId))
+      .map((court) => {
+        const entry = courtDayCache[`${court.id}|${selectedYmd}`];
+        if (!entry || entry.status === 'loading') return { court, state: 'loading' };
+        if (entry.status === 'error') return { court, state: 'error' };
+        const slot = findSlotAtSameTime(entry.slots, sameTimeSlot);
+        if (!slot) return { court, state: 'none' };
+        if (cart.has({ key: keyFor(court.id, slot) })) return { court, slot, state: 'selected' };
+        if (slot.status !== 'Available') return { court, slot, state: 'booked' };
+        return { court, slot, state: 'available' };
+      })
+    : [];
+  const sameTimeAvailable = sameTimeOptions.filter((o) => o.state === 'available');
+  const toggleSameTime = (opt) => {
+    if (opt.state === 'selected') cart.removeItem(keyFor(opt.court.id, opt.slot));
+    else if (opt.state === 'available') addToSelection([opt]);
   };
 
   const switchCourt = (id) => {
@@ -502,7 +575,7 @@ const SlotSelection = () => {
                   </div>
                   <p className="text-[10px] font-bold text-slate-500 mt-2 flex items-start gap-1.5">
                     <Layers size={12} className="text-[#CE2029] shrink-0 mt-0.5" />
-                    <span>Booking more than one court? Tap slots here, then switch court and tap more — everything you pick is booked together.</span>
+                    <span>Booking more than one court? Tap a time, then tick the other courts under &ldquo;Same time on other courts&rdquo; — everything you pick is booked together.</span>
                   </p>
                 </div>
               )}
@@ -642,6 +715,85 @@ const SlotSelection = () => {
                 );
               })()}
 
+              <AnimatePresence>
+                {sameTimeOptions.length > 0 && (
+                  <Motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-5 p-4 rounded-2xl border border-[#CE2029]/20 bg-[#CE2029]/[0.03]" data-testid="same-time-panel">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-black uppercase tracking-[0.15em] text-[#CE2029] flex items-center gap-1.5">
+                            <Layers size={13} className="shrink-0" /> Same time on other courts
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-500 mt-0.5">
+                            {formatShortDate(selectedDate)} · {sameTimeSlot}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSameTime(null)}
+                          aria-label="Hide same time on other courts"
+                          className="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-slate-400 hover:text-[#CE2029] hover:bg-white"
+                        >
+                          <X size={14} strokeWidth={3} />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {sameTimeOptions.map((opt) => {
+                          const selected = opt.state === 'selected';
+                          const enabled = selected || opt.state === 'available';
+                          const note = {
+                            loading: 'Checking…',
+                            error: 'Couldn’t check',
+                            none: 'Not offered',
+                            booked: opt.slot?.status === 'Expired' ? 'Time passed' : 'Booked',
+                          }[opt.state];
+                          return (
+                            <button
+                              key={opt.court.id}
+                              type="button"
+                              disabled={!enabled}
+                              onClick={() => toggleSameTime(opt)}
+                              aria-pressed={selected}
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition-all ${
+                                selected
+                                  ? 'bg-[#CE2029] border-[#CE2029] text-white shadow-md'
+                                  : enabled
+                                    ? 'bg-white border-slate-200 text-slate-800 hover:border-[#CE2029]/50 active:scale-95'
+                                    : 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed'
+                              }`}
+                            >
+                              <span className={`w-4 h-4 shrink-0 rounded-md border-2 flex items-center justify-center ${selected ? 'bg-white border-white text-[#CE2029]' : enabled ? 'border-slate-300' : 'border-slate-200'}`}>
+                                {selected && <CheckCircle2 size={12} strokeWidth={3} />}
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block text-[11px] font-black uppercase tracking-wide truncate">{opt.court.name}</span>
+                                <span className={`block text-[10px] font-bold ${selected ? 'text-white/80' : enabled ? 'text-slate-500' : 'text-slate-300'}`}>
+                                  {note || `OMR ${(Number(opt.slot.price) || 0).toFixed(3)}`}
+                                </span>
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {sameTimeAvailable.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => addToSelection(sameTimeAvailable)}
+                          className="mt-3 w-full py-2.5 rounded-xl bg-[#CE2029] text-white text-[10px] font-black uppercase tracking-widest shadow-md active:scale-95"
+                        >
+                          Select all {sameTimeAvailable.length} courts
+                        </button>
+                      )}
+                    </div>
+                  </Motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="mt-8 pt-4 border-t border-slate-50 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-sm bg-[#CE2029] shadow-sm" />
@@ -710,7 +862,8 @@ const SlotSelection = () => {
               </div>
             </div>
 
-            <div className="space-y-4">
+            {/* Desktop only — phones show the selection above the slots and the Book bar at the bottom */}
+            <div className="hidden lg:block space-y-4">
               {hasSelection ? (
                 <div className="rounded-[32px] p-6 bg-white border border-slate-100 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
