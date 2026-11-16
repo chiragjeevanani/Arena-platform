@@ -395,7 +395,7 @@ const UserManagement = () => {
                     <div className="relative">
                        <input 
                         type="text" 
-                        placeholder="+91 00000 00000"
+                        placeholder="+968 9000 0000"
                         value={newUserForm.phone}
                         onChange={e => setNewUserForm(p => ({ ...p, phone: e.target.value }))}
                         className="w-full py-3.5 px-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F] placeholder:text-slate-400"
@@ -532,6 +532,7 @@ const UserManagement = () => {
                       { label: 'All', value: 'All' },
                       { label: 'Super Admin', value: 'SUPER_ADMIN' },
                       { label: 'Admin', value: 'ARENA_ADMIN' },
+                      { label: 'Receptionist', value: 'RECEPTIONIST' },
                       { label: 'Coach', value: 'COACH' },
                       { label: 'Customer', value: 'CUSTOMER' },
                     ].map(role => (

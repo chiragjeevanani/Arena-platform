@@ -49,7 +49,7 @@ const ArenaTopbar = ({ onMobileMenuClick }) => {
             className={`relative w-10 h-10 rounded-xl border bg-white flex items-center justify-center transition-all shadow-sm ${showNotifications ? 'border-[#CE2029] text-[#CE2029]' : 'border-slate-200 text-slate-500 hover:text-[#CE2029]'}`}
           >
             <Bell size={17} />
-            <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#CE2029] border-2 border-white" />
+            {notifications.length > 0 && <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#CE2029] border-2 border-white" />}
           </button>
 
           <AnimatePresence>

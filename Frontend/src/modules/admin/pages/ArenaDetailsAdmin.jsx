@@ -607,7 +607,7 @@ const ArenaDetailsAdmin = () => {
                     <div className="relative">
                       <input 
                         type="text" value={form.location} onChange={e => setForm({...form, location: e.target.value})}
-                        placeholder="Noida, India"
+                        placeholder="Muscat, Oman"
                         className="w-full bg-slate-50 border border-slate-100 rounded-none py-3 pl-10 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner"
                       />
                       <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />

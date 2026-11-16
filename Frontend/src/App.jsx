@@ -175,6 +175,7 @@ const CouponManagement = lazy(() => import('./modules/admin/pages/CouponManageme
 const RefundsQueue = lazy(() => import('./modules/admin/pages/RefundsQueue'));
 
 const PointsWalletPage = lazy(() => import('./modules/user/pages/PointsWalletPage'));
+const MySlotMemberships = lazy(() => import('./modules/user/pages/MySlotMemberships'));
 const SlotMembershipPurchase = lazy(() => import('./modules/user/pages/SlotMembershipPurchase'));
 
 // Arena Panel (Standalone)
@@ -313,6 +314,7 @@ function App() {
               <Route path="profile/help" element={<ProtectedUserRoute><Help /></ProtectedUserRoute>} />
 
               <Route path="profile/points-wallet" element={<ProtectedUserRoute><PointsWalletPage /></ProtectedUserRoute>} />
+              <Route path="profile/slot-memberships" element={<ProtectedUserRoute><MySlotMemberships /></ProtectedUserRoute>} />
             </Route>
 
             {/* Public legal/policy pages - must stay accessible without logging in

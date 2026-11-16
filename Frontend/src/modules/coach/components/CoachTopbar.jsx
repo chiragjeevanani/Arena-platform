@@ -14,16 +14,7 @@ const CoachTopbar = () => {
   const { user, logout } = useAuth();
   const { isDark } = useTheme();
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'critical', msg: 'New attendance log required for Morning Elite', time: '5m' },
-    { id: 2, type: 'success', msg: 'Attendance report for G1 has been exported', time: '1h' },
-    { id: 3, type: 'info', msg: 'Arena 4 booked for weekend special', time: '3h' },
-    { id: 4, type: 'critical', msg: 'Payment overdue for Student: Rahul (Batch B2)', time: '5h' },
-    { id: 5, type: 'success', msg: 'New student added to Pro Analytics batch', time: '1d' },
-    { id: 6, type: 'info', msg: 'Maintenance scheduled for Court 1 (10 AM - 12 PM)', time: '2d' },
-    { id: 7, type: 'critical', msg: 'Coach review pending for recent assessment', time: '2d' },
-    { id: 8, type: 'success', msg: 'Batch schedule updated for Junior Stars', time: '3d' },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const [isNotifExpanded, setIsNotifExpanded] = useState(false);
 
@@ -161,7 +152,7 @@ const CoachTopbar = () => {
           >
             <div className="text-right hidden sm:block">
               <p className={`text-[11px] font-bold tracking-wide text-white/60`}>COACH</p>
-              <p className="text-[9px] font-bold text-white uppercase tracking-wider">{user?.name || 'Vikram Singh'}</p>
+              <p className="text-[9px] font-bold text-white uppercase tracking-wider">{user?.name || 'Coach'}</p>
             </div>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden border border-[#CE2029]/20 shadow-sm transition-transform group-active:scale-95">
               {user?.avatar ? (
@@ -186,7 +177,7 @@ const CoachTopbar = () => {
                 }`}
               >
                 <div className={`px-5 py-3 border-b mb-2 ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
-                  <p className="text-xs font-black uppercase tracking-widest">{user?.name || 'Vikram Singh'}</p>
+                  <p className="text-xs font-black uppercase tracking-widest">{user?.name || 'Coach'}</p>
                   <p className={`text-[10px] font-bold opacity-40 truncate ${isDark ? 'text-white/60' : ''}`}>{user?.email || 'vikram@ammsports.com'}</p>
                 </div>
                 

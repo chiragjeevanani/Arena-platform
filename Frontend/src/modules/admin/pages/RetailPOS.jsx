@@ -612,7 +612,6 @@ const RetailPOS = () => {
               <div className="flex items-center justify-center gap-6 text-[9px] font-black tracking-widest uppercase text-slate-300 opacity-60">
                  <p>Cash</p>
                  <p>Card</p>
-                 <p>UPI</p>
               </div>
             </div>
           </div>
@@ -677,7 +676,7 @@ const RetailPOS = () => {
                           <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Phone Number</label>
                           <input 
                             type="text" 
-                            placeholder="e.g. +91 99999 00000"
+                            placeholder="e.g. +968 9000 0000"
                             value={walkinForm.phone}
                             onChange={e => setWalkinForm(p => ({ ...p, phone: e.target.value }))}
                             className="w-full h-10 px-4 bg-slate-50 border border-slate-200 rounded-sm text-xs font-bold focus:border-[#36454F] outline-none"
@@ -788,8 +787,7 @@ const RetailPOS = () => {
                   <div className="grid grid-cols-1 gap-3">
                     {[
                       { id: 'CASH', label: 'Cash Payment', sub: 'Traditional physical currency' },
-                      { id: 'CARD', label: 'Card / Terminal', sub: 'Swipe, Chip or Tap to pay' },
-                      { id: 'UPI', label: 'UPI / Digital', sub: 'Instant mobile app transfer' }
+                      { id: 'CARD', label: 'Card / Terminal', sub: 'Taken on your own card machine' }
                     ].map(m => (
                       <button key={m.id} onClick={() => startPaymentFlow(m.id)}
                         className="w-full p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-[#36454F] hover:text-white transition-all text-left flex items-center justify-between group">

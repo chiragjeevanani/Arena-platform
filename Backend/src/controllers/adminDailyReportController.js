@@ -207,10 +207,10 @@ async function getDailyCourtReport(req, res) {
             name: arena.name,
             logoUrl: arena.logoUrl || null,
             address: arena.location || arena.address || 'Muscat, Oman',
-            phone: arena.phone || '+968 9000 0000',
-            gstNumber: arena.taxNumber || arena.gstNumber || 'OM-TAX-982410',
+            phone: arena.phone || '',
+            gstNumber: arena.taxNumber || arena.gstNumber || '',
           }
-        : { id: arenaId, name: 'Arena', logoUrl: null, address: 'Muscat, Oman', phone: '+968 9000 0000', gstNumber: 'OM-TAX-982410' },
+        : { id: arenaId, name: 'Arena', logoUrl: null, address: 'Muscat, Oman', phone: '', gstNumber: '' },
       range: { from, to },
       generatedAt: new Date().toISOString(),
       generatedBy: req.user?.name || 'Administrator',
@@ -611,7 +611,7 @@ function getDaysInRange(from, to) {
 function buildEmptyResponse(arenaId, from, to) {
   return {
     reportNumber: `DCR-${from.replace(/-/g, '')}-${arenaId.slice(-5).toUpperCase()}`,
-    arena: { id: arenaId, name: 'Arena', logoUrl: null, address: 'Muscat, Oman', phone: '+968 9000 0000', gstNumber: 'OM-TAX-982410' },
+    arena: { id: arenaId, name: 'Arena', logoUrl: null, address: 'Muscat, Oman', phone: '', gstNumber: '' },
     range: { from, to },
     generatedAt: new Date().toISOString(),
     generatedBy: 'Administrator',

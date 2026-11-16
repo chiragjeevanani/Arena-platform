@@ -446,7 +446,7 @@ const EventDetail = () => {
 
                   <form className="space-y-5" onSubmit={handleRegister}>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Nomenclature</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-300">
                           <User size={16} />
@@ -463,7 +463,7 @@ const EventDetail = () => {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact Link</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Phone Number</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-300">
                           <Phone size={16} />

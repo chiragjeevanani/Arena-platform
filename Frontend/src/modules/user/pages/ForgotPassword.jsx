@@ -130,7 +130,7 @@ const ForgotPassword = () => {
                 py: 1.25,
               }}
             >
-              {loading ? 'Sending…' : 'Send reset link'}
+              {loading ? 'Sending…' : 'Send reset code'}
             </Button>
           </form>
 
