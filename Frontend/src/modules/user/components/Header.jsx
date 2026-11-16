@@ -34,7 +34,7 @@ const Header = () => {
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/events', label: 'Events' },
-    { path: '/book/1/1', label: 'Book' },
+    { path: '/arenas', label: 'Book' },
     { path: '/bookings', label: 'Bookings' },
     { path: '/coaching', label: 'Coaching' },
     { path: '/membership', label: 'Membership' },

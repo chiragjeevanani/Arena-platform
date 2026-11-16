@@ -527,7 +527,7 @@ const EventFormView = ({ loadEvents, setView, isDark }) => {
                   onChange={handleField('venue')}
                   sx={{ borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }}
                 >
-                  <MenuItem value="Main Court">Sector 62 Main Court</MenuItem>
+                  <MenuItem value="Main Court">Main Court</MenuItem>
                   <MenuItem value="Academy">Amm Sports Academy</MenuItem>
                 </Select>
               </FormControl>

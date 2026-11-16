@@ -248,7 +248,7 @@ const ArenaManagement = () => {
                       <Navigation size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:text-[#CE2029] group-focus-within:opacity-100 transition-all" />
                       <input 
                         type="text" 
-                        placeholder="e.g. Indiranagar, Bangalore"
+                        placeholder="e.g. Ghala, Muscat"
                         className="w-full py-3.5 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-bold outline-none transition-all focus:border-[#CE2029] focus:bg-white text-[#36454F]"
                       />
                     </div>

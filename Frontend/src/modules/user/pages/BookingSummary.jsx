@@ -239,38 +239,8 @@ const BookingSummary = () => {
                       </h3>
                    </div>
                    
-                   <div className="hidden lg:flex gap-2.5">
-                      {['Wifi', 'Parking', 'Cafe', 'AC'].map((amenity, i) => (
-                        <div key={i} className="px-4 py-2 rounded-xl bg-white border border-slate-100 shadow-sm text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                          {amenity}
-                        </div>
-                      ))}
-                   </div>
                 </div>
 
-                <div className="h-px w-full bg-gradient-to-r from-slate-100 via-slate-100 to-transparent hidden lg:block" />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="bg-white/40 backdrop-blur-md p-6 lg:rounded-none border border-slate-100/50 shadow-sm hover:shadow-md transition-all duration-500 group">
-                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#CE2029]/60 mb-4 group-hover:text-[#CE2029] transition-colors">Safety Protocols</h4>
-                      <ul className="space-y-2.5">
-                         {['Sanitized Equipment', 'Temperature Checks', 'Mask Mandatory', 'Safe Spacing'].map((text, i) => (
-                            <li key={i} className="flex items-center gap-2.5 text-[11px] font-bold text-slate-600">
-                               <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029]/30" />
-                               {text}
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-                   <div className="bg-[#CE2029]/[0.02] p-6 lg:rounded-none border border-[#CE2029]/5 shadow-sm hover:shadow-md transition-all duration-500 flex flex-col justify-center">
-                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#CE2029]/60 mb-2">Need Assistance?</h4>
-                      <p className="text-[11px] font-bold text-slate-500 leading-relaxed mb-4">Dedicated concierge ready to help with your experience.</p>
-                      <button className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-[#CE2029] group">
-                         Start Live Chat
-                         <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                      </button>
-                   </div>
-                </div>
               </div>
             </Motion.div>
           </div>

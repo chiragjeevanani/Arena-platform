@@ -20,6 +20,5 @@ export function registerForEvent(payload) {
   return apiJson('/api/public/events/register', {
     method: 'POST',
     body: payload,
-    skipAuth: true
   });
 }

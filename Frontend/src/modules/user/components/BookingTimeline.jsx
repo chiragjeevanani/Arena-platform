@@ -331,12 +331,6 @@ const BookingTimelineCard = ({
                   {booking.status === 'Upcoming' && !isCancelled && (
                     <>
                       <button
-                        onClick={() => setShowRescheduleModal(true)}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-slate-200 bg-white text-slate-500 hover:border-[#CE2029]/30 hover:text-[#CE2029] transition-all active:scale-95"
-                      >
-                        <RefreshCw size={10} strokeWidth={3} /> Reschedule
-                      </button>
-                      <button
                         onClick={() => setShowCancelModal(true)}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-wider border border-red-100 bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-95"
                       >

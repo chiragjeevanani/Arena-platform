@@ -223,7 +223,7 @@ const ScheduleCalendar = () => {
             </button>
             <span className={`text-[11px] font-black uppercase tracking-widest min-w-[140px] text-center ${isDark ? 'text-white/80' : 'text-slate-600'}`}>
               {viewMode === 'week' 
-                ? `${weekDates[0].toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} — ${weekDates[6].toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`
+                ? `${weekDates[0].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} — ${weekDates[6].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
                 : `${monthNames[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`
               }
             </span>

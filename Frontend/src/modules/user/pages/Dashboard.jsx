@@ -300,7 +300,6 @@ const Dashboard = () => {
     { id: 'past', name: 'Past' },
     { id: 'coaching', name: 'Coaching' },
     { id: 'payments', name: 'Receipts' },
-    { id: 'conflicts', name: 'Conflicts', badge: resolvedConflictBookings.length },
   ];
 
   return (

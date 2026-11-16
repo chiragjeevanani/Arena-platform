@@ -57,19 +57,12 @@ const DesktopFooter = () => {
                 <CourtIcon size={16} className={isDark ? 'text-white' : 'text-[#CE2029]'} />
               </div>
               <span className={`text-xl font-black font-display tracking-tight text-white`}>
-                Arena<span className={`${isDark ? 'text-[#CE2029]' : 'text-white/80'}`}>Platform</span>
+                AMM<span className={`${isDark ? 'text-[#CE2029]' : 'text-white/80'}`}> Sports Arena</span>
               </span>
             </Link>
             <p className={`text-[11px] leading-relaxed pr-6 ${isDark ? 'text-white/60' : 'text-white/80'}`}>
               The premier destination for booking automated sports courts, joining exclusive tournaments, and receiving professional coaching across all levels of play.
             </p>
-            <div className="flex items-center gap-3 pt-1">
-              {[Instagram, Twitter, Facebook].map((Icon, idx) => (
-                <a key={idx} href="#" className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all hover:-translate-y-1 ${isDark ? 'bg-white/5 border-white/10 text-white/70 hover:bg-[#CE2029] hover:border-[#CE2029] hover:text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/30 hover:border-white/40 hover:text-white'}`}>
-                  <Icon size={14} />
-                </a>
-              ))}
-            </div>
           </div>
 
           {/* Quick Links */}

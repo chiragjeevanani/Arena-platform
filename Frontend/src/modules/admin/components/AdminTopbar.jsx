@@ -11,14 +11,7 @@ const AdminTopbar = ({ onMobileMenuClick }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { user, logout } = useAuth();
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'booking', title: 'New Booking', desc: 'Court A booked for 8:00 PM', time: '2 MINS AGO', unread: true },
-    { id: 2, type: 'maintenance', title: 'Maintenance Alert', desc: 'Court C plumbing check scheduled', time: '1 HR AGO', unread: true },
-    { id: 3, type: 'payment', title: 'Payment Received', desc: '1.200 OMR received from Rahul', time: '3 HRS AGO', unread: true },
-    { id: 4, type: 'alert', title: 'Peak Hours Active', desc: 'Evening peak pricing is now live', time: '5 HRS AGO', unread: true },
-    { id: 5, type: 'booking', title: 'New Booking', desc: 'Court B booked for 9:00 PM', time: '6 HRS AGO', unread: false },
-    { id: 6, type: 'maintenance', title: 'Maintenance Alert', desc: 'Court A light fixed', time: '1 DAY AGO', unread: false },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
   const visibleNotifications = isExpanded ? notifications : notifications.slice(0, 3);

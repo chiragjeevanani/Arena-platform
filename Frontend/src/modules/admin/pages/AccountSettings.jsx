@@ -1,18 +1,20 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../user/context/AuthContext';
 import { User, Mail, Phone, Lock, Camera, Bell, Shield, Save, Key, UserCheck, ShieldAlert, MapPin, CheckCircle2, GraduationCap, CheckCircle, Users } from 'lucide-react';
 
 const AccountSettings = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile'); // profile | security | notifications
   const [toast, setToast] = useState(null);
   const fileInputRef = useRef(null);
   const [profileImage, setProfileImage] = useState(null);
 
-  const [profile, setProfile] = useState({
-    name: 'Raj Kumar',
-    email: 'raj.kumar@arena.com',
-    phone: '+91 98765 43210',
-  });
+  const profile = {
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  };
 
   const [academy, setAcademy] = useState({
     coachingStatus: true,
@@ -20,22 +22,9 @@ const AccountSettings = () => {
     academyBio: 'Elite professional training for advanced players and beginners.',
   });
 
-  const [security, setSecurity] = useState({
-    currentKey: '',
-    newKey: '',
-    confirmKey: '',
-  });
-
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
-  };
-
-  const handleSave = () => {
-    // Simulate API call
-    showToast('Configuration updated successfully');
-    // Clear passwords after save
-    setSecurity(prev => ({ ...prev, currentKey: '', newKey: '', confirmKey: '' }));
   };
 
   const handleImageUpload = (e) => {
@@ -44,7 +33,7 @@ const AccountSettings = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileImage(reader.result);
-        showToast('Profile picture updated successfully');
+        showToast('Preview only — profile pictures are not saved from this screen');
       };
       reader.readAsDataURL(file);
     }
@@ -52,7 +41,6 @@ const AccountSettings = () => {
 
   const TABS = [
     { id: 'profile', label: 'Identity Profile', icon: User },
-    { id: 'academy', label: 'Coach On Board', icon: GraduationCap },
     { id: 'security', label: 'Security & Access', icon: Lock },
   ];
 
@@ -68,12 +56,9 @@ const AccountSettings = () => {
             </h2>
             <p className="text-[10px] md:text-xs mt-0.5 font-bold text-slate-500">Manage administrative credentials and notification preferences.</p>
           </div>
-          <button 
-            onClick={handleSave}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#CE2029] border border-[#CE2029] text-white hover:shadow-xl hover:shadow-[#CE2029]/20 hover:-translate-y-0.5 transition-all text-[11px] font-black uppercase tracking-[0.1em] shadow-sm"
-          >
-            <Save size={16} strokeWidth={3} /> Save Adjustments
-          </button>
+                    <p className="text-[10px] font-bold text-slate-400 max-w-xs sm:text-right">
+            Read-only. Change names or phone numbers in Users → Edit Identity. Passwords: use “Forgot Security Key?” on the admin login page.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
@@ -139,8 +124,8 @@ const AccountSettings = () => {
                         </button>
                       </div>
                       <div className="text-center sm:text-left space-y-0.5">
-                        <h3 className="text-xl font-black text-[#36454F] tracking-tight">Raj Kumar</h3>
-                        <p className="text-[9px] font-black text-[#CE2029] uppercase tracking-[0.2em]">ARENA_ADMIN • ELITE SMASH</p>
+                        <h3 className="text-xl font-black text-[#36454F] tracking-tight">{profile.name || 'Administrator'}</h3>
+                        <p className="text-[9px] font-black text-[#CE2029] uppercase tracking-[0.2em]">{String(user?.role || '').replace(/_/g, ' ')}</p>
                         <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-md mt-2">
                            <Shield size={10} className="text-[#CE2029]" strokeWidth={2.5} />
                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">High-Trust Account</span>
@@ -156,7 +141,7 @@ const AccountSettings = () => {
                           <input
                             type="text"
                             value={profile.name}
-                            onChange={e => setProfile({ ...profile, name: e.target.value })}
+                            readOnly
                             className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 pl-10 pr-4 text-xs font-bold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner"
                           />
                         </div>
@@ -168,7 +153,7 @@ const AccountSettings = () => {
                            <input
                             type="email"
                             value={profile.email}
-                            onChange={e => setProfile({ ...profile, email: e.target.value })}
+                            readOnly
                             className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 pl-10 pr-4 text-xs font-bold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner"
                           />
                         </div>
@@ -180,7 +165,7 @@ const AccountSettings = () => {
                            <input
                             type="tel"
                             value={profile.phone}
-                            onChange={e => setProfile({ ...profile, phone: e.target.value })}
+                            readOnly
                             className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 pl-10 pr-4 text-xs font-bold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-inner"
                           />
                         </div>
@@ -250,63 +235,11 @@ const AccountSettings = () => {
                 )}
 
                 {activeTab === 'security' && (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#CE2029]/10 flex items-center justify-center text-[#CE2029]">
-                        <Key size={20} strokeWidth={2.5} />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-black text-[#36454F] tracking-tight">Security Access Keys</h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Manage authentication layer</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 pt-2">
-                      <div className="group">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">Current Master Key</label>
-                        <input
-                          type="password"
-                          value={security.currentKey}
-                          onChange={e => setSecurity({ ...security, currentKey: e.target.value })}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 px-4 text-xs font-bold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="group">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">New Access Key</label>
-                          <input
-                            type="password"
-                            value={security.newKey}
-                            onChange={e => setSecurity({ ...security, newKey: e.target.value })}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 px-4 text-xs font-bold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all"
-                          />
-                        </div>
-                        <div className="group">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">Confirm Initialization</label>
-                          <input
-                            type="password"
-                            value={security.confirmKey}
-                            onChange={e => setSecurity({ ...security, confirmKey: e.target.value })}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 px-4 text-xs font-bold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="bg-[#CE2029]/5 border border-[#CE2029]/20 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#CE2029] shadow-sm border border-[#CE2029]/20">
-                          <ShieldAlert size={24} strokeWidth={2.5} />
-                        </div>
-                        <div className="flex-1 text-center sm:text-left">
-                          <h4 className="text-[10px] font-black uppercase tracking-widest text-[#CE2029] mb-0.5">Two-Factor Shield</h4>
-                          <p className="text-[11px] font-bold text-slate-500 leading-snug">
-                            Protect facility data with unique mobile codes.
-                          </p>
-                        </div>
-                        <button className="px-6 py-2.5 bg-[#CE2029] text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#CE2029]/30 hover:-translate-y-0.5 transition-all">
-                          Activate
-                        </button>
-                      </div>
-                    </div>
+                  <div className="space-y-3">
+                    <h3 className="text-base font-black text-[#36454F] tracking-tight">Password</h3>
+                    <p className="text-xs font-bold text-slate-500 leading-relaxed">
+                      To change your password, sign out, open the admin login page and choose “Forgot Security Key?”. A 6-digit code is emailed to you.
+                    </p>
                   </div>
                 )}
 

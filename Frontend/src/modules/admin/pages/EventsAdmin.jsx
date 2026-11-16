@@ -337,15 +337,15 @@ const EventsAdmin = () => {
                  <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm text-center font-oswald">
                     <p className="text-[12px] font-black text-slate-500 uppercase tracking-widest mb-2">Live Registry</p>
                     <p className="text-4xl font-black text-[#36454F]">{participants.length + (activeEvent?.participants || 0)}</p>
-                    <p className="text-[11px] font-bold text-[#CE2029] uppercase mt-2">Allocated Slots: 256</p>
+                    <p className="text-[11px] font-bold text-[#CE2029] uppercase mt-2">Registered players</p>
                     <div className="w-full h-2 bg-slate-100 rounded-full mt-4 overflow-hidden">
-                       <div className="h-full bg-[#CE2029]" style={{ width: `${((participants.length + (activeEvent?.participants || 0)) / 256) * 100}%` }} />
+                       <div className="h-full bg-[#CE2029]" style={{ width: participants.length + (activeEvent?.participants || 0) > 0 ? '100%' : '0%' }} />
                     </div>
                  </div>
                  <div className="bg-[#36454F] text-white p-5 rounded-xl shadow-sm flex items-center justify-between font-oswald">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">Operational Revenue</p>
-                        <p className="text-2xl font-black">{activeEvent?.prize === 'Trophies' ? '0.00' : '480.00'} OMR</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-1">Entry Fee</p>
+                        <p className="text-2xl font-black">{activeEvent?.price || '—'}</p>
                     </div>
                     <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
                         <BarChart3 size={24} className="text-[#CE2029]" />

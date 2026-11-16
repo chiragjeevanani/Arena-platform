@@ -609,7 +609,7 @@ function Step4Confirm({ durationOpt, arena, court, selectedSlots, arenaId, court
                 </p>
                 <button
                   type="button"
-                  onClick={() => navigate('/wallet')}
+                  onClick={() => navigate('/profile/wallet')}
                   className="mt-2 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider"
                 >
                   Top Up Wallet

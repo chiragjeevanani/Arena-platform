@@ -10,7 +10,7 @@ const Help = () => {
   const faqs = [
     { q: 'How do I book a court?', a: 'Go to the home page, select an arena, choose your court and time slot, and proceed to payment.' },
     { q: 'Can I cancel my booking?', a: 'Yes. Cancel at least 24 hours before the slot time for a full refund to your Arena Wallet. Cancellations within 24 hours forfeit the booking fee.' },
-    { q: 'What is a Premium Member?', a: 'Premium members get exclusive discounts, early access to bookings, and zero convenience fees.' },
+    { q: 'What is a Premium Member?', a: 'Members get a percentage discount on court bookings for the length of their plan. See Membership for the available plans.' },
   ];
 
   return (
@@ -59,7 +59,7 @@ const Help = () => {
                   </div>
                   <div className="flex-1">
                     <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-wider mb-0.5 ${'text-slate-400'}`}>Call Center</p>
-                    <p className={`font-black text-sm md:text-base ${'text-[#0F172A]'}`}>+91 1800-ARENA-99</p>
+                    <p className={`font-black text-sm md:text-base ${'text-[#0F172A]'}`}>+968 9330 1292</p>
                   </div>
                   <ChevronRight size={16} className="opacity-20 group-hover:opacity-100 transition-opacity md:w-[18px] md:h-[18px]" />
                 </div>
@@ -71,7 +71,7 @@ const Help = () => {
                   </div>
                   <div className="flex-1">
                     <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-wider mb-0.5 ${'text-slate-400'}`}>Help Center</p>
-                    <p className={`font-black text-sm md:text-base ${'text-[#0F172A]'}`}>support.arenahub.com</p>
+                    <p className={`font-black text-sm md:text-base ${'text-[#0F172A]'}`}>online@ammtc.com</p>
                   </div>
                   <ChevronRight size={16} className="opacity-20 group-hover:opacity-100 transition-opacity md:w-[18px] md:h-[18px]" />
                 </div>

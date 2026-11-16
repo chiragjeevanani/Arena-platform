@@ -110,65 +110,43 @@ const MyAttendance = () => {
   const totalSessionsCount = yearlyData.length * 24;
 
 
-  // Mock weekly attendance data
-  const weeklyAttendanceData = [
-    {
-      week: 'Week 1',
-      present: 5,
-      total: 7,
-      days: [
-        { day: 'Sun', status: 'absent' },
-        { day: 'Mon', status: 'present' },
-        { day: 'Tue', status: 'absent' },
-        { day: 'Wed', status: 'present' },
-        { day: 'Thu', status: 'present' },
-        { day: 'Fri', status: 'present' },
-        { day: 'Sat', status: 'present' },
-      ]
-    },
-    {
-      week: 'Week 2',
-      present: 6,
-      total: 7,
-      days: [
-        { day: 'Sun', status: 'present' },
-        { day: 'Mon', status: 'present' },
-        { day: 'Tue', status: 'present' },
-        { day: 'Wed', status: 'present' },
-        { day: 'Thu', status: 'present' },
-        { day: 'Fri', status: 'present' },
-        { day: 'Sat', status: 'absent' },
-      ]
-    },
-    {
-      week: 'Week 3',
-      present: 4,
-      total: 7,
-      days: [
-        { day: 'Sun', status: 'absent' },
-        { day: 'Mon', status: 'present' },
-        { day: 'Tue', status: 'absent' },
-        { day: 'Wed', status: 'absent' },
-        { day: 'Thu', status: 'present' },
-        { day: 'Fri', status: 'present' },
-        { day: 'Sat', status: 'absent' },
-      ]
-    },
-    {
-      week: 'Week 4',
-      present: 5,
-      total: 7,
-      days: [
-        { day: 'Sun', status: 'present' },
-        { day: 'Mon', status: 'present' },
-        { day: 'Tue', status: 'present' },
-        { day: 'Wed', status: 'present' },
-        { day: 'Thu', status: 'absent' },
-        { day: 'Fri', status: 'present' },
-        { day: 'Sat', status: 'absent' },
-      ]
-    },
-  ];
+  // Weekly breakdown of the month on screen, built from the real attendance records.
+  const monthCells = getCalendarDays();
+  const weeklyAttendanceData = [];
+  for (let i = 0; i < monthCells.length; i += 7) {
+    const days = monthCells
+      .slice(i, i + 7)
+      .filter((c) => c.status === 'present' || c.status === 'absent')
+      .map((c) => ({ day: c.date.toLocaleDateString('en-US', { weekday: 'short' }), status: c.status }));
+    if (days.length) {
+      weeklyAttendanceData.push({
+        week: `Week ${weeklyAttendanceData.length + 1}`,
+        present: days.filter((d) => d.status === 'present').length,
+        total: days.length,
+        days,
+      });
+    }
+  }
+  const monthPresent = monthCells.filter((c) => c.status === 'present').length;
+  const monthSessions = monthCells.filter((c) => c.status === 'present' || c.status === 'absent').length;
+  const monthRate = monthSessions ? `${((monthPresent / monthSessions) * 100).toFixed(1)}%` : '—';
+
+  // Current week (Mon–Sun) from the same records.
+  const weekDays = (() => {
+    const now = new Date();
+    const mondayOffset = (now.getDay() + 6) % 7;
+    return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - mondayOffset + i);
+      const st = attendanceByDate[toYmd(d)];
+      let status = 'none';
+      if (st === 'present' || st === 'late') status = 'present';
+      else if (st === 'absent' || st === 'excused') status = 'absent';
+      return { label, status };
+    });
+  })();
+  const weekPresent = weekDays.filter((d) => d.status === 'present').length;
+  const weekAbsent = weekDays.filter((d) => d.status === 'absent').length;
+  const weekRate = weekPresent + weekAbsent ? `${((weekPresent / (weekPresent + weekAbsent)) * 100).toFixed(1)}%` : '—';
 
   return (
     <div className={`min-h-screen pb-24 relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-[#0a0a0c]' : 'bg-[#fafafa]'}`}>
@@ -239,15 +217,17 @@ const MyAttendance = () => {
               </div>
               
               <div className="grid grid-cols-7 gap-2">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
-                  <div key={day} className="text-center">
-                    <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{day}</p>
+                {weekDays.map(({ label, status }) => (
+                  <div key={label} className="text-center">
+                    <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</p>
                     <div className={`aspect-square rounded-xl flex items-center justify-center text-[10px] font-bold uppercase tracking-wider transition-all ${
-                      [0, 2, 3, 4, 6].includes(idx) 
-                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' 
-                        : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                      status === 'present'
+                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/20'
+                        : status === 'absent'
+                          ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                          : 'bg-slate-50 text-slate-300 border border-slate-100'
                     }`}>
-                      {[0, 2, 3, 4, 6].includes(idx) ? '✓' : '✗'}
+                      {status === 'present' ? '✓' : status === 'absent' ? '✗' : '–'}
                     </div>
                   </div>
                 ))}
@@ -256,16 +236,16 @@ const MyAttendance = () => {
               <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
                 <div>
                   <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Weekly Rate</p>
-                  <p className={`text-2xl font-black mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>71.4%</p>
+                  <p className={`text-2xl font-black mt-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{weekRate}</p>
                 </div>
                 <div className="flex gap-4">
                   <div className="text-right">
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Present</p>
-                    <p className="text-lg font-black text-green-500">5</p>
+                    <p className="text-lg font-black text-green-500">{weekPresent}</p>
                   </div>
                   <div className="text-right">
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Absent</p>
-                    <p className="text-lg font-black text-red-500">2</p>
+                    <p className="text-lg font-black text-red-500">{weekAbsent}</p>
                   </div>
                 </div>
               </div>
@@ -587,18 +567,14 @@ const MyAttendance = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-2 gap-4 mt-6">
           <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <p className={`text-[9px] uppercase font-bold tracking-widest mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Overall Rate</p>
-            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>89.5%</p>
+            <p className={`text-[9px] uppercase font-bold tracking-widest mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Attendance · {monthName}</p>
+            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{monthRate}</p>
           </div>
           <div className={`p-4 rounded-2xl border ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <p className={`text-[9px] uppercase font-bold tracking-widest mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Streak</p>
-            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>12 Days</p>
-          </div>
-          <div className={`p-4 rounded-2xl border col-span-2 md:col-span-1 ${isDark ? 'bg-[#12141a] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-            <p className={`text-[9px] uppercase font-bold tracking-widest mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Rank</p>
-            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>Top 5%</p>
+            <p className={`text-[9px] uppercase font-bold tracking-widest mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Sessions Recorded</p>
+            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{monthSessions}</p>
           </div>
         </div>
       </div>
