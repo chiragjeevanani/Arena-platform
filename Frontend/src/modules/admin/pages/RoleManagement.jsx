@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Plus, Edit2, Trash2, CheckSquare, Square, X, Info, Settings, Users } from 'lucide-react';
+import { Shield, Plus, Edit2, Trash2, CheckSquare, Square, X, Info, Settings, Users, ArrowRight } from 'lucide-react';
 
 const INITIAL_ROLES = [];
 

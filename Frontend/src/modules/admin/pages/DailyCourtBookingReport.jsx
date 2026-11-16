@@ -57,7 +57,7 @@ const PAYMENT_COLORS = {
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-const SummaryCard = ({ icon: _Icon, label, value, sub, color = '#CE2029', accent = false }) => (
+const SummaryCard = ({ icon: Icon, label, value, sub, color = '#CE2029', accent = false }) => (
   <motion.div
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}

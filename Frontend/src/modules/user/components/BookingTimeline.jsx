@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, MapPin, ChevronRight, X, AlertTriangle, RefreshCw, CheckCircle, Star } from 'lucide-react';
+import { Calendar, Clock, MapPin, ChevronRight, X, AlertTriangle, RefreshCw, CheckCircle, Star, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';

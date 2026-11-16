@@ -287,7 +287,7 @@ const EventDetail = () => {
                 { icon: CalendarDays, label: 'Date', value: event.date },
                 { icon: Clock, label: 'Time', value: event.time },
                 { icon: MapPin, label: 'Venue', value: event.location },
-              ].map(({ icon: _Icon, label, value }) => (
+              ].map(({ icon: Icon, label, value }) => (
                 <div
                   key={label}
                   className="bg-white lg:bg-transparent rounded-2xl lg:rounded-none px-4 py-3 lg:px-6 lg:py-2 border border-slate-100 lg:border-none shadow-sm lg:shadow-none flex flex-col items-start gap-2"
