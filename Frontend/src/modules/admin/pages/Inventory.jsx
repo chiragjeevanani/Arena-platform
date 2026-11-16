@@ -307,7 +307,7 @@ const Inventory = () => {
       id: Date.now(),
       item: itemName,
       action,
-      timestamp: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
     };
     setAuditLog(prev => [entry, ...prev]);
   };

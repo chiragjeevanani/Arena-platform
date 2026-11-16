@@ -1352,7 +1352,7 @@ const CoachingAdmin = () => {
                           </div>
                           <div>
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Reg Fee</label>
-                            <input ref={batchRegistrationFeeRef} type="number" defaultValue={editingBatch?.registrationFee ?? 500} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                            <input ref={batchRegistrationFeeRef} type="number" defaultValue={editingBatch?.registrationFee ?? 0} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
                           </div>
                           <div>
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Tax %</label>

@@ -270,7 +270,7 @@ const UserHome = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto px-4 md:px-0">
               {categories.length === 0 && (
                 <p className={`col-span-full text-center text-sm font-bold py-8 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                  No category tiles yet. Publish CMS rows with kind &quot;category&quot; in the admin.
+                  Nothing to show here yet. Please check back soon.
                 </p>
               )}
               {categories.map((sport) => (
@@ -384,7 +384,7 @@ const UserHome = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-7 md:gap-5 max-w-5xl mx-auto px-4 md:px-0">
               {upcomingEvents.length === 0 && (
                 <p className={`col-span-full text-center text-sm font-bold py-10 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                  No published events yet. Add CMS content with kind &quot;event&quot;.
+                  No events are scheduled right now. Please check back soon.
                 </p>
               )}
               {upcomingEvents.map((event, index) => (

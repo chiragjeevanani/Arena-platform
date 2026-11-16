@@ -39,6 +39,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
 
@@ -121,6 +122,10 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
+    if (!agreed) {
+      setSubmitError('Please accept the Terms & Conditions to continue.');
+      return;
+    }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
@@ -275,7 +280,7 @@ const Signup = () => {
                     backgroundColor: '#CE2029',
                   }}
                 >
-                  {verifying ? 'Verifying...' : 'Verify & Enter UI'}
+                  {verifying ? 'Verifying...' : 'Verify & Continue'}
                 </Button>
                 
                 <Button
@@ -660,7 +665,7 @@ const Signup = () => {
               </div>
 
               <FormControlLabel
-                control={<Checkbox size="small" sx={{ color: '#CE2029', '&.Mui-checked': { color: '#CE2029' }, py: 0.5 }} />}
+                control={<Checkbox size="small" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} sx={{ color: '#CE2029', '&.Mui-checked': { color: '#CE2029' }, py: 0.5 }} />}
                 label={<span className="text-xs text-slate-600 font-medium whitespace-nowrap">I agree to the Terms & Conditions</span>}
                 sx={{ mt: -1 }}
               />

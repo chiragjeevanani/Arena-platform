@@ -515,7 +515,7 @@ export default function CouponManagement() {
                             isExpired(coupon.expiresAt) ? 'text-orange-500' : 'text-[#627D98]'
                           }`}
                         >
-                          {new Date(coupon.expiresAt).toLocaleDateString('en-IN', {
+                          {new Date(coupon.expiresAt).toLocaleDateString('en-GB', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',

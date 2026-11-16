@@ -49,7 +49,7 @@ const ReferEarn = () => {
 
   const handleShareWhatsApp = () => {
     if (!data?.referralLink) return;
-    const text = `Hey! Join me on Arena Management Platform. Book high-quality courts, register for exciting events, and get a welcome wallet credit of OMR ${newuserReward} using my referral code: ${data.referralCode}. Sign up here: ${data.referralLink}`;
+    const text = `Hey! Join me on AMM Sports Arena. Book high-quality courts, register for exciting events, and get OMR ${newuserReward} wallet credit after your first paid booking using my referral code: ${data.referralCode}. Sign up here: ${data.referralLink}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -117,7 +117,7 @@ const ReferEarn = () => {
               </span>
             </h1>
             <p className={`text-xs md:text-sm font-semibold max-w-xl leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Share the love of play. Your friend gets <span className="font-bold text-[#CE2029]">OMR {newuserReward}</span> welcome credit on signing up, and you receive <span className="font-bold text-[#CE2029]">OMR {referrerReward}</span> credit as soon as they complete their first booking!
+              Share the love of play. When your friend signs up with your code and completes their first paid booking, your friend gets <span className="font-bold text-[#CE2029]">OMR {newuserReward}</span> and you receive <span className="font-bold text-[#CE2029]">OMR {referrerReward}</span> in wallet credit.
             </p>
           </div>
 

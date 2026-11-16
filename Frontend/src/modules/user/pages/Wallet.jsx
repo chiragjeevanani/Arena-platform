@@ -108,10 +108,9 @@ const TopUpModal = ({ onClose, useLiveApi, onSuccess }) => {
 
               <div>
                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-2">Payment Method</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {[
-                    { id: 'card', label: 'Debit/Credit Card', icon: CreditCard },
-                    { id: 'upi', label: 'UPI / Wallet', icon: Smartphone },
+                    { id: 'card', label: 'Card / OmanNet (Bank Muscat)', icon: CreditCard },
                   ].map((m) => (
                     <button
                       key={m.id}

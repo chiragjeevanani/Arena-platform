@@ -184,13 +184,6 @@ const TABS = [
   },
 ];
 
-// Quick summary stats — in production these come from API
-const SUMMARY_STATS = [
-  { label: 'Total Courts', value: '5', icon: Target, color: '#CE2029' },
-  { label: 'Active Slots', value: '10', icon: Clock, color: '#6366f1' },
-  { label: 'Base Rate', value: 'OMR 4.500', icon: DollarSign, color: '#22c55e' },
-  { label: 'Blocked Today', value: '1', icon: CalendarX2, color: '#f59e0b' },
-];
 
 const ArenaManagementPanel = () => {
   const { user } = useAuth();
@@ -275,29 +268,11 @@ const ArenaManagementPanel = () => {
                 <p className="font-black text-[#36454F] text-sm truncate">{arena?.name || 'Amm Sports arena'}</p>
               )}
               <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1 mt-0.5">
-                <Phone size={9} className="text-[#CE2029]" /> {arena?.phone || '+91 98765 43210'}
+                <Phone size={9} className="text-[#CE2029]" /> {arena?.phone || '—'}
               </p>
             </div>
             <div className="w-2.5 h-2.5 rounded-full bg-green-400 shrink-0 ml-2" />
           </div>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {SUMMARY_STATS.map((stat, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-              className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3 hover:border-slate-200 hover:shadow-md transition-all">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `${stat.color}15` }}>
-                <stat.icon size={18} style={{ color: stat.color }} strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">{stat.label}</p>
-                <p className="text-2xl font-black" style={{ color: stat.color }}>{stat.value}</p>
-              </div>
-            </motion.div>
-          ))}
         </div>
 
         {/* Tab Navigation — Scrollable on mobile */}

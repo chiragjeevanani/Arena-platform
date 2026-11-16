@@ -5,6 +5,7 @@ const User = require('../models/User');
 const BatchEnrollment = require('../models/BatchEnrollment');
 const CoachStudentProgress = require('../models/CoachStudentProgress');
 const CoachingAttendance = require('../models/CoachingAttendance');
+const { vatPercent } = require('../services/catalogPricing');
 
 /**
  * Checks if a coach has schedule conflicts with other batches.
@@ -101,7 +102,7 @@ async function createCoachingBatch(req, res) {
     scheduleTime: scheduleTime != null ? String(scheduleTime) : '',
     isPublished: Boolean(isPublished),
     registrationFee: registrationFee != null ? Number(registrationFee) : 500,
-    taxPercent: taxPercent != null ? Number(taxPercent) : 18,
+    taxPercent: taxPercent != null ? Number(taxPercent) : vatPercent(),
     level: level != null ? String(level) : 'Open',
     coachImage: coachImage != null ? String(coachImage) : '',
     rating: rating != null ? Number(rating) : 5.0,
