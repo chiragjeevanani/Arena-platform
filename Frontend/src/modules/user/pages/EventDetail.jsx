@@ -79,7 +79,9 @@ const EventDetail = () => {
 
   // Events whose date has passed can't be joined any more (the server refuses too).
   const isEnded = /^\d{4}-\d{2}-\d{2}$/.test(String(event?.date || '')) && event.date < new Date().toISOString().slice(0, 10);
-  const isFree = event?.price?.toLowerCase().includes('free');
+  // A price of 0 is free too (the server registers it without payment).
+  const numericPrice = parseFloat(String(event?.price || '').replace(/[^0-9.]/g, ''));
+  const isFree = event?.price?.toLowerCase().includes('free') || (Number.isFinite(numericPrice) && numericPrice === 0);
   const isTBA = event?.price?.toLowerCase().includes('tba');
 
   const handleRegister = async (e) => {

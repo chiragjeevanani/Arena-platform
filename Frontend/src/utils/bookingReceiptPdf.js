@@ -131,6 +131,7 @@ export function paymentMethodLabel(method) {
   if (m === 'partial_wallet') return 'Wallet + Online Gateway';
   if (['online', 'card', 'upi', 'bank_muscat', 'smartpay', 'gateway'].includes(m)) return 'Online Card Gateway';
   if (m === 'cash') return 'Cash';
+  if (m === 'pay_at_arena') return 'Pay at Arena';
   return m.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -327,7 +328,8 @@ function drawInvoiceHeader(pdf, r, logo) {
   meta('Date:', r.invoiceDate, 30);
 
   const cancelled = r.status === 'CANCELLED';
-  const pw = pill(pdf, r.status, R, 35.2, cancelled ? C.cancelBg : C.paidBg, cancelled ? C.cancelFg : C.paidFg);
+  const due = r.status === 'DUE AT ARENA';
+  const pw = pill(pdf, r.status, R, 35.2, cancelled ? C.cancelBg : due ? '#FEF3C7' : C.paidBg, cancelled ? C.cancelFg : due ? '#92400E' : C.paidFg);
   setFont(pdf, 9, 'bold', C.text);
   pdf.text('Status:', R - pw - 1.2, 35.2, { align: 'right' });
 
@@ -615,7 +617,9 @@ function finalizeReceipt({ id, createdAt, status, customer, paymentMethod, items
   return {
     invoiceNo: `INV-${issuedDate.getFullYear()}-${ref}`,
     invoiceDate: issuedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-    status: String(status || '').toLowerCase() === 'cancelled' ? 'CANCELLED' : 'PAID',
+    status: String(status || '').toLowerCase() === 'cancelled'
+      ? 'CANCELLED'
+      : String(status || '').toLowerCase() === 'pay_at_arena' ? 'DUE AT ARENA' : 'PAID',
     customer: {
       name: customer?.name || 'Valued Customer',
       phone: customer?.phone || '',
@@ -691,12 +695,15 @@ export function buildReceiptFromSuccessState(data, user) {
   const apiBooking = data?.booking || {};
   const id = apiBooking.id || data?.enrollment?.id || data?.payment?.id;
   const createdAt = apiBooking.createdAt || data?.transactionAt || data?.payment?.completedAt;
-  const paymentMethod = apiBooking.paymentMethod || data?.payment?.method || data?.payment?.provider;
+  const rawMethod = apiBooking.paymentMethod || data?.paymentMethod || data?.payment?.method || data?.payment?.provider;
+  // Customer chose "Pay at Arena" (events / coaching): nothing has been paid yet.
+  const payAtArena = String(rawMethod || '').toLowerCase() === 'cash' && !apiBooking.paymentMethod;
+  const paymentMethod = payAtArena ? 'pay_at_arena' : rawMethod;
   const customer = { name: user?.name, phone: user?.phone, email: user?.email };
   const today = formatReceiptDate(createdAt || new Date());
 
   const single = (row, title, extraSummary) =>
-    finalizeReceipt({ id, createdAt, status: 'paid', customer, paymentMethod, items: [{ amount: total, duration: '—', ...row }], total, itemsTitle: title, extraSummary, vatInclusive: data?.type !== 'wallet_top_up' });
+    finalizeReceipt({ id, createdAt, status: payAtArena ? 'pay_at_arena' : 'paid', customer, paymentMethod, items: [{ amount: total, duration: '—', ...row }], total, itemsTitle: title, extraSummary, vatInclusive: data?.type !== 'wallet_top_up' });
 
   if (data?.type === 'wallet_top_up') {
     return single({ date: today, court: '—', slot: '—', rateType: 'Wallet Top-up' }, 'TRANSACTION LINE ITEMS');

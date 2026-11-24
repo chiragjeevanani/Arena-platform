@@ -6,8 +6,10 @@
  * If fewer than 4 parts, remaining detail fields fall back to sensible defaults.
  */
 
-const PLACEHOLDER_IMAGE =
-  'https://images.unsplash.com/photo-1626224583764-f87db24d4d83?w=1200&q=80';
+import CourtImage from '../assets/court.jpeg';
+
+// Events without an uploaded banner show the arena's own court photo.
+const PLACEHOLDER_IMAGE = CourtImage;
 
 export function isCmsEventId(id) {
   if (id == null || typeof id !== 'string') return false;

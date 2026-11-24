@@ -69,7 +69,7 @@ const CoachCard = ({ batch, index = 0, expired = false }) => {
         {!expired && (
           <div className="absolute top-2 left-2 bg-white/20 backdrop-blur-md border border-white/30 px-2 py-0.5 rounded-md flex items-center gap-1.5 group-hover:bg-[#CE2029] group-hover:border-[#CE2029] transition-all duration-300">
             <div className="w-1.5 h-1.5 rounded-full bg-[#CE2029] group-hover:bg-white animate-pulse" />
-            <span className="text-[8px] font-black text-white uppercase tracking-[0.1em]">Elite Coach</span>
+            <span className="text-[8px] font-black text-white uppercase tracking-[0.1em]">Coaching</span>
           </div>
         )}
 
@@ -82,7 +82,7 @@ const CoachCard = ({ batch, index = 0, expired = false }) => {
         <div className="absolute bottom-2 left-3 right-3">
           <div className="flex items-center gap-1 mb-0.5">
             <Star size={10} className="text-amber-400 fill-amber-400" />
-            <span className="text-[9px] font-bold text-white/80 tracking-wide">4.9 • 120 Revs</span>
+            <span className="text-[9px] font-bold text-white/80 tracking-wide">{Number(batch.rating) > 0 ? `${Number(batch.rating).toFixed(1)} rating` : 'New batch'}</span>
           </div>
           <h3 className="text-base font-black text-white font-display tracking-tight leading-none truncate">{batch.coachName}</h3>
         </div>

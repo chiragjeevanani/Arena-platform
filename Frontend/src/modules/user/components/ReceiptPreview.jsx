@@ -31,7 +31,7 @@ const ReceiptPreview = ({ receipt: r, className = '' }) => {
           <p><span className="font-bold">Date:</span> <span className="text-slate-500">{r.invoiceDate}</span></p>
           <p className="mt-0.5">
             <span className="font-bold">Status:</span>{' '}
-            <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${cancelled ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{r.status}</span>
+            <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${cancelled ? 'bg-red-100 text-red-700' : r.status === 'DUE AT ARENA' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-700'}`}>{r.status}</span>
           </p>
         </div>
       </div>

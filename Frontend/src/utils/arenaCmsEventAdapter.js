@@ -1,5 +1,7 @@
-const DEFAULT_BANNER =
-  'https://images.unsplash.com/photo-1528164344705-47542687000d?w=800&q=80';
+import CourtImage from '../assets/court.jpeg';
+
+// Events without an uploaded banner show the arena's own court photo.
+const DEFAULT_BANNER = CourtImage;
 
 /**
  * Map CMS `event` content → EventsAdmin.jsx card shape.

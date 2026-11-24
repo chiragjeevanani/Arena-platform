@@ -1,6 +1,8 @@
 import { VAT_PERCENT } from './tax';
-const PLACEHOLDER =
-  'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80';
+import CourtImage from '../assets/court.jpeg';
+
+// Batches without a coach photo show the arena's own court photo (not a stock model).
+const PLACEHOLDER = CourtImage;
 
 /**
  * Maps public API coaching batch to CoachCard props.

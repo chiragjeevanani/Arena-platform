@@ -56,6 +56,7 @@ import {
   uploadAdminImage
 } from '../../../services/cmsApi';
 import { listEventRegistrations, updateEventRegistrationStatus } from '../../../services/adminOpsApi';
+import CourtImage from '../../../assets/court.jpeg';
 
 const COLORS = ['#CE2029', '#36454F', '#627D98', '#36454F'];
 
@@ -739,7 +740,7 @@ const EventBanners = () => {
           revenue: regs.filter(r => r.eventId === c.id && r.status === 'Approved')
                       .reduce((sum) => sum + (parseFloat(parts[3]) || 0), 0),
           expenses: 0,
-          banner: c.imageUrl || 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=800&auto=format&fit=crop',
+          banner: c.imageUrl || CourtImage,
           linkUrl: c.linkUrl,
           description: (c.body || '').replace(/^\s*[-*•]\s+.+\n?/gm, '').trim(),
           rules: (c.body || '').split('\n').filter(l => /^[-*•]\s+/.test(l.trim())).map(l => l.trim().replace(/^[-*•]\s+/, '')).join('\n'),

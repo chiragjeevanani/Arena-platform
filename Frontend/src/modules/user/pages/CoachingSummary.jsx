@@ -132,7 +132,7 @@ const CoachingSummary = () => {
                 <div className="flex-1">
                   <div className="mb-1.5">
                     <span className="px-2 py-0.5 rounded-md bg-[#CE2029]/10 text-[#CE2029] text-[7px] font-black uppercase tracking-[0.2em] border border-[#CE2029]/20">
-                      Elite Academic Trainer
+                      Coach
                     </span>
                   </div>
                   <h3 className="text-xl font-black font-display tracking-tight text-[#0F172A] mb-1">

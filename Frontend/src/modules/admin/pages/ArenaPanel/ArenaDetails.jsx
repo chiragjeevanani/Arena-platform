@@ -42,7 +42,8 @@ const ArenaDetails = () => {
         openTime: contextArena.openTime || '06:00',
         closeTime: contextArena.closeTime || '22:00',
         amenities: contextArena.amenities || [],
-        banner: contextArena.imageUrl || null,
+        // Only real uploaded images (http/https); older records hold a dev-only path like /src/assets/…
+        banner: /^https?:\/\//.test(String(contextArena.imageUrl || '').trim()) ? contextArena.imageUrl : null,
         images: contextArena.images || [], // If backend supports secondary images later
       });
     }

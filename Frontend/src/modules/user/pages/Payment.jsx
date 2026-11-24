@@ -185,11 +185,13 @@ const Payment = () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setIsProcessing(false);
-      navigate('/booking-success', { 
-        state: { 
-          ...state, 
-          enrollment 
-        } 
+      navigate('/booking-success', {
+        state: {
+          ...state,
+          enrollment,
+          // 'cash' = Pay at Arena: nothing has been charged yet; the receipt says so.
+          paymentMethod: selectedMethod,
+        }
       });
     } catch (err) {
       console.error('Payment/Registration Error:', err);
