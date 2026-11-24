@@ -79,7 +79,7 @@ const EventsAdmin = () => {
        let cancelled = false;
        (async () => {
          try {
-           const data = await listEventRegistrations(activeEvent.id);
+           const data = await listEventRegistrations(activeEvent.id, { channel: cmsScope.channel });
            if (!cancelled) {
              setParticipants(data.registrations.map(r => ({
                 id: r.id,
@@ -117,7 +117,7 @@ const EventsAdmin = () => {
       setShowRegModal(false);
       setRegForm({ name: '', age: '', contact: '', category: 'Solo' });
       // Refresh list
-      const data = await listEventRegistrations(activeEvent.id);
+      const data = await listEventRegistrations(activeEvent.id, { channel: cmsScope.channel });
       setParticipants(data.registrations.map(r => ({
          id: r.id,
          name: r.name,
@@ -145,7 +145,7 @@ const EventsAdmin = () => {
 
   const toggleStatus = async (id, newStatus) => {
     try {
-      await updateEventRegistrationStatus(id, newStatus);
+      await updateEventRegistrationStatus(id, newStatus, { channel: cmsScope.channel });
       setParticipants(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
     } catch {
       alert('Failed to update status');
@@ -214,7 +214,7 @@ const EventsAdmin = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xxl:grid-cols-6 gap-2.5 pb-8">
             {filteredEvents.length === 0 && (
               <p className="col-span-full text-sm text-slate-500 py-8 px-2">
-                No events to show. Connect your events API, or restore the bundled demo snapshot from the repo&apos;s demo-backup folder if needed.
+                No events yet. Events are created by the Super Admin under Event Management and appear here for your arena.
               </p>
             )}
             {filteredEvents.map((item, idx) => (

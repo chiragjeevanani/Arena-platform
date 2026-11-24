@@ -171,13 +171,13 @@ const AccountSettings = () => {
                         </div>
                       </div>
                       <div className="group">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">Facility Domain</label>
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">Access</label>
                         <div className="relative">
                           <MapPin size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
                           <input
                             type="text"
                             readOnly
-                            defaultValue="Elite Badminton Hub, HSR"
+                            defaultValue="All arenas (Super Admin)"
                             className="w-full bg-slate-100 border border-slate-100 rounded-lg py-3 pl-10 pr-4 text-xs font-bold text-slate-400 cursor-not-allowed"
                           />
                         </div>

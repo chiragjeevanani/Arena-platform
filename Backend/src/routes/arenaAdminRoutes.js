@@ -38,6 +38,7 @@ const {
   deleteInventoryItem,
 } = require('../controllers/adminInventoryController');
 const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/adminPosController');
+const { listEventRegistrations, updateRegistrationStatus } = require('../controllers/adminEventController');
 const {
   createCmsContent,
   listCmsContent,
@@ -144,6 +145,8 @@ router.get(
 
 router.post('/cms', requireBodyArenaIdMatchesScope, asyncHandler(createCmsContent));
 router.get('/cms', requireQueryArenaMatchesScope, asyncHandler(listCmsContent));
+router.get('/events/registrations', listEventRegistrations);
+router.patch('/events/registrations/:id', updateRegistrationStatus);
 router.patch(
   '/cms/:contentId',
   asyncHandler(requireCmsContentInArenaScope),

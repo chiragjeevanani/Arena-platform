@@ -28,7 +28,7 @@ export function mapPublicBatchToCoachCard(batch, arenaName = '') {
     taxPercent: batch.taxPercent != null ? Number(batch.taxPercent) || 0 : VAT_PERCENT,
     rating: batch.rating || 5.0,
     studentCount: `${batch.enrolledCount || 0} Students`,
-    experienceYears: batch.experienceYears || '8+ Years',
-    benefits: Array.isArray(batch.benefits) && batch.benefits.length > 0 ? batch.benefits : ["Assessment report", "Certified Elite Coach", "Sanitised Arena", "Tournament priority"],
+    experienceYears: batch.experienceYears || '',
+    benefits: Array.isArray(batch.benefits) && batch.benefits.length > 0 ? batch.benefits : [],
   };
 }

@@ -8,6 +8,7 @@ import {
   X, RefreshCw, UserPlus, PlusCircle, History, Clock
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
+import { useArenaPanel } from '../context/ArenaPanelContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
 import {
@@ -51,14 +52,19 @@ const RetailPOS = () => {
     }
   }, [user]);
 
+  // Super Admin: sell for the arena chosen in the page's arena picker, else the "Active arena"
+  // selected at the top of Arena Control, else the only arena there is — never the sample catalog.
+  const { selectedArenaId: panelArenaId } = useArenaPanel();
+  const effectiveArenaId = arenaIdFromQuery
+    || (user?.role === 'SUPER_ADMIN' ? (panelArenaId || (arenas.length === 1 ? String(arenas[0].id) : '')) : '');
   const opsScope = useMemo(
     () =>
       resolveLiveOpsArenaScope(user, {
         apiConfigured: isApiConfigured(),
         hasToken: Boolean(getAuthToken()),
-        arenaIdFromQuery,
+        arenaIdFromQuery: effectiveArenaId || null,
       }),
-    [user, arenaIdFromQuery]
+    [user, effectiveArenaId]
   );
 
   const [catalogItems, setCatalogItems] = useState(() => STATIC_CATALOG);
@@ -351,7 +357,7 @@ const RetailPOS = () => {
                   onChange={(e) => {
                     const id = e.target.value;
                     if (id) {
-                      setSearchParams({ arenaId: id });
+                      setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('arenaId', id); return next; });
                     }
                   }}
                   value={arenaIdFromQuery || ''}
@@ -368,7 +374,7 @@ const RetailPOS = () => {
                   Live POS Mode: Selling for <span className="font-black uppercase">{arenas.find(a => a.id === opsScope.arenaId)?.name || 'Selected Arena'}</span>
                 </span>
                 <button 
-                  onClick={() => setSearchParams({})}
+                  onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('arenaId'); return next; })}
                   className="text-[#CE2029] hover:underline uppercase text-[9px] font-black"
                 >
                   Switch Arena

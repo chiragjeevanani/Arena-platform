@@ -54,6 +54,8 @@ async function listCmsContent(req, res) {
       return res.status(400).json({ error: 'Invalid arenaId query' });
     }
     filter.arenaId = req.query.arenaId;
+    // Arena staff also see the Super Admin's global (all-arena) events; they still can't edit them.
+    if (req.arenaScopeId && filter.kind === 'event') filter.arenaId = { $in: [req.query.arenaId, null] };
   }
 
   const list = await CmsContent.find(filter).sort({ sortOrder: 1, createdAt: -1 }).lean();

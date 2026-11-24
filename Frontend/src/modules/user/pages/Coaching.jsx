@@ -98,9 +98,9 @@ const Coaching = () => {
             image: e.arenaImage || DEFAULT_COACH_IMG,
             capacity: 12,
             spotsRemaining: 0,
-            experienceYears: '8+ Years',
+            experienceYears: '',
             rating: 5.0,
-            benefits: ["Assessment report", "Certified Elite Coach", "Sanitised Arena", "Tournament priority"],
+            benefits: [],
             enrolled: true,
             enrollmentId: e.id
           };

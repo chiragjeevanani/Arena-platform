@@ -7,9 +7,11 @@ import { getAuthToken } from '../../../services/apiClient';
 import { patchMyProfile } from '../../../services/meApi';
 import { meRequest } from '../../../services/authApi';
 import { storage } from '../../../utils/storage';
+import { useArenaPanel } from '../../admin/context/ArenaPanelContext';
 
 const AccountSettings = () => {
   const { user, setUser } = useAuth();
+  const { arena } = useArenaPanel();
   const [activeTab, setActiveTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -205,7 +207,7 @@ const AccountSettings = () => {
                         <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1 block ml-1">Arena Location</label>
                         <div className="relative">
                           <MapPin size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
-                          <input type="text" readOnly defaultValue="AMM Sports Arena, Main Branch" className="w-full bg-slate-100 border border-slate-100 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-bold text-slate-400 cursor-not-allowed" />
+                          <input type="text" readOnly value={arena?.name || 'Your arena'} className="w-full bg-slate-100 border border-slate-100 rounded-lg py-2.5 pl-10 pr-3 text-[12px] font-bold text-slate-400 cursor-not-allowed" />
                         </div>
                       </div>
                     </div>

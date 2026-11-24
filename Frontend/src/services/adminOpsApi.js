@@ -157,14 +157,16 @@ export function enrollOfflineStudent(batchId, studentData) {
   });
 }
 
-export function listEventRegistrations(eventId) {
+export function listEventRegistrations(eventId, { channel } = {}) {
   const q = new URLSearchParams();
   if (eventId) q.set('eventId', eventId);
-  return apiJson(`${BASE}/events/registrations${q.toString() ? `?${q.toString()}` : ''}`, { method: 'GET' });
+  const base = channel === 'arena' ? '/api/arena-admin' : BASE;
+  return apiJson(`${base}/events/registrations${q.toString() ? `?${q.toString()}` : ''}`, { method: 'GET' });
 }
 
-export function updateEventRegistrationStatus(id, status) {
-  return apiJson(`${BASE}/events/registrations/${encodeURIComponent(id)}`, {
+export function updateEventRegistrationStatus(id, status, { channel } = {}) {
+  const base = channel === 'arena' ? '/api/arena-admin' : BASE;
+  return apiJson(`${base}/events/registrations/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: { status }
   });

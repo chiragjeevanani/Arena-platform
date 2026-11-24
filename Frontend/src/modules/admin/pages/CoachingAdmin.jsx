@@ -1373,13 +1373,13 @@ const CoachingAdmin = () => {
                           </div>
                           <div>
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Experience</label>
-                            <input ref={batchExperienceYearsRef} type="text" defaultValue={editingBatch?.experienceYears || "8+ Years"} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
+                            <input ref={batchExperienceYearsRef} type="text" defaultValue={editingBatch?.experienceYears || ""} placeholder="e.g. 8+ Years" className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold" />
                           </div>
                        </div>
 
                        <div>
                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Academy Benefits (Comma separated)</label>
-                          <textarea ref={batchBenefitsRef} defaultValue={(editingBatch?.benefits || []).join(', ') || "Assessment report, Certified Elite Coach, Sanitised Arena, Tournament priority"} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold h-20 resize-none" />
+                          <textarea ref={batchBenefitsRef} defaultValue={(editingBatch?.benefits || []).join(', ')} placeholder="e.g. Assessment report, Tournament priority" className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[12px] font-bold h-20 resize-none" />
                        </div>
 
                        <div>

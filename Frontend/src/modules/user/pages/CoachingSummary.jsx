@@ -157,7 +157,7 @@ const CoachingSummary = () => {
                   <div className="grid grid-cols-2 gap-2.5 mt-3">
                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:border-[#CE2029]/20 transition-colors">
                       <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Professional EXP</p>
-                      <p className="text-[10px] font-black text-[#0F172A]">{batch.coachExperience || batch.experienceYears}</p>
+                      <p className="text-[10px] font-black text-[#0F172A]">{batch.coachExperience || batch.experienceYears || '—'}</p>
                     </div>
                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:border-[#CE2029]/20 transition-colors">
                       <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Training Level</p>
@@ -243,7 +243,8 @@ const CoachingSummary = () => {
               </div>
             )}
 
-            {/* Trust Factors - Horizontal on summary */}
+            {/* Trust Factors - Horizontal on summary (only when the academy listed some) */}
+            {(batch.benefits || []).length > 0 && (
             <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-md shadow-slate-200/30">
               <div className="flex items-center gap-2 mb-3">
                 <VerifiedIcon style={{ fontSize: 16 }} className="text-[#CE2029]" />
@@ -260,6 +261,7 @@ const CoachingSummary = () => {
                 ))}
               </div>
             </div>
+            )}
           </div>
 
           {/* Right Column: Fees and Summary */}

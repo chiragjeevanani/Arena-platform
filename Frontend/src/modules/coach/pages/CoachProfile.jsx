@@ -19,15 +19,16 @@ const CoachProfile = () => {
     name: user?.name || 'Coach',
     email: user?.email || '',
     role: user?.role === 'COACH' ? 'HEAD COACH (BADMINTON)' : (user?.role || 'COACH'),
-    bio: user?.bio || 'Dedicated professional badminton coach with 8+ years of experience training state-level athletes and junior champions. Expert in technical analytics and high-intensity stamina conditioning.',
-    experience: user?.experience || '8 Years',
+    // Only the coach's own saved details — no sample bio, awards or stats.
+    bio: user?.bio || '',
+    experience: user?.experience || '',
     phone: user?.phone || '',
     location: user?.location || 'Muscat, Oman',
-    specialization: user?.specialization || ['Technical Footwork', 'Smash Precision', 'Junior Development'],
-    achievements: user?.achievements?.length ? user.achievements : ['Gold Medalist (Internal Masters)', 'Certified BWF Coach (Lv 2)'],
-    avatar: user?.avatar || "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop",
-    hours: user?.hours || '1.4k',
-    wins: user?.wins || '94%'
+    specialization: user?.specialization || [],
+    achievements: user?.achievements?.length ? user.achievements : [],
+    avatar: user?.avatar || '',
+    hours: user?.hours || '0',
+    wins: user?.wins || '0'
   });
 
   useEffect(() => {
@@ -122,11 +123,17 @@ const CoachProfile = () => {
             {/* Avatar Section - Ultra Compact */}
             <div className="relative group">
               <div className="relative w-16 h-16 rounded-[22px] border-2 border-white dark:border-white/10 shadow-md overflow-hidden bg-slate-200">
-                <img 
-                  src={profileData.avatar} 
-                  alt="Avatar" 
-                  className="w-full h-full object-cover"
-                />
+                {profileData.avatar ? (
+                  <img
+                    src={profileData.avatar}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-2xl font-black text-[#CE2029] bg-[#CE2029]/10">
+                    {(profileData.name || 'C').trim().charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               {isEditing && (
                 <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-[#CE2029] text-white shadow-xl flex items-center justify-center border-2 border-white dark:border-[#1a1d24] cursor-pointer hover:scale-110 transition-transform">
@@ -224,7 +231,7 @@ const CoachProfile = () => {
               />
             ) : (
               <div className="px-3 py-1.5 bg-slate-50 dark:bg-white/5 rounded-lg text-center">
-                 <span className="text-[11px] font-black text-[#CE2029]">{profileData.experience} Seniority</span>
+                 <span className="text-[11px] font-black text-[#CE2029]">{profileData.experience ? `${profileData.experience} Seniority` : 'Not added yet'}</span>
               </div>
             )}
           </div>
@@ -248,7 +255,7 @@ const CoachProfile = () => {
               />
             ) : (
               <p className={`text-[12px] font-medium leading-relaxed opacity-70 ${isDark ? 'text-white' : 'text-[#36454F]'}`}>
-                {profileData.bio}
+                {profileData.bio || 'No bio yet. Tap Edit to tell students about your coaching.'}
               </p>
             )}
           </div>
@@ -269,9 +276,9 @@ const CoachProfile = () => {
                     className={`w-full bg-slate-50 dark:bg-white/5 p-3 rounded-xl text-[10px] font-bold outline-none border border-transparent focus:border-[#CE2029] ${isDark ? 'text-white' : 'text-[#36454F]'}`}
                   />
                 ) : (
-                  profileData.achievements.map((a, i) => (
+                  profileData.achievements.length ? profileData.achievements.map((a, i) => (
                     <li key={i} className="flex items-center gap-2 text-[10px] font-bold opacity-80"><Star size={10} className="text-[#CE2029]" /> {a}</li>
-                  ))
+                  )) : <li className="text-[10px] font-semibold opacity-50">None added yet</li>
                 )}
               </ul>
             </div>
