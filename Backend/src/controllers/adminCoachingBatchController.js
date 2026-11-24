@@ -106,8 +106,8 @@ async function createCoachingBatch(req, res) {
     level: level != null ? String(level) : 'Open',
     coachImage: coachImage != null ? String(coachImage) : '',
     rating: rating != null ? Number(rating) : 5.0,
-    studentCount: studentCount != null ? String(studentCount) : '500+',
-    experienceYears: experienceYears != null ? String(experienceYears) : '8+ Years',
+    studentCount: studentCount != null ? String(studentCount) : '0',
+    experienceYears: experienceYears != null ? String(experienceYears) : '',
     benefits: Array.isArray(benefits) ? benefits : [],
   });
 

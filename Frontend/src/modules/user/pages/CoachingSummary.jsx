@@ -150,7 +150,7 @@ const CoachingSummary = () => {
                     </div>
                     <div className="flex items-center gap-1 text-slate-400 font-bold text-[9px] uppercase tracking-wider">
                       <GroupIcon style={{ fontSize: 12 }} className="text-blue-500" />
-                      {batch.studentCount} Students
+                      {/students?$/i.test(String(batch.studentCount || '')) ? batch.studentCount : `${batch.enrolledCount ?? batch.studentCount ?? 0} Students`}
                     </div>
                   </div>
 

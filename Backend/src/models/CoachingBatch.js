@@ -28,8 +28,8 @@ const coachingBatchSchema = new mongoose.Schema(
     level: { type: String, default: 'Open' },
     coachImage: { type: String, default: '' },
     rating: { type: Number, default: 5.0 },
-    studentCount: { type: String, default: '500+' },
-    experienceYears: { type: String, default: '8+ Years' },
+    studentCount: { type: String, default: '0' },
+    experienceYears: { type: String, default: '' },
     benefits: { type: [String], default: [] },
   },
   { timestamps: true }
