@@ -72,6 +72,12 @@ const CoachProfile = () => {
           phone: u.phone || '',
           assignedArena: u.assignedArenaId || 'all',
           avatar: u.avatarUrl || profileData.avatar,
+          // coach profile fields as saved on the server (fall back to what was just typed)
+          bio: u.bio ?? profileData.bio,
+          experience: u.experience ?? profileData.experience,
+          achievements: Array.isArray(u.achievements) ? u.achievements : profileData.achievements,
+          hours: String(u.hours ?? profileData.hours ?? '0'),
+          wins: String(u.wins ?? profileData.wins ?? '0'),
         };
         setUser(mapped);
         storage.setItem('user', JSON.stringify(mapped));
@@ -81,9 +87,9 @@ const CoachProfile = () => {
           email: mapped.email,
           phone: mapped.phone,
           avatar: mapped.avatar,
-          bio: mapped.bio,
-          experience: mapped.experience,
-          achievements: mapped.achievements,
+          bio: mapped.bio || '',
+          experience: mapped.experience || '',
+          achievements: mapped.achievements || [],
           hours: mapped.hours,
           wins: mapped.wins,
         }));

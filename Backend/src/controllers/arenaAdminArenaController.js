@@ -90,9 +90,16 @@ async function patchMyArena(req, res) {
 async function listArenaStaff(req, res) {
   const User = require('../models/User');
   const role = req.query.role;
-  const q = { assignedArenaId: req.arenaScopeId };
+  let q = { assignedArenaId: req.arenaScopeId };
   if (role) q.role = role;
-  
+  // Coaches also count as this arena's staff when they run a coaching batch here,
+  // even if their account isn't tied to the arena.
+  if (role === 'COACH') {
+    const CoachingBatch = require('../models/CoachingBatch');
+    const coachIds = await CoachingBatch.distinct('coachId', { arenaId: req.arenaScopeId });
+    q = { role: 'COACH', isActive: { $ne: false }, $or: [{ assignedArenaId: req.arenaScopeId }, { _id: { $in: coachIds } }] };
+  }
+
   const users = await User.find(q).lean();
   return res.json({
     users: users.map(u => User.toPublic(u)),
