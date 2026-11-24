@@ -4,6 +4,7 @@ const CmsContent = require('../models/CmsContent');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { deductFromWallet } = require('../services/walletService');
 const { eventPrice } = require('../services/catalogPricing');
+const { arenaTodayYmd } = require('../services/slotAvailability');
 
 const registerForEvent = asyncHandler(async (req, res) => {
   const { eventId, name, phone, paymentMethod } = req.body;
@@ -21,6 +22,12 @@ const registerForEvent = asyncHandler(async (req, res) => {
   const event = await CmsContent.findById(eventId);
   if (!event || event.kind !== 'event' || !event.isPublished) {
     return res.status(404).json({ error: 'Event not found or invalid' });
+  }
+
+  // The event date is the first part of the CMS subtitle ("YYYY-MM-DD | time | venue | price | ...").
+  const eventDay = String(event.subtitle || '').split('|')[0].trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(eventDay) && eventDay < arenaTodayYmd()) {
+    return res.status(400).json({ error: 'This event has already taken place' });
   }
 
   const cleanPhone = String(phone).trim();

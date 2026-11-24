@@ -77,6 +77,8 @@ const EventDetail = () => {
   const event = cmsEvent;
   const contactHref = event ? resolveContactHref(event) : null;
 
+  // Events whose date has passed can't be joined any more (the server refuses too).
+  const isEnded = /^\d{4}-\d{2}-\d{2}$/.test(String(event?.date || '')) && event.date < new Date().toISOString().slice(0, 10);
   const isFree = event?.price?.toLowerCase().includes('free');
   const isTBA = event?.price?.toLowerCase().includes('tba');
 
@@ -370,18 +372,18 @@ const EventDetail = () => {
 
               <button 
                 onClick={() => {
-                   if (isApplied) return;
+                   if (isApplied || isEnded) return;
                    setRegStep('form');
                    setShowRegModal(true);
                 }}
-                disabled={isApplied}
+                disabled={isApplied || isEnded}
                 className={`flex-[1.6] h-14 lg:h-12 lg:rounded-none rounded-xl text-white font-black uppercase tracking-[0.2em] text-[10px] transition-all flex items-center justify-center gap-3 ${
-                  isApplied 
+                  isApplied || isEnded
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
                     : 'bg-[#CE2029] shadow-[0_15px_35px_rgba(206, 32, 41,0.3)] hover:shadow-[0_20px_45px_rgba(206, 32, 41,0.4)] hover:-translate-y-1 active:translate-y-0'
                 }`}
               >
-                {isApplied ? <><CheckCircle2 size={16} /> Applied</> : 'Register Now'}
+                {isApplied ? <><CheckCircle2 size={16} /> Applied</> : isEnded ? 'Event Ended' : 'Register Now'}
               </button>
             </div>
           </div>
