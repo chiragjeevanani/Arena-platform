@@ -52,7 +52,7 @@ async function getWalkinSlots(req, res) {
   if (!courtId || !mongoose.isValidObjectId(courtId)) {
     return res.status(400).json({ error: 'courtId is required' });
   }
-  if (!date || !/^d{4}-d{2}-d{2}$/.test(String(date))) {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(String(date))) {
     return res.status(400).json({ error: 'date (YYYY-MM-DD) is required' });
   }
 
@@ -215,7 +215,7 @@ async function createWalkinBooking(req, res) {
     return res.status(400).json({ error: 'Invalid courtId or customerId' });
   }
 
-  if (!/^d{4}-d{2}-d{2}$/.test(String(date))) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) {
     return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
   }
 

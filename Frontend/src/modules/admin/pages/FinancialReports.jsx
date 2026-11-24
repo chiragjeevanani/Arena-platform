@@ -105,7 +105,7 @@ const FinancialReports = () => {
       if (isApiConfigured() && getAuthToken()) {
         try {
           const res = await listAdminCoachingBatches();
-          setBatches(res || []);
+          setBatches(Array.isArray(res) ? res : res?.batches || []);
         } catch (e) {
           console.error('Failed to load batches for filter', e);
         }
@@ -249,7 +249,7 @@ const FinancialReports = () => {
           <select value={selectedBatchId} onChange={e => setSelectedBatchId(e.target.value)} className="bg-transparent text-[11px] font-semibold text-[#36454F] outline-none border-none cursor-pointer pr-2 max-w-[150px] truncate">
              <option value="">All Batches</option>
              {batches.map(b => (
-               <option key={b._id} value={b._id}>{b.title}</option>
+               <option key={b.id || b._id} value={b.id || b._id}>{b.title}</option>
              ))}
           </select>
        </div>

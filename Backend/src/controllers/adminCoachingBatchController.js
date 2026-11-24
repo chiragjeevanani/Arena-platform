@@ -116,11 +116,11 @@ async function createCoachingBatch(req, res) {
 
 async function listCoachingBatches(req, res) {
   const { arenaId } = req.query;
-  if (!arenaId || !mongoose.isValidObjectId(arenaId)) {
-    return res.status(400).json({ error: 'Valid arenaId query is required' });
+  if (arenaId && !mongoose.isValidObjectId(arenaId)) {
+    return res.status(400).json({ error: 'Invalid arenaId' });
   }
 
-  const list = await CoachingBatch.find({ arenaId }).sort({ createdAt: -1 }).populate('coachId').lean();
+  const list = await CoachingBatch.find(arenaId ? { arenaId } : {}).sort({ createdAt: -1 }).populate('coachId').lean();
   
   const enrollmentCounts = await BatchEnrollment.aggregate([
     {
@@ -134,7 +134,7 @@ async function listCoachingBatches(req, res) {
   const countMap = new Map(enrollmentCounts.map(c => [c._id.toString(), c.count]));
 
   return res.json({ batches: list.map((b) => CoachingBatch.toPublic(b, {
-    coachName: b.coachId ? `${b.coachId.firstName || ''} ${b.coachId.lastName || ''}`.trim() || 'Unknown Coach' : '—',
+    coachName: b.coachId ? (b.coachId.name || `${b.coachId.firstName || ''} ${b.coachId.lastName || ''}`.trim() || 'Unknown Coach') : '—',
     enrolledCount: countMap.get(b._id.toString()) || 0
   })) });
 }
@@ -277,7 +277,7 @@ async function listBatchStudentsWithProgress(req, res) {
 
     return {
       id: user._id.toString(),
-      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || 'Unknown',
+      name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown',
       email: user.email,
       phone: user.phone,
       enrollmentStatus: e.status,
@@ -320,14 +320,17 @@ async function enrollOfflineStudent(req, res) {
 
   if (!user) {
     // Create a new "Offline" user
+    // Offline students get a customer record with a random password; without an email they get a
+    // non-deliverable placeholder address (email is required and unique on users).
+    const cleanPhone = String(phone).trim();
     user = await User.create({
-      firstName: String(firstName).trim(),
-      lastName: lastName ? String(lastName).trim() : '',
-      phone: String(phone).trim(),
-      email: email ? String(email).trim().toLowerCase() : undefined,
-      password: await require('bcryptjs').hash(Date.now().toString() + Math.random().toString(), 10), // Random password for offline users
-      role: 'USER',
-      status: 'ACTIVE'
+      name: [String(firstName).trim(), lastName ? String(lastName).trim() : ''].filter(Boolean).join(' '),
+      phone: cleanPhone,
+      email: email
+        ? String(email).trim().toLowerCase()
+        : `offline-${cleanPhone.replace(/\D/g, '') || 'student'}-${Date.now()}@offline.ammarena.invalid`,
+      passwordHash: await require('bcryptjs').hash(require('crypto').randomBytes(24).toString('hex'), 10),
+      role: 'CUSTOMER',
     });
   }
 
@@ -348,7 +351,7 @@ async function enrollOfflineStudent(req, res) {
   // 4. Return new student record formatted for the frontend Matrix
   const studentData = {
     id: user._id.toString(),
-    name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+    name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
     email: user.email,
     phone: user.phone,
     enrollmentStatus: enrollment.status,
