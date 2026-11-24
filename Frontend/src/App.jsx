@@ -161,7 +161,6 @@ const StudentPerformance = lazy(() => import('./modules/coach/pages/StudentPerfo
 const CoachProfile = lazy(() => import('./modules/coach/pages/CoachProfile'));
 
 // Admin Extra Pages
-const PricingManagement = lazy(() => import('./modules/admin/pages/PricingManagement'));
 const EventBanners = lazy(() => import('./modules/admin/pages/EventBanners'));
 const ArenaManagementPanel = lazy(() => import('./modules/admin/pages/ArenaManagementPanel'));
 const FrontendHeroMgmt = lazy(() => import('./modules/admin/pages/FrontendHeroMgmt'));
@@ -273,7 +272,8 @@ function App() {
               <Route path="sales/:saleId" element={<TransactionDetails />} />
               <Route path="reports" element={<FinancialReports />} />
               <Route path="reports/daily" element={<DailyCourtBookingReport />} />
-              <Route path="pricing" element={<PricingManagement />} />
+              {/* The old local-only pricing screen; real rates are set in Arena Control → Pricing Rules. */}
+              <Route path="pricing" element={<Navigate to="/admin/arena-panel?tab=pricing" replace />} />
               <Route path="membership" element={<MembershipMgmt />} />
               <Route path="membership/active" element={<ActiveMemberships />} />
               <Route path="user/hero" element={<FrontendHeroMgmt />} />

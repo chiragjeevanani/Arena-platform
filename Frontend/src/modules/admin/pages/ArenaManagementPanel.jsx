@@ -185,18 +185,24 @@ const TABS = [
 ];
 
 
+// Prototype screens that show sample data and save nothing (each carries a "DEMO UI" banner).
+// Hidden until they are wired to real data; the real equivalents are Financial Reports,
+// Daily Court Report, Users, Membership Management and the 24-hour cancellation rule.
+const PROTOTYPE_TABS = new Set(['analytics', 'income', 'guest', 'staff', 'notices', 'membership', 'maintenance', 'policies']);
+const VISIBLE_TABS = TABS.filter((t) => !PROTOTYPE_TABS.has(t.id));
+
 const ArenaManagementPanel = () => {
   const { user } = useAuth();
   const { arena, allArenas, selectedArenaId, setSelectedArenaId } = useArenaPanel();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabQuery = searchParams.get('tab');
-  const activeTab = tabQuery || 'details';
+  const activeTab = tabQuery && !PROTOTYPE_TABS.has(tabQuery) ? tabQuery : 'details';
 
   const setActiveTab = (newTab) => {
     setSearchParams({ tab: newTab });
   };
 
-  const active = TABS.find(t => t.id === activeTab) || TABS[0];
+  const active = VISIBLE_TABS.find(t => t.id === activeTab) || VISIBLE_TABS[0];
 
   const renderContent = () => {
     switch (activeTab) {
@@ -279,7 +285,7 @@ const ArenaManagementPanel = () => {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex min-w-max md:min-w-0">
-              {TABS.map((tab) => {
+              {VISIBLE_TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)}

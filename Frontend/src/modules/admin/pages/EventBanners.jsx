@@ -1678,20 +1678,6 @@ const EventBanners = () => {
       '& .MuiButton-root, & input, & textarea, & select': { fontFamily: "'Inter', sans-serif" }
     }}>
       <Container maxWidth="xl">
-        <Box
-          sx={{
-            mb: 2,
-            p: 2,
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: isDark ? 'rgba(245, 158, 11, 0.35)' : 'rgba(245, 158, 11, 0.45)',
-            bgcolor: isDark ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 251, 235, 0.95)',
-          }}
-        >
-          <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
-            Demo UI: event banner scheduling here is local-only. Use Events admin + CMS for published events.
-          </Typography>
-        </Box>
         {/* View Switcher Tabs (Only if not in details view) */}
         {view !== 'DETAILS' && (
           <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
