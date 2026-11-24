@@ -7,7 +7,8 @@ const Arena = require('../models/Arena');
 const CourtSlot = require('../models/CourtSlot');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const User = require('../models/User');
-const { buildCourtAvailabilityQuery, buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
+const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
+const { slotsOverlap, findOverlappingBooking } = require('../services/slotAvailability');
 const { evaluatePricing } = require('../services/pricingEngine');
 
 // Helper to convert time string to minutes for comparison
@@ -97,7 +98,6 @@ async function getWalkinSlots(req, res) {
     .select('timeSlot')
     .lean();
 
-  const bookedSet = new Set(bookings.map((b) => b.timeSlot));
 
   // Get blocks
   const blocks = await AvailabilityBlock.find({ courtId, date }).lean();
@@ -111,11 +111,12 @@ async function getWalkinSlots(req, res) {
       const bEnd = timeToMins(b.endTime);
       return sStart < bEnd && sEnd > bStart;
     });
+    const isBooked = bookings.some((b) => slotsOverlap(b.timeSlot, s.timeSlot));
     return {
       timeSlot: s.timeSlot,
       price: s.price,
-      available: !bookedSet.has(s.timeSlot) && !isBlocked,
-      isBooked: bookedSet.has(s.timeSlot),
+      available: !isBooked && !isBlocked,
+      isBooked,
       isBlocked,
     };
   });
@@ -228,7 +229,7 @@ async function createWalkinBooking(req, res) {
   if (!court) return res.status(404).json({ error: 'Court not found in your arena' });
 
   // Check for conflict
-  const conflict = await Booking.findOne(buildCourtSlotConflictQuery({ courtId, date, timeSlot }));
+  const conflict = await findOverlappingBooking({ courtId, date, timeSlot });
   if (conflict) {
     return res.status(409).json({ error: 'This slot is already booked' });
   }

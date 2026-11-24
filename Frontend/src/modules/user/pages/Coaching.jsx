@@ -63,7 +63,7 @@ const Coaching = () => {
             const data = await fetchPublicCoachingBatches(a.id);
             const name = a.name || '';
             for (const b of data.batches || []) {
-              out.push(mapPublicBatchToCoachCard(b, name));
+              out.push({ ...mapPublicBatchToCoachCard(b, name), endDate: b.endDate || '' });
             }
           } catch {
             /* skip */
@@ -74,7 +74,9 @@ const Coaching = () => {
       }
 
       if (!cancelled) {
-        setBatches(out);
+        // Batches whose end date has passed can no longer be joined: keep them out of the live list.
+        const todayYmd = new Date().toISOString().slice(0, 10);
+        setBatches(out.filter((b) => !b.endDate || String(b.endDate).slice(0, 10) >= todayYmd));
 
         // Construct final enrolled batches list
         const finalEnrolled = enrolledList.map(e => {

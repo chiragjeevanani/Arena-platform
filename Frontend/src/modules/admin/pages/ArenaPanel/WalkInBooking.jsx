@@ -219,8 +219,8 @@ export default function WalkInBooking() {
       {/* Title Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-5 border-b border-slate-100">
         <div>
-          <h2 className="text-xl font-black tracking-tight text-[#36454F]">Walk-In Reservation Console</h2>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Book courts and process transactions directly on premise</p>
+          <h2 className="text-xl font-black tracking-tight text-[#36454F]">Walk-in Booking</h2>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Book a court for a customer at the front desk and take payment</p>
         </div>
         
         {/* Step Progress indicators */}
@@ -302,7 +302,7 @@ export default function WalkInBooking() {
             <motion.div key="step-1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-black uppercase tracking-widest text-[#36454F]/60 flex items-center gap-2">
-                  <Building2 size={14} className="text-[#CE2029]" /> Select Facility Unit
+                  <Building2 size={14} className="text-[#CE2029]" /> Select Court
                 </p>
                 {!arenaId && (
                   <button onClick={() => setStep(0)} className="text-[10px] font-black text-[#CE2029] uppercase tracking-widest border-b border-[#CE2029]/20 hover:border-[#CE2029] transition-all">Switch Arena</button>
@@ -343,7 +343,7 @@ export default function WalkInBooking() {
               <div className="flex items-center justify-between">
                  <div>
                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      <Calendar size={14} /> Temporal Window
+                      <Calendar size={14} /> Date & Time
                     </p>
                     <h3 className="text-lg font-black text-[#36454F] mt-1 uppercase tracking-tight italic">{selectedCourt?.name}</h3>
                  </div>
@@ -351,7 +351,7 @@ export default function WalkInBooking() {
               </div>
 
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 max-w-sm">
-                <label className="text-[9px] font-black text-[#36454F]/60 uppercase tracking-[0.2em] mb-2 block">Target Date</label>
+                <label className="text-[9px] font-black text-[#36454F]/60 uppercase tracking-[0.2em] mb-2 block">Date</label>
                 <input
                   type="date"
                   value={selectedDate}
@@ -364,7 +364,7 @@ export default function WalkInBooking() {
               {loadingSlots ? (
                 <div className="py-8 flex flex-col items-center justify-center gap-3">
                   <Loader2 className="animate-spin text-[#CE2029]" size={24} />
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Synchronizing Timeline...</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Loading slots...</p>
                 </div>
               ) : slots.length === 0 ? (
                 <div className="py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
@@ -410,7 +410,7 @@ export default function WalkInBooking() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-black uppercase tracking-widest text-[#36454F]/60 flex items-center gap-2">
-                    <User size={14} className="text-[#CE2029]" /> Occupant Info
+                    <User size={14} className="text-[#CE2029]" /> Customer
                   </p>
                   <button 
                     onClick={() => {
@@ -581,12 +581,12 @@ export default function WalkInBooking() {
               {/* Right Column: Settlement Summary */}
               <div className="space-y-4">
                 <p className="text-[11px] font-black uppercase tracking-widest text-[#36454F]/60 flex items-center gap-2">
-                  <Banknote size={14} className="text-[#CE2029]" /> Settlement Info
+                  <Banknote size={14} className="text-[#CE2029]" /> Booking Summary
                 </p>
 
                 <div className="p-4 bg-slate-900 rounded-2xl text-white space-y-4">
                   <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-1 flex items-center gap-1.5">
-                     <CreditCard size={10} /> Settlement Mode
+                     <CreditCard size={10} /> Payment Method
                   </p>
                   <div className="flex gap-2">
                     {PAYMENT_METHODS.map(m => (
@@ -610,11 +610,11 @@ export default function WalkInBooking() {
                   {/* Summary row */}
                   <div className="space-y-2 text-[10px]">
                     <div className="flex justify-between font-bold text-white/60">
-                      <span>Facility Unit:</span>
+                      <span>Court:</span>
                       <span className="text-white font-black">{selectedCourt?.name}</span>
                     </div>
                     <div className="flex justify-between font-bold text-white/60">
-                      <span>Temporal Slot:</span>
+                      <span>Time:</span>
                       <span className="text-white font-black">{selectedSlot?.timeSlot}</span>
                     </div>
                     <div className="flex justify-between font-bold text-white/60">
@@ -637,24 +637,24 @@ export default function WalkInBooking() {
               <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5 text-green-500 shadow-inner">
                 <CheckCircle2 size={36} strokeWidth={2.5} />
               </div>
-              <h3 className="text-xl font-black text-[#36454F] uppercase tracking-tight italic">Entry Authorized</h3>
-              <p className="text-slate-400 font-bold mt-1.5 uppercase text-[9px] tracking-widest">Transmission Successful • System Log Updated</p>
+              <h3 className="text-xl font-black text-[#36454F] uppercase tracking-tight italic">Booking Confirmed</h3>
+              <p className="text-slate-400 font-bold mt-1.5 uppercase text-[9px] tracking-widest">The booking is saved and shows in the Booking Ledger</p>
               
               <div className="mt-6 p-5 bg-slate-50 rounded-2xl border border-slate-100 text-left space-y-2.5 text-xs">
                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Protocol ID</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Booking ID</span>
                     <span className="font-black text-[#36454F] uppercase">{success.id?.slice(-8) || success._id?.slice(-8) || 'N/A'}</span>
                  </div>
                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Occupant</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Customer</span>
                     <span className="font-black text-[#36454F] uppercase">{success.customerName || 'Walkin Customer'}</span>
                  </div>
                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Temporal Window</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Time</span>
                     <span className="font-black text-[#36454F] uppercase">{success.timeSlot}</span>
                  </div>
                  <div className="flex items-center justify-between pt-2.5 border-t border-slate-200">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Settlement</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Payment</span>
                     <span className="font-black text-green-600 uppercase">{success.amount} OMR • {success.paymentMethod}</span>
                  </div>
               </div>
@@ -686,7 +686,7 @@ export default function WalkInBooking() {
                className="px-6 h-10 bg-[#CE2029] text-white rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1.5 hover:bg-red-700 transition-all shadow-md disabled:opacity-40"
              >
                {submitting ? <Loader2 className="animate-spin" size={12} /> : (
-                 <>Authorize Entry <ChevronRight size={12} /></>
+                 <>Confirm Booking <ChevronRight size={12} /></>
                )}
              </button>
            )}

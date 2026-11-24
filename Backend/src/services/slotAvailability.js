@@ -8,7 +8,6 @@ const Booking = require('../models/Booking');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const UserMembership = require('../models/UserMembership');
 const SlotFreeRequest = require('../models/SlotFreeRequest');
-const { buildCourtSlotConflictQuery } = require('../utils/bookingQuery');
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 // Slot types the public app offers (Academy / Reserved / Maintenance are staff-only).
@@ -51,6 +50,35 @@ function isSlotBlocked(timeSlot, blocks) {
     const bEnd = timeToMinutes(b.endTime);
     return sStart < bEnd && sEnd > bStart;
   });
+}
+
+/** [startMinute, endMinute) of a slot label like "06:00-07:00" or "06:00 AM - 07:00 AM". */
+function slotRange(timeSlot) {
+  const [a, b] = String(timeSlot || '').split(/\s*-\s*/);
+  const start = timeToMinutes(a);
+  let end = timeToMinutes(b);
+  if (end <= start) end += 24 * 60; // runs past midnight
+  return [start, end];
+}
+
+/** True when two slot labels share any time (e.g. "04:00-07:00" and "06:00-07:00"). */
+function slotsOverlap(t1, t2) {
+  if (String(t1) === String(t2)) return true;
+  const [a, b] = slotRange(t1);
+  const [c, d] = slotRange(t2);
+  if ([a, b, c, d].some((n) => !Number.isFinite(n))) return false;
+  return a < d && b > c;
+}
+
+/**
+ * An active (paid) booking on this court/date whose time overlaps the slot, or null.
+ * Overlap rather than exact label match, so overlapping slot set-ups can't be double-booked.
+ */
+async function findOverlappingBooking({ courtId, date, timeSlot, excludeBookingId }) {
+  const q = { courtId, date, status: { $in: ['confirmed', 'rescheduled'] } };
+  if (excludeBookingId) q._id = { $ne: excludeBookingId };
+  const list = await Booking.find(q).select('timeSlot').lean();
+  return list.find((b) => slotsOverlap(b.timeSlot, timeSlot)) || null;
 }
 
 /** UTC instant at which a slot starts, interpreting the date/time in arena local time. */
@@ -144,11 +172,10 @@ async function listCourtDayAvailability(court, dateStr) {
     AvailabilityBlock.find({ courtId: court._id, date: dateStr }).lean(),
     membershipHeldSlotIds(configuredSlots.map((s) => s._id), dateStr),
   ]);
-  const bookedSet = new Set(booked.map((b) => b.timeSlot));
   return configuredSlots.map((s) => ({
     slot: s,
     available:
-      !bookedSet.has(s.timeSlot) &&
+      !booked.some((b) => slotsOverlap(b.timeSlot, s.timeSlot)) &&
       !isSlotBlocked(s.timeSlot, blocks) &&
       !held.has(String(s._id)),
   }));
@@ -169,7 +196,7 @@ async function checkSlotBookable({ court, dateStr, timeSlot }) {
   }
 
   const [taken, blocks, held] = await Promise.all([
-    Booking.findOne(buildCourtSlotConflictQuery({ courtId: court._id, date: dateStr, timeSlot })).lean(),
+    findOverlappingBooking({ courtId: court._id, date: dateStr, timeSlot }),
     AvailabilityBlock.find({ courtId: court._id, date: dateStr }).lean(),
     membershipHeldSlotIds([courtSlot._id], dateStr),
   ]);
@@ -192,4 +219,6 @@ module.exports = {
   arenaTodayYmd,
   listCourtDayAvailability,
   checkSlotBookable,
+  slotsOverlap,
+  findOverlappingBooking,
 };

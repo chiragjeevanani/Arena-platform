@@ -1269,7 +1269,7 @@ const CoachingAdmin = () => {
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Coach</label>
                             <select ref={batchCoachRef} defaultValue={editingBatch?.coachId || ''} className="w-full py-3 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-[#CE2029] outline-none text-[13px] font-bold">
                                <option value="" disabled>Select Coach</option>
-                               {coaches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                               {coaches.filter(c => c.status !== 'Inactive' || c.id === editingBatch?.coachId).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                           </div>
                        </div>
@@ -1337,7 +1337,7 @@ const CoachingAdmin = () => {
                        </div>
 
                        <div className="h-px bg-slate-100 my-2" />
-                       <p className="text-[9px] font-black text-[#CE2029] uppercase tracking-widest">Premium Details & Mocks</p>
+                       <p className="text-[9px] font-black text-[#CE2029] uppercase tracking-widest">Details shown to customers</p>
 
                        <div className="grid grid-cols-3 gap-4">
                           <div>
