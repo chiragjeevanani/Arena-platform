@@ -33,6 +33,8 @@ const posSaleSchema = new mongoose.Schema(
     taxRate: { type: Number, required: true, min: 0, default: 0 },
     taxAmount: { type: Number, required: true, min: 0, default: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
+    // How the customer paid at the counter (card is taken on the arena's own card machine).
+    paymentMethod: { type: String, enum: ['CASH', 'CARD'], default: 'CASH' },
     customer: {
       id: { type: String, default: 'GUEST-01' },
       name: { type: String, default: 'Walk-in Customer' },
@@ -56,6 +58,7 @@ function toPublic(doc) {
     taxRate: o.taxRate ?? 0,
     taxAmount: o.taxAmount ?? 0,
     totalAmount: o.totalAmount,
+    paymentMethod: o.paymentMethod || 'CASH',
     customer: o.customer || { id: 'GUEST-01', name: 'Walk-in Customer', phone: 'N/A' },
     createdAt: o.createdAt,
   };

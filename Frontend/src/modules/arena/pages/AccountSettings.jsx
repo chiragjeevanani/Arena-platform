@@ -220,40 +220,19 @@ const AccountSettings = () => {
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-[#36454F] font-oswald uppercase tracking-wide">Security & Access</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Manage your password and security keys</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">How to change your password</p>
                       </div>
                     </div>
 
-                    <div className="space-y-5">
-                      <div className="group">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block ml-1">Current Password</label>
-                        <input type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-4 text-[13px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm" />
+                    <div className="bg-[#CE2029]/5 border border-[#CE2029]/10 rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-5">
+                      <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-[#CE2029] shadow-lg shadow-[#CE2029]/10 border border-[#CE2029]/10 shrink-0">
+                        <ShieldAlert size={28} strokeWidth={2.5} />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="group">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block ml-1">New Password</label>
-                          <input type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-4 text-[13px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm" />
-                        </div>
-                        <div className="group">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 block ml-1">Confirm Password</label>
-                          <input type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-4 text-[13px] font-semibold text-[#36454F] focus:outline-none focus:border-[#CE2029] focus:bg-white transition-all shadow-sm" />
-                        </div>
-                      </div>
-
-                      <div className="bg-[#CE2029]/5 border border-[#CE2029]/10 rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-5">
-                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-[#CE2029] shadow-lg shadow-[#CE2029]/10 border border-[#CE2029]/10">
-                          <ShieldAlert size={28} strokeWidth={2.5} />
-                        </div>
-                        <div className="flex-1 text-center sm:text-left">
-                          <h4 className="text-[11px] font-bold uppercase tracking-widest text-[#CE2029] mb-1">Two-Factor Authentication</h4>
-                          <p className="text-[12px] font-semibold text-slate-500 leading-snug">
-                            Add an extra layer of security to your manager account.
-                          </p>
-                        </div>
-                        <button className="px-8 py-3 bg-[#CE2029] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-xl shadow-[#CE2029]/30 hover:-translate-y-0.5 transition-all">
-                          Enable
-                        </button>
-                      </div>
+                      <p className="text-[12px] font-semibold text-slate-600 leading-relaxed">
+                        To change your password, sign out and choose <strong>“Forgot Password?”</strong> on the arena login page.
+                        A 6-digit code is emailed to {user?.email || 'your email address'}; enter it with your new password.
+                        A Super Admin can also update your account under Users.
+                      </p>
                     </div>
                   </div>
                 )}

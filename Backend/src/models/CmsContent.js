@@ -19,6 +19,8 @@ const cmsContentSchema = new mongoose.Schema(
     sortOrder: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: false },
     inclusions: { type: [String], default: [] },
+    // Events: registration limit (0 = unlimited); enforced by public event registration.
+    maxParticipants: { type: Number, default: 0, min: 0 },
     startDate: { type: Date, default: null },
     endDate: { type: Date, default: null },
   },
@@ -40,6 +42,7 @@ function toPublic(doc) {
     sortOrder: o.sortOrder,
     isPublished: o.isPublished,
     inclusions: o.inclusions || [],
+    maxParticipants: Number(o.maxParticipants) || 0,
     startDate: o.startDate ? o.startDate.toISOString() : null,
     endDate: o.endDate ? o.endDate.toISOString() : null,
     createdAt: o.createdAt,

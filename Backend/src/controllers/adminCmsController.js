@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 const CmsContent = require('../models/CmsContent');
 
+/** Event registration limit from the form: a whole number, 0 (or blank) = unlimited. */
+const toLimit = (v) => {
+  const n = Math.floor(Number(v));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+
 async function createCmsContent(req, res) {
   const { kind, arenaId, title, subtitle, body, imageUrl, linkUrl, sortOrder, isPublished, inclusions } = req.body;
 
@@ -24,6 +30,7 @@ async function createCmsContent(req, res) {
       sortOrder: sortOrder != null ? Number(sortOrder) : 0,
       isPublished: Boolean(isPublished),
       inclusions: Array.isArray(inclusions) ? inclusions : [],
+      maxParticipants: toLimit(req.body.maxParticipants),
       startDate: req.body.startDate ? new Date(req.body.startDate) : null,
       endDate: req.body.endDate ? new Date(req.body.endDate) : null,
     });
@@ -77,6 +84,9 @@ async function updateCmsContent(req, res) {
   if (linkUrl !== undefined) doc.linkUrl = String(linkUrl);
   if (sortOrder !== undefined) doc.sortOrder = Number(sortOrder);
   if (isPublished !== undefined) doc.isPublished = Boolean(isPublished);
+  if (req.body.maxParticipants !== undefined) {
+    doc.maxParticipants = toLimit(req.body.maxParticipants);
+  }
   if (inclusions !== undefined) {
     doc.inclusions = Array.isArray(inclusions) ? inclusions : [];
   }

@@ -87,6 +87,7 @@ async function createPosSale(req, res) {
       taxRate: POS_TAX_RATE,
       taxAmount,
       totalAmount,
+      paymentMethod: String(req.body.paymentMethod || '').toUpperCase() === 'CARD' ? 'CARD' : 'CASH',
       customer,
     });
 

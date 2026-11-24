@@ -206,9 +206,10 @@ const RetailPOS = () => {
           qty: i.qty,
           unitPrice: i.price,
         }));
-        const saleBody = { 
-          arenaId: opsScope.arenaId, 
+        const saleBody = {
+          arenaId: opsScope.arenaId,
           lines,
+          paymentMethod: method === 'CASH' ? 'CASH' : 'CARD',
           customer: {
             id: selectedCustomer.id || selectedCustomer._id,
             name: selectedCustomer.name,
@@ -850,8 +851,8 @@ const RetailPOS = () => {
                          <CreditCard size={32} />
                       </div>
                    </div>
-                   <h3 className="text-xl font-black uppercase italic font-oswald text-[#36454F]">Contacting Terminal...</h3>
-                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Requesting authorization for OMR {currentTotal.toFixed(3)}</p>
+                   <h3 className="text-xl font-black uppercase italic font-oswald text-[#36454F]">Recording Card Payment...</h3>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Card payment of OMR {currentTotal.toFixed(3)} taken on your card machine</p>
                 </div>
               )}
 

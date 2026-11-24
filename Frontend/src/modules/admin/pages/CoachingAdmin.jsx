@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Plus, Users, Search, Filter, Mail, Video, Zap, GraduationCap, ChevronRight, X, Calendar, Clock, MapPin, Edit3, CheckCircle2, Image as ImageIcon, Upload, Banknote, Trash2, Fingerprint, History, Award, UserCheck, TrendingUp, Activity, LayoutGrid, AlertTriangle } from 'lucide-react';
 import { 
@@ -74,6 +74,7 @@ const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
 });
 
 const CoachingAdmin = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const isReadOnly = user?.role === 'ARENA_ADMIN';
 
@@ -103,7 +104,7 @@ const CoachingAdmin = () => {
 
   const [editingBatch, setEditingBatch] = useState(null);
   const [editingStudent] = useState(null);
-  const [editingBooking, setEditingBooking] = useState(null);
+  const [editingBooking] = useState(null);
   const [batches, setBatches] = useState(BATCHES_DATA);
   const [, setStudents] = useState(STUDENT_DIRECTORY);
   const [bookings, setBookings] = useState(BOOKINGS_DATA);
@@ -1158,7 +1159,7 @@ const CoachingAdmin = () => {
                          Centralized Court Reservation Monitoring
                       </div>
                     </div>
-                    <button onClick={() => { setEditingBooking(null); setShowBookingModal(true); }} className="px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[#1e293b] text-[10px] font-black uppercase tracking-widest hover:border-[#CE2029] transition-all">New Booking</button>
+                    <button onClick={() => navigate('/admin/arena-panel?tab=walkin')} className="px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[#1e293b] text-[10px] font-black uppercase tracking-widest hover:border-[#CE2029] transition-all">New Walk-in Booking</button>
                  </div>
                  
                  <div className="overflow-x-auto">

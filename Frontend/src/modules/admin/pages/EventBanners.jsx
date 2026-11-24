@@ -318,9 +318,10 @@ const EventFormView = ({ loadEvents, setView, isDark }) => {
         title: formData.name,
         subtitle: `${formData.date} | ${formData.time} | ${formData.venue} | ${formData.entryFee || '0'} | ${formData.type} | ${formData.sportCategory}`,
         imageUrl: bannerPreview,
-        isPublished: true, 
+        isPublished: true,
         body: `${formData.description || ''}\n\n${formattedRules}`,
-        inclusions: (formData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean)
+        inclusions: (formData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean),
+        maxParticipants: Number(formData.maxParticipants) || 0
       };
       await createAdminCms(payload);
       loadEvents();
@@ -668,7 +669,7 @@ const EventBanners = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [editFormData, setEditFormData] = useState({ 
     name: '', type: '', status: '', banner: '', description: '', rules: '',
-    date: '', time: '', venue: '', entryFee: '', inclusions: '', sportCategory: 'Badminton'
+    date: '', time: '', venue: '', entryFee: '', maxParticipants: '', inclusions: '', sportCategory: 'Badminton'
   });
   const [isEditUploading, setIsEditUploading] = useState(false);
 
@@ -696,7 +697,8 @@ const EventBanners = () => {
         imageUrl: editFormData.banner,
         body: `${editFormData.description || ''}\n\n${formattedRules}`,
         isPublished: editFormData.status === 'Active',
-        inclusions: (editFormData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean)
+        inclusions: (editFormData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean),
+        maxParticipants: Number(editFormData.maxParticipants) || 0
       };
       await updateAdminCms(editingEvent.id, payload);
       setIsEditModalOpen(false);
@@ -733,7 +735,7 @@ const EventBanners = () => {
           entryFee: parts[3] || '0',
           status: c.isPublished ? 'Active' : 'Draft',
           participants: eventParticipants,
-          maxParticipants: 100,
+          maxParticipants: Number(c.maxParticipants) || 0,
           revenue: regs.filter(r => r.eventId === c.id && r.status === 'Approved')
                       .reduce((sum) => sum + (parseFloat(parts[3]) || 0), 0),
           expenses: 0,
@@ -1085,6 +1087,7 @@ const EventBanners = () => {
                                   time: event.time || '',
                                   venue: event.venue || '',
                                   entryFee: event.entryFee || '',
+                                  maxParticipants: event.maxParticipants ? String(event.maxParticipants) : '',
                                   inclusions: (event.inclusions || []).join(', '),
                                   sportCategory: event.sportCategory || 'Badminton'
                                 });
@@ -2034,6 +2037,28 @@ const EventBanners = () => {
                 value={editFormData.venue}
                 onChange={(e) => setEditFormData({ ...editFormData, venue: e.target.value })}
                 placeholder="e.g. Court 1"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
+                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
+                    '&:hover fieldset': { borderColor: '#CE202944' },
+                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
+                Max Participants (blank = no limit)
+              </Typography>
+              <TextField
+                fullWidth
+                type="number"
+                variant="outlined"
+                value={editFormData.maxParticipants}
+                onChange={(e) => setEditFormData({ ...editFormData, maxParticipants: e.target.value })}
+                placeholder="No limit"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 3,
