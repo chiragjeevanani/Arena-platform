@@ -191,6 +191,7 @@ const InventoryPage = lazy(() => import('./modules/arena/pages/index.jsx').then(
 const EventsAdminPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.EventsAdminPage })));
 const RetailPOSPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.RetailPOSPage })));
 const AccountSettingsPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AccountSettingsPage })));
+const ArenaWalkInPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.WalkInPage })));
 const AttendancePage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AttendancePage })));
 
 
@@ -248,6 +249,7 @@ function App() {
               <Route path="events" element={<EventsAdminPage />} />
               <Route path="retail" element={<RetailPOSPage />} />
               <Route path="ledger" element={<Bookings />} />
+              <Route path="walkin" element={<ArenaWalkInPage />} />
               <Route path="daily-report" element={<DailyCourtBookingReport />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="account-settings" element={<AccountSettingsPage />} />

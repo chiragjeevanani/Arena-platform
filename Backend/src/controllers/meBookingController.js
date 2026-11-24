@@ -212,6 +212,7 @@ async function listMyBookings(req, res) {
       if (!arena || !court) return null;
       return Booking.toPublic(b, {
         arenaName: arena.name || '',
+        location: String(arena.location || '').trim().replace(/[\s,]+$/, ''),
         courtName: court.name || '',
       });
     })

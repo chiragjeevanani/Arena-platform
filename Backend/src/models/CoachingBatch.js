@@ -23,7 +23,7 @@ const coachingBatchSchema = new mongoose.Schema(
     schedule: { type: String, default: '', trim: true },
     scheduleTime: { type: String, default: '', trim: true },
     isPublished: { type: Boolean, default: false },
-    registrationFee: { type: Number, default: 500 },
+    registrationFee: { type: Number, default: 0 },
     taxPercent: { type: Number, default: 5 }, // Oman VAT
     level: { type: String, default: 'Open' },
     coachImage: { type: String, default: '' },

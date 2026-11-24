@@ -258,10 +258,12 @@ const BookingDetails = () => {
                </div>
 
                <div className="p-4 lg:p-6 space-y-6">
+                  {booking.location ? (
                   <div className="flex items-center gap-2 text-slate-600">
                      <MapPin size={16} className="text-[#CE2029]" />
                      <span className="text-xs font-bold tracking-wide">{booking.location}</span>
                   </div>
+                  ) : null}
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                      {(booking.inclusions && booking.inclusions.length > 0 ? booking.inclusions : ['Sanitized', 'Equipment', 'Parking']).map((t, i) => (

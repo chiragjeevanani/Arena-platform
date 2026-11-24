@@ -24,7 +24,7 @@ export function mapArenaInventoryItemToPosProduct(item) {
     id: item.id,
     name: item.name,
     price: Number(item.unitPrice) || 0,
-    category: 'Equipment',
+    category: item.category || 'Equipment',
     stock: Number(item.quantity) || 0,
     sku: item.sku || '',
   };

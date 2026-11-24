@@ -101,7 +101,7 @@ async function createCoachingBatch(req, res) {
     schedule: schedule != null ? String(schedule) : '',
     scheduleTime: scheduleTime != null ? String(scheduleTime) : '',
     isPublished: Boolean(isPublished),
-    registrationFee: registrationFee != null ? Number(registrationFee) : 500,
+    registrationFee: registrationFee != null ? Number(registrationFee) : 0,
     taxPercent: taxPercent != null ? Number(taxPercent) : vatPercent(),
     level: level != null ? String(level) : 'Open',
     coachImage: coachImage != null ? String(coachImage) : '',

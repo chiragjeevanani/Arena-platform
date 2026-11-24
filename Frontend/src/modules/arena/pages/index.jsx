@@ -9,6 +9,7 @@ import EventsAdmin from '../../admin/pages/EventsAdmin';
 import RetailPOS from '../../admin/pages/RetailPOS';
 import AccountSettings from './AccountSettings';
 import CoachAttendance from '../../admin/pages/ArenaPanel/CoachAttendance';
+import WalkInBooking from '../../admin/pages/ArenaPanel/WalkInBooking';
 
 // Helper: wraps a light-theme page inside the dark arena layout content area
 const PageShell = ({ title, subtitle, component: Component }) => (
@@ -23,6 +24,14 @@ const PageShell = ({ title, subtitle, component: Component }) => (
       <Component />
     </div>
   </div>
+);
+
+export const WalkInPage = () => (
+  <PageShell
+    title="Walk-in Booking"
+    subtitle="Book a court for a customer at the front desk"
+    component={WalkInBooking}
+  />
 );
 
 export const ArenaDetailsPage = () => (

@@ -91,8 +91,8 @@ const RetailPOS = () => {
   }, [opsScope, refetchCatalog]);
 
   const categoryOptions = useMemo(
-    () => (opsScope.live ? ['All', 'Equipment'] : CATEGORIES_FULL),
-    [opsScope.live]
+    () => (opsScope.live ? ['All', ...new Set(catalogItems.map((i) => i.category).filter(Boolean))] : CATEGORIES_FULL),
+    [opsScope.live, catalogItems]
   );
 
   const [cart, setCart] = useState([]);
