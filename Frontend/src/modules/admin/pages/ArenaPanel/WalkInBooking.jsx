@@ -388,8 +388,9 @@ export default function WalkInBooking() {
                         <span className="text-[9px] font-black text-[#36454F]">{s.price} OMR</span>
                       </div>
                       <p className="text-[11px] font-black text-[#36454F] tracking-tighter uppercase">{s.timeSlot}</p>
-                      {!s.available && (
-                        <span className="text-[8px] font-black text-red-500 uppercase tracking-widest mt-1 block">Occupied</span>
+                      {!s.available && (s.reservedFor
+                        ? <span className="text-[9px] font-black text-[#0E7490] mt-1 block truncate" title={s.reservedFor}>{s.reservedFor}</span>
+                        : <span className="text-[8px] font-black text-red-500 uppercase tracking-widest mt-1 block">Occupied</span>
                       )}
                       {s.available && (
                          <div className="absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity">
