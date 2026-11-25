@@ -544,8 +544,13 @@ function isTimeSlotInBlock(slotTime, block) {
   if (!block.startTime || !block.endTime) return true;
   const slotStart = slotTime.split('-')[0]?.trim();
   if (!slotStart) return false;
-  const end = block.endTime === '00:00' ? '24:00' : block.endTime; // block running to midnight
-  return slotStart >= block.startTime && slotStart < end;
+  // Compare as minutes: slot labels here are 12-hour ("09:00 PM"), block times are 24-hour ("21:00").
+  const { timeToMinutes } = require('../services/slotAvailability');
+  const s = timeToMinutes(slotStart);
+  const bStart = timeToMinutes(block.startTime);
+  let bEnd = timeToMinutes(block.endTime);
+  if (bEnd <= bStart) bEnd += 24 * 60; // block running to/after midnight
+  return s >= bStart && s < bEnd;
 }
 
 function computeCourtRevenue(bookings) {
