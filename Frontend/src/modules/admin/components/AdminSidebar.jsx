@@ -66,7 +66,8 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/arena-panel?tab=pricing', icon: DollarSign, label: 'Pricing Rules', isArenaControl: true },
       { path: '/admin/arena-panel?tab=availability', icon: CalendarX2, label: 'Availability Control', isArenaControl: true },
       { path: '/admin/arena-panel?tab=walkin', icon: ShoppingBag, label: 'Walk-in Terminal', isArenaControl: true },
-      { path: '/admin/arena-panel?tab=coach-attendance', icon: UserCheck, label: 'Coach Attendance', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=team', icon: Users, label: 'Staff', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=coach-attendance', icon: UserCheck, label: 'Staff Attendance', isArenaControl: true },
       { path: '/admin/arena-panel?tab=register', icon: ClipboardCheck, label: 'Attendance Register', isArenaControl: true },
       { path: '/admin/arena-panel?tab=inventory', icon: Package, label: 'Inventory', isArenaControl: true },
       { path: '/admin/arena-panel?tab=events', icon: Trophy, label: 'Event Management', isArenaControl: true },
@@ -78,7 +79,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/coaching?view=coaches', icon: Trophy, label: 'Coaching Staff', isCoachControl: true },
       { path: '/admin/coaching?view=bookings', icon: CalendarClock, label: 'Booking Registry', isCoachControl: true },
       { path: '/admin/coaching?view=student-attendance', icon: Users, label: 'Academy Attendance', isCoachControl: true },
-      { path: '/admin/coaching?view=attendance', icon: Clock, label: 'Staff Logs', isCoachControl: true },
+      { path: '/admin/arena-panel?tab=coach-attendance', icon: Clock, label: 'Staff Logs', isCoachControl: true },
 
       { path: '/admin/user/events', icon: Trophy, label: 'Event Management' },
       { path: '/admin/bookings', icon: CalendarClock, label: 'Bookings' },
@@ -87,7 +88,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/slot-memberships', icon: CalendarClock, label: 'Slot Memberships', isMembershipMgmt: true },
       { path: '/admin/sponsorships', icon: Briefcase, label: 'Sponsorships' },
       { path: '/admin/users', icon: Users, label: 'Users' },
-      { path: '/admin/coaching?view=attendance', icon: UserCheck, label: 'Staff Attendance', roles: ['SUPER_ADMIN'] },
+      { path: '/admin/arena-panel?tab=coach-attendance', icon: UserCheck, label: 'Staff Attendance', roles: ['SUPER_ADMIN'] },
     ]
   },
   {

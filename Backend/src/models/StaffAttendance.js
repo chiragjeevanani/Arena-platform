@@ -8,6 +8,8 @@ const staffAttendanceSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    // 'user' = staff with a login (staffId is a User); 'roster' = ArenaStaff without a login.
+    staffKind: { type: String, enum: ['user', 'roster'], default: 'user' },
     arenaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Arena',

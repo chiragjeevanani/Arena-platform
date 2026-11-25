@@ -24,7 +24,8 @@ import Broadcaster from './ArenaPanel/Broadcaster';
 import PolicySettings from './ArenaPanel/PolicySettings';
 import MaintenanceScheduler from './ArenaPanel/MaintenanceScheduler';
 
-import CoachAttendance from './ArenaPanel/CoachAttendance';
+import StaffAttendance from './ArenaPanel/StaffAttendance';
+import StaffRoster from './ArenaPanel/StaffRoster';
 import AttendanceRegister from './ArenaPanel/AttendanceRegister';
 import { ClipboardCheck } from 'lucide-react';
 
@@ -96,9 +97,17 @@ const TABS = [
     color: '#CE2029',
   },
   {
+    id: 'team',
+    label: 'Staff',
+    shortLabel: 'Staff',
+    icon: Users,
+    description: 'Staff working under the arena admin',
+    color: '#0E7490',
+  },
+  {
     id: 'coach-attendance',
-    label: 'Coach Attendance',
-    shortLabel: 'Coach Att.',
+    label: 'Staff Attendance',
+    shortLabel: 'Attendance',
     icon: UserCheck,
     description: 'Mark daily attendance for coaches',
     color: '#CE2029',
@@ -230,7 +239,8 @@ const ArenaManagementPanel = () => {
       case 'notices': return <Broadcaster />;
       case 'policies': return <PolicySettings />;
       case 'maintenance': return <MaintenanceScheduler />;
-      case 'coach-attendance': return <CoachAttendance />;
+      case 'coach-attendance': return <StaffAttendance />;
+      case 'team': return <StaffRoster />;
       case 'register': return <AttendanceRegister />;
       case 'inventory': return <Inventory />;
       case 'events': return <EventsAdmin />;

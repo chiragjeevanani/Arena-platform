@@ -8,7 +8,12 @@ import Inventory from '../../admin/pages/Inventory';
 import EventsAdmin from '../../admin/pages/EventsAdmin';
 import RetailPOS from '../../admin/pages/RetailPOS';
 import AccountSettings from './AccountSettings';
-import CoachAttendance from '../../admin/pages/ArenaPanel/CoachAttendance';
+import StaffAttendance from '../../admin/pages/ArenaPanel/StaffAttendance';
+import StaffRoster from '../../admin/pages/ArenaPanel/StaffRoster';
+
+export const StaffRosterPage = () => (
+  <PageShell title="My Staff" subtitle="Everyone working at this arena under the arena admin" component={StaffRoster} />
+);
 import WalkInBooking from '../../admin/pages/ArenaPanel/WalkInBooking';
 import AttendanceRegister from '../../admin/pages/ArenaPanel/AttendanceRegister';
 
@@ -121,9 +126,9 @@ export const AccountSettingsPage = () => (
 
 export const AttendancePage = () => (
   <PageShell
-    title="Coach Attendance"
-    subtitle="Mark and monitor daily coach presence at the arena"
-    component={CoachAttendance}
+    title="Staff Attendance"
+    subtitle="Mark daily attendance for all staff, see daily reports and each person's history"
+    component={StaffAttendance}
     color="#CE2029"
   />
 );

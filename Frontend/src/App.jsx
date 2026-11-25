@@ -190,6 +190,7 @@ const InventoryPage = lazy(() => import('./modules/arena/pages/index.jsx').then(
 const EventsAdminPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.EventsAdminPage })));
 const RetailPOSPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.RetailPOSPage })));
 const AccountSettingsPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AccountSettingsPage })));
+const ArenaStaffPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.StaffRosterPage })));
 const ArenaRegisterPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AttendanceRegisterPage })));
 const ArenaWalkInPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.WalkInPage })));
 const AttendancePage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.AttendancePage })));
@@ -251,6 +252,7 @@ function App() {
               <Route path="ledger" element={<Bookings />} />
               <Route path="walkin" element={<ArenaWalkInPage />} />
               <Route path="register" element={<ArenaRegisterPage />} />
+              <Route path="staff" element={<ArenaStaffPage />} />
               <Route path="daily-report" element={<DailyCourtBookingReport />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="account-settings" element={<AccountSettingsPage />} />

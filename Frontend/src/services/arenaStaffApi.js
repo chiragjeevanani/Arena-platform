@@ -102,3 +102,17 @@ export const updateAttendanceSession = (sessionId, body, arenaId) =>
     body,
     headers: arenaId ? { 'X-Arena-Id': arenaId } : {},
   });
+
+// Staff roster (who works at the arena) and staff attendance. Super Admin passes the arena id.
+const scope = (arenaId) => (arenaId ? { 'X-Arena-Id': arenaId } : {});
+export const getStaffRoster = (arenaId) => apiJson(`${BASE}/staff-roster`, { headers: scope(arenaId) });
+export const addRosterStaff = (body, arenaId) => apiJson(`${BASE}/staff-roster`, { method: 'POST', body, headers: scope(arenaId) });
+export const updateRosterStaff = (id, body, arenaId) => apiJson(`${BASE}/staff-roster/${encodeURIComponent(id)}`, { method: 'PATCH', body, headers: scope(arenaId) });
+export const removeRosterStaff = (id, arenaId) => apiJson(`${BASE}/staff-roster/${encodeURIComponent(id)}`, { method: 'DELETE', headers: scope(arenaId) });
+export const getStaffAttendance = (params, arenaId) => {
+  const q = new URLSearchParams({ arenaId });
+  for (const k of ['date', 'startDate', 'endDate', 'staffId']) if (params?.[k]) q.set(k, params[k]);
+  return apiJson(`${BASE}/staff-attendance?${q.toString()}`, { headers: scope(arenaId) });
+};
+export const markStaffAttendanceApi = (body, arenaId) =>
+  apiJson(`${BASE}/staff-attendance`, { method: 'POST', body: { ...body, arenaId }, headers: scope(arenaId) });

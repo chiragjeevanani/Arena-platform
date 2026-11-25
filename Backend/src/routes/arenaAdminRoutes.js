@@ -40,6 +40,7 @@ const {
 const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/adminPosController');
 const { listEventRegistrations, updateRegistrationStatus } = require('../controllers/adminEventController');
 const { listAttendanceRegister, updateAttendanceSession } = require('../controllers/arenaAttendanceRegisterController');
+const { getStaffRoster, addRosterStaff, updateRosterStaff, removeRosterStaff } = require('../controllers/arenaStaffRosterController');
 const {
   createCmsContent,
   listCmsContent,
@@ -148,6 +149,10 @@ router.post('/cms', requireBodyArenaIdMatchesScope, asyncHandler(createCmsConten
 router.get('/cms', requireQueryArenaMatchesScope, asyncHandler(listCmsContent));
 router.get('/events/registrations', listEventRegistrations);
 router.get('/attendance-register', asyncHandler(listAttendanceRegister));
+router.get('/staff-roster', asyncHandler(getStaffRoster));
+router.post('/staff-roster', asyncHandler(addRosterStaff));
+router.patch('/staff-roster/:id', asyncHandler(updateRosterStaff));
+router.delete('/staff-roster/:id', asyncHandler(removeRosterStaff));
 router.patch('/attendance-register/:sessionId', asyncHandler(updateAttendanceSession));
 router.patch('/events/registrations/:id', updateRegistrationStatus);
 router.patch(
