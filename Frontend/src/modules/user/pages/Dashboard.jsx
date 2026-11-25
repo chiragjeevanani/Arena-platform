@@ -238,12 +238,12 @@ const Dashboard = () => {
         return tb - ta;
       });
 
-      // Deduplicate by ID and content (Date + Slot)
+      // Deduplicate by ID and content (Date + Slot + Court) — two courts at the same hour are two bookings.
       const unique = [];
       const seenIds = new Set();
       const seenContent = new Set();
       for (const b of merged) {
-        const contentKey = `${b.date}_${b.slot}_${b.arenaName}`;
+        const contentKey = `${b.date}_${b.slot}_${b.arenaName}_${b.courtId || b.courtName || b.court || ''}_${b.type || ''}`;
         if (!seenIds.has(b.id) && !seenContent.has(contentKey)) {
           seenIds.add(b.id);
           seenContent.add(contentKey);
@@ -251,7 +251,6 @@ const Dashboard = () => {
         }
       }
 
-      console.log('DEBUG: Merged Dashboard Cards:', unique);
       setAllBookings(unique);
       
       // If we got valid data from server, we can safely clear old mock bookings 

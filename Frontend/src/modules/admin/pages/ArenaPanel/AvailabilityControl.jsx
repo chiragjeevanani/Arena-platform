@@ -16,6 +16,8 @@ const BLOCK_TYPES = [
   { id: 'coaching', label: 'Coaching', color: '#22c55e', icon: UsersRound },
   { id: 'custom', label: 'Custom', color: '#64748b', icon: PenLine },
 ];
+// Reserved slots (long-term, for a player) come from the Reserved Slots page; shown here, not created here.
+const RESERVED_TYPE = { id: 'reserved', label: 'Reserved', color: '#0E7490', icon: UsersRound };
 
 const timeToMinutes = (t) => {
   if (!t) return 0;
@@ -133,12 +135,12 @@ const AvailabilityControl = () => {
     const time24 = timeTo24h(startTime);
 
     // Check Blocks
-    const block = blocks.find(b => 
-      b.courtId === courtId && 
-      b.startTime <= time24 && 
-      b.endTime > time24
+    const block = blocks.find(b =>
+      b.courtId === courtId &&
+      b.startTime <= time24 &&
+      (b.endTime === '00:00' ? '24:00' : b.endTime) > time24
     );
-    if (block) return { type: 'blocked', reason: block.reason, id: block.id };
+    if (block) return { type: 'blocked', reason: block.reason, id: block.id, playerName: block.playerName };
 
     // Check Bookings
     const booking = bookings.find(b => 
@@ -163,7 +165,7 @@ const AvailabilityControl = () => {
   const getSlotLabel = (state) => {
     switch (state.type) {
       case 'booked': return 'Booked';
-      case 'blocked': return BLOCK_TYPES.find(b => b.id === state.reason)?.label || 'Blocked';
+      case 'blocked': return state.reason === 'reserved' ? (state.playerName || 'Reserved') : (BLOCK_TYPES.find(b => b.id === state.reason)?.label || 'Blocked');
       case 'closed': return 'NA';
       default: return 'Free';
     }
@@ -186,9 +188,11 @@ const AvailabilityControl = () => {
   };
 
   const handleRemoveBlock = async (id) => {
+    const reserved = String(id).startsWith('rb_');
+    if (reserved && !window.confirm('Free this reserved slot for this date only (player absent)? The reservation continues on other dates.')) return;
     try {
       await deleteMyBlock(id);
-      showToast('Slot block released', 'success');
+      showToast(reserved ? 'Freed for this date — customers can book it' : 'Slot block released', 'success');
       fetchData();
       fetchSummary();
     } catch {
@@ -335,7 +339,7 @@ const AvailabilityControl = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                  {blocks.map(block => {
-                   const bt = BLOCK_TYPES.find(t => t.id === block.reason);
+                   const bt = block.reason === 'reserved' ? RESERVED_TYPE : BLOCK_TYPES.find(t => t.id === block.reason);
                    const court = courts?.find(c => c.id === block.courtId);
                    return (
                      <div key={block.id} className="flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl">
@@ -344,7 +348,7 @@ const AvailabilityControl = () => {
                              {bt ? <bt.icon size={14} style={{ color: bt.color }} /> : <PenLine size={14} />}
                           </div>
                           <div>
-                             <p className="text-[11px] font-black text-[#36454F] uppercase">{court?.name || 'Invalid Court'} · {bt?.label || 'Custom'}</p>
+                             <p className="text-[11px] font-black text-[#36454F] uppercase">{court?.name || 'Invalid Court'} · {block.reason === 'reserved' ? `Reserved: ${block.playerName}${block.teamName ? ` · ${block.teamName}` : ''}` : (bt?.label || 'Custom')}</p>
                              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{block.startTime} — {block.endTime}</p>
                           </div>
                        </div>

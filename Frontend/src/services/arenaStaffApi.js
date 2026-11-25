@@ -116,3 +116,11 @@ export const getStaffAttendance = (params, arenaId) => {
 };
 export const markStaffAttendanceApi = (body, arenaId) =>
   apiJson(`${BASE}/staff-attendance`, { method: 'POST', body: { ...body, arenaId }, headers: scope(arenaId) });
+
+// Reserved slots: a court time held for a player/team on chosen weekdays between two dates.
+export const listReservedSlots = (status, arenaId) => apiJson(`${BASE}/reserved-slots?status=${encodeURIComponent(status || 'current')}`, { headers: scope(arenaId) });
+export const createReservedSlot = (body, arenaId) => apiJson(`${BASE}/reserved-slots`, { method: 'POST', body, headers: scope(arenaId) });
+export const updateReservedSlot = (id, body, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}`, { method: 'PATCH', body, headers: scope(arenaId) });
+export const releaseReservedDate = (id, date, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/release`, { method: 'POST', body: { date }, headers: scope(arenaId) });
+export const restoreReservedDate = (id, date, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/restore`, { method: 'POST', body: { date }, headers: scope(arenaId) });
+export const endReservedSlot = (id, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/end`, { method: 'POST', headers: scope(arenaId) });

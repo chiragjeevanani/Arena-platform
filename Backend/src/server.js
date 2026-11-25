@@ -21,6 +21,8 @@ async function start() {
   console.log(`${GREEN}${CHECK} MongoDB Connected Successfully${RESET}`);
   // Super Admin's cancellation & refund policy (kept in memory, refreshed every minute).
   require('./services/cancellationPolicy').startCancellationPolicyRefresh();
+  // Reserved slots: notify arena admins 7 days before a reservation ends (hourly check).
+  require('./controllers/reservedSlotController').startReservedSlotNotifier();
 
   // 2. Configure Cloudinary
   try {

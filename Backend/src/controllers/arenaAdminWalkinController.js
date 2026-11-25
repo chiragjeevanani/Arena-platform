@@ -8,7 +8,8 @@ const CourtSlot = require('../models/CourtSlot');
 const AvailabilityBlock = require('../models/AvailabilityBlock');
 const User = require('../models/User');
 const { buildCourtAvailabilityQuery } = require('../utils/bookingQuery');
-const { slotsOverlap, findOverlappingBooking } = require('../services/slotAvailability');
+const { slotsOverlap, findOverlappingBooking, blockCovering } = require('../services/slotAvailability');
+const { blocksForCourtDay } = require('../services/courtBlocks');
 const { evaluatePricing } = require('../services/pricingEngine');
 
 // Helper to convert time string to minutes for comparison
@@ -100,17 +101,12 @@ async function getWalkinSlots(req, res) {
 
 
   // Get blocks
-  const blocks = await AvailabilityBlock.find({ courtId, date }).lean();
+  // One-off blocks plus reserved slots (recurring blocks for a player) on this date.
+  const blocks = await blocksForCourtDay(courtId, date);
 
   const slots = baseSlots.map((s) => {
-    const [startStr, endStr] = s.timeSlot.split(/\s*-\s*/); // "06:00 AM - 07:00 AM" or "06:00-07:00"
-    const sStart = timeToMins(startStr);
-    const sEnd = timeToMins(endStr);
-    const isBlocked = blocks.some((b) => {
-      const bStart = timeToMins(b.startTime);
-      const bEnd = timeToMins(b.endTime);
-      return sStart < bEnd && sEnd > bStart;
-    });
+    const block = blockCovering(s.timeSlot, blocks);
+    const isBlocked = Boolean(block);
     const isBooked = bookings.some((b) => slotsOverlap(b.timeSlot, s.timeSlot));
     return {
       timeSlot: s.timeSlot,
@@ -118,6 +114,7 @@ async function getWalkinSlots(req, res) {
       available: !isBooked && !isBlocked,
       isBooked,
       isBlocked,
+      ...(block?.isRecurring ? { reservedFor: `${block.playerName}${block.teamName ? ` · ${block.teamName}` : ''}` } : {}),
     };
   });
 
@@ -229,6 +226,14 @@ async function createWalkinBooking(req, res) {
   if (!court) return res.status(404).json({ error: 'Court not found in your arena' });
 
   // Check for conflict
+  const covering = blockCovering(timeSlot, await blocksForCourtDay(courtId, date));
+  if (covering) {
+    return res.status(409).json({
+      error: covering.isRecurring
+        ? `This slot is reserved for ${covering.playerName}${covering.teamName ? ` (${covering.teamName})` : ''}. Free that date in Reserved Slots first if they are absent.`
+        : 'This slot is blocked on this date',
+    });
+  }
   const conflict = await findOverlappingBooking({ courtId, date, timeSlot });
   if (conflict) {
     return res.status(409).json({ error: 'This slot is already booked' });

@@ -40,6 +40,7 @@ const {
 const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/adminPosController');
 const { listEventRegistrations, updateRegistrationStatus } = require('../controllers/adminEventController');
 const { listAttendanceRegister, updateAttendanceSession } = require('../controllers/arenaAttendanceRegisterController');
+const { listReservedSlots, createReservedSlot, updateReservedSlot, releaseReservedDate, restoreReservedDate, endReservedSlot } = require('../controllers/reservedSlotController');
 const { getStaffRoster, addRosterStaff, updateRosterStaff, removeRosterStaff } = require('../controllers/arenaStaffRosterController');
 const {
   createCmsContent,
@@ -149,6 +150,12 @@ router.post('/cms', requireBodyArenaIdMatchesScope, asyncHandler(createCmsConten
 router.get('/cms', requireQueryArenaMatchesScope, asyncHandler(listCmsContent));
 router.get('/events/registrations', listEventRegistrations);
 router.get('/attendance-register', asyncHandler(listAttendanceRegister));
+router.get('/reserved-slots', asyncHandler(listReservedSlots));
+router.post('/reserved-slots', asyncHandler(createReservedSlot));
+router.patch('/reserved-slots/:id', asyncHandler(updateReservedSlot));
+router.post('/reserved-slots/:id/release', asyncHandler(releaseReservedDate));
+router.post('/reserved-slots/:id/restore', asyncHandler(restoreReservedDate));
+router.post('/reserved-slots/:id/end', asyncHandler(endReservedSlot));
 router.get('/staff-roster', asyncHandler(getStaffRoster));
 router.post('/staff-roster', asyncHandler(addRosterStaff));
 router.patch('/staff-roster/:id', asyncHandler(updateRosterStaff));

@@ -10,6 +10,11 @@ import RetailPOS from '../../admin/pages/RetailPOS';
 import AccountSettings from './AccountSettings';
 import StaffAttendance from '../../admin/pages/ArenaPanel/StaffAttendance';
 import StaffRoster from '../../admin/pages/ArenaPanel/StaffRoster';
+import ReservedSlots from '../../admin/pages/ArenaPanel/ReservedSlots';
+
+export const ReservedSlotsPage = () => (
+  <PageShell title="Reserved Slots" subtitle="Hold a court time for a regular player on chosen days for a period" component={ReservedSlots} />
+);
 
 export const StaffRosterPage = () => (
   <PageShell title="My Staff" subtitle="Everyone working at this arena under the arena admin" component={StaffRoster} />

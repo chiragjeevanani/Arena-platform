@@ -26,6 +26,7 @@ import MaintenanceScheduler from './ArenaPanel/MaintenanceScheduler';
 
 import StaffAttendance from './ArenaPanel/StaffAttendance';
 import StaffRoster from './ArenaPanel/StaffRoster';
+import ReservedSlots from './ArenaPanel/ReservedSlots';
 import AttendanceRegister from './ArenaPanel/AttendanceRegister';
 import { ClipboardCheck } from 'lucide-react';
 
@@ -95,6 +96,14 @@ const TABS = [
     icon: Users,
     description: 'Manage roles & permissions',
     color: '#CE2029',
+  },
+  {
+    id: 'reserved',
+    label: 'Reserved Slots',
+    shortLabel: 'Reserved',
+    icon: CalendarX2,
+    description: 'Hold a court time for a regular player for a period',
+    color: '#0E7490',
   },
   {
     id: 'team',
@@ -241,6 +250,7 @@ const ArenaManagementPanel = () => {
       case 'maintenance': return <MaintenanceScheduler />;
       case 'coach-attendance': return <StaffAttendance />;
       case 'team': return <StaffRoster />;
+      case 'reserved': return <ReservedSlots />;
       case 'register': return <AttendanceRegister />;
       case 'inventory': return <Inventory />;
       case 'events': return <EventsAdmin />;

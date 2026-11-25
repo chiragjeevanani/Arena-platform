@@ -429,11 +429,15 @@ async function buildCourtBreakdownAndMatrix(courts, bookings, arenaOid, from, to
     isActive: true,
   }).lean();
 
-  const blocks = await AvailabilityBlock.find({
-    arenaId: arenaOid,
-    courtId: { $in: courtIds },
-    date: { $gte: from, $lte: to },
-  }).lean();
+  const blocks = [
+    ...(await AvailabilityBlock.find({
+      arenaId: arenaOid,
+      courtId: { $in: courtIds },
+      date: { $gte: from, $lte: to },
+    }).lean()),
+    // Reserved slots (recurring, for a player) show as blocked on the report too.
+    ...(await require('../services/courtBlocks').recurringDayBlocks({ arenaId: arenaOid, courtIds, from, to })),
+  ];
 
   const bookingsByCourtId = {};
   for (const b of bookings) {
@@ -478,7 +482,8 @@ async function buildCourtBreakdownAndMatrix(courts, bookings, arenaOid, from, to
     const slotMap = {};
     timeSlotsList.forEach((slotTime) => {
       const activeBooking = courtBookings.find((b) => normalizeTimeSlot(b.timeSlot) === slotTime && b.status !== 'cancelled');
-      const isBlocked = courtBlocks.some((blk) => isTimeSlotInBlock(slotTime, blk));
+      const coveringBlock = courtBlocks.find((blk) => isTimeSlotInBlock(slotTime, blk));
+      const isBlocked = Boolean(coveringBlock);
       const slotDef = courtSlotsAll.find((s) => normalizeTimeSlot(s.timeSlot) === slotTime);
 
       if (activeBooking) {
@@ -493,6 +498,8 @@ async function buildCourtBreakdownAndMatrix(courts, bookings, arenaOid, from, to
           paymentMethod: activeBooking.paymentMethod || 'online',
           bookingStatus: activeBooking.status,
         };
+      } else if (isBlocked && coveringBlock.isRecurring) {
+        slotMap[slotTime] = { status: 'RESERVED', label: `Reserved: ${coveringBlock.playerName}${coveringBlock.teamName ? ` · ${coveringBlock.teamName}` : ''}` };
       } else if (isBlocked) {
         slotMap[slotTime] = { status: 'MAINTENANCE', label: 'Maintenance' };
       } else if (slotDef?.type === 'Academy') {
@@ -537,7 +544,8 @@ function isTimeSlotInBlock(slotTime, block) {
   if (!block.startTime || !block.endTime) return true;
   const slotStart = slotTime.split('-')[0]?.trim();
   if (!slotStart) return false;
-  return slotStart >= block.startTime && slotStart < block.endTime;
+  const end = block.endTime === '00:00' ? '24:00' : block.endTime; // block running to midnight
+  return slotStart >= block.startTime && slotStart < end;
 }
 
 function computeCourtRevenue(bookings) {

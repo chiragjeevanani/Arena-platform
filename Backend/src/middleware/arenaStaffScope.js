@@ -139,6 +139,8 @@ async function requireCourtInArenaScope(req, res, next) {
 
 async function requireBlockInArenaScope(req, res, next) {
   const { blockId } = req.params;
+  // Reserved-slot dates ('rb_<id>_<date>') are scope-checked in the controller.
+  if (/^rb_[a-f0-9]{24}_\d{4}-\d{2}-\d{2}$/.test(String(blockId))) return next();
   if (!mongoose.isValidObjectId(blockId)) {
     return res.status(400).json({ error: 'Invalid block id' });
   }

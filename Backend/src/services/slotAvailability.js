@@ -5,7 +5,7 @@
  */
 const CourtSlot = require('../models/CourtSlot');
 const Booking = require('../models/Booking');
-const AvailabilityBlock = require('../models/AvailabilityBlock');
+const { blocksForCourtDay } = require('./courtBlocks');
 const UserMembership = require('../models/UserMembership');
 const SlotFreeRequest = require('../models/SlotFreeRequest');
 
@@ -47,9 +47,15 @@ function isSlotBlocked(timeSlot, blocks) {
   if (sEnd <= sStart) sEnd += 24 * 60; // slot running past midnight
   return blocks.some((b) => {
     const bStart = timeToMinutes(b.startTime);
-    const bEnd = timeToMinutes(b.endTime);
+    let bEnd = timeToMinutes(b.endTime);
+    if (bEnd <= bStart) bEnd += 24 * 60; // block ending at/after midnight (e.g. 23:00–00:00)
     return sStart < bEnd && sEnd > bStart;
   });
+}
+
+/** The block (one-off or reserved) covering this slot, if any — used to show who it is reserved for. */
+function blockCovering(timeSlot, blocks) {
+  return (blocks || []).find((b) => isSlotBlocked(timeSlot, [b])) || null;
 }
 
 /** [startMinute, endMinute) of a slot label like "06:00-07:00" or "06:00 AM - 07:00 AM". */
@@ -169,7 +175,7 @@ async function listCourtDayAvailability(court, dateStr) {
     Booking.find({ courtId: court._id, date: dateStr, status: { $in: ['confirmed', 'rescheduled'] } })
       .select('timeSlot')
       .lean(),
-    AvailabilityBlock.find({ courtId: court._id, date: dateStr }).lean(),
+    blocksForCourtDay(court._id, dateStr),
     membershipHeldSlotIds(configuredSlots.map((s) => s._id), dateStr),
   ]);
   return configuredSlots.map((s) => ({
@@ -197,7 +203,7 @@ async function checkSlotBookable({ court, dateStr, timeSlot }) {
 
   const [taken, blocks, held] = await Promise.all([
     findOverlappingBooking({ courtId: court._id, date: dateStr, timeSlot }),
-    AvailabilityBlock.find({ courtId: court._id, date: dateStr }).lean(),
+    blocksForCourtDay(court._id, dateStr),
     membershipHeldSlotIds([courtSlot._id], dateStr),
   ]);
   if (taken || held.size) {
@@ -214,6 +220,7 @@ module.exports = {
   dayOfWeekOf,
   timeToMinutes,
   isSlotBlocked,
+  blockCovering,
   isSlotInPast,
   slotStartInstant,
   arenaTodayYmd,
