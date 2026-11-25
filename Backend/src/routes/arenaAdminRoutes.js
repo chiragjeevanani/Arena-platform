@@ -41,6 +41,7 @@ const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/
 const { listEventRegistrations, updateRegistrationStatus } = require('../controllers/adminEventController');
 const { listAttendanceRegister, updateAttendanceSession } = require('../controllers/arenaAttendanceRegisterController');
 const { listReservedSlots, createReservedSlot, updateReservedSlot, releaseReservedDate, restoreReservedDate, endReservedSlot } = require('../controllers/reservedSlotController');
+const { listArenaBookings, previewArenaBooking, createArenaBooking, cancelArenaBooking } = require('../controllers/arenaDayBookingController');
 const { getStaffRoster, addRosterStaff, updateRosterStaff, removeRosterStaff } = require('../controllers/arenaStaffRosterController');
 const {
   createCmsContent,
@@ -156,6 +157,11 @@ router.patch('/reserved-slots/:id', asyncHandler(updateReservedSlot));
 router.post('/reserved-slots/:id/release', asyncHandler(releaseReservedDate));
 router.post('/reserved-slots/:id/restore', asyncHandler(restoreReservedDate));
 router.post('/reserved-slots/:id/end', asyncHandler(endReservedSlot));
+// Whole-arena day bookings (every court, all day, for one client)
+router.get('/arena-bookings', asyncHandler(listArenaBookings));
+router.get('/arena-bookings/preview', asyncHandler(previewArenaBooking));
+router.post('/arena-bookings', asyncHandler(createArenaBooking));
+router.post('/arena-bookings/:id/cancel', asyncHandler(cancelArenaBooking));
 router.get('/staff-roster', asyncHandler(getStaffRoster));
 router.post('/staff-roster', asyncHandler(addRosterStaff));
 router.patch('/staff-roster/:id', asyncHandler(updateRosterStaff));

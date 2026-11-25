@@ -56,6 +56,14 @@ const bookingSchema = new mongoose.Schema(
     refundReference: { type: String, default: '', trim: true },
     refundedAt: { type: Date, default: null },
 
+    // Set when the arena moved this booking (e.g. the whole arena was booked that day)
+    rescheduledFrom: {
+      type: { courtId: String, date: String, timeSlot: String },
+      default: null,
+    },
+    rescheduledAt: { type: Date, default: null },
+    rescheduleReason: { type: String, default: '', trim: true },
+
     // Audit Pricing Snapshot Fields
     normalPrice: { type: Number, default: 0 },
     basePrice: { type: Number, default: 0 },
@@ -108,6 +116,8 @@ function toPublicBooking(doc, extras = {}) {
     refundMethod: o.refundMethod || null,
     refundReference: o.refundReference || '',
     refundedAt: o.refundedAt || null,
+    rescheduledFrom: o.rescheduledFrom?.date ? o.rescheduledFrom : null,
+    rescheduledAt: o.rescheduledAt || null,
     checkoutId: o.checkoutId || null,
     couponCode: o.couponCode || '',
     couponDiscount: o.couponDiscount || 0,

@@ -48,6 +48,7 @@ export function mapMeBookingToDashboardCard(b, extras = {}) {
     paymentStatus: b.paymentStatus,
     pricingType: b.pricingType,
     createdAt: b.createdAt,
+    rescheduledFrom: b.rescheduledFrom || null,
     // Only money actually taken gets a receipt (cancelled / expired / unpaid checkouts don't).
     receiptUrl: b.id && ['paid', 'refunded'].includes(String(b.paymentStatus || '').toLowerCase())
       ? `#receipt-${b.id}`

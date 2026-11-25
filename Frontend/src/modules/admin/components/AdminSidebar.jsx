@@ -65,6 +65,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/arena-panel?tab=slots', icon: Clock, label: 'Slot Configuration', isArenaControl: true },
       { path: '/admin/arena-panel?tab=pricing', icon: DollarSign, label: 'Pricing Rules', isArenaControl: true },
       { path: '/admin/arena-panel?tab=reserved', icon: CalendarClock, label: 'Reserved Slots', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=arena-booking', icon: Building2, label: 'Whole-Arena Booking', isArenaControl: true },
       { path: '/admin/arena-panel?tab=availability', icon: CalendarX2, label: 'Availability Control', isArenaControl: true },
       { path: '/admin/arena-panel?tab=walkin', icon: ShoppingBag, label: 'Walk-in Terminal', isArenaControl: true },
       { path: '/admin/arena-panel?tab=team', icon: Users, label: 'Staff', isArenaControl: true },

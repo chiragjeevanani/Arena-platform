@@ -114,7 +114,8 @@ async function getWalkinSlots(req, res) {
       available: !isBooked && !isBlocked,
       isBooked,
       isBlocked,
-      ...(block?.isRecurring ? { reservedFor: `${block.playerName}${block.teamName ? ` · ${block.teamName}` : ''}` } : {}),
+      ...(block?.isArenaBooking ? { reservedFor: `Whole arena: ${block.bookedFor}${block.teamName ? ` · ${block.teamName}` : ''}` }
+        : block?.isRecurring ? { reservedFor: `${block.playerName}${block.teamName ? ` · ${block.teamName}` : ''}` } : {}),
     };
   });
 
@@ -229,8 +230,10 @@ async function createWalkinBooking(req, res) {
   const covering = blockCovering(timeSlot, await blocksForCourtDay(courtId, date));
   if (covering) {
     return res.status(409).json({
-      error: covering.isRecurring
-        ? `This slot is reserved for ${covering.playerName}${covering.teamName ? ` (${covering.teamName})` : ''}. Free that date in Reserved Slots first if they are absent.`
+      error: covering.isArenaBooking
+        ? `The whole arena is booked for ${covering.bookedFor} on this date.`
+        : covering.isRecurring
+        ?`This slot is reserved for ${covering.playerName}${covering.teamName ? ` (${covering.teamName})` : ''}. Free that date in Reserved Slots first if they are absent.`
         : 'This slot is blocked on this date',
     });
   }

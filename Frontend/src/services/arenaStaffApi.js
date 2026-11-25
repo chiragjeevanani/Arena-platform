@@ -124,3 +124,9 @@ export const updateReservedSlot = (id, body, arenaId) => apiJson(`${BASE}/reserv
 export const releaseReservedDate = (id, date, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/release`, { method: 'POST', body: { date }, headers: scope(arenaId) });
 export const restoreReservedDate = (id, date, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/restore`, { method: 'POST', body: { date }, headers: scope(arenaId) });
 export const endReservedSlot = (id, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/end`, { method: 'POST', headers: scope(arenaId) });
+
+// Whole-arena bookings: every court, all day, for one client (price agreed offline).
+export const listArenaBookings = (status, arenaId) => apiJson(`${BASE}/arena-bookings?status=${encodeURIComponent(status || 'upcoming')}`, { headers: scope(arenaId) });
+export const previewArenaBooking = (date, arenaId) => apiJson(`${BASE}/arena-bookings/preview?date=${encodeURIComponent(date)}`, { headers: scope(arenaId) });
+export const createArenaBooking = (body, arenaId) => apiJson(`${BASE}/arena-bookings`, { method: 'POST', body, headers: scope(arenaId) });
+export const cancelArenaBooking = (id, arenaId) => apiJson(`${BASE}/arena-bookings/${encodeURIComponent(id)}/cancel`, { method: 'POST', headers: scope(arenaId) });

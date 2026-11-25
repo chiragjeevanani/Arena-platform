@@ -27,6 +27,8 @@ import MaintenanceScheduler from './ArenaPanel/MaintenanceScheduler';
 import StaffAttendance from './ArenaPanel/StaffAttendance';
 import StaffRoster from './ArenaPanel/StaffRoster';
 import ReservedSlots from './ArenaPanel/ReservedSlots';
+import WholeArenaBooking from './ArenaPanel/WholeArenaBooking';
+import { Building2 as WholeArenaIcon } from 'lucide-react';
 import AttendanceRegister from './ArenaPanel/AttendanceRegister';
 import { ClipboardCheck } from 'lucide-react';
 
@@ -103,6 +105,14 @@ const TABS = [
     shortLabel: 'Reserved',
     icon: CalendarX2,
     description: 'Hold a court time for a regular player for a period',
+    color: '#0E7490',
+  },
+  {
+    id: 'arena-booking',
+    label: 'Whole-Arena Booking',
+    shortLabel: 'Whole Arena',
+    icon: WholeArenaIcon,
+    description: 'Book every court for one client for a whole day',
     color: '#0E7490',
   },
   {
@@ -251,6 +261,7 @@ const ArenaManagementPanel = () => {
       case 'coach-attendance': return <StaffAttendance />;
       case 'team': return <StaffRoster />;
       case 'reserved': return <ReservedSlots />;
+      case 'arena-booking': return <WholeArenaBooking />;
       case 'register': return <AttendanceRegister />;
       case 'inventory': return <Inventory />;
       case 'events': return <EventsAdmin />;

@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { path: '/arena/courts', icon: Target, label: 'Court Management' },
   { path: '/arena/slots', icon: Clock, label: 'Slot Configuration' },
   { path: '/arena/reserved', icon: CalendarClock, label: 'Reserved Slots' },
+  { path: '/arena/arena-booking', icon: Building2, label: 'Whole-Arena Booking' },
   { path: '/arena/availability', icon: CalendarX2, label: 'Availability' },
   { path: '/arena/inventory', icon: Package, label: 'Inventory' },
   { path: '/arena/events', icon: Trophy, label: 'Event Management' },

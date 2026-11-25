@@ -433,6 +433,11 @@ const BookingDetails = () => {
                </div>
                
                <div className="p-5 lg:p-6 space-y-6">
+                  {booking.rescheduledFrom?.date && (
+                    <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-[11px] font-bold text-amber-900">
+                      Moved by the arena from {booking.rescheduledFrom.date} · {booking.rescheduledFrom.timeSlot} (the arena was booked for a private event that day).
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-4">
                      <div className="space-y-1">
                         <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Date</p>

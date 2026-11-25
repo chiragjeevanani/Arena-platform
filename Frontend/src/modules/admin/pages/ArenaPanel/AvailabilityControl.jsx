@@ -188,6 +188,10 @@ const AvailabilityControl = () => {
   };
 
   const handleRemoveBlock = async (id) => {
+    if (String(id).startsWith('ab_')) {
+      showToast('The whole arena is booked that day — cancel it in Whole-Arena Booking', 'error');
+      return;
+    }
     const reserved = String(id).startsWith('rb_');
     if (reserved && !window.confirm('Free this reserved slot for this date only (player absent)? The reservation continues on other dates.')) return;
     try {

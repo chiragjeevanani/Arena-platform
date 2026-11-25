@@ -227,5 +227,7 @@ module.exports = {
   listCourtDayAvailability,
   checkSlotBookable,
   slotsOverlap,
+  slotRange,
   findOverlappingBooking,
+  findPublicCourtSlots,
 };

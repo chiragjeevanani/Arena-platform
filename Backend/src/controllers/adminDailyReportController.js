@@ -499,7 +499,7 @@ async function buildCourtBreakdownAndMatrix(courts, bookings, arenaOid, from, to
           bookingStatus: activeBooking.status,
         };
       } else if (isBlocked && coveringBlock.isRecurring) {
-        slotMap[slotTime] = { status: 'RESERVED', label: `Reserved: ${coveringBlock.playerName}${coveringBlock.teamName ? ` · ${coveringBlock.teamName}` : ''}` };
+        slotMap[slotTime] = { status: 'RESERVED', label: require('../services/courtBlocks').holderText(coveringBlock) };
       } else if (isBlocked) {
         slotMap[slotTime] = { status: 'MAINTENANCE', label: 'Maintenance' };
       } else if (slotDef?.type === 'Academy') {

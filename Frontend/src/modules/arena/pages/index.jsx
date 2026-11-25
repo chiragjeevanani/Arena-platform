@@ -11,6 +11,11 @@ import AccountSettings from './AccountSettings';
 import StaffAttendance from '../../admin/pages/ArenaPanel/StaffAttendance';
 import StaffRoster from '../../admin/pages/ArenaPanel/StaffRoster';
 import ReservedSlots from '../../admin/pages/ArenaPanel/ReservedSlots';
+import WholeArenaBooking from '../../admin/pages/ArenaPanel/WholeArenaBooking';
+
+export const WholeArenaBookingPage = () => (
+  <PageShell title="Whole-Arena Booking" subtitle="Book every court for one client for a whole day" component={WholeArenaBooking} />
+);
 
 export const ReservedSlotsPage = () => (
   <PageShell title="Reserved Slots" subtitle="Hold a court time for a regular player on chosen days for a period" component={ReservedSlots} />
