@@ -2,10 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, FileText, CheckCircle, ShieldAlert, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { useCancellationPolicy, hoursText } from '../../../utils/cancellationPolicy';
 
 const Terms = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const policy = useCancellationPolicy();
 
   const sections = [
     {
@@ -18,7 +20,7 @@ const Terms = () => {
     {
       icon: CheckCircle,
       title: '2. Booking & Cancellation Policy',
-      content: 'Bookings must be made in advance. Cancellations made at least 24 hours prior to the booked slot receive a full refund or account credit. Cancellations within 24 hours forfeit the entire booking fee. See also https://www.ammarena.com/refund-policy for full refund rules.',
+      content: `Bookings must be made in advance. Cancellations made at least ${hoursText(policy.refundHours)} prior to the booked slot receive a full refund as Arena Wallet credit. Cancellations within ${hoursText(policy.refundHours)} forfeit the entire booking fee. See also https://www.ammarena.com/refund-policy for full refund rules.`,
       color: 'text-emerald-500',
       bg: 'bg-emerald-500/10'
     },

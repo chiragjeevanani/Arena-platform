@@ -19,6 +19,8 @@ async function start() {
   // 1. Connect MongoDB
   await connectDB();
   console.log(`${GREEN}${CHECK} MongoDB Connected Successfully${RESET}`);
+  // Super Admin's cancellation & refund policy (kept in memory, refreshed every minute).
+  require('./services/cancellationPolicy').startCancellationPolicyRefresh();
 
   // 2. Configure Cloudinary
   try {

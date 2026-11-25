@@ -16,9 +16,11 @@ const { creditWallet, refundBookingWallet } = require('./walletService');
 const { slotStartInstant } = require('./slotAvailability');
 const { roundMoney } = require('./pricing');
 
+const { getCancellationPolicy } = require('./cancellationPolicy');
+
+/** Hours before the slot a paid booking must be cancelled for a full refund (Super Admin setting). */
 function refundWindowHours() {
-  const n = Number(process.env.CANCELLATION_REFUND_HOURS);
-  return Number.isFinite(n) && n >= 0 ? n : 24;
+  return getCancellationPolicy().refundHours;
 }
 
 /** What a customer would get back if they cancelled this booking now. */
@@ -33,7 +35,8 @@ function cancellationQuote(booking, now = new Date()) {
   }
   // Grace period right after booking: covers the app rolling back a cart checkout that
   // failed part-way, and genuine mis-taps, without forfeiting the fee.
-  const graceMs = (Number(process.env.CANCELLATION_GRACE_MINUTES) || 10) * 60 * 1000;
+  const graceMinutes = getCancellationPolicy().graceMinutes;
+  const graceMs = graceMinutes * 60 * 1000;
   const justBooked = booking.createdAt && now.getTime() - new Date(booking.createdAt).getTime() <= graceMs;
   const eligible = justBooked || (hoursBeforeStart !== null && hoursBeforeStart >= policyHours);
   return {

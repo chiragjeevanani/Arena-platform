@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import Logo from '../assets/Logo (3).png';
 import { VAT_PERCENT, splitInclusiveVat } from './tax';
+import { fillPolicy, getCachedCancellationPolicy, loadCancellationPolicy } from './cancellationPolicy';
 
 /**
  * Booking receipt PDF (tax invoice + terms page), drawn with jsPDF vectors so
@@ -48,7 +49,7 @@ const TERMS = [
   },
   {
     title: '2. Cancellation & Refund Policy',
-    body: 'Cancellations must be made at least 24 hours prior to the scheduled booking time to receive a full refund or account credit. Cancellations made within 24 hours will forfeit the entire booking fee.',
+    body: 'Cancellations must be made at least {REFUND_HOURS} prior to the scheduled booking time to receive a full refund as Arena Wallet credit. Cancellations made within {REFUND_HOURS} will forfeit the entire booking fee.',
   },
   {
     title: '3. Time Adherence & Overstay',
@@ -498,7 +499,7 @@ function drawTermsPage(pdf) {
 
   const cardBody = (t, w) => {
     setFont(pdf, 9, 'normal', C.body);
-    return pdf.splitTextToSize(t.body, w - 7);
+    return pdf.splitTextToSize(fillPolicy(t.body, getCachedCancellationPolicy()), w - 7);
   };
   const drawCard = (t, x, top, w, h, body) => {
     pdf.setFillColor(C.panel);
@@ -569,6 +570,7 @@ function drawTermsPage(pdf) {
  */
 export async function createBookingReceiptPdf(r, { logo: logoOverride } = {}) {
   const logo = logoOverride !== undefined ? logoOverride : await loadLogo();
+  await loadCancellationPolicy({ force: true }); // terms show the Super Admin's current refund cut-off
   const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
   const newPage = () => {

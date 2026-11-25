@@ -1,4 +1,5 @@
 const express = require('express');
+const { getAdminCancellationPolicy, updateAdminCancellationPolicy } = require('../controllers/cancellationPolicyController');
 const multer = require('multer');
 const { requireAuth } = require('../middleware/auth');
 const { requireRole } = require('../middleware/requireRole');
@@ -184,6 +185,8 @@ router.post(
 router.get('/staff-attendance', asyncHandler(listStaffAttendance));
 
 // Referral System & Wallet Management
+router.get('/settings/cancellation-policy', asyncHandler(getAdminCancellationPolicy));
+router.put('/settings/cancellation-policy', asyncHandler(updateAdminCancellationPolicy));
 router.get('/referrals/settings', asyncHandler(getReferralSettings));
 router.put('/referrals/settings', asyncHandler(updateReferralSettings));
 router.get('/referrals', asyncHandler(getReferralsList));

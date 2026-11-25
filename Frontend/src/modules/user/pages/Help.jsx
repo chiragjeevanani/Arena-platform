@@ -2,14 +2,16 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, Mail, Phone, ExternalLink, HelpCircle, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { useCancellationPolicy, hoursText } from '../../../utils/cancellationPolicy';
 
 const Help = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const policy = useCancellationPolicy();
 
   const faqs = [
     { q: 'How do I book a court?', a: 'Go to the home page, select an arena, choose your court and time slot, and proceed to payment.' },
-    { q: 'Can I cancel my booking?', a: 'Yes. Cancel at least 24 hours before the slot time for a full refund to your Arena Wallet. Cancellations within 24 hours forfeit the booking fee.' },
+    { q: 'Can I cancel my booking?', a: `Yes. Cancel at least ${hoursText(policy.refundHours)} before the slot time for a full refund to your Arena Wallet. Cancellations within ${hoursText(policy.refundHours)} forfeit the booking fee.` },
     { q: 'What is a Premium Member?', a: 'Members get a percentage discount on court bookings for the length of their plan. See Membership for the available plans.' },
   ];
 

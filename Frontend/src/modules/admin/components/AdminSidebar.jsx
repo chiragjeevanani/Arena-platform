@@ -98,6 +98,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/referrals', icon: Gift, label: 'Referrals & Wallets' },
       { path: '/admin/coupons', icon: Tag, label: 'Coupon Codes' },
       { path: '/admin/refunds', icon: RefreshCw, label: 'Pending Refunds' },
+      { path: '/admin/cancellation-policy', icon: CalendarX2, label: 'Cancellation & Refund' },
     ]
   },
 ];

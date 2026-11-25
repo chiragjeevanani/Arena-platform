@@ -1,4 +1,5 @@
 const express = require('express');
+const { getPublicCancellationPolicy } = require('../controllers/cancellationPolicyController');
 const { optionalAuth } = require('../middleware/auth');
 const {
   listPublishedArenas,
@@ -14,6 +15,7 @@ const { asyncHandler } = require('../utils/asyncHandler');
 
 const router = express.Router();
 
+router.get('/policies/cancellation', asyncHandler(getPublicCancellationPolicy));
 router.get('/arenas', asyncHandler(listPublishedArenas));
 router.get('/arenas/:id', asyncHandler(getPublishedArenaById));
 router.get('/membership-plans', asyncHandler(listGlobalMembershipPlans));

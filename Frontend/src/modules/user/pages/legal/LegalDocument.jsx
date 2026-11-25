@@ -2,13 +2,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
+import { useCancellationPolicy, fillPolicy } from '../../../../utils/cancellationPolicy';
 
 /**
  * Shared public legal/policy page shell for Bank Muscat go-live checklist URLs.
  */
-const LegalDocument = ({ title, subtitle, Icon = FileText, sections = [], relatedLinks = [] }) => {
+const LegalDocument = ({ title, subtitle, Icon = FileText, sections: rawSections = [], relatedLinks = [] }) => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  // Refund hours / grace minutes come from the Super Admin's live setting.
+  const policy = useCancellationPolicy();
+  const sections = fillPolicy(rawSections, policy);
 
   return (
     <div className={`min-h-screen pb-32 relative overflow-hidden transition-colors duration-500 ${
