@@ -77,7 +77,9 @@ async function listBatchStudents(req, res) {
       userId: String(e.userId),
       name: u?.name || '',
       email: u?.email || '',
+      phone: u?.phone || '',
       enrollmentStatus: e.status,
+      enrollmentType: e.enrollmentType || 'online',
     };
   });
   return res.json({ students });

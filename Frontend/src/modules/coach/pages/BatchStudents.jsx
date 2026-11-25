@@ -53,16 +53,7 @@ function AddStudentModal({ batchId, onClose, onAdded }) {
 }
 import { mapApiBatchToCard } from '../utils/coachBatchUi';
 
-const MEMBERSHIP_TYPES = [
-  { code: 'IA', label: 'Individual Annual', color: '#CE2029' },
-  { code: 'IHY', label: 'Individual Half Yearly', color: '#f59e0b' },
-  { code: 'GAP', label: 'Group Annual Premium', color: '#3b82f6' },
-  { code: 'GANP', label: 'Group Annual Non Premium', color: '#10b981' },
-  { code: 'GAW', label: 'Group Annual Weekend', color: '#8b5cf6' },
-  { code: 'GHYP', label: 'Group Half Yearly Premium', color: '#ec4899' },
-  { code: 'GHYNP', label: 'Group Half yearly Non Premium', color: '#6366f1' },
-  { code: 'GHYW', label: 'Group Half yearly Weekend', color: '#f97316' },
-];
+
 
 const BatchStudents = () => {
     const { id: batchRouteId } = useParams();
@@ -267,22 +258,15 @@ const BatchStudents = () => {
                     </div>
                     <p className="text-[8px] font-black opacity-50 tracking-wider uppercase mt-0.5">ID: {String(s.userId).slice(-8)}</p>
                     <div className="mt-1.5 flex items-center gap-1">
-                      {(() => {
-                        const mType = MEMBERSHIP_TYPES[sidx % MEMBERSHIP_TYPES.length];
-                        return (
-                          <span
-                            className="text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border flex items-center gap-1"
-                            style={{
-                              backgroundColor: isDark ? `${mType.color}10` : `${mType.color}05`,
-                              borderColor: isDark ? `${mType.color}30` : `${mType.color}20`,
-                              color: mType.color,
-                            }}
-                          >
-                            <span className="w-1 h-1 rounded-full" style={{ backgroundColor: mType.color }} />
-                            {mType.code}
-                          </span>
-                        );
-                      })()}
+                      {s.enrollmentType ? (
+                        <span
+                          className={`text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${
+                            s.enrollmentType === 'offline' ? 'border-amber-200 text-amber-700 bg-amber-50' : 'border-blue-200 text-blue-700 bg-blue-50'
+                          }`}
+                        >
+                          {s.enrollmentType === 'offline' ? 'Added at desk' : 'Joined in app'}
+                        </span>
+                      ) : null}
                       <span
                         className={`text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${
                           isDark ? 'border-white/20 text-white/50' : 'border-slate-200 text-slate-500'
