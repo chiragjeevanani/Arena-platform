@@ -98,3 +98,8 @@ export function removeStudentFromBatch(batchId, studentId, body) {
 }
 
 
+
+/** Coach adds a student (name + phone, optional email) to one of their batches. */
+export function addStudentToBatch(batchId, body) {
+  return apiJson(`/api/coach/batches/${encodeURIComponent(batchId)}/students`, { method: 'POST', body });
+}

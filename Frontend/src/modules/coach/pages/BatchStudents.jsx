@@ -5,12 +5,52 @@ import {
   ChevronLeft, Search,
   MoreHorizontal, MessageSquare,
   Mail, Phone,
-  ShieldCheck,
+  ShieldCheck, UserPlus, X,
 } from 'lucide-react';
 import { useTheme } from '../../user/context/ThemeContext';
 import { isApiConfigured } from '../../../services/config';
 import { getAuthToken } from '../../../services/apiClient';
-import { listCoachBatches, listBatchStudents } from '../../../services/coachApi';
+import { listCoachBatches, listBatchStudents, addStudentToBatch } from '../../../services/coachApi';
+
+/** Coach adds a student to this batch: name + phone (email optional). */
+function AddStudentModal({ batchId, onClose, onAdded }) {
+  const [form, setForm] = useState({ name: '', phone: '', email: '' });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const submit = async (e) => {
+    e.preventDefault();
+    setSaving(true); setErr('');
+    try {
+      const res = await addStudentToBatch(batchId, { name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim() });
+      onAdded(res.student);
+    } catch (e2) {
+      setErr(e2.message || 'Could not add the student');
+    } finally {
+      setSaving(false);
+    }
+  };
+  const field = 'w-full h-11 px-3 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-semibold text-[#36454F] outline-none focus:border-[#CE2029] focus:bg-white';
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <form onSubmit={submit} className="relative w-full max-w-sm bg-white rounded-2xl p-5 shadow-2xl space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[15px] font-black text-[#36454F]">Add student</h3>
+          <button type="button" onClick={onClose} className="p-1 text-slate-400"><X size={18} /></button>
+        </div>
+        <input className={field} placeholder="Student name" value={form.name} onChange={set('name')} required />
+        <input className={field} placeholder="Parent / student phone" inputMode="tel" value={form.phone} onChange={set('phone')} required />
+        <input className={field} placeholder="Email (optional)" type="email" value={form.email} onChange={set('email')} />
+        <p className="text-[10px] text-slate-400">If the phone or email already belongs to a customer, that customer is added to the batch.</p>
+        {err && <p className="text-[11px] font-bold text-red-600">{err}</p>}
+        <button type="submit" disabled={saving} className="w-full h-11 rounded-xl bg-[#CE2029] text-white text-[12px] font-black uppercase tracking-widest disabled:opacity-50">
+          {saving ? 'Adding…' : 'Add to batch'}
+        </button>
+      </form>
+    </div>
+  );
+}
 import { mapApiBatchToCard } from '../utils/coachBatchUi';
 
 const MEMBERSHIP_TYPES = [
@@ -29,6 +69,8 @@ const BatchStudents = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
+  const [addedMsg, setAddedMsg] = useState('');
   const [batch, setBatch] = useState(null);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,11 +179,30 @@ const BatchStudents = () => {
           </p>
         </div>
       </div>
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <h1 className="text-xl font-black tracking-tighter uppercase" style={{ fontFamily: "'Outfit', sans-serif" }}>
           Registered <span className="text-[#CE2029]">Students</span>
         </h1>
+        <button
+          type="button"
+          onClick={() => { setAddedMsg(''); setShowAdd(true); }}
+          className="flex items-center gap-1.5 px-4 h-10 rounded-xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-wider shadow-md"
+        >
+          <UserPlus size={14} /> Add student
+        </button>
       </div>
+      {addedMsg ? <p className="mb-4 text-[11px] font-bold text-green-700">{addedMsg}</p> : null}
+      {showAdd && (
+        <AddStudentModal
+          batchId={batchRouteId}
+          onClose={() => setShowAdd(false)}
+          onAdded={async (st) => {
+            setShowAdd(false);
+            setAddedMsg(`${st?.name || 'Student'} added — they now appear in Mark Attendance.`);
+            try { const r = await listBatchStudents(batchRouteId); setStudents(r.students || []); } catch { /* list refresh is best-effort */ }
+          }}
+        />
+      )}
 
       <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2">
         <div className={`p-3 rounded-xl border min-w-[120px] ${isDark ? 'bg-[#CE2029]/10 border-[#CE2029]/20' : 'bg-[#F8FBFF] border-[#3b82f6]/5 shadow-sm'}`}>

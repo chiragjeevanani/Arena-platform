@@ -10,6 +10,15 @@ import RetailPOS from '../../admin/pages/RetailPOS';
 import AccountSettings from './AccountSettings';
 import CoachAttendance from '../../admin/pages/ArenaPanel/CoachAttendance';
 import WalkInBooking from '../../admin/pages/ArenaPanel/WalkInBooking';
+import AttendanceRegister from '../../admin/pages/ArenaPanel/AttendanceRegister';
+
+export const AttendanceRegisterPage = () => (
+  <PageShell
+    title="Attendance Register"
+    subtitle="Check and verify the attendance coaches record for each class"
+    component={AttendanceRegister}
+  />
+);
 
 // Helper: wraps a light-theme page inside the dark arena layout content area
 const PageShell = ({ title, subtitle, component: Component }) => (

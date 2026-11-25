@@ -22,6 +22,13 @@ const coachingAttendanceSchema = new mongoose.Schema(
     },
     sessionDate: { type: String, required: true, trim: true },
     records: { type: [attendanceEntrySchema], default: [] },
+    // Who took the register (the coach), and the arena's cross-check of it.
+    markedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    markedAt: { type: Date, default: null },
+    verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    verifiedAt: { type: Date, default: null },
+    correctedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    correctedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -39,6 +46,12 @@ function toPublic(doc) {
       userId: String(r.userId),
       status: r.status,
     })),
+    markedBy: o.markedBy ? String(o.markedBy) : null,
+    markedAt: o.markedAt || o.updatedAt,
+    verifiedBy: o.verifiedBy ? String(o.verifiedBy) : null,
+    verifiedAt: o.verifiedAt || null,
+    correctedBy: o.correctedBy ? String(o.correctedBy) : null,
+    correctedAt: o.correctedAt || null,
     updatedAt: o.updatedAt,
   };
 }

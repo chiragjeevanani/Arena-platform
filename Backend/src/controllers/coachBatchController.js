@@ -160,10 +160,57 @@ async function upsertBatchAttendance(req, res) {
 
   const doc = await CoachingAttendance.findOneAndUpdate(
     { batchId: batch._id, sessionDate: String(sessionDate) },
-    { $set: { records: cleaned } },
+    // A coach change after the arena verified the session sends it back for checking.
+    { $set: { records: cleaned, markedBy: req.auth.sub, markedAt: new Date(), verifiedBy: null, verifiedAt: null } },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
   return res.json({ attendance: CoachingAttendance.toPublic(doc) });
+}
+
+/**
+ * POST /coach/batches/:batchId/students  { name, phone, email? }
+ * The coach adds a student (e.g. a kid registered at the desk) straight into their batch.
+ * An existing customer with the same phone/email is reused; otherwise a customer record is
+ * created (random password; placeholder email when none is given).
+ */
+async function addStudentToBatch(req, res) {
+  const coachId = resolveCoachId(req);
+  const batch = await assertCoachOwnsBatch(coachId, req.params.batchId, req.auth?.role);
+  if (!batch) return res.status(404).json({ error: 'Batch not found' });
+
+  const name = String(req.body?.name || '').trim();
+  const phone = String(req.body?.phone || '').trim();
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  if (name.length < 2) return res.status(400).json({ error: "Enter the student's name" });
+  if (phone.replace(/\D/g, '').length < 8) return res.status(400).json({ error: 'Enter a phone number (at least 8 digits)' });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Email address is not valid' });
+
+  let user = await User.findOne({ phone });
+  if (!user && email) user = await User.findOne({ email });
+  if (user && user.role !== 'CUSTOMER') {
+    return res.status(409).json({ error: 'This phone/email belongs to a staff account, not a student' });
+  }
+  if (!user) {
+    const bcrypt = require('bcryptjs');
+    const crypto = require('crypto');
+    user = await User.create({
+      name,
+      phone,
+      email: email || `offline-${phone.replace(/\D/g, '')}-${Date.now()}@offline.ammarena.invalid`,
+      passwordHash: await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10),
+      role: 'CUSTOMER',
+    });
+  }
+
+  const active = await BatchEnrollment.findOne({ batchId: batch._id, userId: user._id, status: { $in: ['pending', 'confirmed'] } });
+  if (active) return res.status(409).json({ error: `${user.name} is already in this batch` });
+  const taken = await BatchEnrollment.countDocuments({ batchId: batch._id, status: { $in: ['pending', 'confirmed'] } });
+  if (batch.capacity && taken >= batch.capacity) return res.status(400).json({ error: `Batch is full (${batch.capacity} students)` });
+
+  const enrollment = await BatchEnrollment.create({ batchId: batch._id, userId: user._id, status: 'confirmed', enrollmentType: 'offline' });
+  return res.status(201).json({
+    student: { userId: String(user._id), name: user.name, phone: user.phone, email: user.email, enrollmentId: String(enrollment._id), enrollmentType: 'offline' },
+  });
 }
 
 async function listCoachAttendanceHistory(req, res) {
@@ -341,6 +388,7 @@ module.exports = {
   listCoachAttendanceHistory,
   getStudentAttendance,
   removeStudentFromBatch,
+  addStudentToBatch,
 };
 
 

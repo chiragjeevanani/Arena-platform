@@ -25,6 +25,8 @@ import PolicySettings from './ArenaPanel/PolicySettings';
 import MaintenanceScheduler from './ArenaPanel/MaintenanceScheduler';
 
 import CoachAttendance from './ArenaPanel/CoachAttendance';
+import AttendanceRegister from './ArenaPanel/AttendanceRegister';
+import { ClipboardCheck } from 'lucide-react';
 
 import { 
   Users, BarChart3, ShoppingCart, Wallet, UserCheck, 
@@ -100,6 +102,14 @@ const TABS = [
     icon: UserCheck,
     description: 'Mark daily attendance for coaches',
     color: '#CE2029',
+  },
+  {
+    id: 'register',
+    label: 'Attendance Register',
+    shortLabel: 'Register',
+    icon: ClipboardCheck,
+    description: 'Verify coaching attendance',
+    color: '#16a34a',
   },
   {
     id: 'notices',
@@ -221,6 +231,7 @@ const ArenaManagementPanel = () => {
       case 'policies': return <PolicySettings />;
       case 'maintenance': return <MaintenanceScheduler />;
       case 'coach-attendance': return <CoachAttendance />;
+      case 'register': return <AttendanceRegister />;
       case 'inventory': return <Inventory />;
       case 'events': return <EventsAdmin />;
       case 'retail': return <RetailPOS />;

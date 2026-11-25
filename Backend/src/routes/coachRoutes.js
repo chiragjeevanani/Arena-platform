@@ -11,6 +11,7 @@ const {
   listCoachAttendanceHistory,
   getStudentAttendance,
   removeStudentFromBatch,
+  addStudentToBatch,
 } = require('../controllers/coachBatchController');
 const {
   listBatchProgress,
@@ -40,6 +41,7 @@ router.get('/students/:studentId/attendance', asyncHandler(getStudentAttendance)
 router.get('/students/:userId/batches', asyncHandler(listBatchesForStudent));
 router.get('/attendance-history', asyncHandler(listCoachAttendanceHistory));
 router.get('/batches/:batchId/students', asyncHandler(listBatchStudents));
+router.post('/batches/:batchId/students', asyncHandler(addStudentToBatch));
 router.get('/batches/:batchId/attendance', asyncHandler(listBatchAttendance));
 router.put('/batches/:batchId/attendance', asyncHandler(upsertBatchAttendance));
 router.patch('/batches/:batchId/students/:studentId/remove', asyncHandler(removeStudentFromBatch));

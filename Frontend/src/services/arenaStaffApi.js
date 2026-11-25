@@ -87,3 +87,18 @@ export const listMyManualRefunds = () => apiJson(`${BASE}/refunds`, { method: 'G
 
 export const updateMyBooking = (id, body) =>
   apiJson(`${BASE}/bookings/${encodeURIComponent(id)}`, { method: 'PATCH', body });
+
+// Coaching attendance register (coach's marks, cross-checked by the arena / Super Admin)
+export const getAttendanceRegister = (params = {}, arenaId) => {
+  const q = new URLSearchParams();
+  for (const k of ['batchId', 'from', 'to', 'status']) if (params[k]) q.set(k, params[k]);
+  const qs = q.toString();
+  return apiJson(`${BASE}/attendance-register${qs ? `?${qs}` : ''}`, { headers: arenaId ? { 'X-Arena-Id': arenaId } : {} });
+};
+
+export const updateAttendanceSession = (sessionId, body, arenaId) =>
+  apiJson(`${BASE}/attendance-register/${encodeURIComponent(sessionId)}`, {
+    method: 'PATCH',
+    body,
+    headers: arenaId ? { 'X-Arena-Id': arenaId } : {},
+  });

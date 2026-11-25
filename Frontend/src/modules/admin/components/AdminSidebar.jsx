@@ -33,7 +33,8 @@ import {
   ShieldCheck,
   Store,
   Tag,
-  RefreshCw
+  RefreshCw,
+  ClipboardCheck
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -66,6 +67,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/arena-panel?tab=availability', icon: CalendarX2, label: 'Availability Control', isArenaControl: true },
       { path: '/admin/arena-panel?tab=walkin', icon: ShoppingBag, label: 'Walk-in Terminal', isArenaControl: true },
       { path: '/admin/arena-panel?tab=coach-attendance', icon: UserCheck, label: 'Coach Attendance', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=register', icon: ClipboardCheck, label: 'Attendance Register', isArenaControl: true },
       { path: '/admin/arena-panel?tab=inventory', icon: Package, label: 'Inventory', isArenaControl: true },
       { path: '/admin/arena-panel?tab=events', icon: Trophy, label: 'Event Management', isArenaControl: true },
       { path: '/admin/arena-panel?tab=retail', icon: Store, label: 'Retail Hub', isArenaControl: true },
