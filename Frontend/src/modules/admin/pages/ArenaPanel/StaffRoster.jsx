@@ -64,7 +64,7 @@ export default function StaffRoster() {
             <input className={input} placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required minLength={2} />
             <input className={input} placeholder="Job title (e.g. Cleaner)" list="job-titles" value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })} />
             <input className={input} placeholder="Phone (optional)" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-            <button type="submit" disabled={busy} className="h-10 rounded-xl bg-[#CE2029] text-white text-[12px] font-black disabled:opacity-50">Add to {arena?.name ? 'arena' : 'staff'}</button>
+            <button type="submit" disabled={busy} className="h-10 rounded-xl bg-[#ce2029] text-[#ffffff] text-[12px] font-black disabled:opacity-50">Add to {arena?.name ? 'arena' : 'staff'}</button>
           </div>
           <datalist id="job-titles">{JOB_TITLES.map((j) => <option key={j} value={j} />)}</datalist>
           <p className="text-[10px] text-slate-400 mt-2">These staff don't sign in — the arena admin marks their attendance. Receptionists and coaches who need to sign in are added in Users → New Assignment.</p>
@@ -99,7 +99,7 @@ export default function StaffRoster() {
                 {canEdit && s.kind === 'roster' && (
                   editId === s.id ? (
                     <div className="flex gap-1">
-                      <button type="button" disabled={busy} title="Save" onClick={() => run(async () => { await updateRosterStaff(s.id, edit, arenaId); setEditId(null); }, 'Saved')} className="p-2 rounded-lg bg-green-600 text-white"><Check size={14} /></button>
+                      <button type="button" disabled={busy} title="Save" onClick={() => run(async () => { await updateRosterStaff(s.id, edit, arenaId); setEditId(null); }, 'Saved')} className="p-2 rounded-lg bg-green-600 text-[#ffffff]"><Check size={14} /></button>
                       <button type="button" title="Cancel" onClick={() => setEditId(null)} className="p-2 rounded-lg border border-slate-200 text-slate-500"><X size={14} /></button>
                     </div>
                   ) : (

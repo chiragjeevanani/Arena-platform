@@ -109,7 +109,7 @@ const TABS = [
     label: 'Staff Attendance',
     shortLabel: 'Attendance',
     icon: UserCheck,
-    description: 'Mark daily attendance for coaches',
+    description: 'Daily attendance for all staff, reports and export',
     color: '#CE2029',
   },
   {

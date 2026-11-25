@@ -31,7 +31,7 @@ function downloadCsv(filename, rows) {
 
 const inputCls = 'h-10 px-3 rounded-xl border border-slate-200 bg-white text-[12px] font-bold text-[#36454F] outline-none focus:border-[#CE2029]';
 const Tab = ({ active, onClick, icon: Icon, children }) => (
-  <button type="button" onClick={onClick} className={`flex items-center gap-1.5 px-4 h-10 rounded-xl text-[12px] font-black transition-all ${active ? 'bg-[#CE2029] text-white shadow' : 'bg-white text-slate-500 border border-slate-200'}`}>
+  <button type="button" onClick={onClick} className={`flex items-center gap-1.5 px-4 h-10 rounded-xl text-[12px] font-black transition-all ${active ? 'bg-[#ce2029] text-[#ffffff] shadow' : 'bg-white text-slate-500 border border-slate-200'}`}>
     <Icon size={14} /> {children}
   </button>
 );
@@ -171,7 +171,7 @@ export default function StaffAttendance() {
               <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-500">{counts.none} not marked</span>
             </div>
             {tab === 'daily' && (
-              <button type="button" onClick={exportDay} className="h-10 px-4 rounded-xl bg-[#36454F] text-white text-[12px] font-black flex items-center gap-1.5"><Download size={14} /> Export</button>
+              <button type="button" onClick={exportDay} className="h-10 px-4 rounded-xl bg-[#36454F] text-[#ffffff] text-[12px] font-black flex items-center gap-1.5"><Download size={14} /> Export</button>
             )}
           </div>
 
@@ -239,7 +239,7 @@ export default function StaffAttendance() {
             </select>
             <input type="date" value={range.from} onChange={(e) => setRange((r) => ({ ...r, from: e.target.value }))} className={inputCls} aria-label="From" />
             <input type="date" value={range.to} onChange={(e) => setRange((r) => ({ ...r, to: e.target.value }))} className={inputCls} aria-label="To" />
-            {person && <button type="button" onClick={exportPerson} className="h-10 px-4 rounded-xl bg-[#36454F] text-white text-[12px] font-black flex items-center gap-1.5 ml-auto"><Download size={14} /> Export</button>}
+            {person && <button type="button" onClick={exportPerson} className="h-10 px-4 rounded-xl bg-[#36454F] text-[#ffffff] text-[12px] font-black flex items-center gap-1.5 ml-auto"><Download size={14} /> Export</button>}
           </div>
           {!person ? (
             <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-8 text-center text-[12px] text-slate-400">Choose a staff member to see their attendance.</div>
@@ -274,7 +274,7 @@ export default function StaffAttendance() {
         </>
       )}
 
-      {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-[#1e293b] text-white text-[13px] font-bold shadow-2xl">{toast}</div>}
+      {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-[#1e293b] text-[#ffffff] text-[13px] font-bold shadow-2xl">{toast}</div>}
     </div>
   );
 }

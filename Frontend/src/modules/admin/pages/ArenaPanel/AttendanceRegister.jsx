@@ -94,7 +94,7 @@ function SessionCard({ s, arenaId, onChanged }) {
             {editing ? (
               <>
                 <button type="button" disabled={busy} onClick={() => { setEditing(false); setDraft({}); }} className="px-3 py-2 rounded-xl border border-slate-200 text-[11px] font-black text-slate-500 flex items-center gap-1"><X size={13} /> Cancel</button>
-                <button type="button" disabled={busy} onClick={() => save({ records: changes, verified: true })} className="px-3 py-2 rounded-xl bg-[#CE2029] text-white text-[11px] font-black disabled:opacity-50">Save corrections &amp; verify</button>
+                <button type="button" disabled={busy} onClick={() => save({ records: changes, verified: true })} className="px-3 py-2 rounded-xl bg-[#ce2029] text-[#ffffff] text-[11px] font-black disabled:opacity-50">Save corrections &amp; verify</button>
               </>
             ) : (
               <>
@@ -104,7 +104,7 @@ function SessionCard({ s, arenaId, onChanged }) {
                 {s.verifiedAt ? (
                   <button type="button" disabled={busy} onClick={() => save({ verified: false })} className="px-3 py-2 rounded-xl border border-slate-200 text-[11px] font-black text-slate-500 disabled:opacity-50">Undo verify</button>
                 ) : (
-                  <button type="button" disabled={busy} onClick={() => save({ verified: true })} className="px-3 py-2 rounded-xl bg-green-600 text-white text-[11px] font-black flex items-center gap-1 disabled:opacity-50"><CheckCircle2 size={13} /> Verify</button>
+                  <button type="button" disabled={busy} onClick={() => save({ verified: true })} className="px-3 py-2 rounded-xl bg-green-600 text-[#ffffff] text-[11px] font-black flex items-center gap-1 disabled:opacity-50"><CheckCircle2 size={13} /> Verify</button>
                 )}
               </>
             )}

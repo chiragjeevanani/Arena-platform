@@ -44,7 +44,7 @@ function AddStudentModal({ batchId, onClose, onAdded }) {
         <input className={field} placeholder="Email (optional)" type="email" value={form.email} onChange={set('email')} />
         <p className="text-[10px] text-slate-400">If the phone or email already belongs to a customer, that customer is added to the batch.</p>
         {err && <p className="text-[11px] font-bold text-red-600">{err}</p>}
-        <button type="submit" disabled={saving} className="w-full h-11 rounded-xl bg-[#CE2029] text-white text-[12px] font-black uppercase tracking-widest disabled:opacity-50">
+        <button type="submit" disabled={saving} className="w-full h-11 rounded-xl bg-[#ce2029] text-[#ffffff] text-[12px] font-black uppercase tracking-widest disabled:opacity-50">
           {saving ? 'Adding…' : 'Add to batch'}
         </button>
       </form>
@@ -177,7 +177,7 @@ const BatchStudents = () => {
         <button
           type="button"
           onClick={() => { setAddedMsg(''); setShowAdd(true); }}
-          className="flex items-center gap-1.5 px-4 h-10 rounded-xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-wider shadow-md"
+          className="flex items-center gap-1.5 px-4 h-10 rounded-xl bg-[#ce2029] text-[#ffffff] text-[11px] font-black uppercase tracking-wider shadow-md"
         >
           <UserPlus size={14} /> Add student
         </button>
