@@ -3,6 +3,7 @@ import { Users, UserPlus, Pencil, Trash2, RotateCcw, Check, X, ShieldCheck } fro
 import { useArenaPanel } from '../../context/ArenaPanelContext';
 import { useAuth } from '../../../user/context/AuthContext';
 import { getStaffRoster, addRosterStaff, updateRosterStaff, removeRosterStaff } from '../../../../services/arenaStaffApi';
+import { patchAdminUser } from '../../../../services/adminUsersApi';
 
 const JOB_TITLES = ['Cleaner', 'Ground Staff', 'Security', 'Maintenance', 'Front Desk', 'Shop Assistant', 'Supervisor'];
 const input = 'h-10 px-3 rounded-xl border border-slate-200 bg-white text-[12px] font-semibold text-[#36454F] outline-none focus:border-[#CE2029] w-full';
@@ -84,18 +85,32 @@ export default function StaffRoster() {
             {data.staff.map((s) => (
               <div key={s.id} className={`p-3 md:px-4 flex flex-wrap items-center gap-3 ${s.isActive ? '' : 'opacity-50'}`} data-testid="staff-row">
                 {editId === s.id ? (
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <input className={input} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
-                    <input className={input} list="job-titles" value={edit.jobTitle} onChange={(e) => setEdit({ ...edit, jobTitle: e.target.value })} />
-                    <input className={input} value={edit.phone} onChange={(e) => setEdit({ ...edit, phone: e.target.value })} />
+                  <div className={`flex-1 grid grid-cols-1 gap-2 ${s.kind === 'user' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+                    <input className={input} aria-label="Name" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
+                    {s.kind === 'user' && (
+                      <input className={input} aria-label="Login email" type="email" placeholder="Login email" value={edit.email} onChange={(e) => setEdit({ ...edit, email: e.target.value })} />
+                    )}
+                    <input className={input} aria-label="Job title" list="job-titles" value={edit.jobTitle} onChange={(e) => setEdit({ ...edit, jobTitle: e.target.value })} />
+                    <input className={input} aria-label="Phone" value={edit.phone} onChange={(e) => setEdit({ ...edit, phone: e.target.value })} />
                   </div>
                 ) : (
                   <div className="flex-1 min-w-[180px]">
                     <p className="text-[13px] font-bold text-[#36454F]">{s.name}</p>
                     <p className="text-[11px] text-slate-500">{s.role}{s.phone ? ` · ${s.phone}` : ''}{s.isActive ? '' : ' · removed'}</p>
+                    {s.hasLogin && s.email ? <p className="text-[11px] text-slate-400">Login: {s.email}</p> : null}
                   </div>
                 )}
                 <span className={`px-2 py-1 rounded-lg text-[10px] font-black ${s.hasLogin ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{s.hasLogin ? 'Has login' : 'No login'}</span>
+                {canEdit && s.kind === 'user' && (
+                  editId === s.id ? (
+                    <div className="flex gap-1">
+                      <button type="button" disabled={busy} title="Save" onClick={() => run(async () => { await patchAdminUser(s.id, { name: edit.name, email: edit.email, jobTitle: edit.jobTitle, phone: edit.phone }); setEditId(null); }, 'Saved — they sign in with the new email from now on')} className="p-2 rounded-lg bg-green-600 text-[#ffffff]"><Check size={14} /></button>
+                      <button type="button" title="Cancel" onClick={() => setEditId(null)} className="p-2 rounded-lg border border-slate-200 text-slate-500"><X size={14} /></button>
+                    </div>
+                  ) : (
+                    <button type="button" title="Edit name, email, job title" onClick={() => { setEditId(s.id); setEdit({ name: s.name, email: s.email || '', jobTitle: s.jobTitle, phone: s.phone }); }} className="p-2 rounded-lg border border-slate-200 text-slate-500"><Pencil size={14} /></button>
+                  )
+                )}
                 {canEdit && s.kind === 'roster' && (
                   editId === s.id ? (
                     <div className="flex gap-1">

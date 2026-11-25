@@ -45,7 +45,18 @@ async function patchAdminUser(req, res) {
     user.name = String(name).trim();
   }
   if (email != null && String(email).trim()) {
-    user.email = String(email).trim().toLowerCase();
+    const nextEmail = String(email).trim().toLowerCase();
+    if (nextEmail !== user.email) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+        return res.status(400).json({ error: 'Enter a valid email address' });
+      }
+      if (await User.exists({ email: nextEmail, _id: { $ne: user._id } })) {
+        return res.status(409).json({ error: 'Another account already uses this email' });
+      }
+      user.email = nextEmail;
+      // Set by an admin, so treat it as verified — the person signs in with it straight away.
+      user.isEmailVerified = true;
+    }
   }
   if (phone != null) {
     user.phone = String(phone).trim();
