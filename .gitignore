@@ -1,5 +1,4 @@
 # IDE / Editor
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -12,8 +11,6 @@ yarn.lock
 pnpm-lock.yaml
 
 # Env
-.env
-.env.local
 .env.*.local
 
 # Scratch / Debug files (Root)
@@ -49,3 +46,4 @@ temp_interactive_push.bat
 Backend/scratch/
 Frontend/demo-backup/
 *.zip
+config.bat
