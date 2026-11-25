@@ -21,7 +21,7 @@ async function getStaffRoster(req, res) {
         { assignedArenaId: arenaId, role: { $in: ['ARENA_ADMIN', 'RECEPTIONIST', 'COACH'] } },
         { _id: { $in: coachIds }, role: 'COACH' },
       ],
-    }).select('name firstName lastName email phone role').lean(),
+    }).select('name firstName lastName email phone role jobTitle').lean(),
     ArenaStaff.find({ arenaId, ...(req.auth.role === 'SUPER_ADMIN' ? {} : { isActive: true }) }).sort({ isActive: -1, name: 1 }).lean(),
   ]);
   const managers = users.filter((u) => u.role === 'ARENA_ADMIN')
@@ -29,7 +29,7 @@ async function getStaffRoster(req, res) {
   const staff = [
     ...roster.map((s) => ({ ...ArenaStaff.toPublic(s), kind: 'roster', role: s.jobTitle || 'Staff', hasLogin: false })),
     ...users.filter((u) => u.role !== 'ARENA_ADMIN').map((u) => ({
-      id: String(u._id), kind: 'user', name: nameOf(u), role: ROLE_LABEL[u.role] || u.role, jobTitle: ROLE_LABEL[u.role] || u.role,
+      id: String(u._id), kind: 'user', name: nameOf(u), role: u.jobTitle || ROLE_LABEL[u.role] || u.role, jobTitle: u.jobTitle || ROLE_LABEL[u.role] || u.role,
       phone: u.phone || '', email: u.email, isActive: true, hasLogin: true,
     })),
   ].sort((a, b) => (a.isActive === b.isActive ? a.name.localeCompare(b.name) : a.isActive ? -1 : 1));

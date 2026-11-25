@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { canUseCustomerApp } from '../../../utils/customerAccess';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Calendar, Clock, ShoppingCart, Trash2, Wallet, Zap, AlertTriangle, Plus, CheckCircle } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -37,7 +38,7 @@ const Cart = () => {
   const [coupon, setCoupon] = useState(null); // { code, discount, description }
   const [error, setError] = useState('');
 
-  const isCustomer = user?.role === 'CUSTOMER';
+  const isCustomer = canUseCustomerApp(user);
   const canCheckout = isApiConfigured() && isLoggedIn && isCustomer;
 
   // Re-check every court/date in the cart against live availability + current prices.
@@ -143,7 +144,7 @@ const Cart = () => {
       return;
     }
     if (!canCheckout) {
-      setError('Sign in with a customer account to book.');
+      setError('Sign in to book. Super Admin accounts can\'t book; use a customer or staff login.');
       return;
     }
     if (!bookable.length) return;

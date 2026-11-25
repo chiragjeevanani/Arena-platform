@@ -37,7 +37,10 @@ async function patchAdminUser(req, res) {
   const user = await User.findById(id);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const { name, email, role, assignedArenaId, isActive, phone } = req.body;
+  const { name, email, role, assignedArenaId, isActive, phone, jobTitle } = req.body;
+  if (jobTitle !== undefined) {
+    user.jobTitle = String(jobTitle || '').trim();
+  }
   if (name != null && String(name).trim()) {
     user.name = String(name).trim();
   }

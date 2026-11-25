@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
       default: 'CUSTOMER',
     },
     assignedArenaId: { type: String, default: null },
+    // Staff job title shown in the arena's staff list (e.g. 'Head Coach'); role label when empty.
+    jobTitle: { type: String, default: '', trim: true },
     profilePicture: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
     isEmailVerified: { type: Boolean, default: false },
@@ -78,6 +80,7 @@ function toPublicUser(doc) {
     name: doc.name || `${doc.firstName || ''} ${doc.lastName || ''}`.trim(),
     role: doc.role,
     assignedArenaId: doc.assignedArenaId,
+    jobTitle: doc.jobTitle || '',
     profilePicture: doc.profilePicture || doc.avatarUrl || '',
     avatarUrl: doc.profilePicture || doc.avatarUrl || '',
     phone: doc.phone || '',

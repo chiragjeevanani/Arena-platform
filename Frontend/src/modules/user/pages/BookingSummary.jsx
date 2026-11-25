@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { canUseCustomerApp } from '../../../utils/customerAccess';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Calendar, Clock, CheckCircle, MapPin, Wallet, CreditCard, Tag, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
@@ -43,7 +44,7 @@ const BookingSummary = () => {
   const slotCount = slotsArray.length;
 
   useEffect(() => {
-    if (user?.role === 'CUSTOMER') {
+    if (canUseCustomerApp(user)) {
       getMyWallet().then(data => {
         setWalletBalance(data.wallet?.balance || 0);
       }).catch(() => {
@@ -104,7 +105,7 @@ const BookingSummary = () => {
   const taxLabel = useLiveCheckout ? `VAT ${VAT_PERCENT}% (included)` : 'Tax Reconciliation';
   const walletDeduction = useWallet ? Math.min(walletBalance || 0, totalAmount) : 0;
   const finalPayable = totalAmount - walletDeduction;
-  const canApiBook = isApiConfigured() && user?.role === 'CUSTOMER';
+  const canApiBook = isApiConfigured() && canUseCustomerApp(user);
   // Lines for the server's coupon quote (plain value — this sits below an early return, so no hooks).
   const quoteYmd = dateYmd || toYMDFromDateString(date);
   const couponLines = canApiBook && quoteYmd && court?.id
@@ -411,7 +412,7 @@ const BookingSummary = () => {
                          )}
                          {useLiveCheckout && !canApiBook && (
                            <p className="text-[10px] font-bold text-amber-700">
-                             Sign in as a customer to confirm this booking with the server.
+                             Sign in (customer or arena staff account) to confirm this booking.
                            </p>
                          )}
 

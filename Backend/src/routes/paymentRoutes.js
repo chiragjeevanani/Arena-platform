@@ -18,7 +18,7 @@ router.post('/bank-muscat/callback', asyncHandler(handleCallback));
 router.get('/bank-muscat/diagnostics', asyncHandler(getGatewayDiagnostics));
 
 router.use(requireAuth);
-router.use(requireRole('CUSTOMER', 'COACH', 'ARENA_ADMIN'));
+router.use(requireRole('CUSTOMER', 'COACH', 'ARENA_ADMIN', 'RECEPTIONIST'));
 
 router.post('/bank-muscat/create', asyncHandler(createPayment));
 router.get('/bank-muscat/status/:paymentId', asyncHandler(getStatus));
