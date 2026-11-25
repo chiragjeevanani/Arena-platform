@@ -39,10 +39,10 @@ function ReservedCard({ r, arenaId, onChanged }) {
           {r.note ? <p className="text-[11px] text-slate-400 mt-0.5">{r.note}</p> : null}
           {upcomingFreed.length > 0 && <p className="text-[11px] text-slate-500 mt-1">Freed (absent): {upcomingFreed.map(fmt).join(', ')}</p>}
         </div>
-        <div className="text-right">
-          {r.status === 'active' && (r.endingSoon
+        <div className="text-right flex flex-col items-end gap-1">
+          {(r.status === 'active' || r.status === 'upcoming') && (r.endingSoon
             ? <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-800 text-[10px] font-black flex items-center gap-1"><Bell size={11} /> Ends {r.daysUntilEnd === 0 ? 'today' : `in ${r.daysUntilEnd} day${r.daysUntilEnd === 1 ? '' : 's'}`}</span>
-            : <span className="px-2 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-black">Active · {r.remainingSessions} sessions left</span>)}
+            : r.status === 'active' && <span className="px-2 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-black">Active · {r.remainingSessions} sessions left</span>)}
           {r.status === 'upcoming' && <span className="px-2 py-1 rounded-lg bg-blue-100 text-blue-700 text-[10px] font-black">Starts {fmt(r.startDate)}</span>}
           {r.status === 'ended' && <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-black">Ended</span>}
           {r.status === 'cancelled' && <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-black">Cancelled</span>}
@@ -122,7 +122,7 @@ export default function ReservedSlots() {
   };
 
   if (!arenaId) return <div className="p-6 text-[12px] text-slate-500">Choose an arena first (Active arena, top right).</div>;
-  const endingSoon = list.filter((r) => r.endingSoon && r.status === 'active').length;
+  const endingSoon = list.filter((r) => r.endingSoon && (r.status === 'active' || r.status === 'upcoming')).length;
 
   return (
     <div className="space-y-4">
