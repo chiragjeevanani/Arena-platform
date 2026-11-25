@@ -312,7 +312,7 @@ const ArenaManagementPanel = () => {
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                     className={`relative flex items-center gap-2.5 px-4 md:px-5 py-4 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 flex-1 justify-center md:justify-start whitespace-nowrap ${
                       isActive
-                        ? 'text-white border-transparent'
+                        ? 'text-[#ffffff] border-transparent'
                         : 'text-slate-400 border-transparent hover:text-[#36454F] hover:bg-slate-50'
                     }`}
                     style={isActive ? { backgroundColor: tab.color, borderBottomColor: tab.color } : {}}>
