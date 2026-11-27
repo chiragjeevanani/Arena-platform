@@ -28,6 +28,8 @@ async function start() {
   // Court holds moved from "one per arena per day" to multi-day / partial-day / chosen courts:
   // drop the old unique index (syncIndexes keeps only the indexes the schema declares).
   require('./models/ArenaDayBooking').syncIndexes().catch((e) => console.error('[holds] index sync', e.message));
+  // Event registrations: one per person per category (drops the old one-per-phone index).
+  require('./models/EventRegistration').syncIndexes().catch((e) => console.error('[events] index sync', e.message));
 
   // 2. Configure Cloudinary
   try {

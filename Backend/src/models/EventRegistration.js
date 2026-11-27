@@ -47,7 +47,9 @@ const eventRegistrationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-eventRegistrationSchema.index({ eventId: 1, phone: 1 });
+// One entry per person per category (a player may enter Singles and Doubles). Replaces the
+// old one-per-phone index; server start runs syncIndexes() so the old (unique) index is dropped.
+eventRegistrationSchema.index({ eventId: 1, phone: 1, categoryId: 1 });
 
 function toPublic(doc, extras = {}) {
   if (!doc) return null;

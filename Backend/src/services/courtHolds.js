@@ -232,7 +232,12 @@ async function syncEventHold(event, by = null) {
   const added = found.affected.filter((a) => !known.has(String(a.bookingId)));
   hold.affected.push(...added);
   await hold.save();
-  if (released.length) await Booking.updateMany({ _id: { $in: released.map((a) => a.bookingId) } }, { $set: { affectedBy: null } });
+  if (released.length) {
+    await Booking.updateMany({ _id: { $in: released.map((a) => a.bookingId) } }, { $set: { affectedBy: null } });
+    for (const a of released) {
+      try { await createNotification(a.userId, 'Your booking stays as it is', `Good news — ${labelOf(hold)} no longer uses ${a.from.courtName} at your time on ${fmt(a.from.date)}. Your booking at ${a.from.timeSlot} stays as it is.`, 'success', { kind: 'booking_unaffected', bookingId: String(a.bookingId) }); } catch (e) { /* courtesy */ }
+    }
+  }
   await flagAffected(hold, added);
   await notifyAffected(hold, added);
   return hold;
