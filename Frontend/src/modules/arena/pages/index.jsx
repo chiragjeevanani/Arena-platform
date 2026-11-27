@@ -12,6 +12,11 @@ import StaffAttendance from '../../admin/pages/ArenaPanel/StaffAttendance';
 import StaffRoster from '../../admin/pages/ArenaPanel/StaffRoster';
 import ReservedSlots from '../../admin/pages/ArenaPanel/ReservedSlots';
 import WholeArenaBooking from '../../admin/pages/ArenaPanel/WholeArenaBooking';
+import CoachingBatches from '../../admin/pages/ArenaPanel/CoachingBatches';
+
+export const CoachingBatchesPage = () => (
+  <PageShell title="Coaching Batches" subtitle="Student attendance, adding students and app sign-up" component={CoachingBatches} />
+);
 
 export const WholeArenaBookingPage = () => (
   <PageShell title="Whole-Arena Booking" subtitle="Book every court for one client for a whole day" component={WholeArenaBooking} />

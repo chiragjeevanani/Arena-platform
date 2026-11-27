@@ -30,6 +30,8 @@ import ReservedSlots from './ArenaPanel/ReservedSlots';
 import WholeArenaBooking from './ArenaPanel/WholeArenaBooking';
 import { Building2 as WholeArenaIcon } from 'lucide-react';
 import AttendanceRegister from './ArenaPanel/AttendanceRegister';
+import CoachingBatches from './ArenaPanel/CoachingBatches';
+import { GraduationCap as CoachingIcon } from 'lucide-react';
 import { ClipboardCheck } from 'lucide-react';
 
 import { 
@@ -130,6 +132,14 @@ const TABS = [
     icon: UserCheck,
     description: 'Daily attendance for all staff, reports and export',
     color: '#CE2029',
+  },
+  {
+    id: 'coaching-batches',
+    label: 'Coaching Batches',
+    shortLabel: 'Coaching',
+    icon: CoachingIcon,
+    description: 'Student attendance, add students, app sign-up',
+    color: '#0E7490',
   },
   {
     id: 'register',
@@ -263,6 +273,7 @@ const ArenaManagementPanel = () => {
       case 'reserved': return <ReservedSlots />;
       case 'arena-booking': return <WholeArenaBooking />;
       case 'register': return <AttendanceRegister />;
+      case 'coaching-batches': return <CoachingBatches />;
       case 'inventory': return <Inventory />;
       case 'events': return <EventsAdmin />;
       case 'retail': return <RetailPOS />;

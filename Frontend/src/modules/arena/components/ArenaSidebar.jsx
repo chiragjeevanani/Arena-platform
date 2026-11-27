@@ -4,7 +4,7 @@ import {
   Building2, Target, Clock, DollarSign, CalendarX2,
   ChevronLeft, ChevronRight, LayoutDashboard, LogOut,
   ArrowLeftRight, Package, Trophy, Store, Receipt, UserCheck,
-  BarChart3, ShoppingBag, ClipboardCheck, Users, CalendarClock
+  BarChart3, ShoppingBag, ClipboardCheck, Users, CalendarClock, GraduationCap
 } from 'lucide-react';
 import Logo from '../../../assets/Logo (3).png';
 import SidebarImage from '../../../assets/sidebarImage.png';
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { path: '/arena/walkin', icon: ShoppingBag, label: 'Walk-in Booking' },
   { path: '/arena/daily-report', icon: BarChart3, label: 'Daily Court Report' },
   { path: '/arena/attendance', icon: UserCheck, label: 'Staff Attendance' },
+  { path: '/arena/coaching', icon: GraduationCap, label: 'Coaching Batches' },
   { path: '/arena/register', icon: ClipboardCheck, label: 'Attendance Register' },
   { path: '/arena/staff', icon: Users, label: 'My Staff' },
   { path: '/arena/details', icon: Building2, label: 'Arena Details' },

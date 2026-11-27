@@ -125,6 +125,15 @@ export const releaseReservedDate = (id, date, arenaId) => apiJson(`${BASE}/reser
 export const restoreReservedDate = (id, date, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/restore`, { method: 'POST', body: { date }, headers: scope(arenaId) });
 export const endReservedSlot = (id, arenaId) => apiJson(`${BASE}/reserved-slots/${encodeURIComponent(id)}/end`, { method: 'POST', headers: scope(arenaId) });
 
+// Coaching batches at this arena: students, attendance taken by the arena, adding students, app logins.
+export const listArenaCoachingBatches = (status, arenaId) => apiJson(`${BASE}/coaching/batches?status=${encodeURIComponent(status || 'current')}`, { headers: scope(arenaId) });
+export const listArenaBatchStudents = (batchId, arenaId) => apiJson(`${BASE}/coaching/batches/${encodeURIComponent(batchId)}/students`, { headers: scope(arenaId) });
+export const addArenaBatchStudent = (batchId, body, arenaId) => apiJson(`${BASE}/coaching/batches/${encodeURIComponent(batchId)}/students`, { method: 'POST', body, headers: scope(arenaId) });
+export const getArenaBatchAttendance = (batchId, date, arenaId) => apiJson(`${BASE}/coaching/batches/${encodeURIComponent(batchId)}/attendance?date=${encodeURIComponent(date)}`, { headers: scope(arenaId) });
+export const saveArenaBatchAttendance = (batchId, body, arenaId) => apiJson(`${BASE}/coaching/batches/${encodeURIComponent(batchId)}/attendance`, { method: 'PUT', body, headers: scope(arenaId) });
+export const createStudentLogin = (userId, body, arenaId) => apiJson(`${BASE}/coaching/students/${encodeURIComponent(userId)}/login`, { method: 'POST', body, headers: scope(arenaId) });
+export const searchArenaCustomers = (q, arenaId) => apiJson(`${BASE}/walkin/customers/search?q=${encodeURIComponent(q || '')}`, { headers: scope(arenaId) });
+
 // Whole-arena bookings: every court, all day, for one client (price agreed offline).
 export const listArenaBookings = (status, arenaId) => apiJson(`${BASE}/arena-bookings?status=${encodeURIComponent(status || 'upcoming')}`, { headers: scope(arenaId) });
 export const previewArenaBooking = (date, arenaId) => apiJson(`${BASE}/arena-bookings/preview?date=${encodeURIComponent(date)}`, { headers: scope(arenaId) });

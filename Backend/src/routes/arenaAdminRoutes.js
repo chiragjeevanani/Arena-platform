@@ -40,6 +40,9 @@ const {
 const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/adminPosController');
 const { listEventRegistrations, updateRegistrationStatus } = require('../controllers/adminEventController');
 const { listAttendanceRegister, updateAttendanceSession } = require('../controllers/arenaAttendanceRegisterController');
+const {
+  listArenaBatches, listArenaBatchStudents, getArenaBatchAttendance, saveArenaBatchAttendance, addArenaBatchStudent, createStudentLogin,
+} = require('../controllers/arenaCoachingController');
 const { listReservedSlots, createReservedSlot, updateReservedSlot, releaseReservedDate, restoreReservedDate, endReservedSlot } = require('../controllers/reservedSlotController');
 const { listArenaBookings, previewArenaBooking, createArenaBooking, cancelArenaBooking } = require('../controllers/arenaDayBookingController');
 const { getStaffRoster, addRosterStaff, updateRosterStaff, removeRosterStaff } = require('../controllers/arenaStaffRosterController');
@@ -167,6 +170,13 @@ router.post('/staff-roster', asyncHandler(addRosterStaff));
 router.patch('/staff-roster/:id', asyncHandler(updateRosterStaff));
 router.delete('/staff-roster/:id', asyncHandler(removeRosterStaff));
 router.patch('/attendance-register/:sessionId', asyncHandler(updateAttendanceSession));
+// Coaching batches at this arena: students, attendance taken by the arena, adding students, app logins
+router.get('/coaching/batches', asyncHandler(listArenaBatches));
+router.get('/coaching/batches/:batchId/students', asyncHandler(listArenaBatchStudents));
+router.post('/coaching/batches/:batchId/students', asyncHandler(addArenaBatchStudent));
+router.get('/coaching/batches/:batchId/attendance', asyncHandler(getArenaBatchAttendance));
+router.put('/coaching/batches/:batchId/attendance', asyncHandler(saveArenaBatchAttendance));
+router.post('/coaching/students/:userId/login', asyncHandler(createStudentLogin));
 router.patch('/events/registrations/:id', updateRegistrationStatus);
 router.patch(
   '/cms/:contentId',

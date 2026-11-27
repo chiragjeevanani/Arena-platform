@@ -34,7 +34,8 @@ import {
   Store,
   Tag,
   RefreshCw,
-  ClipboardCheck
+  ClipboardCheck,
+  GraduationCap
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -70,6 +71,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/arena-panel?tab=walkin', icon: ShoppingBag, label: 'Walk-in Terminal', isArenaControl: true },
       { path: '/admin/arena-panel?tab=team', icon: Users, label: 'Staff', isArenaControl: true },
       { path: '/admin/arena-panel?tab=coach-attendance', icon: UserCheck, label: 'Staff Attendance', isArenaControl: true },
+      { path: '/admin/arena-panel?tab=coaching-batches', icon: GraduationCap, label: 'Coaching Batches', isArenaControl: true },
       { path: '/admin/arena-panel?tab=register', icon: ClipboardCheck, label: 'Attendance Register', isArenaControl: true },
       { path: '/admin/arena-panel?tab=inventory', icon: Package, label: 'Inventory', isArenaControl: true },
       { path: '/admin/arena-panel?tab=events', icon: Trophy, label: 'Event Management', isArenaControl: true },
