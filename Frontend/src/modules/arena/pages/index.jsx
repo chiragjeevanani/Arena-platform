@@ -19,7 +19,7 @@ export const CoachingBatchesPage = () => (
 );
 
 export const WholeArenaBookingPage = () => (
-  <PageShell title="Whole-Arena Booking" subtitle="Book every court for one client for a whole day" component={WholeArenaBooking} />
+  <PageShell title="Whole-Arena Booking" subtitle="Book every court for one client — one or more days, all day or a few hours" component={WholeArenaBooking} />
 );
 
 export const ReservedSlotsPage = () => (

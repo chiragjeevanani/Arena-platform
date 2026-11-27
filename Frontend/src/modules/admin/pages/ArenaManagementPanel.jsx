@@ -114,7 +114,7 @@ const TABS = [
     label: 'Whole-Arena Booking',
     shortLabel: 'Whole Arena',
     icon: WholeArenaIcon,
-    description: 'Book every court for one client for a whole day',
+    description: 'Book every court for one or more days (all day or set hours)',
     color: '#0E7490',
   },
   {
