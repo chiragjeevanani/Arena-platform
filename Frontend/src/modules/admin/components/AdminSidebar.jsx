@@ -35,7 +35,8 @@ import {
   Tag,
   RefreshCw,
   ClipboardCheck,
-  GraduationCap
+  GraduationCap,
+  Undo2
 } from 'lucide-react';
 import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
@@ -101,6 +102,7 @@ const SIDEBAR_STRUCTURE = [
     items: [
       { path: '/admin/referrals', icon: Gift, label: 'Referrals & Wallets' },
       { path: '/admin/coupons', icon: Tag, label: 'Coupon Codes' },
+      { path: '/admin/customer-refunds', icon: Undo2, label: 'Refund a Customer' },
       { path: '/admin/refunds', icon: RefreshCw, label: 'Pending Refunds' },
       { path: '/admin/cancellation-policy', icon: CalendarX2, label: 'Cancellation & Refund' },
     ]

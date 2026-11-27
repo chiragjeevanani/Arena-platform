@@ -214,3 +214,14 @@ export function listStaffAttendance(query = {}) {
 }
 
 
+
+// Super Admin refunds to a customer's Arena Wallet (full or partial, any time)
+export function getCustomerRefundables(userId) {
+  return apiJson(`${BASE}/customers/${encodeURIComponent(userId)}/refundables`, { method: 'GET' });
+}
+export function refundCustomer(userId, body) {
+  return apiJson(`${BASE}/customers/${encodeURIComponent(userId)}/refunds`, { method: 'POST', body });
+}
+export function listRecentCustomerRefunds() {
+  return apiJson(`${BASE}/customer-refunds`, { method: 'GET' });
+}

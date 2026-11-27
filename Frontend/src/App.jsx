@@ -172,6 +172,7 @@ const ReferralManagement = lazy(() => import('./modules/admin/pages/ReferralMana
 const SlotMembershipAdmin = lazy(() => import('./modules/admin/pages/SlotMembershipAdmin'));
 const CouponManagement = lazy(() => import('./modules/admin/pages/CouponManagement'));
 const RefundsQueue = lazy(() => import('./modules/admin/pages/RefundsQueue'));
+const CustomerRefunds = lazy(() => import('./modules/admin/pages/CustomerRefunds'));
 const CancellationPolicySettings = lazy(() => import('./modules/admin/pages/CancellationPolicySettings'));
 
 const PointsWalletPage = lazy(() => import('./modules/user/pages/PointsWalletPage'));
@@ -299,6 +300,7 @@ function App() {
               <Route path="slot-memberships" element={<SlotMembershipAdmin />} />
               <Route path="coupons" element={<CouponManagement />} />
               <Route path="refunds" element={<RefundsQueue />} />
+              <Route path="customer-refunds" element={<CustomerRefunds />} />
               <Route path="cancellation-policy" element={<CancellationPolicySettings />} />
             </Route>
 

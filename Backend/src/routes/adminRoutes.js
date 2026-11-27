@@ -128,6 +128,10 @@ router.get('/bookings', asyncHandler(listAdminBookings));
 router.patch('/bookings/:bookingId', asyncHandler(updateAdminBooking));
 router.post('/bookings/:bookingId/refund', asyncHandler(refundAdminBooking));
 router.get('/refunds', asyncHandler(listManualRefunds));
+// Super Admin refunds any customer, full or partial, to their Arena Wallet
+router.get('/customers/:userId/refundables', asyncHandler(require('../controllers/adminCustomerRefundController').getRefundables));
+router.post('/customers/:userId/refunds', asyncHandler(require('../controllers/adminCustomerRefundController').postRefund));
+router.get('/customer-refunds', asyncHandler(require('../controllers/adminCustomerRefundController').listRecentRefunds));
 
 router.get('/membership-plans/stats', asyncHandler(adminMembershipStats));
 router.get('/memberships', asyncHandler(listUserMemberships));

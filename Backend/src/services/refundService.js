@@ -80,8 +80,14 @@ async function refundPaidBooking(bookingId, { method = 'wallet', reference = '',
   }
 
   try {
+    // A Super Admin partial refund may already have returned part of this booking
+    // (booking.refundedAmount, wallet credits tagged with the booking — which the wallet
+    // part below already accounts for). Only the rest is refunded now.
+    const priorAdmin = roundMoney(Number(claimed.refundedAmount || 0));
     const walletBack = await refundBookingWallet(claimed, reason);
-    const card = cardPart(claimed);
+    const card = priorAdmin > 0
+      ? roundMoney(Math.min(cardPart(claimed), Math.max(0, Number(claimed.amount || 0) - priorAdmin - walletBack)))
+      : cardPart(claimed);
     if (card > 0 && method === 'wallet') {
       // Guard against a credit already made for this booking's card part (e.g. a retry).
       const already = await WalletTransaction.findOne({
@@ -97,7 +103,9 @@ async function refundPaidBooking(bookingId, { method = 'wallet', reference = '',
       }
     }
     // Total returned to the customer: wallet part (now or earlier) + card part.
-    const refundedAmount = roundMoney(claimed.amount || walletBack + card);
+    const refundedAmount = priorAdmin > 0
+      ? roundMoney(Math.min(Number(claimed.amount || 0), priorAdmin + walletBack + (method === 'wallet' ? card : cardPart(claimed))))
+      : roundMoney(claimed.amount || walletBack + card);
     const updated = await Booking.findByIdAndUpdate(
       claimed._id,
       {
@@ -113,7 +121,9 @@ async function refundPaidBooking(bookingId, { method = 'wallet', reference = '',
       },
       { new: true }
     );
-    return { booking: updated, refundedAmount, walletAmount: method === 'wallet' ? refundedAmount : walletBack };
+    // Messages say what is credited now (after any earlier Super Admin partial refund).
+    const nowAmount = priorAdmin > 0 ? roundMoney(walletBack + (method === 'wallet' ? card : cardPart(claimed))) : refundedAmount;
+    return { booking: updated, refundedAmount: nowAmount, walletAmount: method === 'wallet' ? nowAmount : walletBack };
   } catch (err) {
     // Release the claim so the refund can be retried.
     await Booking.updateOne({ _id: claimed._id }, { $set: { refundedAt: null } });
