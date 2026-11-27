@@ -23,6 +23,37 @@ const cmsContentSchema = new mongoose.Schema(
     maxParticipants: { type: Number, default: 0, min: 0 },
     startDate: { type: Date, default: null },
     endDate: { type: Date, default: null },
+    // Events: schedule, the courts the event blocks, and entry categories (each with its own fee).
+    eventInfo: {
+      type: new mongoose.Schema(
+        {
+          startDate: { type: String, default: '' }, // YYYY-MM-DD
+          days: { type: Number, default: 1, min: 1, max: 30 },
+          endDate: { type: String, default: '' }, // computed: last day (inclusive)
+          allDay: { type: Boolean, default: true },
+          startTime: { type: String, default: '00:00' }, // HH:MM
+          endTime: { type: String, default: '00:00' }, // HH:MM ('00:00' = midnight)
+          holdArenaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Arena', default: null },
+          courtIds: { type: [mongoose.Schema.Types.ObjectId], default: [] }, // courts blocked (empty = none)
+          holdId: { type: mongoose.Schema.Types.ObjectId, ref: 'ArenaDayBooking', default: null },
+          categories: {
+            type: [
+              new mongoose.Schema({
+                name: { type: String, required: true, trim: true, maxlength: 60 },
+                type: { type: String, enum: ['single', 'pair', 'team'], default: 'single' },
+                minPlayers: { type: Number, default: 1, min: 1, max: 30 },
+                maxPlayers: { type: Number, default: 1, min: 1, max: 30 },
+                fee: { type: Number, default: 0, min: 0 },
+                maxEntries: { type: Number, default: 0, min: 0 }, // 0 = no limit
+              }),
+            ],
+            default: [],
+          },
+        },
+        { _id: false }
+      ),
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -45,6 +76,21 @@ function toPublic(doc) {
     maxParticipants: Number(o.maxParticipants) || 0,
     startDate: o.startDate ? o.startDate.toISOString() : null,
     endDate: o.endDate ? o.endDate.toISOString() : null,
+    eventInfo: o.eventInfo ? {
+      startDate: o.eventInfo.startDate || '',
+      days: o.eventInfo.days || 1,
+      endDate: o.eventInfo.endDate || o.eventInfo.startDate || '',
+      allDay: o.eventInfo.allDay !== false,
+      startTime: o.eventInfo.startTime || '00:00',
+      endTime: o.eventInfo.endTime || '00:00',
+      holdArenaId: o.eventInfo.holdArenaId ? String(o.eventInfo.holdArenaId) : null,
+      courtIds: (o.eventInfo.courtIds || []).map(String),
+      holdId: o.eventInfo.holdId ? String(o.eventInfo.holdId) : null,
+      categories: (o.eventInfo.categories || []).map((c) => ({
+        id: String(c._id), name: c.name, type: c.type || 'single',
+        minPlayers: c.minPlayers || 1, maxPlayers: c.maxPlayers || 1, fee: Number(c.fee) || 0, maxEntries: c.maxEntries || 0,
+      })),
+    } : null,
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   };

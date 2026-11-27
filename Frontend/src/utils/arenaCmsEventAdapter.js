@@ -35,5 +35,12 @@ export function mapCmsContentToEventCard(c) {
     venue: c.subtitle?.trim() || 'Arena',
     body: c.body || '',
     linkUrl: c.linkUrl || '',
+    categories: c.eventInfo?.categories || [],
+    price: (() => {
+      const cats = c.eventInfo?.categories || [];
+      if (cats.length) return cats.map((x) => `${x.name} ${Number(x.fee) > 0 ? `${Number(x.fee).toFixed(3)}` : 'free'}`).join(' · ');
+      const fee = String(c.subtitle || '').split('|')[3]?.trim();
+      return fee ? `${fee} OMR` : '—';
+    })(),
   };
 }

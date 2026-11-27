@@ -57,6 +57,8 @@ import {
 } from '../../../services/cmsApi';
 import { listEventRegistrations, updateEventRegistrationStatus } from '../../../services/adminOpsApi';
 import CourtImage from '../../../assets/court.jpeg';
+import { EventScheduleFields, EventCategoriesEditor } from '../components/EventSetupFields';
+import { emptySetup, setupFromEvent, setupToPayload, setupProblems } from '../../../utils/eventSetup';
 
 const COLORS = ['#CE2029', '#36454F', '#627D98', '#36454F'];
 
@@ -274,7 +276,9 @@ const CalendarView = ({ events, setView, isDark, setActiveEvent }) => {
 
 const EventFormView = ({ loadEvents, setView, isDark }) => {
   const [step, setStep] = useState(0);
-  const steps = ['General Info', 'Date & Venue', 'Pricing & Rules'];
+  const steps = ['General Info', 'Dates, Hours & Courts', 'Categories & Rules'];
+  const [setup, setSetup] = useState(emptySetup());
+  const [problems, setProblems] = useState([]);
   const [bannerPreview, setBannerPreview] = useState(null);
 
   // Form fields state
@@ -311,25 +315,35 @@ const EventFormView = ({ loadEvents, setView, isDark }) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name) return;
+    if (!formData.name) { alert('Enter the event name (step 1)'); return; }
+    const p = [...setupProblems(setup, 'schedule'), ...setupProblems(setup, 'categories')];
+    if (p.length) { setProblems(p); return; }
     try {
       const formattedRules = (formData.rules || '').split('\n').map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n');
+      const { eventInfo, timeText, feeText } = setupToPayload(setup);
       const payload = {
         kind: 'event',
         title: formData.name,
-        subtitle: `${formData.date} | ${formData.time} | ${formData.venue} | ${formData.entryFee || '0'} | ${formData.type} | ${formData.sportCategory}`,
+        subtitle: `${setup.startDate} | ${timeText} | ${formData.venue} | ${feeText} | ${formData.type} | ${formData.sportCategory}`,
         imageUrl: bannerPreview,
         isPublished: true,
         body: `${formData.description || ''}\n\n${formattedRules}`,
         inclusions: (formData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean),
-        maxParticipants: Number(formData.maxParticipants) || 0
+        maxParticipants: Number(formData.maxParticipants) || 0,
+        eventInfo,
       };
-      await createAdminCms(payload);
+      const res = await createAdminCms(payload);
+      if (res?.hold?.affected) alert(`Event created. ${res.hold.affected} customer booking(s) on the event's courts at that time need to be moved or refunded — see Arena Control → Whole-Arena Booking.`);
       loadEvents();
       setView('DASHBOARD');
-    } catch {
-      alert('Failed to create event');
+    } catch (e) {
+      alert(e?.message || 'Failed to create event');
     }
+  };
+  const next = () => {
+    const p = step === 1 ? setupProblems(setup, 'schedule') : step === 0 && !formData.name.trim() ? ['Enter the event name'] : [];
+    setProblems(p);
+    if (!p.length) setStep(step + 1);
   };
 
   return (
@@ -489,38 +503,7 @@ const EventFormView = ({ loadEvents, setView, isDark }) => {
         {step === 1 && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Event Date"
-                    variant="filled"
-                    value={formData.date}
-                    onChange={handleField('date')}
-                    InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-                    InputProps={{
-                      disableUnderline: true,
-                      sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    type="time"
-                    label="Event Time"
-                    variant="filled"
-                    value={formData.time}
-                    onChange={handleField('time')}
-                    InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-                    InputProps={{
-                      disableUnderline: true,
-                      sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
-                    }}
-                  />
-                </Grid>
-              </Grid>
+              <EventScheduleFields value={setup} onChange={setSetup} />
               <FormControl fullWidth variant="filled">
                 <InputLabel sx={{ fontWeight: 700, color: '#CE2029' }}>Event Venue</InputLabel>
                 <Select
@@ -554,21 +537,7 @@ const EventFormView = ({ loadEvents, setView, isDark }) => {
         {step === 2 && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Entry Fee (OMR)"
-                variant="filled"
-                placeholder="e.g. 5.000"
-                value={formData.entryFee}
-                onChange={handleField('entryFee')}
-                InputLabelProps={{ shrink: true, sx: { fontWeight: 700, color: '#CE2029' } }}
-                InputProps={{
-                  endAdornment: <InputAdornment position="end" sx={{ fontWeight: 800 }}>OMR</InputAdornment>,
-                  disableUnderline: true,
-                  sx: { borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' }
-                }}
-              />
+              <EventCategoriesEditor value={setup} onChange={setSetup} />
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 700, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.75 }}>
                   Event Rules & Guidelines
@@ -617,10 +586,15 @@ const EventFormView = ({ loadEvents, setView, isDark }) => {
           </motion.div>
         )}
 
+        {problems.length > 0 && (
+          <Box sx={{ mt: 3, p: 2, borderRadius: 2, bgcolor: '#FEF2F2', color: '#B91C1C', fontSize: 13, fontWeight: 700 }} data-testid="event-form-problems">
+            {problems.map((p) => <div key={p}>• {p}</div>)}
+          </Box>
+        )}
         <Box sx={{ mt: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Button
             disabled={step === 0}
-            onClick={() => setStep(step - 1)}
+            onClick={() => { setProblems([]); setStep(step - 1); }}
             sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'none', fontSize: '1rem' }}
           >
             Back
@@ -635,7 +609,7 @@ const EventFormView = ({ loadEvents, setView, isDark }) => {
             </Button>
             <Button
               variant="contained"
-              onClick={() => step === 2 ? handleSubmit() : setStep(step + 1)}
+              onClick={() => step === 2 ? handleSubmit() : next()}
               sx={{
                 bgcolor: '#CE2029',
                 px: 5,
@@ -688,25 +662,33 @@ const EventBanners = () => {
     }
   };
 
+  const [editSetup, setEditSetup] = useState(emptySetup());
+  const [editProblems, setEditProblems] = useState([]);
   const handleUpdateEvent = async () => {
     if (!editingEvent) return;
+    const p = [...setupProblems(editSetup, 'schedule'), ...setupProblems(editSetup, 'categories')];
+    setEditProblems(p);
+    if (p.length) return;
     try {
       const formattedRules = (editFormData.rules || '').split('\n').map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n');
+      const { eventInfo, timeText, feeText } = setupToPayload(editSetup);
       const payload = {
         title: editFormData.name,
-        subtitle: `${editFormData.date} | ${editFormData.time} | ${editFormData.venue} | ${editFormData.entryFee || '0'} | ${editFormData.type} | ${editFormData.sportCategory}`,
+        subtitle: `${editSetup.startDate} | ${timeText} | ${editFormData.venue} | ${feeText} | ${editFormData.type} | ${editFormData.sportCategory}`,
         imageUrl: editFormData.banner,
         body: `${editFormData.description || ''}\n\n${formattedRules}`,
         isPublished: editFormData.status === 'Active',
         inclusions: (editFormData.inclusions || '').split(',').map(i => i.trim()).filter(Boolean),
-        maxParticipants: Number(editFormData.maxParticipants) || 0
+        maxParticipants: Number(editFormData.maxParticipants) || 0,
+        eventInfo,
       };
-      await updateAdminCms(editingEvent.id, payload);
+      const res = await updateAdminCms(editingEvent.id, payload);
+      if (res?.hold?.affected) alert(`Saved. ${res.hold.affected} customer booking(s) on the event's courts at that time need to be moved or refunded — see Arena Control → Whole-Arena Booking.`);
       setIsEditModalOpen(false);
       setEditingEvent(null);
       loadEvents();
-    } catch {
-      alert('Failed to update event');
+    } catch (e) {
+      alert(e?.message || 'Failed to update event');
     }
   };
 
@@ -737,8 +719,9 @@ const EventBanners = () => {
           status: c.isPublished ? 'Active' : 'Draft',
           participants: eventParticipants,
           maxParticipants: Number(c.maxParticipants) || 0,
+          raw: c,
           revenue: regs.filter(r => r.eventId === c.id && r.status === 'Approved')
-                      .reduce((sum) => sum + (parseFloat(parts[3]) || 0), 0),
+                      .reduce((sum, r) => sum + (r.fee != null ? Number(r.fee) || 0 : (parseFloat(parts[3]) || 0)), 0),
           expenses: 0,
           banner: c.imageUrl || CourtImage,
           linkUrl: c.linkUrl,
@@ -1092,6 +1075,8 @@ const EventBanners = () => {
                                   inclusions: (event.inclusions || []).join(', '),
                                   sportCategory: event.sportCategory || 'Badminton'
                                 });
+                                setEditSetup(setupFromEvent(event.raw));
+                                setEditProblems([]);
                                 setIsEditModalOpen(true);
                                 setActiveCardMenu(null);
                               }}
@@ -1971,49 +1956,18 @@ const EventBanners = () => {
             </Grid>
           </Grid>
 
+          <Box sx={{ mb: 3 }}>
+            <EventScheduleFields value={editSetup} onChange={setEditSetup} />
+          </Box>
+          <Box sx={{ mb: 3 }}>
+            <EventCategoriesEditor value={editSetup} onChange={setEditSetup} />
+          </Box>
+          {editProblems.length > 0 && (
+            <Box sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: '#FEF2F2', color: '#B91C1C', fontSize: 13, fontWeight: 700 }}>
+              {editProblems.map((p) => <div key={p}>• {p}</div>)}
+            </Box>
+          )}
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
-                Event Date
-              </Typography>
-              <TextField
-                fullWidth
-                type="date"
-                variant="outlined"
-                value={editFormData.date}
-                onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
-                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
-                    '&:hover fieldset': { borderColor: '#CE202944' },
-                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
-                Event Time
-              </Typography>
-              <TextField
-                fullWidth
-                type="time"
-                variant="outlined"
-                value={editFormData.time}
-                onChange={(e) => setEditFormData({ ...editFormData, time: e.target.value })}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
-                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
-                    '&:hover fieldset': { borderColor: '#CE202944' },
-                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
-                  }
-                }}
-              />
-            </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
                 Event Venue
@@ -2046,27 +2000,6 @@ const EventBanners = () => {
                 value={editFormData.maxParticipants}
                 onChange={(e) => setEditFormData({ ...editFormData, maxParticipants: e.target.value })}
                 placeholder="No limit"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc',
-                    '& fieldset': { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' },
-                    '&:hover fieldset': { borderColor: '#CE202944' },
-                    '&.Mui-focused fieldset': { borderColor: '#CE2029' }
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ fontWeight: 900, color: '#CE2029', textTransform: 'uppercase', letterSpacing: 1.5, mb: 1, display: 'block' }}>
-                Entry Fee (OMR)
-              </Typography>
-              <TextField
-                fullWidth
-                variant="outlined"
-                value={editFormData.entryFee}
-                onChange={(e) => setEditFormData({ ...editFormData, entryFee: e.target.value })}
-                placeholder="0.000"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 3,

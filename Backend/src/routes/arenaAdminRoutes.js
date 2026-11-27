@@ -45,7 +45,7 @@ const {
   listArenaBatches, listArenaBatchStudents, getArenaBatchAttendance, saveArenaBatchAttendance, addArenaBatchStudent, createStudentLogin,
 } = require('../controllers/arenaCoachingController');
 const { listReservedSlots, createReservedSlot, updateReservedSlot, releaseReservedDate, restoreReservedDate, endReservedSlot } = require('../controllers/reservedSlotController');
-const { listArenaBookings, previewArenaBooking, createArenaBooking, cancelArenaBooking } = require('../controllers/arenaDayBookingController');
+const { listArenaBookings, previewArenaBooking, createArenaBooking, cancelArenaBooking, moveAffectedBooking, refundAffectedBooking } = require('../controllers/arenaDayBookingController');
 const { getStaffRoster, addRosterStaff, updateRosterStaff, removeRosterStaff } = require('../controllers/arenaStaffRosterController');
 const {
   createCmsContent,
@@ -166,6 +166,8 @@ router.get('/arena-bookings', asyncHandler(listArenaBookings));
 router.get('/arena-bookings/preview', asyncHandler(previewArenaBooking));
 router.post('/arena-bookings', asyncHandler(createArenaBooking));
 router.post('/arena-bookings/:id/cancel', asyncHandler(cancelArenaBooking));
+router.post('/arena-bookings/:id/affected/:bookingId/move', asyncHandler(moveAffectedBooking));
+router.post('/arena-bookings/:id/affected/:bookingId/refund', asyncHandler(refundAffectedBooking));
 router.get('/staff-roster', asyncHandler(getStaffRoster));
 router.post('/staff-roster', asyncHandler(addRosterStaff));
 router.patch('/staff-roster/:id', asyncHandler(updateRosterStaff));

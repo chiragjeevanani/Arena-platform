@@ -40,29 +40,34 @@ function asDayBlock(rb, ymd) {
 
 const arenaLabel = (ab) => `${ab.bookedFor}${ab.teamName ? ` · ${ab.teamName}` : ''}`;
 
-/** Whole-arena booking → one full-day block per court ('00:00'–'00:00' = the whole day). */
-function arenaDayBlock(ab, courtId) {
-  const id = `ab_${ab._id}_${courtId}`;
+const addDaysYmd = (ymd, n) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const holdEnd = (ab) => ab.endDate || ab.date;
+
+/** Whole-arena booking / event → one block per court per day (startTime–endTime; 00:00–00:00 = whole day). */
+function arenaDayBlock(ab, courtId, ymd) {
+  const id = `ab_${ab._id}_${courtId}_${ymd}`;
+  const isEvent = ab.kind === 'event';
   return {
     _id: id,
     id,
     arenaBookingId: String(ab._id),
     arenaId: ab.arenaId,
     courtId,
-    date: ab.date,
-    startTime: '00:00',
-    endTime: '00:00',
+    date: ymd,
+    startTime: ab.startTime || '00:00',
+    endTime: ab.endTime || '00:00',
     reason: 'reserved',
-    note: `Whole arena booked: ${arenaLabel(ab)}`,
-    playerName: `Whole arena · ${ab.bookedFor}`,
+    note: isEvent ? `Event: ${ab.bookedFor}` : `Whole arena booked: ${arenaLabel(ab)}`,
+    playerName: isEvent ? `Event · ${ab.bookedFor}` : `Whole arena · ${ab.bookedFor}`,
     teamName: ab.teamName || '',
     bookedFor: ab.bookedFor,
+    holdKind: ab.kind || 'arena',
     isRecurring: true,
     isArenaBooking: true,
   };
 }
 
-/** Whole-arena day-blocks for these courts / this arena on these dates. */
+/** Hold blocks (whole-arena bookings and events) for these courts / this arena on these dates. */
 async function arenaDayBlocks({ arenaId, courtIds, from, to }) {
   const Court = require('../models/Court');
   const ArenaDayBooking = require('../models/ArenaDayBooking');
@@ -72,9 +77,25 @@ async function arenaDayBlocks({ arenaId, courtIds, from, to }) {
   else return [];
   if (!courts.length) return [];
   const arenaIds = [...new Set(courts.map((c) => String(c.arenaId)))];
-  const list = await ArenaDayBooking.find({ status: 'active', arenaId: { $in: arenaIds }, date: { $gte: from, $lte: to } }).lean();
+  const list = await ArenaDayBooking.find({
+    status: 'active',
+    arenaId: { $in: arenaIds },
+    date: { $lte: to },
+    $or: [{ endDate: { $gte: from } }, { endDate: null, date: { $gte: from } }],
+  }).lean();
   const out = [];
-  for (const ab of list) for (const c of courts) if (String(c.arenaId) === String(ab.arenaId)) out.push(arenaDayBlock(ab, String(c._id)));
+  for (const ab of list) {
+    const holdCourts = (ab.courtIds || []).map(String);
+    const first = ab.date > from ? ab.date : from;
+    const last = holdEnd(ab) < to ? holdEnd(ab) : to;
+    for (let d = first; d <= last; d = addDaysYmd(d, 1)) {
+      for (const c of courts) {
+        if (String(c.arenaId) !== String(ab.arenaId)) continue;
+        if (holdCourts.length && !holdCourts.includes(String(c._id))) continue;
+        out.push(arenaDayBlock(ab, String(c._id), d));
+      }
+    }
+  }
   return out;
 }
 
@@ -103,6 +124,8 @@ async function blocksForCourtDay(courtId, ymd) {
 }
 
 /** Text for a block's holder: "Whole arena: X · team" or "Reserved: X · team". */
-const holderText = (b) => (b.isArenaBooking ? `Whole arena: ${b.bookedFor}${b.teamName ? ` · ${b.teamName}` : ''}` : `Reserved: ${b.playerName}${b.teamName ? ` · ${b.teamName}` : ''}`);
+const holderText = (b) => (b.isArenaBooking
+  ? (b.holdKind === 'event' ? `Event: ${b.bookedFor}` : `Whole arena: ${b.bookedFor}${b.teamName ? ` · ${b.teamName}` : ''}`)
+  : `Reserved: ${b.playerName}${b.teamName ? ` · ${b.teamName}` : ''}`);
 
 module.exports = { DAYS, dayOf, appliesOn, asDayBlock, recurringDayBlocks, arenaDayBlocks, blocksForCourtDay, label, holderText };

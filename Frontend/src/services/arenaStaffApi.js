@@ -138,6 +138,9 @@ export const searchArenaCustomers = (q, arenaId) => apiJson(`${BASE}/walkin/cust
 
 // Whole-arena bookings: every court, all day, for one client (price agreed offline).
 export const listArenaBookings = (status, arenaId) => apiJson(`${BASE}/arena-bookings?status=${encodeURIComponent(status || 'upcoming')}`, { headers: scope(arenaId) });
-export const previewArenaBooking = (date, arenaId) => apiJson(`${BASE}/arena-bookings/preview?date=${encodeURIComponent(date)}`, { headers: scope(arenaId) });
+export const previewArenaBooking = (p, arenaId) => apiJson(`${BASE}/arena-bookings/preview?${new URLSearchParams({ date: p.date, days: String(p.days || 1), allDay: String(p.allDay !== false), startTime: p.startTime || '', endTime: p.endTime || '' })}`, { headers: scope(arenaId) });
+export const moveAffectedBooking = (holdId, bookingId, body, arenaId) => apiJson(`${BASE}/arena-bookings/${encodeURIComponent(holdId)}/affected/${encodeURIComponent(bookingId)}/move`, { method: 'POST', body, headers: scope(arenaId) });
+export const refundAffectedBooking = (holdId, bookingId, arenaId) => apiJson(`${BASE}/arena-bookings/${encodeURIComponent(holdId)}/affected/${encodeURIComponent(bookingId)}/refund`, { method: 'POST', headers: scope(arenaId) });
+export const getCourtSlots = (courtId, date, arenaId) => apiJson(`${BASE}/walkin/slots?courtId=${encodeURIComponent(courtId)}&date=${encodeURIComponent(date)}`, { headers: scope(arenaId) });
 export const createArenaBooking = (body, arenaId) => apiJson(`${BASE}/arena-bookings`, { method: 'POST', body, headers: scope(arenaId) });
 export const cancelArenaBooking = (id, arenaId) => apiJson(`${BASE}/arena-bookings/${encodeURIComponent(id)}/cancel`, { method: 'POST', headers: scope(arenaId) });

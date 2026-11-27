@@ -142,7 +142,7 @@ async function requireBlockInArenaScope(req, res, next) {
   // Reserved-slot dates ('rb_<id>_<date>') are scope-checked in the controller.
   if (/^rb_[a-f0-9]{24}_\d{4}-\d{2}-\d{2}$/.test(String(blockId))) return next();
   // Whole-arena day ('ab_<id>_<courtId>'): the controller explains where to cancel it.
-  if (/^ab_[a-f0-9]{24}_[a-f0-9]{24}$/.test(String(blockId))) return next();
+  if (/^ab_[a-f0-9]{24}_[a-f0-9]{24}(_[0-9-]{10})?$/.test(String(blockId))) return next();
   if (!mongoose.isValidObjectId(blockId)) {
     return res.status(400).json({ error: 'Invalid block id' });
   }

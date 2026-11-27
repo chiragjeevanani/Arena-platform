@@ -56,6 +56,19 @@ router.post('/bookings/checkout', asyncHandler(checkoutMyBookings));
 router.get('/bookings', asyncHandler(listMyBookings));
 router.get('/bookings/:id/cancel-quote', asyncHandler(getCancelQuote));
 router.patch('/bookings/:id/cancel', asyncHandler(cancelMyBooking));
+// A booking that clashes with an event / whole-arena booking: cancel it for a full refund (any time).
+router.post('/bookings/:id/clash-refund', asyncHandler(async (req, res) => {
+  const mongoose = require('mongoose');
+  const Booking = require('../models/Booking');
+  const ArenaDayBooking = require('../models/ArenaDayBooking');
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ error: 'Invalid booking' });
+  const b = await Booking.findOne({ _id: req.params.id, userId: req.auth.sub }).lean();
+  if (!b || !b.affectedBy?.holdId) return res.status(400).json({ error: 'This booking is not affected by an event' });
+  const hold = await ArenaDayBooking.findById(b.affectedBy.holdId);
+  if (!hold) return res.status(404).json({ error: 'Not found' });
+  const out = await require('../services/courtHolds').refundAffected(hold, b._id, { by: 'customer' });
+  return res.json({ refunded: out.refunded || 0 });
+}));
 
 router.get('/wallet', asyncHandler(getMyWallet));
 router.post('/wallet/top-up', asyncHandler(topUpMyWallet));

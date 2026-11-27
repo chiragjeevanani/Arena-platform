@@ -25,6 +25,9 @@ async function start() {
   require('./controllers/reservedSlotController').startReservedSlotNotifier();
   // Coaching monthly-fee reminders and membership ending/ended reminders (hourly check).
   require('./services/coachingFees').startFeeReminders();
+  // Court holds moved from "one per arena per day" to multi-day / partial-day / chosen courts:
+  // drop the old unique index (syncIndexes keeps only the indexes the schema declares).
+  require('./models/ArenaDayBooking').syncIndexes().catch((e) => console.error('[holds] index sync', e.message));
 
   // 2. Configure Cloudinary
   try {

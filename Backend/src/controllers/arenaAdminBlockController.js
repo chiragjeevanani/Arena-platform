@@ -69,8 +69,8 @@ async function createMyBlock(req, res) {
 
 async function deleteMyBlock(req, res) {
   const { blockId } = req.params;
-  if (/^ab_[a-f0-9]{24}_[a-f0-9]{24}$/.test(String(blockId))) {
-    return res.status(400).json({ error: 'The whole arena is booked that day. Cancel it in Whole-Arena Booking to free the courts.' });
+  if (/^ab_[a-f0-9]{24}_[a-f0-9]{24}(_[0-9-]{10})?$/.test(String(blockId))) {
+    return res.status(400).json({ error: 'This court is held by a whole-arena booking or an event. Cancel it in Whole-Arena Booking (or edit the event) to free it.' });
   }
   // 'rb_<reservedId>_<date>' = a reserved slot on one date: removing it frees that date (player absent).
   const m = /^rb_([a-f0-9]{24})_(\d{4}-\d{2}-\d{2})$/.exec(String(blockId));

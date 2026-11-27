@@ -44,7 +44,26 @@ const EventsAdmin = () => {
   const [view, setView] = useState('GRID'); // GRID, DETAILS
   const [activeEvent, setActiveEvent] = useState(null);
   const [showRegModal, setShowRegModal] = useState(false);
-  const [regForm, setRegForm] = useState({ name: '', age: '', contact: '', category: 'Solo' });
+  const [regForm, setRegForm] = useState({ name: '', contact: '', categoryId: '', arenaIdNumber: '', teamName: '', others: '' });
+  const toRow = (r) => ({
+    id: r.id,
+    name: r.name,
+    contact: r.phone,
+    status: r.status,
+    category: r.categoryName || 'Standard',
+    arenaIdNumber: r.arenaIdNumber || '',
+    teamName: r.teamName || '',
+    players: r.players || [],
+    fee: r.fee,
+    paymentMethod: r.paymentMethod || '',
+  });
+  const exportCsv = () => {
+    const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = [['Name', 'Phone', 'Arena ID', 'Category', 'Team', 'Other players (name / ID)', 'Fee (OMR)', 'Paid by', 'Status']]
+      .concat(participants.map((p) => [p.name, p.contact, p.arenaIdNumber, p.category, p.teamName, p.players.map((x) => `${x.name}${x.idNumber ? ` (${x.idNumber})` : ''}`).join('; '), p.fee ?? '', p.paymentMethod, p.status]));
+    const blob = new Blob([String.fromCharCode(0xfeff) + rows.map((r) => r.map(q).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${(activeEvent?.title || 'event').replace(/[^a-z0-9]+/gi, '-')}-registrations.csv`; a.click();
+  };
   const [participants, setParticipants] = useState([]);
   const [filterQuery, setFilterQuery] = useState('');
   const [activeAthleteMenu, setActiveAthleteMenu] = useState(null);
@@ -81,14 +100,7 @@ const EventsAdmin = () => {
          try {
            const data = await listEventRegistrations(activeEvent.id, { channel: cmsScope.channel });
            if (!cancelled) {
-             setParticipants(data.registrations.map(r => ({
-                id: r.id,
-                name: r.name,
-                contact: r.phone,
-                status: r.status,
-                category: 'Standard', // Fallback for simple registrations
-                age: 'N/A' // Fallback
-             })));
+             setParticipants(data.registrations.map(toRow));
            }
          } catch (err) {
            console.error('Failed to load registrations', err);
@@ -107,27 +119,27 @@ const EventsAdmin = () => {
       alert('Operational Error: Name and Contact are mandatory.');
       return;
     }
+    const cats = activeEvent?.categories || [];
+    if (cats.length && !regForm.categoryId) { alert('Choose a category'); return; }
+    // Other players: one per line, "Name" or "Name, ID"
+    const players = regForm.others.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => { const [n, ...rest] = l.split(','); return { name: n.trim(), idNumber: rest.join(',').trim() }; });
     setIsSubmitting(true);
     try {
       await registerForEvent({
         eventId: activeEvent.id,
         name: regForm.name,
-        phone: regForm.contact
+        phone: regForm.contact,
+        paymentMethod: 'cash',
+        arenaIdNumber: regForm.arenaIdNumber,
+        ...(cats.length ? { categoryId: regForm.categoryId, players, teamName: regForm.teamName } : {}),
       });
       setShowRegModal(false);
-      setRegForm({ name: '', age: '', contact: '', category: 'Solo' });
+      setRegForm({ name: '', contact: '', categoryId: '', arenaIdNumber: '', teamName: '', others: '' });
       // Refresh list
       const data = await listEventRegistrations(activeEvent.id, { channel: cmsScope.channel });
-      setParticipants(data.registrations.map(r => ({
-         id: r.id,
-         name: r.name,
-         contact: r.phone,
-         status: r.status,
-         category: 'Standard',
-         age: 'N/A'
-      })));
-    } catch {
-      alert('Enrollment failed');
+      setParticipants(data.registrations.map(toRow));
+    } catch (e) {
+      alert(e?.message || 'Enrollment failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -369,7 +381,7 @@ const EventsAdmin = () => {
                         className="h-9 pl-9 pr-4 bg-white border border-slate-200 text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#CE2029] rounded-sm w-48 transition-all shadow-sm"
                       />
                     </div>
-                    <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-[#36454F] text-[10px] font-bold uppercase rounded-sm hover:bg-slate-50 transition-all shadow-sm">
+                    <button type="button" onClick={exportCsv} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-[#36454F] text-[10px] font-bold uppercase rounded-sm hover:bg-slate-50 transition-all shadow-sm">
                        <ArrowRight size={14} /> Export CSV
                     </button>
                  </div>
@@ -379,7 +391,7 @@ const EventsAdmin = () => {
                     <thead className="bg-[#F9FAFB] border-b border-slate-200">
                        <tr>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-slate-200">Athlete Node</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-slate-200">Bracket</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-slate-200">Players</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-slate-200">Status</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-slate-200">Category</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-slate-200 text-right">Actions</th>
@@ -390,10 +402,13 @@ const EventsAdmin = () => {
                           <tr key={athlete.id} className="hover:bg-slate-50 transition-all group">
                              <td className="px-6 py-5">
                                 <p className="text-[13px] font-black text-[#36454F] uppercase tracking-tight">{athlete.name}</p>
-                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{athlete.contact}</p>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{athlete.contact}{athlete.arenaIdNumber ? ` · ID ${athlete.arenaIdNumber}` : ''}</p>
                              </td>
-                             <td className="px-6 py-5">
-                                <p className="text-[12px] font-black text-slate-700 uppercase tracking-tight">{athlete.age} Yrs</p>
+                             <td className="px-6 py-5 not-italic" data-testid="reg-players-cell">
+                                {athlete.teamName && <p className="text-[11px] font-black text-[#36454F] uppercase">{athlete.teamName}</p>}
+                                {athlete.players.length ? athlete.players.map((p, i) => (
+                                  <p key={i} className="text-[11px] font-bold text-slate-600">{p.name}{p.idNumber ? <span className="text-slate-400"> · ID {p.idNumber}</span> : null}</p>
+                                )) : <p className="text-[11px] font-bold text-slate-400">—</p>}
                              </td>
                              <td className="px-6 py-5">
                                 <span className={`px-3 py-1 rounded-sm text-[9px] font-black uppercase tracking-widest border transition-all ${
@@ -406,6 +421,7 @@ const EventsAdmin = () => {
                              </td>
                              <td className="px-6 py-5">
                                 <p className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">{athlete.category}</p>
+                                {athlete.fee != null && <p className="text-[10px] font-bold text-slate-400 not-italic">{Number(athlete.fee) > 0 ? `OMR ${Number(athlete.fee).toFixed(3)}` : 'Free'}{athlete.paymentMethod ? ` · ${athlete.paymentMethod === 'cash' ? 'at arena' : athlete.paymentMethod}` : ''}</p>}
                              </td>
                              <td className="px-6 py-5 text-right relative">
                                 <button 
@@ -475,32 +491,52 @@ const EventsAdmin = () => {
            />
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <TextField 
-                label="Age Bracket" 
-                variant="outlined" 
-                fullWidth 
-                required
-                type="number"
-                value={regForm.age}
-                placeholder="24"
-                onChange={(e) => setFilterQuery('') || setRegForm({...regForm, age: e.target.value})}
+              {(activeEvent?.categories || []).length > 0 && (
+                <FormControl variant="outlined" fullWidth required>
+                  <InputLabel sx={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.5, color: '#36454F' }}>Category</InputLabel>
+                  <Select
+                    value={regForm.categoryId}
+                    label="Category"
+                    onChange={(e) => setRegForm({ ...regForm, categoryId: e.target.value })}
+                    sx={{ borderRadius: 3, bgcolor: '#F9FAFB', fontWeight: 700, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' } }}
+                  >
+                    {activeEvent.categories.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>{c.name} · {c.type === 'pair' ? 'pair' : c.type === 'team' ? `team ${c.minPlayers}–${c.maxPlayers}` : 'single'} · {Number(c.fee) > 0 ? `${Number(c.fee).toFixed(3)} OMR` : 'free'}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+              <TextField
+                label="Arena ID (optional)"
+                variant="outlined"
+                fullWidth
+                value={regForm.arenaIdNumber}
+                onChange={(e) => setRegForm({ ...regForm, arenaIdNumber: e.target.value })}
                 InputLabelProps={{ sx: { fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.5, color: '#36454F' } }}
                 InputProps={{ sx: { borderRadius: 3, bgcolor: '#F9FAFB', fontWeight: 700, '& fieldset': { borderColor: '#E5E7EB' } } }}
               />
-              <FormControl variant="outlined" fullWidth required>
-                <InputLabel sx={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.5, color: '#36454F' }}>Participation Tier</InputLabel>
-                <Select
-                  value={regForm.category}
-                  label="Participation Tier"
-                  onChange={(e) => setRegForm({...regForm, category: e.target.value})}
-                  sx={{ borderRadius: 3, bgcolor: '#F9FAFB', fontWeight: 700, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' } }}
-                >
-                  <MenuItem value="Solo">Solo Knockout</MenuItem>
-                  <MenuItem value="Doubles">Doubles Match</MenuItem>
-                  <MenuItem value="Corporate">Corporate Team</MenuItem>
-                </Select>
-              </FormControl>
            </div>
+           {(() => {
+             const c = (activeEvent?.categories || []).find((x) => x.id === regForm.categoryId);
+             if (!c || c.type === 'single') return null;
+             return (
+               <div className="space-y-3">
+                 {c.type === 'team' && (
+                   <TextField label="Team name (optional)" variant="outlined" fullWidth value={regForm.teamName} onChange={(e) => setRegForm({ ...regForm, teamName: e.target.value })}
+                     InputLabelProps={{ sx: { fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.5, color: '#36454F' } }}
+                     InputProps={{ sx: { borderRadius: 3, bgcolor: '#F9FAFB', fontWeight: 700, '& fieldset': { borderColor: '#E5E7EB' } } }} />
+                 )}
+                 <TextField
+                   label={c.type === 'pair' ? 'Partner — "Name, ID" (ID optional)' : `Team-mates — one per line, "Name, ID" (${c.minPlayers - 1}–${c.maxPlayers - 1})`}
+                   variant="outlined" fullWidth multiline minRows={c.type === 'pair' ? 1 : 3}
+                   value={regForm.others}
+                   onChange={(e) => setRegForm({ ...regForm, others: e.target.value })}
+                   InputLabelProps={{ sx: { fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.5, color: '#36454F' } }}
+                   InputProps={{ sx: { borderRadius: 3, bgcolor: '#F9FAFB', fontWeight: 700, '& fieldset': { borderColor: '#E5E7EB' } } }}
+                 />
+               </div>
+             );
+           })()}
            
            <TextField 
              label="Operational Contact Link" 

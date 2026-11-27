@@ -27,6 +27,11 @@ const EventDetail = () => {
    const [cmsEvent, setCmsEvent] = useState(null);
   const [cmsStatus, setCmsStatus] = useState('idle');
   const [isApplied, setIsApplied] = useState(false);
+  const [appliedCats, setAppliedCats] = useState([]);
+  const [catId, setCatId] = useState('');
+  const [arenaIdNumber, setArenaIdNumber] = useState('');
+  const [teamName, setTeamName] = useState('');
+  const [players, setPlayers] = useState([]); // partner / team-mates: [{ name, idNumber }]
 
   useEffect(() => {
     if (!id) {
@@ -57,9 +62,11 @@ const EventDetail = () => {
         const normalized = normalizeCmsEventForDetail(data.content);
         setCmsEvent(normalized);
         
-        // Check if already applied
-        const alreadyApplied = (regData.registrations || []).some(r => r.eventId === id);
-        setIsApplied(alreadyApplied);
+        // Check if already applied (with categories: per category)
+        const mine = (regData.registrations || []).filter(r => r.eventId === id && !['Rejected', 'Cancelled', 'FAILED_PAYMENT', 'EXPIRED'].includes(r.status));
+        const cats = normalized.categories || [];
+        setAppliedCats(mine.map((r) => r.categoryId).filter(Boolean));
+        setIsApplied(cats.length ? cats.every((c) => mine.some((r) => r.categoryId === c.id)) : mine.length > 0);
         
         setCmsStatus('ok');
       } catch {
@@ -77,12 +84,23 @@ const EventDetail = () => {
   const event = cmsEvent;
   const contactHref = event ? resolveContactHref(event) : null;
 
-  // Events whose date has passed can't be joined any more (the server refuses too).
-  const isEnded = /^\d{4}-\d{2}-\d{2}$/.test(String(event?.date || '')) && event.date < new Date().toISOString().slice(0, 10);
+  // Events whose last day has passed can't be joined any more (the server refuses too).
+  const lastDay = String(event?.endDate || event?.date || '');
+  const isEnded = /^\d{4}-\d{2}-\d{2}$/.test(lastDay) && lastDay < new Date().toISOString().slice(0, 10);
+  const categories = event?.categories || [];
+  const cat = categories.find((c) => c.id === catId) || null;
   // A price of 0 is free too (the server registers it without payment).
-  const numericPrice = parseFloat(String(event?.price || '').replace(/[^0-9.]/g, ''));
-  const isFree = event?.price?.toLowerCase().includes('free') || (Number.isFinite(numericPrice) && numericPrice === 0);
-  const isTBA = event?.price?.toLowerCase().includes('tba');
+  const numericPrice = cat ? Number(cat.fee) || 0 : parseFloat(String(event?.price || '').replace(/[^0-9.]/g, ''));
+  const isFree = cat ? !(numericPrice > 0) : (event?.price?.toLowerCase().includes('free') || (Number.isFinite(numericPrice) && numericPrice === 0));
+  const isTBA = !cat && event?.price?.toLowerCase().includes('tba');
+  // Partner / team-mates the chosen category needs (besides the person registering).
+  const othersMin = !cat ? 0 : cat.type === 'pair' ? 1 : cat.type === 'team' ? Math.max(0, cat.minPlayers - 1) : 0;
+  const othersMax = !cat ? 0 : cat.type === 'pair' ? 1 : cat.type === 'team' ? Math.max(0, cat.maxPlayers - 1) : 0;
+  const chooseCategory = (c) => {
+    setCatId(c.id);
+    const need = c.type === 'pair' ? 1 : c.type === 'team' ? Math.max(0, c.minPlayers - 1) : 0;
+    setPlayers((p) => Array.from({ length: need }, (_, i) => p[i] || { name: '', idNumber: '' }));
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -91,42 +109,39 @@ const EventDetail = () => {
       alert("Please enter a valid contact number (8 to 15 digits).");
       return;
     }
-    
+    if (categories.length && !cat) { alert('Choose a category'); return; }
+    const others = players.map((p) => ({ name: p.name.trim(), idNumber: p.idNumber.trim() }));
+    if (others.some((p) => !p.name)) { alert(cat?.type === 'pair' ? "Enter your partner's name" : 'Enter the name of every team-mate'); return; }
+    if (others.length < othersMin || others.length > othersMax) { alert(`This category needs ${othersMin === othersMax ? othersMin : `${othersMin}–${othersMax}`} more player(s)`); return; }
+    const info = {
+      eventId: id,
+      name: regForm.name,
+      phone: regForm.phone,
+      ...(cat ? { categoryId: cat.id, players: others, teamName: cat.type === 'team' ? teamName.trim() : '' } : {}),
+      arenaIdNumber: arenaIdNumber.trim(),
+    };
+
     setIsSubmitting(true);
     try {
       if (isFree || isTBA) {
         // Direct registration for free/tba events
-        await registerForEvent({
-          eventId: id,
-          name: regForm.name,
-          phone: regForm.phone
-        });
+        await registerForEvent(info);
         setRegStep('success');
       } else {
         // Create/reuse EventRegistration with PAYMENT_PENDING status
-        const regRes = await registerForEvent({
-          eventId: id,
-          name: regForm.name,
-          phone: regForm.phone,
-          paymentMethod: 'gateway'
-        });
+        const regRes = await registerForEvent({ ...info, paymentMethod: 'gateway' });
 
-        const amount = parseFloat(event.price.replace(/[^0-9.]/g, '')) || 0;
-        navigate('/payment', { 
-            state: { 
-                amount, 
-                eventTitle: event.title, 
-                eventCategory: event.category,
+        const amount = regRes?.amount ?? numericPrice;
+        navigate('/payment', {
+            state: {
+                amount,
+                eventTitle: cat ? `${event.title} — ${cat.name}` : event.title,
+                eventCategory: cat?.name || event.category,
                 date: event.date,
                 slot: { time: event.time },
                 type: 'event',
-                registrationInfo: { 
-                  eventId: id, 
-                  name: regForm.name, 
-                  phone: regForm.phone,
-                  registrationId: regRes?.registration?.id
-                }
-            } 
+                registrationInfo: { ...info, registrationId: regRes?.registration?.id }
+            }
         });
       }
     } catch (err) {
@@ -326,6 +341,25 @@ const EventDetail = () => {
                </motion.div>
             )}
 
+            {/* Categories & fees */}
+            {categories.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }} data-testid="event-categories-public">
+                <h2 className="text-[10px] font-black text-[#CE2029] uppercase tracking-[0.3em] mb-4">Categories & Fees</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {categories.map((c) => (
+                    <div key={c.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                      <div>
+                        <p className="text-sm font-black text-slate-900">{c.name}{appliedCats.includes(c.id) && <span className="ml-2 text-[9px] font-black text-emerald-600 uppercase">Registered</span>}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.type === 'pair' ? 'Pair · 2 players' : c.type === 'team' ? `Team · ${c.minPlayers}–${c.maxPlayers} players` : 'Single player'}{c.maxEntries ? ` · max ${c.maxEntries} entries` : ''}</p>
+                      </div>
+                      <p className="text-sm font-black text-[#CE2029]">{Number(c.fee) > 0 ? `${Number(c.fee).toFixed(3)} OMR` : 'Free'}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2">The fee is paid once per entry — a pair or team pays once.</p>
+              </motion.div>
+            )}
+
             {/* About Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -376,6 +410,8 @@ const EventDetail = () => {
                 onClick={() => {
                    if (isApplied || isEnded) return;
                    setRegStep('form');
+                   const first = categories.find((c) => !appliedCats.includes(c.id));
+                   if (first) chooseCategory(first);
                    setShowRegModal(true);
                 }}
                 disabled={isApplied || isEnded}
@@ -448,9 +484,25 @@ const EventDetail = () => {
                     </div>
                   </div>
 
-                  <form className="space-y-5" onSubmit={handleRegister}>
+                  <form className="space-y-5 max-h-[70vh] overflow-y-auto pr-1" onSubmit={handleRegister}>
+                    {categories.length > 0 && (
+                      <div className="space-y-1.5" data-testid="reg-categories">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Category</label>
+                        <div className="grid grid-cols-1 gap-2">
+                          {categories.map((c) => {
+                            const done = appliedCats.includes(c.id);
+                            return (
+                              <button key={c.id} type="button" disabled={done} onClick={() => chooseCategory(c)} className={`flex items-center justify-between px-4 h-12 rounded-2xl border text-left ${catId === c.id ? 'border-[#CE2029] bg-[#CE2029]/5' : 'border-slate-100 bg-slate-50'} disabled:opacity-40`}>
+                                <span className="text-sm font-black text-slate-800">{c.name} <span className="text-[10px] font-bold text-slate-400">{c.type === 'pair' ? '· pair' : c.type === 'team' ? `· team ${c.minPlayers}–${c.maxPlayers}` : ''}{done ? ' · registered' : ''}</span></span>
+                                <span className="text-sm font-black text-[#CE2029]">{Number(c.fee) > 0 ? `${Number(c.fee).toFixed(3)} OMR` : 'Free'}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{cat && cat.type !== 'single' ? 'Your Full Name' : 'Full Name'}</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-300">
                           <User size={16} />
@@ -477,11 +529,39 @@ const EventDetail = () => {
                           required
                           value={regForm.phone}
                           onChange={handlePhoneChange}
-                          placeholder="Contact Number" 
+                          placeholder="Contact Number"
                           className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 text-sm font-bold placeholder:text-slate-300 focus:border-[#CE2029] outline-none transition-all"
                         />
                       </div>
                     </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Your arena ID number (optional)</label>
+                      <input type="text" aria-label="Arena ID" value={arenaIdNumber} onChange={(e) => setArenaIdNumber(e.target.value.slice(0, 40))} placeholder="ID given by the arena, if you have one" className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold placeholder:text-slate-300 focus:border-[#CE2029] outline-none" />
+                    </div>
+
+                    {cat?.type === 'team' && (
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Team name (optional)</label>
+                        <input type="text" aria-label="Team name" value={teamName} onChange={(e) => setTeamName(e.target.value.slice(0, 80))} placeholder="e.g. Ghala Smashers" className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold placeholder:text-slate-300 focus:border-[#CE2029] outline-none" />
+                      </div>
+                    )}
+
+                    {cat && cat.type !== 'single' && (
+                      <div className="space-y-2" data-testid="reg-players">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{cat.type === 'pair' ? 'Your partner' : `Team-mates (${othersMin}–${othersMax} besides you)`}</label>
+                        {players.map((p, i) => (
+                          <div key={i} className="flex gap-2">
+                            <input type="text" aria-label={`Player ${i + 2} name`} required value={p.name} onChange={(e) => setPlayers((ps) => ps.map((x, j) => (j === i ? { ...x, name: e.target.value.slice(0, 80) } : x)))} placeholder={cat.type === 'pair' ? "Partner's full name" : `Player ${i + 2} name`} className="flex-[2] h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold placeholder:text-slate-300 focus:border-[#CE2029] outline-none" />
+                            <input type="text" aria-label={`Player ${i + 2} ID`} value={p.idNumber} onChange={(e) => setPlayers((ps) => ps.map((x, j) => (j === i ? { ...x, idNumber: e.target.value.slice(0, 40) } : x)))} placeholder="ID (optional)" className="flex-1 min-w-0 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-3 text-sm font-bold placeholder:text-slate-300 focus:border-[#CE2029] outline-none" />
+                            {cat.type === 'team' && players.length > othersMin && <button type="button" onClick={() => setPlayers((ps) => ps.filter((_, j) => j !== i))} className="w-10 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center"><X size={14} /></button>}
+                          </div>
+                        ))}
+                        {cat.type === 'team' && players.length < othersMax && (
+                          <button type="button" onClick={() => setPlayers((ps) => [...ps, { name: '', idNumber: '' }])} className="text-[11px] font-black text-[#CE2029] uppercase tracking-widest">+ Add team-mate</button>
+                        )}
+                      </div>
+                    )}
 
                     <div className="pt-4 pb-2">
                       <button 

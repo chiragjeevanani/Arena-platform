@@ -123,7 +123,20 @@ async function resolveTrustedAmount({ purpose, userId, bookingId, bookingIds, re
         err.status = 404;
         throw err;
       }
-      const { amount: eventAmount } = eventPrice(event);
+      let { amount: eventAmount } = eventPrice(event);
+      // Events with categories: the fee of the entry's category (stored on the registration).
+      if ((event.eventInfo?.categories || []).length) {
+        const EventRegistration = require('../../models/EventRegistration');
+        const reg = meta.registrationId && mongoose.isValidObjectId(meta.registrationId)
+          ? await EventRegistration.findOne({ _id: meta.registrationId, eventId: event._id }).lean()
+          : null;
+        if (!reg || reg.fee == null) {
+          const err = new Error('Register for a category first');
+          err.status = 400;
+          throw err;
+        }
+        eventAmount = Number(reg.fee) || 0;
+      }
       if (!(eventAmount > 0)) {
         const err = new Error('This event has no online fee to pay');
         err.status = 400;

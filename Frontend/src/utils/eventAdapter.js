@@ -106,16 +106,24 @@ export function normalizeCmsEventForDetail(content) {
     'Stay tuned for more about this event.';
 
   const badge = ((content.title || 'EVENT').slice(0, 36) + (content.title?.length > 36 ? '…' : '')).toUpperCase();
+  const info = content.eventInfo || null;
+  const cats = info?.categories || [];
+  const dShort = (ymd) => new Date(`${ymd}T12:00:00`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const multiDay = info?.startDate && info?.endDate && info.endDate !== info.startDate;
+  const minFee = cats.length ? Math.min(...cats.map((c) => Number(c.fee) || 0)) : null;
 
   return {
     id: content.id,
     title: content.title || 'Event',
     subtitle: meta.tagline || (content.subtitle || '').replace(/\s*\|\s*/g, ' · ') || 'Arena event',
     image: (content.imageUrl || '').trim() || PLACEHOLDER_IMAGE,
-    date: meta.date || 'Schedule TBA',
-    time: meta.time || 'TBA',
+    date: info?.startDate ? (multiDay ? `${dShort(info.startDate)} – ${dShort(info.endDate)}` : info.startDate) : (meta.date || 'Schedule TBA'),
+    startDate: info?.startDate || meta.date || '',
+    endDate: info?.endDate || info?.startDate || meta.date || '',
+    time: info ? (info.allDay ? 'All day' : `${info.startTime}–${info.endTime}`) : (meta.time || 'TBA'),
     location: meta.location || 'See venue',
-    price: meta.price || 'TBA',
+    price: cats.length ? (cats.every((c) => !(Number(c.fee) > 0)) ? 'Free' : `${cats.length > 1 ? 'From ' : ''}${minFee.toFixed(3)} OMR`) : (meta.price || 'TBA'),
+    categories: cats,
     category: inferEventCategory(content.title, content.subtitle),
     description,
     highlights,

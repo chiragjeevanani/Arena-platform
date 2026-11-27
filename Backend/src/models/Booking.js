@@ -63,6 +63,11 @@ const bookingSchema = new mongoose.Schema(
     },
     rescheduledAt: { type: Date, default: null },
     rescheduleReason: { type: String, default: '', trim: true },
+    // Set while the slot clashes with a whole-arena booking / event and no decision is made yet.
+    affectedBy: {
+      type: { holdId: mongoose.Schema.Types.ObjectId, kind: String, label: String, at: Date },
+      default: null,
+    },
 
     // Audit Pricing Snapshot Fields
     normalPrice: { type: Number, default: 0 },
@@ -117,6 +122,7 @@ function toPublicBooking(doc, extras = {}) {
     refundReference: o.refundReference || '',
     refundedAt: o.refundedAt || null,
     rescheduledFrom: o.rescheduledFrom?.date ? o.rescheduledFrom : null,
+    affectedBy: o.affectedBy?.holdId ? { holdId: String(o.affectedBy.holdId), kind: o.affectedBy.kind, label: o.affectedBy.label } : null,
     rescheduledAt: o.rescheduledAt || null,
     checkoutId: o.checkoutId || null,
     couponCode: o.couponCode || '',

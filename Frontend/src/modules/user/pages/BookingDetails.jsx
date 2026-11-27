@@ -16,6 +16,25 @@ import { storage } from '../../../utils/storage';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 import ReceiptPreview from '../components/ReceiptPreview';
 import CoachingFeeCard from '../components/CoachingFeeCard';
+import { apiJson } from '../../../services/apiClient';
+
+/** The slot is now used by an event / whole-arena booking: wait for the arena, or cancel for a full refund. */
+function ClashNotice({ bookingId, affectedBy, onDone }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const refund = async () => {
+    if (!window.confirm('Cancel this booking and get a full refund to your Arena Wallet?')) return;
+    setBusy(true); setErr('');
+    try { const r = await apiJson(`/api/me/bookings/${encodeURIComponent(bookingId)}/clash-refund`, { method: 'POST' }); onDone(r.refunded || 0); } catch (e) { setErr(e.message || 'Could not cancel'); } finally { setBusy(false); }
+  };
+  return (
+    <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 space-y-2" data-testid="clash-notice">
+      <p className="text-[11px] font-bold text-amber-900">This time is now used by {affectedBy.label?.replace(/^Event: /, 'the event ').replace(/^Whole arena: /, 'a private booking of the whole arena — ') || 'an event'}. The arena will move your booking to another time and let you know — or you can cancel it now for a full refund.</p>
+      <button type="button" disabled={busy} onClick={refund} className="w-full h-10 rounded-xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-widest disabled:opacity-50">{busy ? 'Cancelling…' : 'Cancel & get full refund'}</button>
+      {err && <p className="text-[11px] font-bold text-red-600">{err}</p>}
+    </div>
+  );
+}
 import { buildReceiptFromBookingCard, downloadBookingReceiptPdf } from '../../../utils/bookingReceiptPdf';
 
 const BookingDetails = () => {
@@ -439,6 +458,12 @@ const BookingDetails = () => {
                </div>
                
                <div className="p-5 lg:p-6 space-y-6">
+                  {booking.affectedBy && ['confirmed', 'rescheduled'].includes(booking.bookingStatus) && (
+                    <ClashNotice bookingId={booking.id} affectedBy={booking.affectedBy} onDone={(amount) => setBooking((b) => ({ ...b, affectedBy: null, bookingStatus: 'cancelled', status: 'Cancelled', clashRefund: amount }))} />
+                  )}
+                  {booking.clashRefund !== undefined && (
+                    <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-[11px] font-bold text-emerald-800">Cancelled.{booking.clashRefund ? ` OMR ${Number(booking.clashRefund).toFixed(3)} has been credited to your Arena Wallet.` : ''}</div>
+                  )}
                   {booking.rescheduledFrom?.date && (
                     <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-[11px] font-bold text-amber-900">
                       Moved by the arena from {booking.rescheduledFrom.date} · {booking.rescheduledFrom.timeSlot} (the arena was booked for a private event that day).
