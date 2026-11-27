@@ -4,8 +4,9 @@ import {
   Building2, Target, Clock, DollarSign, CalendarX2,
   ChevronLeft, ChevronRight, LayoutDashboard, LogOut,
   ArrowLeftRight, Package, Trophy, Store, Receipt, UserCheck,
-  BarChart3, ShoppingBag, ClipboardCheck, Users, CalendarClock, GraduationCap
+  BarChart3, ShoppingBag, ClipboardCheck, Users, CalendarClock, GraduationCap, Megaphone
 } from 'lucide-react';
+import { useAuth } from '../../user/context/AuthContext';
 import Logo from '../../../assets/Logo (3).png';
 import SidebarImage from '../../../assets/sidebarImage.png';
 
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { path: '/arena/coaching', icon: GraduationCap, label: 'Coaching Batches' },
   { path: '/arena/register', icon: ClipboardCheck, label: 'Attendance Register' },
   { path: '/arena/staff', icon: Users, label: 'My Staff' },
+  { path: '/arena/broadcast', icon: Megaphone, label: 'Broadcast Message', adminOnly: true },
   { path: '/arena/details', icon: Building2, label: 'Arena Details' },
   { path: '/arena/courts', icon: Target, label: 'Court Management' },
   { path: '/arena/slots', icon: Clock, label: 'Slot Configuration' },
@@ -30,6 +32,9 @@ const NAV_ITEMS = [
 ];
 
 const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
+  const { user } = useAuth();
+  // Receptionists don't send broadcasts (arena admin only).
+  const items = NAV_ITEMS.filter((i) => !i.adminOnly || user?.role !== 'RECEPTIONIST');
 
   return (
     <motion.aside
@@ -73,7 +78,7 @@ const ArenaSidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-4 pb-36 space-y-1 scrollbar-hide shrink-0 relative z-20 px-3">
-        {NAV_ITEMS.map((item) => (
+        {items.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

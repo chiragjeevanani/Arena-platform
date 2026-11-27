@@ -13,6 +13,16 @@ import StaffRoster from '../../admin/pages/ArenaPanel/StaffRoster';
 import ReservedSlots from '../../admin/pages/ArenaPanel/ReservedSlots';
 import WholeArenaBooking from '../../admin/pages/ArenaPanel/WholeArenaBooking';
 import CoachingBatches from '../../admin/pages/ArenaPanel/CoachingBatches';
+import Broadcasts from '../../admin/pages/Broadcasts';
+import { useArenaPanel } from '../../admin/context/ArenaPanelContext';
+
+const ArenaBroadcasts = () => {
+  const { arenaId } = useArenaPanel();
+  return <Broadcasts channel="arena" arenaId={arenaId} />;
+};
+export const BroadcastsPage = () => (
+  <PageShell title="Broadcast Message" subtitle="Send a message (with an optional image) to customers' and staff notifications" component={ArenaBroadcasts} />
+);
 
 export const CoachingBatchesPage = () => (
   <PageShell title="Coaching Batches" subtitle="Student attendance, adding students and app sign-up" component={CoachingBatches} />

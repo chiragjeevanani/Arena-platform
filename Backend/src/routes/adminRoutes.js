@@ -132,6 +132,8 @@ router.get('/refunds', asyncHandler(listManualRefunds));
 router.get('/customers/:userId/refundables', asyncHandler(require('../controllers/adminCustomerRefundController').getRefundables));
 router.post('/customers/:userId/refunds', asyncHandler(require('../controllers/adminCustomerRefundController').postRefund));
 router.get('/customer-refunds', asyncHandler(require('../controllers/adminCustomerRefundController').listRecentRefunds));
+router.get('/broadcasts', asyncHandler(require('../controllers/broadcastController').listBroadcasts));
+router.post('/broadcasts', asyncHandler(require('../controllers/broadcastController').sendBroadcast));
 
 router.get('/membership-plans/stats', asyncHandler(adminMembershipStats));
 router.get('/memberships', asyncHandler(listUserMemberships));

@@ -225,3 +225,11 @@ export function refundCustomer(userId, body) {
 export function listRecentCustomerRefunds() {
   return apiJson(`${BASE}/customer-refunds`, { method: 'GET' });
 }
+
+// Broadcast messages (Super Admin → users' notifications)
+export function listAdminBroadcasts() {
+  return apiJson(`${BASE}/broadcasts`, { method: 'GET' });
+}
+export function sendAdminBroadcast(body) {
+  return apiJson(`${BASE}/broadcasts`, { method: 'POST', body });
+}

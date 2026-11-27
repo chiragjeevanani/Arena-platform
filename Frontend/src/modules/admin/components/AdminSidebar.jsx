@@ -93,6 +93,7 @@ const SIDEBAR_STRUCTURE = [
       { path: '/admin/slot-memberships', icon: CalendarClock, label: 'Slot Memberships', isMembershipMgmt: true },
       { path: '/admin/sponsorships', icon: Briefcase, label: 'Sponsorships' },
       { path: '/admin/users', icon: Users, label: 'Users' },
+      { path: '/admin/broadcasts', icon: Megaphone, label: 'Broadcast Message' },
       { path: '/admin/arena-panel?tab=coach-attendance', icon: UserCheck, label: 'Staff Attendance', roles: ['SUPER_ADMIN'] },
     ]
   },

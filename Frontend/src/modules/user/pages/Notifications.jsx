@@ -146,7 +146,7 @@ const Notifications = () => {
 
                     <button
                       onClick={() => !n.isRead && handleMarkRead(n.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-left transition-all active:scale-[0.98] relative ${
+                      className={`w-full flex ${n.metadata?.kind === 'broadcast' ? 'items-start' : 'items-center'} gap-3 px-3 py-3 rounded-2xl text-left transition-all active:scale-[0.98] relative ${
                         n.isRead
                           ? isDark ? 'bg-white/3 opacity-55' : 'bg-white/60 opacity-70'
                           : isDark ? 'bg-white/8 border border-white/8 shadow-sm' : 'bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[#CE2029]/15'
@@ -173,9 +173,12 @@ const Notifications = () => {
                           </span>
                           <span className="text-[9px] font-bold text-slate-400 shrink-0">{formatTime(n.createdAt)}</span>
                         </div>
-                        <p className={`text-[11px] mt-0.5 leading-snug truncate ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+                        <p className={`text-[11px] mt-0.5 leading-snug ${n.metadata?.kind === 'broadcast' ? 'whitespace-pre-line' : 'truncate'} ${isDark ? 'text-white/50' : n.metadata?.kind === 'broadcast' ? 'text-slate-600' : 'text-slate-400'}`}>
                           {n.message}
                         </p>
+                        {n.metadata?.imageUrl && (
+                          <img src={n.metadata.imageUrl} alt="" loading="lazy" className="mt-2 w-full max-h-56 object-cover rounded-xl border border-slate-100" data-testid="notification-image" />
+                        )}
                         {/* Type pill */}
                         <span
                           className="inline-block mt-1.5 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"

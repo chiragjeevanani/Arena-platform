@@ -199,6 +199,8 @@ router.get('/arena', asyncHandler(getMyArena));
 router.get('/list-staff', asyncHandler(listArenaStaff));
 router.patch('/arena', asyncHandler(patchMyArena));
 router.post('/upload/image', upload.single('file'), asyncHandler(uploadArenaImage));
+router.get('/broadcasts', asyncHandler(require('../controllers/broadcastController').listBroadcasts));
+router.post('/broadcasts', asyncHandler(require('../controllers/broadcastController').sendBroadcast));
 
 // Courts
 router.get('/courts', asyncHandler(listMyCourts));

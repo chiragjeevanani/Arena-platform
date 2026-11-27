@@ -173,6 +173,8 @@ const SlotMembershipAdmin = lazy(() => import('./modules/admin/pages/SlotMembers
 const CouponManagement = lazy(() => import('./modules/admin/pages/CouponManagement'));
 const RefundsQueue = lazy(() => import('./modules/admin/pages/RefundsQueue'));
 const CustomerRefunds = lazy(() => import('./modules/admin/pages/CustomerRefunds'));
+const AdminBroadcasts = lazy(() => import('./modules/admin/pages/Broadcasts'));
+const ArenaBroadcastsPage = lazy(() => import('./modules/arena/pages/index.jsx').then(m => ({ default: m.BroadcastsPage })));
 const CancellationPolicySettings = lazy(() => import('./modules/admin/pages/CancellationPolicySettings'));
 
 const PointsWalletPage = lazy(() => import('./modules/user/pages/PointsWalletPage'));
@@ -261,6 +263,7 @@ function App() {
               <Route path="reserved" element={<ArenaReservedPage />} />
               <Route path="arena-booking" element={<ArenaWholeBookingPage />} />
               <Route path="coaching" element={<ArenaCoachingBatchesPage />} />
+              <Route path="broadcast" element={<ArenaBroadcastsPage />} />
               <Route path="daily-report" element={<DailyCourtBookingReport />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="account-settings" element={<AccountSettingsPage />} />
@@ -301,6 +304,7 @@ function App() {
               <Route path="coupons" element={<CouponManagement />} />
               <Route path="refunds" element={<RefundsQueue />} />
               <Route path="customer-refunds" element={<CustomerRefunds />} />
+              <Route path="broadcasts" element={<AdminBroadcasts channel="admin" />} />
               <Route path="cancellation-policy" element={<CancellationPolicySettings />} />
             </Route>
 

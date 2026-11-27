@@ -144,3 +144,7 @@ export const refundAffectedBooking = (holdId, bookingId, arenaId) => apiJson(`${
 export const getCourtSlots = (courtId, date, arenaId) => apiJson(`${BASE}/walkin/slots?courtId=${encodeURIComponent(courtId)}&date=${encodeURIComponent(date)}`, { headers: scope(arenaId) });
 export const createArenaBooking = (body, arenaId) => apiJson(`${BASE}/arena-bookings`, { method: 'POST', body, headers: scope(arenaId) });
 export const cancelArenaBooking = (id, arenaId) => apiJson(`${BASE}/arena-bookings/${encodeURIComponent(id)}/cancel`, { method: 'POST', headers: scope(arenaId) });
+
+// Broadcast messages (arena admin → customers + their arena's staff)
+export const listArenaBroadcasts = (arenaId) => apiJson(`${BASE}/broadcasts`, { headers: scope(arenaId) });
+export const sendArenaBroadcast = (body, arenaId) => apiJson(`${BASE}/broadcasts`, { method: 'POST', body, headers: scope(arenaId) });
