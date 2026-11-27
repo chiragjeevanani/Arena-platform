@@ -18,10 +18,63 @@ import ReceiptPreview from '../components/ReceiptPreview';
 import CoachingFeeCard from '../components/CoachingFeeCard';
 import { apiJson } from '../../../services/apiClient';
 
-/** The slot is now used by an event / whole-arena booking: wait for the arena, or cancel for a full refund. */
-function ClashNotice({ bookingId, affectedBy, onDone }) {
+const ymdLocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Customer picks another free time for a booking that clashes with an event (same arena, any court, 30 days). */
+function ReschedulePicker({ bookingId, arenaId, courtId, onDone, onClose }) {
+  const [{ today, maxDay }] = useState(() => { const d = new Date(); const m = new Date(d); m.setDate(m.getDate() + 30); return { today: ymdLocal(d), maxDay: ymdLocal(m) }; });
+  const [courts, setCourts] = useState([]);
+  const [court, setCourt] = useState(courtId);
+  const [date, setDate] = useState(today);
+  const [slots, setSlots] = useState([]);
+  const [pick, setPick] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  useEffect(() => {
+    if (!arenaId) return;
+    apiJson(`/api/public/arenas/${encodeURIComponent(arenaId)}`, { method: 'GET', skipAuth: true })
+      .then((r) => setCourts((r.arena?.courts || []).map((c) => ({ id: String(c.id || c._id), name: c.name })).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))))
+      .catch(() => setCourts([]));
+  }, [arenaId]);
+  useEffect(() => {
+    let live = true; setPick(''); setSlots([]);
+    if (!court || !date) return undefined;
+    apiJson(`/api/public/courts/${encodeURIComponent(court)}/availability?date=${encodeURIComponent(date)}`, { method: 'GET', skipAuth: true })
+      .then((r) => live && setSlots((r.slots || []).filter((s) => s.available)))
+      .catch(() => live && setSlots([]));
+    return () => { live = false; };
+  }, [court, date]);
+  const save = async () => {
+    setBusy(true); setErr('');
+    try {
+      const r = await apiJson(`/api/me/bookings/${encodeURIComponent(bookingId)}/clash-reschedule`, { method: 'POST', body: { courtId: court, date, timeSlot: pick } });
+      onDone(r.to);
+    } catch (e) { setErr(e.message || 'Could not reschedule'); } finally { setBusy(false); }
+  };
+  return (
+    <div className="rounded-xl bg-white border border-slate-200 p-3 space-y-2" data-testid="reschedule-picker">
+      <div className="flex items-center justify-between"><p className="text-[11px] font-black uppercase tracking-widest text-slate-700">Choose a new time</p><button type="button" onClick={onClose} className="text-slate-400"><X size={16} /></button></div>
+      <div className="grid grid-cols-2 gap-2">
+        <input type="date" aria-label="Reschedule date" min={today} max={maxDay} value={date} onChange={(e) => setDate(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-2 text-xs font-bold" />
+        <select aria-label="Reschedule court" value={court} onChange={(e) => setCourt(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-2 text-xs font-bold">{courts.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+      </div>
+      <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+        {slots.length === 0 ? <span className="text-[11px] text-slate-400">No free times on that day — try another date or court.</span> : slots.map((s) => (
+          <button key={s.timeSlot} type="button" onClick={() => setPick(s.timeSlot)} className={`h-9 px-2.5 rounded-lg text-[11px] font-black border ${pick === s.timeSlot ? 'bg-[#CE2029] text-white border-transparent' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>{s.timeSlot}</button>
+        ))}
+      </div>
+      <p className="text-[10px] text-slate-400">No extra charge — the price you paid stays the same.</p>
+      {err && <p className="text-[11px] font-bold text-red-600">{err}</p>}
+      <button type="button" disabled={!pick || busy} onClick={save} className="w-full h-10 rounded-xl bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest disabled:opacity-40">{busy ? 'Saving…' : pick ? `Move to ${date} ${pick}` : 'Pick a free time'}</button>
+    </div>
+  );
+}
+
+/** The slot is now used by an event / whole-arena booking: reschedule, or cancel for a full refund. */
+function ClashNotice({ bookingId, affectedBy, arenaId, courtId, onDone, onRescheduled }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const [picking, setPicking] = useState(false);
   const refund = async () => {
     if (!window.confirm('Cancel this booking and get a full refund to your Arena Wallet?')) return;
     setBusy(true); setErr('');
@@ -29,7 +82,12 @@ function ClashNotice({ bookingId, affectedBy, onDone }) {
   };
   return (
     <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 space-y-2" data-testid="clash-notice">
-      <p className="text-[11px] font-bold text-amber-900">This time is now used by {affectedBy.label?.replace(/^Event: /, 'the event ').replace(/^Whole arena: /, 'a private booking of the whole arena — ') || 'an event'}. The arena will move your booking to another time and let you know — or you can cancel it now for a full refund.</p>
+      <p className="text-[11px] font-bold text-amber-900">This time is now used by {affectedBy.label?.replace(/^Event: /, 'the event ').replace(/^Whole arena: /, 'a private booking of the whole arena — ') || 'an event'}. Choose another time yourself, cancel for a full refund — or wait and the arena will move it for you.</p>
+      {picking ? (
+        <ReschedulePicker bookingId={bookingId} arenaId={arenaId} courtId={courtId} onDone={onRescheduled} onClose={() => setPicking(false)} />
+      ) : (
+        <button type="button" disabled={busy} onClick={() => setPicking(true)} className="w-full h-10 rounded-xl bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest disabled:opacity-50">Reschedule</button>
+      )}
       <button type="button" disabled={busy} onClick={refund} className="w-full h-10 rounded-xl bg-[#CE2029] text-white text-[11px] font-black uppercase tracking-widest disabled:opacity-50">{busy ? 'Cancelling…' : 'Cancel & get full refund'}</button>
       {err && <p className="text-[11px] font-bold text-red-600">{err}</p>}
     </div>
@@ -459,14 +517,18 @@ const BookingDetails = () => {
                
                <div className="p-5 lg:p-6 space-y-6">
                   {booking.affectedBy && ['confirmed', 'rescheduled'].includes(booking.bookingStatus) && (
-                    <ClashNotice bookingId={booking.id} affectedBy={booking.affectedBy} onDone={(amount) => setBooking((b) => ({ ...b, affectedBy: null, bookingStatus: 'cancelled', status: 'Cancelled', clashRefund: amount }))} />
+                    <ClashNotice
+                      bookingId={booking.id} affectedBy={booking.affectedBy} arenaId={booking.arenaId} courtId={booking.courtId}
+                      onDone={(amount) => setBooking((b) => ({ ...b, affectedBy: null, bookingStatus: 'cancelled', status: 'Cancelled', clashRefund: amount }))}
+                      onRescheduled={(to) => setBooking((b) => ({ ...b, affectedBy: null, rescheduledFrom: { date: b.date, timeSlot: b.slot }, date: to.date, slot: to.timeSlot, courtName: to.courtName, courtId: to.courtId, rescheduledNow: true }))}
+                    />
                   )}
                   {booking.clashRefund !== undefined && (
                     <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-[11px] font-bold text-emerald-800">Cancelled.{booking.clashRefund ? ` OMR ${Number(booking.clashRefund).toFixed(3)} has been credited to your Arena Wallet.` : ''}</div>
                   )}
                   {booking.rescheduledFrom?.date && (
                     <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-[11px] font-bold text-amber-900">
-                      Moved by the arena from {booking.rescheduledFrom.date} · {booking.rescheduledFrom.timeSlot} (the arena was booked for a private event that day).
+                      {booking.rescheduledNow ? 'Rescheduled' : 'Moved'} from {booking.rescheduledFrom.date} · {booking.rescheduledFrom.timeSlot} (that time is used by an event or a private booking). Your new time is below.
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-4">

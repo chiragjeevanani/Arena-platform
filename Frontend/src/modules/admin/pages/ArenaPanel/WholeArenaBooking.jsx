@@ -20,6 +20,7 @@ const STATE = {
   moved: ['Moved', 'bg-green-100 text-green-700'],
   refunded: ['Refunded', 'bg-slate-100 text-slate-600'],
   customer_refunded: ['Customer took refund', 'bg-slate-100 text-slate-600'],
+  customer_moved: ['Customer rescheduled', 'bg-green-100 text-green-700'],
   released: ['Stays (released)', 'bg-blue-100 text-blue-700'],
 };
 
@@ -128,7 +129,7 @@ function HoldCard({ h, arenaId, courts, onChanged }) {
               <div className="flex flex-wrap items-center gap-2">
                 <div className="flex-1 min-w-[220px] text-[12px]">
                   <p className="font-black text-[#36454F]">{a.customerName}{a.customerPhone ? <span className="font-bold text-slate-400"> · {a.customerPhone}</span> : null}</p>
-                  <p className="text-slate-500">{a.from.courtName} · {fmt(a.from.date)} {a.from.timeSlot}{a.amount ? ` · OMR ${Number(a.amount).toFixed(3)}` : ''}{a.state === 'moved' && a.to ? <> <ArrowRight size={11} className="inline" /> {a.to.courtName} · {fmt(a.to.date)} {a.to.timeSlot}</> : null}</p>
+                  <p className="text-slate-500">{a.from.courtName} · {fmt(a.from.date)} {a.from.timeSlot}{a.amount ? ` · OMR ${Number(a.amount).toFixed(3)}` : ''}{(a.state === 'moved' || a.state === 'customer_moved') && a.to ? <> <ArrowRight size={11} className="inline" /> {a.to.courtName} · {fmt(a.to.date)} {a.to.timeSlot}</> : null}</p>
                 </div>
                 <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${STATE[a.state]?.[1] || ''}`}>{STATE[a.state]?.[0] || a.state}</span>
                 {a.state === 'pending' && h.status === 'upcoming' && (<>

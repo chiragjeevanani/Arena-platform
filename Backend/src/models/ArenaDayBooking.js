@@ -20,7 +20,7 @@ const affectedSchema = new mongoose.Schema(
     to: slotRef,
     // pending: waiting for a decision · moved: admin moved it · refunded: admin refunded it ·
     // customer_refunded: the customer cancelled for a full refund · released: the hold was cancelled
-    state: { type: String, enum: ['pending', 'moved', 'refunded', 'customer_refunded', 'released'], default: 'pending' },
+    state: { type: String, enum: ['pending', 'moved', 'customer_moved', 'refunded', 'customer_refunded', 'released'], default: 'pending' },
     resolvedAt: { type: Date, default: null },
   },
   { _id: false }

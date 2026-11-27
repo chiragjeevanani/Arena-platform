@@ -69,6 +69,21 @@ router.post('/bookings/:id/clash-refund', asyncHandler(async (req, res) => {
   const out = await require('../services/courtHolds').refundAffected(hold, b._id, { by: 'customer' });
   return res.json({ refunded: out.refunded || 0 });
 }));
+// …or reschedule it to another free time (same arena, any court, within 30 days) at no extra cost.
+router.post('/bookings/:id/clash-reschedule', asyncHandler(async (req, res) => {
+  const mongoose = require('mongoose');
+  const Booking = require('../models/Booking');
+  const ArenaDayBooking = require('../models/ArenaDayBooking');
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ error: 'Invalid booking' });
+  const b = await Booking.findOne({ _id: req.params.id, userId: req.auth.sub }).lean();
+  if (!b || !b.affectedBy?.holdId) return res.status(400).json({ error: 'This booking is not affected by an event' });
+  const hold = await ArenaDayBooking.findById(b.affectedBy.holdId);
+  if (!hold) return res.status(404).json({ error: 'Not found' });
+  const { courtId, date, timeSlot } = req.body || {};
+  const a = await require('../services/courtHolds').moveAffected(hold, b._id, { courtId, date, timeSlot }, { by: 'customer' });
+  const updated = await Booking.findById(b._id).lean();
+  return res.json({ booking: Booking.toPublic ? Booking.toPublic(updated) : updated, to: a.to });
+}));
 
 router.get('/wallet', asyncHandler(getMyWallet));
 router.post('/wallet/top-up', asyncHandler(topUpMyWallet));

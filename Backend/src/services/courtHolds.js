@@ -250,12 +250,15 @@ function findAffectedRow(hold, bookingId) {
   return a;
 }
 
-/** Admin moves an affected booking by hand to a free slot. */
-async function moveAffected(hold, bookingId, { courtId, date, timeSlot }) {
+/** Moves an affected booking to a free slot — by the admin, or by the customer from the app. */
+async function moveAffected(hold, bookingId, { courtId, date, timeSlot }, { by = 'staff' } = {}) {
   const a = findAffectedRow(hold, bookingId);
+  if (!require('mongoose').isValidObjectId(courtId)) throw err(400, 'Choose a court');
   const court = await Court.findOne({ _id: courtId, arenaId: hold.arenaId }).lean();
   if (!court) throw err(400, 'Choose a court of this arena');
   if (!YMD.test(String(date || '')) || date < arenaTodayYmd()) throw err(400, 'Choose today or a future date');
+  if (by === 'customer' && date > addDays(arenaTodayYmd(), 30)) throw err(400, 'Choose a date within the next 30 days');
+  if (require('./slotAvailability').isSlotInPast(date, timeSlot)) throw err(400, 'That time has already started — choose a later one');
   const ok = await checkSlotBookable({ court, dateStr: date, timeSlot });
   if (!ok.ok) throw err(ok.status || 409, ok.error || 'That slot is not free');
   const b = await Booking.findOne({ _id: bookingId, status: { $in: ACTIVE } });
@@ -264,12 +267,14 @@ async function moveAffected(hold, bookingId, { courtId, date, timeSlot }) {
   b.rescheduledAt = new Date(); b.rescheduleReason = hold.kind === 'event' ? 'event' : 'whole_arena_booked';
   b.courtId = court._id; b.date = date; b.timeSlot = timeSlot; b.affectedBy = null;
   try { await b.save(); } catch (e) { if (e?.code === 11000) throw err(409, 'Someone just booked that slot — choose another'); throw e; }
-  a.state = 'moved'; a.resolvedAt = new Date(); a.to = { courtId: String(court._id), courtName: court.name, date, timeSlot };
+  a.state = by === 'customer' ? 'customer_moved' : 'moved'; a.resolvedAt = new Date(); a.to = { courtId: String(court._id), courtName: court.name, date, timeSlot };
   hold.markModified('affected'); await hold.save();
   try {
-    await createNotification(a.userId, 'Your booking has been moved',
-      `Because of ${labelOf(hold)}, your ${a.from.courtName} booking on ${fmt(a.from.date)} at ${a.from.timeSlot} has been moved to ${fmt(date)}, ${court.name} at ${timeSlot}. Contact the arena if this doesn't suit you — or cancel it in the app for a full refund.`,
-      'warning', { kind: 'booking_rescheduled', bookingId: String(b._id) });
+    await createNotification(a.userId, by === 'customer' ? 'Booking rescheduled' : 'Your booking has been moved',
+      by === 'customer'
+        ? `Your ${a.from.courtName} booking on ${fmt(a.from.date)} at ${a.from.timeSlot} is now on ${fmt(date)}, ${court.name} at ${timeSlot}.`
+        : `Because of ${labelOf(hold)}, your ${a.from.courtName} booking on ${fmt(a.from.date)} at ${a.from.timeSlot} has been moved to ${fmt(date)}, ${court.name} at ${timeSlot}. Contact the arena if this doesn't suit you — or cancel it in the app for a full refund.`,
+      by === 'customer' ? 'success' : 'warning', { kind: 'booking_rescheduled', bookingId: String(b._id) });
   } catch (e) { /* courtesy */ }
   return a;
 }
