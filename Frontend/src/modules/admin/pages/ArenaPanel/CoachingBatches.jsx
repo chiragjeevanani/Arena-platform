@@ -83,7 +83,7 @@ function AttendancePanel({ batch, students, arenaId, onSaved, onClose }) {
         <button type="button" className={ghost} onClick={() => setMarks(Object.fromEntries(students.map((s) => [s.userId, 'present'])))}><Check size={13} /> All present</button>
         <span className="text-[12px] font-bold text-slate-500">{present} present · {students.length - present} absent</span>
       </div>
-      {existing && <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">Already marked{existing.markedBy ? ` by ${existing.markedBy.name}` : ''} — saving replaces it with your marks.</p>}
+      {existing && <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">Marked{existing.markedBy ? ` by ${existing.markedBy.name}` : ''}{existing.markedAt ? ` at ${new Date(existing.markedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}. Change any mark and save again to update it.</p>}
       <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-100">
         {students.map((s) => (
           <div key={s.userId} className="flex flex-wrap items-center gap-2 px-3 py-2" data-testid="attendance-row">
