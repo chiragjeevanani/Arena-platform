@@ -103,6 +103,10 @@ async function createMyEnrollment(req, res) {
       throw err;
     }
   }
+  // Paid from the wallet: the first month is covered. "Pay at arena" stays unrecorded until the desk records it.
+  if (method === 'wallet') {
+    try { await require('../services/coachingFees').startPaidPeriod(enrollment._id, batch, 'wallet'); } catch (e) { console.error('[fees] start period', e.message); }
+  }
 
   const b_price = Number(batch.price || 0);
   const b_regFee = Number(batch.registrationFee ?? 0);
@@ -171,11 +175,42 @@ async function listMyEnrollments(req, res) {
       date: e.createdAt,
       timing: b?.scheduleTime || 'See schedule',
       days: b?.schedule || 'Coaching',
-      coachName: b?.title || 'Certified Coach'
+      coachName: b?.title || 'Certified Coach',
+      batchEndDate: b?.endDate || null,
+      fee: ['confirmed', 'pending'].includes(e.status) ? require('../services/coachingFees').feeStatus(e, b) : null,
     });
   }))).filter(Boolean);
 
   return res.json({ enrollments: out });
+}
+
+/**
+ * POST /me/enrollments/:id/pay-month { months? } — pay the next month(s) of the coaching fee from
+ * the Arena Wallet. (Card / cash renewals are recorded by the arena desk.)
+ */
+async function payMyCoachingMonth(req, res) {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) return res.status(400).json({ error: 'Invalid enrollment id' });
+  const e = await BatchEnrollment.findOne({ _id: id, userId: req.auth.sub, status: 'confirmed' });
+  if (!e) return res.status(404).json({ error: 'Enrollment not found' });
+  const batch = await CoachingBatch.findById(e.batchId).lean();
+  if (!batch) return res.status(404).json({ error: 'Batch not found' });
+  const fees = require('../services/coachingFees');
+  const months = Math.max(1, Math.min(12, Math.round(Number(req.body?.months) || 1)));
+  const { from, to } = fees.nextPeriod(e, batch, months);
+  if (to < from) return res.status(400).json({ error: 'Your fees are already paid to the end of this batch' });
+  const amount = Math.round(fees.monthlyFee(batch) * months * 1000) / 1000;
+  if (amount > 0) {
+    try {
+      await deductFromWallet(req.auth.sub, amount, 'coaching_fee', { batchId: String(batch._id), enrollmentId: String(e._id), from, to });
+    } catch (err) {
+      if (err.status === 400) return res.status(400).json({ error: `Not enough wallet balance (OMR ${amount.toFixed(3)} needed). Top up or pay at the arena desk.` });
+      throw err;
+    }
+  }
+  const paid = await fees.recordFeePayment(e, batch, { months, amount, method: 'wallet', recordedBy: req.auth.sub });
+  await createNotification(req.auth.sub, 'Coaching fee paid', `Thank you — your ${batch.title} fee is paid until ${paid.to} (OMR ${paid.amount.toFixed(3)} from your wallet).`, 'success', { kind: 'coaching_fee_paid', enrollmentId: String(e._id) });
+  return res.json({ paidUntil: paid.to, amount: paid.amount, fee: fees.feeStatus(e, batch) });
 }
 
 async function cancelMyEnrollment(req, res) {
@@ -287,9 +322,11 @@ async function getMyEnrollmentById(req, res) {
       coachName: b?.title || 'Certified Coach',
       attendance,
       metrics: progress?.metrics || [],
-      remarks: progress?.remarks || ''
+      remarks: progress?.remarks || '',
+      batchEndDate: b?.endDate || null,
+      fee: b && ['confirmed', 'pending'].includes(enrollment.status) ? require('../services/coachingFees').feeStatus(enrollment, b) : null,
     }),
   });
 }
 
-module.exports = { createMyEnrollment, listMyEnrollments, cancelMyEnrollment, getMyEnrollmentById };
+module.exports = { createMyEnrollment, listMyEnrollments, cancelMyEnrollment, getMyEnrollmentById, payMyCoachingMonth };

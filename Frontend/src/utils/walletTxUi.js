@@ -3,7 +3,13 @@ const REASON_LABELS = {
   booking_payment: 'Court booking',
   refund: 'Refund',
   membership_purchase: 'Membership',
+  membership_slot_purchase: 'Slot membership',
   admin_adjustment: 'Adjustment',
+  referral_reward: 'Referral reward',
+  welcome_reward: 'Welcome reward',
+  coaching_enrollment: 'Coaching enrolment',
+  coaching_fee: 'Coaching monthly fee',
+  event_registration: 'Event registration',
 };
 
 export function mapWalletTransactionToRow(t) {

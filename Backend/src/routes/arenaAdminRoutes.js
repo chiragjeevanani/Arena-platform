@@ -41,6 +41,7 @@ const { createPosSale, listPosSales, getPosSaleById } = require('../controllers/
 const { listEventRegistrations, updateRegistrationStatus } = require('../controllers/adminEventController');
 const { listAttendanceRegister, updateAttendanceSession } = require('../controllers/arenaAttendanceRegisterController');
 const {
+  listArenaFees, recordArenaFee,
   listArenaBatches, listArenaBatchStudents, getArenaBatchAttendance, saveArenaBatchAttendance, addArenaBatchStudent, createStudentLogin,
 } = require('../controllers/arenaCoachingController');
 const { listReservedSlots, createReservedSlot, updateReservedSlot, releaseReservedDate, restoreReservedDate, endReservedSlot } = require('../controllers/reservedSlotController');
@@ -177,6 +178,8 @@ router.post('/coaching/batches/:batchId/students', asyncHandler(addArenaBatchStu
 router.get('/coaching/batches/:batchId/attendance', asyncHandler(getArenaBatchAttendance));
 router.put('/coaching/batches/:batchId/attendance', asyncHandler(saveArenaBatchAttendance));
 router.post('/coaching/students/:userId/login', asyncHandler(createStudentLogin));
+router.get('/coaching/fees', asyncHandler(listArenaFees));
+router.post('/coaching/enrollments/:enrollmentId/fee', asyncHandler(recordArenaFee));
 router.patch('/events/registrations/:id', updateRegistrationStatus);
 router.patch(
   '/cms/:contentId',

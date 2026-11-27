@@ -22,6 +22,9 @@ const userMembershipSchema = new mongoose.Schema(
     },
     startsAt: { type: Date, required: true },
     expiresAt: { type: Date, required: true },
+    // Reminder markers: "ends in N days" and "has ended" are each sent once per expiry date.
+    endingNotifiedFor: { type: Date, default: null },
+    endedNotifiedFor: { type: Date, default: null },
     status: {
       type: String,
       enum: ['active', 'expired', 'cancelled'],

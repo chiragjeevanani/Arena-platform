@@ -184,6 +184,17 @@ async function adminReportSummary(req, res) {
     { $group: { _id: '$batchId', total: { $sum: '$batch.price' } } }
   ]);
   
+  // Monthly fee renewals (recorded at the desk or paid from the wallet) on top of the joining fee.
+  const renewalAgg = await BatchEnrollment.aggregate([
+    { $match: { batchId: enrollMatch.batchId || { $exists: true } } },
+    { $unwind: '$feePayments' },
+    { $match: { 'feePayments.kind': 'renewal', 'feePayments.method': { $ne: 'waived' } } },
+    { $group: { _id: '$batchId', total: { $sum: '$feePayments.amount' } } },
+  ]);
+  for (const r of renewalAgg) {
+    const row = coachingRevenueAgg.find((x) => String(x._id) === String(r._id));
+    if (row) row.total += r.total; else coachingRevenueAgg.push({ _id: r._id, total: r.total });
+  }
   const coachingRevenue = coachingRevenueAgg.reduce((acc, curr) => acc + curr.total, 0);
 
   // Generate real coaching batch performance data

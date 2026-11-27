@@ -15,6 +15,7 @@ import { mapEventRegistrationToDashboardCard } from '../../../utils/eventRegistr
 import { storage } from '../../../utils/storage';
 import ArenaProfile from '../../../assets/ArenaProfile.jpeg';
 import ReceiptPreview from '../components/ReceiptPreview';
+import CoachingFeeCard from '../components/CoachingFeeCard';
 import { buildReceiptFromBookingCard, downloadBookingReceiptPdf } from '../../../utils/bookingReceiptPdf';
 
 const BookingDetails = () => {
@@ -322,6 +323,11 @@ const BookingDetails = () => {
                     </div>
                  </div>
               </div>
+
+              {/* Monthly fee: paid until, due / overdue, pay next month from the wallet */}
+              {booking.kind === 'enrollment' && booking.fee && booking.rawStatus === 'confirmed' && (
+                <CoachingFeeCard enrollmentId={booking.id} fee={booking.fee} onPaid={(fee) => setBooking((b) => ({ ...b, fee }))} />
+              )}
 
               {/* Attendance Summary */}
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">

@@ -3,8 +3,106 @@ import { GraduationCap, UserPlus, ClipboardCheck, KeyRound, Search, X, Check, Co
 import { useArenaPanel } from '../../context/ArenaPanelContext';
 import {
   listArenaCoachingBatches, listArenaBatchStudents, addArenaBatchStudent, getArenaBatchAttendance,
-  saveArenaBatchAttendance, createStudentLogin, searchArenaCustomers,
+  saveArenaBatchAttendance, createStudentLogin, searchArenaCustomers, listArenaFees, recordArenaFee,
 } from '../../../../services/arenaStaffApi';
+
+const FEE_TONE = {
+  overdue: 'bg-red-100 text-red-700',
+  due_soon: 'bg-amber-100 text-amber-800',
+  not_recorded: 'bg-slate-100 text-slate-600',
+  paid: 'bg-green-100 text-green-700',
+  covered: 'bg-green-100 text-green-700',
+  ended: 'bg-slate-100 text-slate-500',
+};
+function FeeBadge({ fee }) {
+  if (!fee) return null;
+  return <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${FEE_TONE[fee.state] || 'bg-slate-100 text-slate-600'}`} data-testid="fee-badge">{fee.label}</span>;
+}
+
+/** The desk records a monthly fee payment (cash / card / waived); "paid until" moves forward. */
+function RecordFeePanel({ student, arenaId, onDone, onClose }) {
+  const monthly = Number(student.fee?.monthlyFee || 0);
+  const [months, setMonths] = useState(1);
+  const [method, setMethod] = useState('cash');
+  const [amount, setAmount] = useState(monthly.toFixed(3));
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const [done, setDone] = useState(null);
+  const pickMonths = (m) => { setMonths(m); setAmount((monthly * m).toFixed(3)); };
+  const save = async () => {
+    setBusy(true); setErr('');
+    try {
+      const r = await recordArenaFee(student.enrollmentId, { months, method, amount: method === 'waived' ? 0 : Number(amount) }, arenaId);
+      setDone(r.paid); await onDone();
+    } catch (e) { setErr(e.message || 'Could not record the payment'); } finally { setBusy(false); }
+  };
+  if (done) {
+    return (
+      <div className="rounded-xl bg-green-50 border border-green-200 p-3 text-[12px] text-green-900 flex flex-wrap items-center gap-2" data-testid="fee-recorded">
+        <span className="flex-1">Recorded: {student.name} is paid until <b>{fmt(done.to)}</b>{done.amount ? ` (OMR ${Number(done.amount).toFixed(3)}, ${method})` : ' (waived)'}. They got a notification.</span>
+        <button type="button" className={ghost} onClick={onClose}>Done</button>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2" data-testid="fee-panel">
+      <div className="flex items-center justify-between"><p className="text-[13px] font-black text-[#36454F]">Record fee — {student.name}</p><button type="button" onClick={onClose} className="p-1 text-slate-400"><X size={16} /></button></div>
+      <p className="text-[11px] text-slate-500">Monthly fee OMR {monthly.toFixed(3)} (incl. VAT). {student.fee?.paidUntil ? `Paid until ${fmt(student.fee.paidUntil)} — this payment continues from the next day.` : 'No fee recorded yet — this payment starts today (or when the batch starts).'}</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <div><span className={label}>Months</span><div className="flex gap-1">{[1, 2, 3].map((m) => <button key={m} type="button" onClick={() => pickMonths(m)} className={`w-10 h-10 rounded-xl text-[12px] font-black border ${months === m ? 'bg-[#36454F] text-[#ffffff] border-transparent' : 'bg-white text-slate-500 border-slate-200'}`}>{m}</button>)}</div></div>
+        <div><span className={label}>Paid by</span><div className="flex gap-1">{[['cash', 'Cash'], ['card', 'Card'], ['waived', 'Waived']].map(([k, l]) => <button key={k} type="button" onClick={() => setMethod(k)} className={`h-10 px-3 rounded-xl text-[12px] font-black border ${method === k ? 'bg-[#36454F] text-[#ffffff] border-transparent' : 'bg-white text-slate-500 border-slate-200'}`}>{l}</button>)}</div></div>
+        {method !== 'waived' && <div className="w-36"><span className={label}>Amount (OMR)</span><input className={input} aria-label="Amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>}
+        <button type="button" disabled={busy} onClick={save} className={primary}><Check size={14} /> {busy ? 'Saving…' : 'Record payment'}</button>
+      </div>
+      {err && <p className="text-[12px] font-bold text-red-600">{err}</p>}
+    </div>
+  );
+}
+
+/** Everyone whose fee is overdue, due soon or not recorded, across the arena's running batches. */
+function FeesDue({ arenaId }) {
+  const [show, setShow] = useState('due');
+  const [rows, setRows] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [openFor, setOpenFor] = useState(null);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try { const r = await listArenaFees(show, arenaId); setRows(r.students || []); setSummary(r.summary); } finally { setLoading(false); }
+  }, [show, arenaId]);
+  useEffect(() => { void load(); }, [load]);
+  return (
+    <div className="space-y-3" data-testid="fees-due">
+      {summary && (
+        <div className="grid grid-cols-3 gap-3">
+          {[['Overdue', summary.overdue, 'text-red-600'], ['Due in 3 days', summary.dueSoon, 'text-amber-700'], ['Fee not recorded', summary.notRecorded, 'text-slate-600']].map(([l, n, c]) => (
+            <div key={l} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3"><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{l}</p><p className={`text-[22px] font-black ${c}`}>{n}</p></div>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-2">
+        {[['due', 'Needs action'], ['all', 'All students']].map(([k, l]) => <button key={k} type="button" onClick={() => setShow(k)} className={`h-9 px-4 rounded-xl text-[12px] font-black ${show === k ? 'bg-[#36454F] text-[#ffffff]' : 'bg-white border border-slate-200 text-slate-500'}`}>{l}</button>)}
+      </div>
+      <p className="text-[11px] text-slate-500">Students with the app get reminders automatically (3 days before, then when overdue). Call the ones without the app.</p>
+      {loading ? <p className="text-[12px] text-slate-400">Loading…</p> : rows.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-6 text-center text-[12px] text-slate-400">Nobody owes a fee right now.</div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100">
+          {rows.map((s) => (
+            <div key={s.enrollmentId} className="px-3 py-2.5" data-testid="fee-row">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex-1 min-w-[200px]"><p className="text-[13px] font-black text-[#36454F]">{s.name}</p><p className="text-[11px] text-slate-400">{s.batchTitle} · {s.phone}{s.hasLogin ? '' : ' · no app'}</p></div>
+                <FeeBadge fee={s.fee} />
+                <button type="button" onClick={() => setOpenFor(openFor === s.enrollmentId ? null : s.enrollmentId)} className="h-8 px-3 rounded-xl border border-[#0E7490]/30 text-[11px] font-black text-[#0E7490]">Fee paid</button>
+              </div>
+              {openFor === s.enrollmentId && <div className="mt-2"><RecordFeePanel student={s} arenaId={arenaId} onDone={async () => {}} onClose={() => { setOpenFor(null); void load(); }} /></div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const pad = (n) => String(n).padStart(2, '0');
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
@@ -210,6 +308,7 @@ export default function CoachingBatches() {
   const [students, setStudents] = useState([]);
   const [panel, setPanel] = useState(null); // 'attendance' | 'add'
   const [loginFor, setLoginFor] = useState(null);
+  const [feeFor, setFeeFor] = useState(null);
   const [err, setErr] = useState('');
 
   const loadBatches = useCallback(async () => {
@@ -240,13 +339,13 @@ export default function CoachingBatches() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {[['current', 'Running & upcoming'], ['ended', 'Ended'], ['all', 'All']].map(([k, l]) => (
-          <button key={k} type="button" onClick={() => { setTab(k); setSel(null); }} className={`h-9 px-4 rounded-xl text-[12px] font-black ${tab === k ? 'bg-[#36454F] text-[#ffffff]' : 'bg-white border border-slate-200 text-slate-500'}`}>{l}</button>
+        {[['current', 'Running & upcoming'], ['ended', 'Ended'], ['all', 'All'], ['fees', 'Fees due']].map(([k, l]) => (
+          <button key={k} type="button" onClick={() => { setTab(k); setSel(null); }} className={`h-9 px-4 rounded-xl text-[12px] font-black ${tab === k ? 'bg-[#36454F] text-[#ffffff]' : k === 'fees' ? 'bg-white border border-[#CE2029]/30 text-[#CE2029]' : 'bg-white border border-slate-200 text-slate-500'}`}>{l}</button>
         ))}
       </div>
       {err && <p className="text-[12px] font-bold text-red-600">{err}</p>}
 
-      {loading ? <p className="text-[12px] text-slate-400 p-4">Loading…</p> : batches.length === 0 ? (
+      {tab === 'fees' ? <FeesDue arenaId={arenaId} /> : loading ?<p className="text-[12px] text-slate-400 p-4">Loading…</p> : batches.length === 0 ? (
         <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-8 text-center text-[12px] text-slate-400"><GraduationCap size={22} className="mx-auto mb-2 text-slate-300" />No batches here. Super Admin creates batches in Coach Control → Batch Control.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -288,10 +387,13 @@ export default function CoachingBatches() {
                     </div>
                     <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${s.enrollmentType === 'offline' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-700'}`}>{s.enrollmentType === 'offline' ? 'Added at desk' : 'Joined in app'}</span>
                     <span className="text-[12px] font-bold text-slate-500 w-28 text-right">{s.attendancePercent === null ? 'No classes yet' : `${s.attendancePercent}% · ${s.sessions} class${s.sessions === 1 ? '' : 'es'}`}</span>
+                    <FeeBadge fee={s.fee} />
+                    {s.fee && s.fee.state !== 'covered' && s.fee.state !== 'ended' && <button type="button" onClick={() => setFeeFor(feeFor === s.userId ? null : s.userId)} className="h-8 px-3 rounded-xl border border-slate-200 text-[11px] font-black text-slate-600">Fee paid</button>}
                     {s.hasLogin
                       ? <span className="px-2 py-0.5 rounded-lg text-[10px] font-black bg-green-100 text-green-700">Has app login</span>
                       : <button type="button" onClick={() => setLoginFor(loginFor === s.userId ? null : s.userId)} className="h-8 px-3 rounded-xl border border-[#0E7490]/30 text-[11px] font-black text-[#0E7490] flex items-center gap-1"><KeyRound size={12} /> Give app login</button>}
                   </div>
+                  {feeFor === s.userId && <div className="mt-2"><RecordFeePanel student={s} arenaId={arenaId} onDone={async () => {}} onClose={() => { setFeeFor(null); void loadStudents(); }} /></div>}
                   {loginFor === s.userId && <div className="mt-2"><GiveLoginPanel student={s} arenaId={arenaId} onDone={() => loadStudents()} onClose={() => setLoginFor(null)} /></div>}
                 </div>
               ))}

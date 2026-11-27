@@ -281,6 +281,8 @@ async function createEnrollmentOnce(payment) {
     userId: payment.userId,
     status: 'confirmed',
   });
+  // Paid by card: the first month is covered.
+  try { await require('./coachingFees').startPaidPeriod(enrollment._id, batch, 'online'); } catch (e) { console.error('[fees] start period', e.message); }
 
   await Payment.findByIdAndUpdate(payment._id, {
     $set: {

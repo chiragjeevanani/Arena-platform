@@ -23,6 +23,8 @@ async function start() {
   require('./services/cancellationPolicy').startCancellationPolicyRefresh();
   // Reserved slots: notify arena admins 7 days before a reservation ends (hourly check).
   require('./controllers/reservedSlotController').startReservedSlotNotifier();
+  // Coaching monthly-fee reminders and membership ending/ended reminders (hourly check).
+  require('./services/coachingFees').startFeeReminders();
 
   // 2. Configure Cloudinary
   try {

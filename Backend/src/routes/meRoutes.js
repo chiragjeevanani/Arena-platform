@@ -18,6 +18,7 @@ const {
   listMyEnrollments,
   cancelMyEnrollment,
   getMyEnrollmentById,
+  payMyCoachingMonth,
 } = require('../controllers/meEnrollmentController');
 const { createPaymentIntent, listMyPayments } = require('../controllers/mePaymentController');
 const { patchMyProfile } = require('../controllers/meProfileController');
@@ -68,6 +69,7 @@ router.post('/enrollments', asyncHandler(createMyEnrollment));
 router.get('/enrollments', asyncHandler(listMyEnrollments));
 router.get('/enrollments/:id', asyncHandler(getMyEnrollmentById));
 router.patch('/enrollments/:id/cancel', asyncHandler(cancelMyEnrollment));
+router.post('/enrollments/:id/pay-month', asyncHandler(payMyCoachingMonth));
 
 router.post('/payments/intent', asyncHandler(createPaymentIntent));
 router.get('/payments', asyncHandler(listMyPayments));

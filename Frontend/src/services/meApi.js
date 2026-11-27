@@ -34,6 +34,11 @@ export function cancelMyEnrollment(id) {
   return apiJson(`/api/me/enrollments/${encodeURIComponent(id)}/cancel`, { method: 'PATCH' });
 }
 
+/** Pay the next month(s) of a coaching fee from the Arena Wallet. */
+export function payMyCoachingMonth(id, months = 1) {
+  return apiJson(`/api/me/enrollments/${encodeURIComponent(id)}/pay-month`, { method: 'POST', body: { months } });
+}
+
 export function createPaymentIntent({ purpose, amount, bookingId, bookingIds }) {
   return apiJson('/api/me/payments/intent', {
     method: 'POST',

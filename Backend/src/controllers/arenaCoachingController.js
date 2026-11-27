@@ -11,6 +11,8 @@ const CoachingAttendance = require('../models/CoachingAttendance');
 const BatchEnrollment = require('../models/BatchEnrollment');
 const User = require('../models/User');
 const { arenaTodayYmd } = require('../services/slotAvailability');
+const fees = require('../services/coachingFees');
+const { createNotification } = require('../services/notificationService');
 
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
 const STATUSES = ['present', 'absent', 'late', 'excused'];
@@ -86,6 +88,7 @@ async function listArenaBatchStudents(req, res) {
       enrollmentStatus: e.status,
       sessions: marks.length,
       attendancePercent: marks.length ? Math.round((present / marks.length) * 100) : null,
+      fee: e.status === 'confirmed' ? fees.feeStatus(e, batch) : null,
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
   return res.json({ batch: batchPublic(batch, students.length), students });
@@ -239,7 +242,59 @@ async function createStudentLogin(req, res) {
   return res.json({ student: { userId: String(user._id), name: nameOf(user), email: user.email, hasLogin: true } });
 }
 
+/**
+ * GET /arena-admin/coaching/fees?show=due|all
+ * Students of running batches at this arena with their fee status; "due" = overdue, due soon or not recorded.
+ */
+async function listArenaFees(req, res) {
+  const today = arenaTodayYmd();
+  const batches = await CoachingBatch.find({ arenaId: req.arenaScopeId, endDate: { $gte: today } }).populate('coachId', 'name firstName lastName email').lean();
+  const batchById = new Map(batches.map((b) => [String(b._id), b]));
+  const list = await BatchEnrollment.find({ batchId: { $in: batches.map((b) => b._id) }, status: 'confirmed' }).lean();
+  const users = await User.find({ _id: { $in: list.map((e) => e.userId) } }).select('name firstName lastName email phone').lean();
+  const userById = new Map(users.map((u) => [String(u._id), u]));
+  const order = { overdue: 0, due_soon: 1, not_recorded: 2, paid: 3, covered: 4, ended: 5 };
+  let rows = list.map((e) => {
+    const b = batchById.get(String(e.batchId));
+    const u = userById.get(String(e.userId));
+    return {
+      enrollmentId: String(e._id), userId: String(e.userId), name: nameOf(u) || 'Student', phone: u?.phone || '', hasLogin: hasLogin(u),
+      batchId: String(b._id), batchTitle: b.title, coachName: nameOf(b.coachId) || '—', enrollmentType: e.enrollmentType || 'online',
+      fee: fees.feeStatus(e, b, today),
+    };
+  });
+  if (String(req.query.show || 'due') === 'due') rows = rows.filter((r) => ['overdue', 'due_soon', 'not_recorded'].includes(r.fee.state));
+  rows.sort((a, b) => (order[a.fee.state] - order[b.fee.state]) || ((b.fee.daysOverdue || 0) - (a.fee.daysOverdue || 0)) || a.name.localeCompare(b.name));
+  const all = list.map((e) => fees.feeStatus(e, batchById.get(String(e.batchId)), today).state);
+  return res.json({
+    students: rows,
+    summary: { overdue: all.filter((s) => s === 'overdue').length, dueSoon: all.filter((s) => s === 'due_soon').length, notRecorded: all.filter((s) => s === 'not_recorded').length },
+  });
+}
+
+/**
+ * POST /arena-admin/coaching/enrollments/:enrollmentId/fee { months?, method: cash|card|waived, amount? }
+ * The desk records a monthly fee payment; "paid until" moves forward and the student is notified.
+ */
+async function recordArenaFee(req, res) {
+  const { enrollmentId } = req.params;
+  if (!mongoose.isValidObjectId(enrollmentId)) return res.status(400).json({ error: 'Invalid enrolment' });
+  const e = await BatchEnrollment.findById(enrollmentId);
+  if (!e || e.status !== 'confirmed') return res.status(404).json({ error: 'Enrolment not found' });
+  const batch = await batchInScope(req, e.batchId);
+  if (!batch) return res.status(404).json({ error: 'Enrolment not found' });
+  const method = String(req.body?.method || 'cash');
+  if (!['cash', 'card', 'waived'].includes(method)) return res.status(400).json({ error: 'Payment method must be cash, card or waived' });
+  const paid = await fees.recordFeePayment(e, batch, { months: req.body?.months, amount: req.body?.amount, method, recordedBy: req.auth.sub });
+  try {
+    await createNotification(e.userId, 'Coaching fee received', `Thank you — your ${batch.title} fee is paid until ${paid.to}${paid.amount ? ` (OMR ${paid.amount.toFixed(3)}, ${method})` : ''}.`, 'success', { kind: 'coaching_fee_paid', enrollmentId: String(e._id) });
+  } catch (err) { /* notification is a courtesy */ }
+  return res.json({ paid, fee: fees.feeStatus(e, batch) });
+}
+
 module.exports = {
+  listArenaFees,
+  recordArenaFee,
   listArenaBatches,
   listArenaBatchStudents,
   getArenaBatchAttendance,

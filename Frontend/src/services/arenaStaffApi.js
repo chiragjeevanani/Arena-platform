@@ -132,6 +132,8 @@ export const addArenaBatchStudent = (batchId, body, arenaId) => apiJson(`${BASE}
 export const getArenaBatchAttendance = (batchId, date, arenaId) => apiJson(`${BASE}/coaching/batches/${encodeURIComponent(batchId)}/attendance?date=${encodeURIComponent(date)}`, { headers: scope(arenaId) });
 export const saveArenaBatchAttendance = (batchId, body, arenaId) => apiJson(`${BASE}/coaching/batches/${encodeURIComponent(batchId)}/attendance`, { method: 'PUT', body, headers: scope(arenaId) });
 export const createStudentLogin = (userId, body, arenaId) => apiJson(`${BASE}/coaching/students/${encodeURIComponent(userId)}/login`, { method: 'POST', body, headers: scope(arenaId) });
+export const listArenaFees = (show, arenaId) => apiJson(`${BASE}/coaching/fees?show=${encodeURIComponent(show || 'due')}`, { headers: scope(arenaId) });
+export const recordArenaFee = (enrollmentId, body, arenaId) => apiJson(`${BASE}/coaching/enrollments/${encodeURIComponent(enrollmentId)}/fee`, { method: 'POST', body, headers: scope(arenaId) });
 export const searchArenaCustomers = (q, arenaId) => apiJson(`${BASE}/walkin/customers/search?q=${encodeURIComponent(q || '')}`, { headers: scope(arenaId) });
 
 // Whole-arena bookings: every court, all day, for one client (price agreed offline).

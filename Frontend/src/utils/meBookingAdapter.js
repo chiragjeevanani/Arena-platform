@@ -78,6 +78,8 @@ export function mapMeEnrollmentToDashboardCard(e) {
     attendance: e.attendance || [],
     metrics: e.metrics || [],
     remarks: e.remarks || '',
+    fee: e.fee || null,
+    rawStatus: e.status,
     receiptUrl: `#receipt-${e.id}`,
     sortKey: e.createdAt || String(e.id),
   };
