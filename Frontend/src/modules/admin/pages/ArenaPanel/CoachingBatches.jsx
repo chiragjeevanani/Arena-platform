@@ -105,7 +105,9 @@ function FeesDue({ arenaId }) {
 }
 
 const pad = (n) => String(n).padStart(2, '0');
-const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+// The arena's date (Oman, UTC+4) — the server checks against it, whatever time zone the device is in.
+const today = () => new Date(Date.now() + 4 * 36e5).toISOString().slice(0, 10);
+void pad;
 const fmt = (ymd) => (ymd ? new Date(`${ymd}T12:00:00`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '');
 const input = 'h-11 px-3 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-[#36454F] outline-none focus:border-[#CE2029] w-full';
 const label = 'block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1';
